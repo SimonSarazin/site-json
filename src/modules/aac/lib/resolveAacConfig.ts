@@ -119,13 +119,16 @@ export function resolveAacConfig(
 
   const depenseStepKey =
     findStep((keys) => keys.includes("depense")) ?? stepKeys[0] ?? null;
-  const evalStepKey =
-    findStep(
-      (keys, types) =>
-        keys.includes("choose") ||
-        keys.includes("decide") ||
-        types.some((t) => /selection|chooseproposal|multidecide/.test(t))
-    ) ?? evalByCount;
+  // Une étape d'évaluation se reconnaît à une sélection, un vote… ou à la seule grille de critères
+  // `tpls.forms.aap.evaluation` : sans elle, une étape qui ne porte que la grille ne serait plus
+  // masquée à l'auteur (cf. `evalStepKeyFound`).
+  const evalStepKeyFound = findStep(
+    (keys, types) =>
+      keys.includes("choose") ||
+      keys.includes("decide") ||
+      types.some((t) => /selection|chooseproposal|multidecide|aap\.evaluation/.test(t))
+  );
+  const evalStepKey = evalStepKeyFound ?? evalByCount;
   const financementStepKey =
     findStep(
       (keys, types) =>
@@ -142,6 +145,7 @@ export function resolveAacConfig(
   const roles: AacStepRoles = {
     depenseStepKey,
     evalStepKey,
+    evalStepKeyFound,
     financementStepKey,
     suiviStepKey,
   };

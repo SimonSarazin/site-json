@@ -96,7 +96,6 @@
     "stripe": {
       "title": "Stripe",
       "description": "Saisie carte directement",
-      "missingConfig": "Configuration manquante",
       "formLabel": "Informations carte bancaire (Stripe)"
     },
     "helloasso": {
@@ -109,7 +108,7 @@
         "li1": "Vous serez redirigé vers le site HelloAsso",
         "li2": "Les paiements sont sécurisés via HelloAsso",
         "li3": "Vous recevrez une confirmation par email",
-        "li4": "Fermez la popup après le paiement pour revenir",
+        "li4": "Une fois le paiement terminé, fermez la fenêtre HelloAsso : le financement est enregistré automatiquement",
         "li5": "Le financement est enregistré après confirmation réelle du paiement"
       }
     },
@@ -126,37 +125,49 @@
       "project": "projet"
     },
     "selectMethodPlaceholder": "Sélectionnez une méthode de paiement",
+    "paymentMethodsLoading": "Chargement des moyens de paiement…",
+    "noPaymentMethod": "Aucun moyen de paiement n'est configuré pour cette cagnotte.",
+    "missingAnswer": "Contribution impossible : aucune fiche de financement n'est associée à cette ressource.",
+    "nothingToPay": "Rien à régler : le montant est nul.",
     "successScreen": {
       "title": "Paiement réussi",
       "subtitle": "Retour à la page principale...",
       "returnButton": "Retourner maintenant"
     },
-    "verifying": {
-      "title": "Vérification en cours...",
-      "subtitle": "Nous confirmons votre paiement HelloAsso",
-      "hint": "Cela peut prendre quelques secondes"
-    },
     "waiting": {
       "title": "En attente du retour HelloAsso...",
-      "subtitle": "Terminez le paiement dans la popup pour continuer.",
-      "hint": "Le financement sera enregistré seulement après callback réel."
+      "subtitle": "Terminez le paiement dans la fenêtre HelloAsso, puis revenez sur cette page. Si vous l'avez fermée sans payer, cliquez sur Annuler.",
+      "hint": "Le financement est enregistré dès que HelloAsso confirme le paiement.",
+      "cancel": "Annuler",
+      "checking": "Vérification du paiement...",
+      "stopWaiting": "Ne plus attendre"
+    },
+    "recordingFailed": {
+      "title": "Paiement reçu, contribution non enregistrée",
+      "description": "Votre paiement (réf. {{reference}}) est bien encaissé, mais son enregistrement a échoué. Réessayez ; s'il échoue encore, transmettez cette référence au porteur de la cagnotte.",
+      "inProgress": "Un enregistrement de ce paiement est déjà en cours. Réessayez dans un instant.",
+      "retry": "Réessayer l'enregistrement",
+      "close": "Fermer"
+    },
+    "paymentUnconfirmed": {
+      "title": "Paiement non confirmé",
+      "description": "La réponse du paiement ne nous est pas parvenue : votre carte a peut-être été débitée. Ne payez pas à nouveau. « Vérifier le paiement » reprend ce même paiement sans jamais débiter deux fois ; s'il a abouti, il sera enregistré, même si vous fermez cette fenêtre.",
+      "inProgress": "Le paiement est en cours de traitement. Vérifiez à nouveau dans un instant.",
+      "retry": "Vérifier le paiement",
+      "close": "Fermer"
     },
     "toasts": {
       "thankYou": {
         "title": "Merci pour votre contribution !",
         "description": "Retour à la page d'accueil..."
       },
-      "paymentAcceptedIncomplete": {
-        "title": "Paiement accepté mais enregistrement incomplet",
-        "fallbackDescription": "Erreur d'enregistrement des financements"
-      },
       "paymentInterrupted": {
         "title": "Paiement interrompu",
         "description": "Le paiement HelloAsso n'a pas été confirmé."
       },
-      "paymentFailed": {
-        "title": "Paiement échoué",
-        "fallbackDescription": "Le paiement a échoué"
+      "paymentUnverified": {
+        "title": "Paiement non vérifié",
+        "description": "Impossible de confirmer le paiement HelloAsso (réf. {{reference}}). S'il a été fait, il sera enregistré automatiquement ; sinon, transmettez cette référence au porteur de la cagnotte."
       },
       "stripeError": {
         "title": "Erreur",
@@ -164,24 +175,20 @@
       },
       "paymentInProgress": {
         "title": "Paiement en cours",
-        "description": "Complétez le paiement dans la popup HelloAsso. Validation après callback réel."
+        "description": "Complétez le paiement dans la popup HelloAsso. Le financement est enregistré dès que HelloAsso le confirme."
       },
       "paymentError": {
         "title": "Erreur de paiement",
         "fallback": "Erreur HelloAsso"
-      },
-      "stripeMissing": {
-        "title": "Configuration Stripe manquante",
-        "fallbackDescription": "Clé publique Stripe invalide."
       }
     },
     "errors": {
       "fundingEnvelopeUnavailable": "entity.fundingEnvelope est indisponible",
-      "noContextId": "contextId introuvable pour fundingEnvelope",
-      "saveFailed": "Impossible de sauvegarder les financements",
       "noRedirectUrl": "Aucune URL de redirection HelloAsso n'a été renvoyée par fundingEnvelope",
       "popupFailed": "La popup HelloAsso n'a pas pu être ouverte",
-      "stripeUnavailable": "Stripe indisponible : configurez VITE_STRIPE_PUBLIC_KEY"
+      "paymentRejected": "Le paiement n'a pas abouti.",
+      "statusInvalid": "Réponse de vérification HelloAsso incomplète : le serveur n'est peut-être pas à jour.",
+      "statusTimeout": "La vérification du paiement ne répond pas."
     },
     "helloAssoConfigErrors": {
       "amountInvalid": "Le montant doit être supérieur à 0",
@@ -606,7 +613,11 @@
           "for": "Pour",
           "totalSelectedLabel": "Total sélectionné",
           "PaySelected": "Payer ma sélection",
-          "return": "Retour à la cagnotte"
+          "return": "Retour à la cagnotte",
+          "tabs": {
+            "pledges": "Promesses à régler",
+            "payments": "Paiements"
+          }
         },
         "payment": {
           "title": "Paiement des promesses"
@@ -742,9 +753,7 @@
       "cardElementMissing": "Formulaire carte indisponible",
       "cardValidationFailed": "Erreur de validation de la carte",
       "paymentMethodFailed": "Impossible de créer la méthode de paiement",
-      "paymentFallback": "Erreur lors du paiement",
-      "stripeNotInitialized": "Stripe n'est pas initialisé",
-      "amountMustBePositive": "Le montant doit être supérieur à 0"
+      "paymentFallback": "Erreur lors du paiement"
     },
     "stripeErrors": {
       "card_declined": "Votre carte a été refusée. Veuillez vérifier vos informations.",
@@ -757,14 +766,6 @@
       "invalid_expiry_year": "L'année d'expiration est invalide.",
       "invalid_number": "Le numéro de carte est invalide.",
       "default": "Une erreur est survenue lors du paiement. Veuillez réessayer."
-    },
-    "configErrors": {
-      "amountInvalid": "Le montant doit être supérieur à 0",
-      "amountTooHigh": "Le montant ne peut pas dépasser 99 999€",
-      "projectNameRequired": "Le nom du projet est requis",
-      "projectIdRequired": "L'ID du projet est requis",
-      "milestoneRequired": "Au moins un milestone doit être sélectionné",
-      "contributorTypeRequired": "Le type de contributeur doit être spécifié"
     },
     "cardValid": "Carte valide, prête à être payée",
     "actions": {
@@ -809,7 +810,44 @@
     },
     "pledge": {
       "aria": "Voir les promesses",
-      "tooltip": "Voir et payer mes promesses en cours"
+      "tooltip": "Mes promesses à régler et mes paiements"
+    }
+  },
+  "PaymentsPanel": {
+    "scope": {
+      "all": "Tous les paiements Stripe et HelloAsso reçus par la cagnotte.",
+      "mine": "Vos paiements Stripe et HelloAsso à la cagnotte."
+    },
+    "description": "« À rapprocher » liste les paiements encaissés dont l'enregistrement n'a pas abouti : « Réessayer » relance l'enregistrement, sans nouveau débit.",
+    "tabs": {
+      "attention": "À rapprocher",
+      "all": "Historique"
+    },
+    "columns": {
+      "date": "Date",
+      "payer": "Payeur",
+      "amount": "Montant",
+      "provider": "Moyen",
+      "status": "Statut",
+      "reference": "Référence"
+    },
+    "status": {
+      "settled": "Enregistré",
+      "unrecorded": "Encaissé, non enregistré",
+      "settling": "Enregistrement en cours",
+      "pending": "En attente du paiement",
+      "expired": "Non payé",
+      "unknown": "Inconnu"
+    },
+    "retry": "Réessayer l'enregistrement",
+    "loading": "Chargement des paiements…",
+    "emptyAttention": "Aucun paiement à rapprocher.",
+    "emptyAll": "Aucun paiement pour l'instant.",
+    "inProgress": "Un enregistrement de ce paiement est déjà en cours. Réessayez dans un instant.",
+    "notPaid": "Le prestataire ne confirme pas ce paiement.",
+    "toasts": {
+      "recorded": "Paiement enregistré",
+      "notRecorded": "Paiement non enregistré"
     }
   },
   "PaymentReceivedScreen": {

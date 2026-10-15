@@ -30,7 +30,7 @@ interface SmartCoFormProps {
   className?: string;
   showProgress?: boolean;
   showStepNumbers?: boolean;
-  /** Valeurs par défaut pour pré-remplir le formulaire (mode édition / résumé) */
+  /** Valeurs par défaut : réponse éditée (ou résumé), ou préremplissage d'une création (cf. `hiddenFields`). */
   defaultValues?: AllStepsData;
   /** ID de la réponse en cours d'édition (pour le chargement des fichiers legacy) */
   answerId?: string;
@@ -71,6 +71,14 @@ interface SmartCoFormProps {
   discardDraftRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Champs MASQUÉS à l'affichage pour cet appel (clés `field.name`, préfixe de type compris, comme
+   * `lockedFields` — ex. `finder<kunik>`). Le champ reste dans le schéma et sa valeur (souvent
+   * préremplie par `defaultValues`) part au submit : c'est ce qui le distingue de
+   * `access.restrictedFields`, que le parse retire et dont la valeur serait perdue. Un champ masqué
+   * en ERREUR de validation est réaffiché, sans quoi l'erreur listée resterait inatteignable.
+   */
+  hiddenFields?: readonly string[];
   /**
    * Étapes à retirer du parcours pour CET appel — indépendamment de ce que le
    * formulaire déclare. Sert aux règles qui dépendent de l'utilisateur et de
@@ -215,6 +223,7 @@ export function SmartCoForm({
   submitRef,
   discardDraftRef,
   lockedFields,
+  hiddenFields,
   hiddenStepKeys,
   baseUpdatedAt,
   existingAnswerMeta,
@@ -514,6 +523,7 @@ export function SmartCoForm({
         onDirtyChange={onDirtyChange}
         discardDraftRef={discardDraftRef}
         lockedFields={lockedFields}
+        hiddenFields={hiddenFields}
         restrictedFields={restrictedFields}
         className={className}
         showProgress={showProgress}
@@ -563,6 +573,7 @@ export function SmartCoForm({
       submitRef={submitRef}
       discardDraftRef={discardDraftRef}
       lockedFields={lockedFields}
+      hiddenFields={hiddenFields}
       restrictedFields={restrictedFields}
       formId={formId}
       draftScope={draftScope}

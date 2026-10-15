@@ -10,7 +10,8 @@
     },
     "testimonial": {
         "listen": "Écouter",
-        "listenTitle": "Écouter le témoignage"
+        "listenTitle": "Écouter le témoignage",
+        "viewImage": "Agrandir l'image"
     },
     "resource": {
         "open": "Ouvrir le lien",
@@ -59,7 +60,12 @@
         "notProvided": "Non renseigné",
         "installation": "Installation",
         "installationEmpty": "Aucune installation renseignée",
-        "validated": "Validé",
+        "status": {
+            "validated": "Validé",
+            "pending": "En attente",
+            "inProgress": "En cours",
+            "refused": "Refusé"
+        },
         "noName": "(Pas de nom)",
         "by": "Par :",
         "showLess": "Voir moins",
@@ -67,7 +73,10 @@
         "activitySheet": "Fiche d'activité",
         "structureSheet": "Fiche structure",
         "edit": "Modifier",
-        "editError": "Impossible de charger cette fiche pour la modifier."
+        "editTitle": "Modifier — {{title}}",
+        "editLoading": "Chargement de la fiche…",
+        "edited": "Modifications enregistrées.",
+        "editError": "Impossible de charger cette fiche. Cliquez de nouveau sur « Modifier » pour réessayer."
     },
     "CardPoiAmenities": {
         "amenities": "Aménagement",
@@ -314,11 +323,9 @@
     "resourceDirectory.priceSuffix.fullDay": "/journée",
     "resourceDirectory.priceSuffix.bed": "/lit",
     "resourceDirectory.priceSuffix.room": "/nuitée",
-    "resourceDirectory.area": "Surface :",
     "resourceDirectory.roomsCount": "{{count}} salle",
     "resourceDirectory.roomsCount_other": "{{count}} salles",
     "resourceDirectory.hostedTitle": "Tiers-lieu porteur",
-    "resourceDirectory.solidaire": "Tarif solidaire",
     "resourceDirectory.nameCoworking": "Espace de coworking",
     "resourceDirectory.nameMeeting": "Salle de réunion",
     "resourceDirectory.nameAccommodation": "Hébergement",
@@ -330,8 +337,17 @@
     "resourceDirectory.filterByParent": "Voir les ressources de {{name}}",
     "resourceDirectory.activeParentFilter": "Ressources portées par {{name}}",
     "resourceDirectory.clearParentFilter": "Retirer le filtre",
-    "resourceDirectory.contactByEmail": "Contacter par e-mail",
+    "resourceDirectory.contactByEmail": "Réserver par e-mail",
     "resourceDirectory.mailtoSubject": "Demande de réservation — {{name}}",
+    "resourceDirectory.detail.equipments": "Équipements",
+    "resourceDirectory.detail.catering": "Restauration",
+    "resourceDirectory.detail.services": "Services proposés",
+    "resourceDirectory.detail.roomType": "Type de chambre",
+    "resourceDirectory.detail.moreInfo": "Bon à savoir",
+    "resourceDirectory.detail.about": "À propos du lieu",
+    "resourceDirectory.detail.tip": "Le petit truc en plus",
+    "resourceDirectory.detail.area": "Surface",
+    "resourceDirectory.detail.solidarity": "Tarif solidaire possible",
     "Chargement des points… {{loaded}} / {{total}}": "Chargement des points… {{loaded}} / {{total}}",
     "Carte limitée aux {{loaded}} premiers résultats": "Carte limitée aux {{loaded}} premiers résultats",
     "Aucun résultat": "Aucun résultat",

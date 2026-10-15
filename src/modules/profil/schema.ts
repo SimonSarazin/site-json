@@ -182,6 +182,15 @@ export const ProfileSsbeAboutSectionSchema = z.object({
   hidden: z.boolean().optional().default(false),
 });
 
+/** Fiche « À propos » d'une organisation parent62 — couvre les deux `costumForms` `organizations` du
+ *  costum (`parent62-acteur` : `categoryThematic`/`typeAction`/`publicCible` ; `parent62-partenaire` :
+ *  `territoires`/`publics`/`themes`), distingués au rendu par le tag `"Partenaires"`. Aucun de ces
+ *  champs n'est couvert par `profile-info` (contact) ni `profile-tags`. */
+export const ProfileParent62AboutSectionSchema = z.object({
+  type: z.literal("profile-parent62-about"),
+  hidden: z.boolean().optional().default(false),
+});
+
 export const ProfileMapSectionSchema = z.object({
   type: z.literal("profile-map"),
   height: z.string().optional().default("400px"),
@@ -367,6 +376,7 @@ export const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileTiersLieuxAboutSectionSchema,
   ProfileAboutSectionSchema,
   ProfileSsbeAboutSectionSchema,
+  ProfileParent62AboutSectionSchema,
   ProfileMapSectionSchema,
   ProfileOrganizerSectionSchema,
   ProfileMembersSectionSchema,
@@ -418,6 +428,51 @@ export const ProfileTabSubRouteSchema = z.object({
   loader: z.string().optional(), // nom de la fonction loader optionnelle
 });
 
+/**
+ * Props de l'onglet « Structures » (`component: "StructuresTab"`) : les structures que le compte
+ * connecté administre, chacune avec ses créneaux (réponses d'un formulaire CoForm) et un bouton
+ * d'ajout qui préremplit puis MASQUE le champ structure. Tout ce qui est propre à un site
+ * (formulaire, chemin du finder) vient d'ici : l'onglet ne connaît aucun costum.
+ */
+export const StructuresTabPropsSchema = z.object({
+  answers: z.object({
+    /** Formulaire des créneaux (ObjectId). */
+    formId: z.string().regex(/^[0-9a-f]{24}$/, "id de formulaire CoForm attendu (ObjectId 24 hex)"),
+    /**
+     * Chemin Mongo du finder « structure » dans la réponse : `answers.<étape>.finder<kunik>`. Sert à
+     * la fois au filtre serveur (créneaux d'une structure), au préremplissage et au masquage.
+     */
+    structureFinderPath: z
+      .string()
+      .regex(/^answers\.[^.]+\.finder[^.]+$/, "chemin attendu : answers.<étape>.finder<kunik>"),
+    /** « Modifier » dans le détail d'un créneau, pour qui le gère ou l'a déposé (`canEditCoformAnswer`). Absent = lecture seule. */
+    editButton: z.boolean().optional(),
+    /**
+     * Groupe des créneaux DÉPOSÉS par le compte hors des structures qu'il administre (ou sans
+     * structure), tous statuts. Exige que le serveur montre à l'auteur ses réponses non validées
+     * (SSBE : `SportSanteBienetre::isBoundToOwnAnswers`) — sinon seuls ses créneaux validés y viendraient.
+     */
+    submittedSlots: z.boolean().optional(),
+  }),
+  /** `costum` (défaut code) : seules les structures rattachées au site porteur ; `network` : toutes. */
+  scope: z.enum(["costum", "network"]).optional(),
+  /** Action proposée quand le compte n'administre aucune structure (ex. la page des structures). */
+  emptyAction: z.object({ label: LocalizedString, href: z.string().startsWith("/") }).optional(),
+  /**
+   * Champ de MODÉRATION des structures (chemin pointé, ex. `statusActor`) : hors « Validé », pastille
+   * dans l'en-tête et explication au dépliage. Absent = rien d'affiché. Réservé à `scope: costum` :
+   * hors du site porteur, le même champ peut dire autre chose (« Une personne morale » ailleurs).
+   */
+  structureStatusField: z
+    .string()
+    .regex(/^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)*$/, "chemin pointé attendu (ex. statusActor)")
+    .optional(),
+}).refine((props) => !(props.structureStatusField && props.scope === "network"), {
+  message: "structureStatusField n'a de sens qu'en scope costum : hors du site porteur, le champ peut dire autre chose",
+  path: ["structureStatusField"],
+});
+export type StructuresTabProps = z.infer<typeof StructuresTabPropsSchema>;
+
 // Schema pour un tab de profil
 export const ProfileTabSchema = z.object({
   id: z.string(),
@@ -428,13 +483,13 @@ export const ProfileTabSchema = z.object({
   sections: z.array(ProfileSectionSchema).optional(),
 
   // Option 2 : Utiliser un composant dédié
-  component: z.enum(["SocialTab", "MembershipTab", "NewsTab"]).optional(),
+  component: z.enum(["SocialTab", "MembershipTab", "NewsTab", "StructuresTab"]).optional(),
 
   /**
    * Options passées au composant du mode `component`. Un onglet à `sections` configure chacune de ses
    * sections par ses `props` ; un onglet à `component` n'avait aucun équivalent et rendait donc
-   * toujours la même chose. Cf. `MembershipTabProps` (`types`, `scope`) ; les autres composants
-   * ignorent la clé.
+   * toujours la même chose. Cf. `MembershipTabProps` (`types`, `scope`) et `StructuresTabProps`
+   * (validées ci-dessous) ; les autres composants ignorent la clé.
    */
   props: z.record(z.string(), z.unknown()).optional(),
 
@@ -445,7 +500,17 @@ export const ProfileTabSchema = z.object({
 }).refine(
   (data) => (data.sections && data.sections.length > 0) || data.component,
   { message: "Un tab doit avoir soit 'sections' soit 'component'" }
-);
+).superRefine((tab, ctx) => {
+  // `props` est un record libre (le mode `component` sert plusieurs composants) : sans cette passe,
+  // un formulaire ou un chemin de finder MAL FORMÉ ne se verrait qu'à l'écran, onglet vide (un id
+  // bien formé mais faux, lui, ne se voit toujours qu'à l'écran).
+  if (tab.component !== "StructuresTab") return;
+  const parsed = StructuresTabPropsSchema.safeParse(tab.props);
+  if (parsed.success) return;
+  for (const issue of parsed.error.issues) {
+    ctx.addIssue({ code: "custom", message: issue.message, path: ["props", ...issue.path] });
+  }
+});
 
 export type ProfileTab = z.infer<typeof ProfileTabSchema>;
 export type ProfileTabCondition = z.infer<typeof ProfileTabConditionSchema>;
@@ -540,6 +605,7 @@ export type ProfileHeaderSection = z.infer<typeof ProfileHeaderSectionSchema>;
 export type ProfileInfoSection = z.infer<typeof ProfileInfoSectionSchema>;
 export type ProfileAboutSection = z.infer<typeof ProfileAboutSectionSchema>;
 export type ProfileSsbeAboutSection = z.infer<typeof ProfileSsbeAboutSectionSchema>;
+export type ProfileParent62AboutSection = z.infer<typeof ProfileParent62AboutSectionSchema>;
 export type ProfileMapSection = z.infer<typeof ProfileMapSectionSchema>;
 export type ProfileOrganizerSection = z.infer<typeof ProfileOrganizerSectionSchema>;
 export type ProfileMembersSection = z.infer<typeof ProfileMembersSectionSchema>;

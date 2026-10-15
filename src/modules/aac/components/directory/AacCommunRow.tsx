@@ -8,6 +8,7 @@ import {
 } from "../../lib/aacDisplay";
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
+import { StatusPill } from "../StatusPill";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 
 interface AacCommunRowProps {
@@ -85,9 +86,9 @@ export function AacCommunRow({ commun, onRequestDelete, isDeleting, className }:
           </Link>
 
           {isPending ? (
-            <span className="shrink-0 rounded-full bg-accent/80 px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-accent-foreground">
+            <StatusPill tone="accent" size="sm">
               {String(t("directory.card.pending"))}
-            </span>
+            </StatusPill>
           ) : null}
         </div>
 

@@ -103,11 +103,12 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
      ssr: { noExternal: ["@radix-ui/*", "lucide-react", "@communecter/cocolight-api-client"] },
    });
 
-   // Routes API (helloasso, admin upload…) enregistrées AVANT vite.middlewares
+   // Routes API (upload admin, temps réel…) enregistrées AVANT vite.middlewares
    app.use(express.json());
-   app.get("/api/helloasso/token", helloassoTokenHandler);
-   app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
-   // … autres routes HelloAsso
+   app.all("/api/realtime/push/*splat", realtimePushHandler);
+   app.get("/api/realtime/flux", realtimeFluxHandler);
+   app.get("/api/helloasso/callback", helloassoCallbackRedirect); // temporaire : retour HelloAsso → backend
+   app.use("/api", (_req, res) => res.status(404).json({ error: "Unknown API route" }));
 
    app.use(vite.middlewares); // ⚠ Vite DOIT être après les routes API
    ```
@@ -289,15 +290,22 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    }));
    ```
 
-4. **Routes API HelloAsso**
+4. **Routes API, RSS et SEO** (montées avant les statiques et le SSR)
 
    ```js
+   app.get("/api/realtime/flux", realtimeFluxHandler); // avant compression() : flux SSE
    app.use(express.json());
-   app.get("/api/helloasso/token", helloassoTokenHandler);
-   app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
-   app.get("/api/helloasso/callback", helloassoCallbackHandler);
-   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
+   app.all("/api/realtime/push/*splat", realtimePushHandler);
+   app.get("/api/helloasso/callback", helloassoCallbackRedirect); // temporaire : retour HelloAsso → backend
+   app.get("/blog/feed.xml", …);
+   registerSeoRoutes(app, () => cachedConfig); // robots.txt + sitemap.xml
    ```
+
+   Les paiements de la cagnotte ne passent pas par ce serveur : le navigateur appelle l'action
+   `fundingEnvelope` du backend Communecter (cf. [Module Cagnotte](18-module-cagnotte.md#services-de-paiement)).
+   Seule subsiste, temporairement, la redirection de l'ancienne route de retour HelloAsso
+   (`server/api/helloasso-callback.js`) vers `${VITE_BASE_URL_BACKEND}/co2/helloAsso/callback`, query
+   conservée.
 
 5. **Route SSR universelle**
 
@@ -438,6 +446,17 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    Deux query keys distinctes sont utilisées :
    - `["cocolight-init"]` : résultat brut de `initApi()`, contient des classes non-JSON-sérialisables (`ApiClient`). **Exclu** de la déshydratation.
    - `["cocolight-data"]` : sous-ensemble sérialisable (`me`, `entity`, `contextType`, `contextId`). **Inclus** dans la déshydratation et transmis au client via `window.__REACT_QUERY_STATE__`.
+
+   **Parents factorisés au transport** (`src/lib/ssrStatePacking.ts`). Chaque entité du SDK se
+   sérialise avec la méta de son parent (`BaseEntity.toJSON` → `parent`, `links` compris pour
+   `isAdmin()`), recopiée dans chaque carte d'une liste — sur /communaute d'Open Atlas, 42 copies de
+   44 Ko (1,8 Mo d'un état de 3,3 Mo). `entry-server` passe donc l'état à `packSsrState` avant
+   `onHead` : chaque parent distinct est rangé une fois dans `__ssrParents`, une référence
+   `{ __ssrParentRef: n }` reste à sa place. Côté client, `src/lib/ssrStateBootstrap.ts`, importé EN
+   PREMIER par `entry-client`, restitue une copie par entité avant toute lecture
+   (`HydrationBoundary`, `getHydratedCocolightData`). React Query et le SDK reçoivent le même JSON
+   qu'avant (vérifié à l'identique sur /communaute, horodatages mis à part) ; l'état emballé reste un
+   `DehydratedState` lisible (`queries`, `mutations`).
 
 ### Intégration vite-preload
 
@@ -1185,7 +1204,7 @@ const dehydratedState = dehydrate(queryClient, {
 Avec ces quatre fichiers, SiteForge propose :
 
 * Un **dev-server** ultra-rapide (HMR + SSR on‑the‑fly, warmup bloquant, hot-reload config avec re-normalisation).
-* Un **prod-server** optimisé (gzip, caching long, injection config/env au boot, streaming SSR, HelloAsso API).
+* Un **prod-server** optimisé (gzip, caching long, injection config/env au boot, streaming SSR, relais temps réel).
 * Un **entry-server** robuste (React Router loaders, React Query prefetch + `cocolight-data` sérialisable, streaming avec Helmet, gestion erreurs stream, timeout 30s).
 * Un **entry-client** fluide (hydrateRoot, React Query, React Router hydratation, loader masqué après styles).
 

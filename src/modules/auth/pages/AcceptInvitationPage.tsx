@@ -10,6 +10,7 @@ import "@/modules/auth/i18n";
 
 import { AuthPageLayout } from "../components/AuthPageLayout";
 import { chargeReponseParMail, lireOptionDeDemande, lireReponse } from "../lib/reponseParMail";
+import { cheminFicheCible } from "../lib/ficheCible";
 
 interface ByMailResult {
   result?: boolean;
@@ -49,13 +50,16 @@ export default function AcceptInvitationPage() {
   const answer = params.answer ?? lireReponse(params["*"]);
   // Lien d'une DEMANDE (askToBecome) : l'administrateur répond pour quelqu'un d'autre → libellés dédiés.
   const estDemande = lireOptionDeDemande(params["*"]) !== undefined;
-  const { apiClient } = useCocolight();
+  const { apiClient, api, me } = useCocolight();
   const navigate = useNavigate();
   useLoadNamespace("modules/auth");
   const t = useT("modules/auth");
 
   const [etat, setEtat] = useState<"idle" | "encours" | "ok" | "dejaRepondu" | "ko">("idle");
   const [message, setMessage] = useState("");
+  // Après une acceptation, « Continuer » mène à la fiche rejointe ; sinon (refus, fiche introuvable),
+  // à l'accueil.
+  const [destination, setDestination] = useState("/");
 
   const accepte = answer === "true";
   const lienIncomplet = !userId || !targetType || !targetId || (answer !== "true" && answer !== "false");
@@ -84,10 +88,20 @@ export default function AcceptInvitationPage() {
         navigate(res.next);
         return;
       }
-      if (res?.result) {
-        setEtat("ok");
-      } else if (res?.next) {
-        setEtat("dejaRepondu"); // idempotence : déjà répondu (user/target existent, flag retiré)
+      if (res?.result || res?.next) {
+        if (accepte) {
+          // `me` porte les liens lus par le menu d'actions de la fiche : sans ce rafraîchissement, il y
+          // proposerait encore « Accepter / Refuser » l'invitation qu'on vient de valider.
+          // Non bloquant : la réponse est déjà enregistrée, un échec ici ne doit pas l'afficher comme ratée.
+          // Indépendants : lancés ensemble, un seul aller-retour avant la confirmation.
+          const [, chemin] = await Promise.all([
+            Promise.resolve(me?.refresh?.()).catch(() => undefined),
+            api ? cheminFicheCible(api, targetType!, targetId!).catch(() => null) : null,
+          ]);
+          if (chemin) setDestination(chemin);
+        }
+        // `next` sans `result` : idempotence, déjà répondu (user/target existent, flag retiré).
+        setEtat(res?.result ? "ok" : "dejaRepondu");
       } else {
         setEtat("ko");
         setMessage(res?.msg ?? t("Impossible d'enregistrer votre réponse."));
@@ -124,7 +138,7 @@ export default function AcceptInvitationPage() {
           <>
             <CheckCircle className="h-12 w-12 text-green-600" aria-hidden />
             <p className="text-muted-foreground">{t("Votre réponse a été enregistrée.")}</p>
-            <Button onClick={() => navigate("/")}>{t("JoinByLink.continue")}</Button>
+            <Button onClick={() => navigate(destination)}>{t("JoinByLink.continue")}</Button>
           </>
         ) : etat === "dejaRepondu" ? (
           <>
@@ -134,7 +148,7 @@ export default function AcceptInvitationPage() {
                 ? t("Cette demande a déjà été traitée.")
                 : t("Vous aviez déjà répondu à cette invitation.")}
             </p>
-            <Button variant="outline" onClick={() => navigate("/")}>{t("JoinByLink.continue")}</Button>
+            <Button variant="outline" onClick={() => navigate(destination)}>{t("JoinByLink.continue")}</Button>
           </>
         ) : etat === "ko" ? (
           <>

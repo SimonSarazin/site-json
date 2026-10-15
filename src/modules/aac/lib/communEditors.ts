@@ -3,7 +3,7 @@
  *
  * Deux sources pour UNE liste :
  *  - `links.canEdit` de la réponse, que la fiche écrit (legacy `campDetail.php`
- *    `add_form_contributor`, React `CommunEditorsControl`) et que le backend lit pour autoriser
+ *    `add_form_contributor`, React `CommunEditorsDialog`) et que le backend lit pour autoriser
  *    l'enregistrement (`Coform::canAdminAnswer`) ;
  *  - la question finder que le formulaire DÉCLARE comme alimentant ce lien —
  *    `params.finder<clé>.addToLinks = { value: true, links: "canEdit" }`, la question « Référent

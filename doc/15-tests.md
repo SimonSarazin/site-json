@@ -657,7 +657,11 @@ les boutons « Créer » de 5 sites). Deux étages :
   native/hors-périmètre, baseParams admin ET pages APRÈS expansion `costumSubType`, sous-types de
   référencement, défauts membership matérialisés, stamps normalisés, **facettes « par réponses » :
   le filtre Mongo réellement émis au clic pour chaque groupe** — `answerToggleArgs` +
-  `searchByFieldsToQuery` sur une valeur témoin), snapshotée dans
+  `searchByFieldsToQuery` sur une valeur témoin —, **contributions déclarées des pages publiques** :
+  cible et gate du bouton « Ajouter » d'une liste, « Modifier » du détail, audience de « Fiche
+  structure » — trois clés perdues sans un diff au merge MR 51 + 52 —, **options effectives de
+  l'onglet profil « Structures »** : formulaire, finder, `editButton`, `submittedSlots`, périmètre,
+  champ de modération), snapshotée dans
   `__effective__/<site>.json`. Tout changement de code partagé qui altère le comportement d'UN
   site = diff de SA fixture ; accepter (`vitest -u`) = l'acte explicite « impact voulu », site par
   site, visible en revue. Slug d'autorité : `sites.json` (registre de déploiement ;

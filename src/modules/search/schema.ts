@@ -8,6 +8,7 @@ import { IconName } from "lucide-react/dynamic";
 // search — `observatoire/schema.ts`, lui, importe celui-ci (cf. son en-tête).
 import { ObservatoryPanelConfSchema } from "@/modules/observatoire/dashboardSchema";
 import { z } from "zod";
+import { RESOURCE_NOTE_KEYS, RESOURCE_TAG_KEYS, type ResourceDetailKey } from "./lib/resourceDetails";
 
 /**
  * Nom d'icône lucide. Typé `IconName` (au lieu de `z.string()`) sans énumérer les
@@ -438,9 +439,11 @@ export const PreviewConfSchema = z.object({
   // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
   // table par défaut du composant — découple les IDs de champs du code.
   fields: z.record(z.string(), z.string()).optional(),
-  // Bouton « Modifier » sur le détail `coform-answer` (admins de l'entité du
-  // site) : ouvre l'édition de l'answer en CoFormModal. Opt-in — sans ce flag,
-  // le preview reste strictement lecture seule (aucun changement des sites existants).
+  // Bouton « Modifier » sur le détail `coform-answer`, réservé aux gestionnaires de
+  // la réponse (super-admin, admin du costum, admin validé de la structure citée) et à
+  // son AUTEUR quand la recherche projette `user` (`canEditCoformAnswer`) : ouvre
+  // l'édition de l'answer en CoFormModal. Opt-in — sans ce flag, le preview reste
+  // strictement lecture seule (aucun changement des sites existants).
   editButton: z.boolean().optional(),
   /** Facettes du preview générique (`type: "facets"`) — data-driven, sans code. */
   facets: z.array(PreviewFacetSchema).optional(),
@@ -578,6 +581,20 @@ export const ResourceConfSchema = z.object({
 export type ResourceConf = z.infer<typeof ResourceConfSchema>;
 
 /**
+ * Suffixes d'input du détail d'une ressource (`resourceTypes[].detailSuffixes`), tous optionnels. Clés
+ * tirées de `RESOURCE_TAG_KEYS`/`RESOURCE_NOTE_KEYS` : la liste des blocs n'est écrite qu'une fois.
+ */
+const DetailSuffixesSchema = z
+  .object(
+    Object.fromEntries([...RESOURCE_TAG_KEYS, ...RESOURCE_NOTE_KEYS].map((cle) => [cle, z.string()])) as Record<
+      ResourceDetailKey,
+      z.ZodString
+    >,
+  )
+  .partial()
+  .optional();
+
+/**
  * Contrat « resource-directory » (cf. section `coform-resource-directory`) — lu
  * par Card/PreviewResourceDirectory dans `list.resourceDirectory`. La section le
  * remplit depuis ses propres props ; il n'est pas destiné à être écrit à la main.
@@ -592,6 +609,7 @@ export const ResourceDirectoryConfSchema = z.object({
     linkSuffix: z.string().optional(),
     descriptionSuffix: z.string().optional(),
     servicesSuffix: z.string().optional(),
+    detailSuffixes: DetailSuffixesSchema,
   })),
   finderSuffix: z.string(),
   fieldSuffixes: z.object({
@@ -1173,6 +1191,10 @@ const AddButtonConfigSchema = z.object({
   // (CoFormModal) au lieu d'une modale d'entité — ex. « Ajouter un créneau »
   // (1 créneau = 1 answer). Prioritaire sur modal/organization/project/poi.
   coform: z.string().optional(),
+  // Message affiché après la création d'une answer (`coform`). À poser sur un formulaire
+  // MODÉRÉ : la réponse déposée n'apparaît pas dans la liste publique, et sans message le
+  // déposant croirait à un échec. Absent = aucun message (comportement historique).
+  successMessage: LocalizedString.optional(),
   // `false` → le bouton s'affiche dès que `show: true`, sans exiger le rôle
   // admin du site (un non-connecté qui clique passe par le login). Cas d'usage :
   // déclaration publique d'answer CoForm modérée en aval (filtre `state`).
@@ -1344,6 +1366,14 @@ const ResourceTypeConfSchema = z.object({
   descriptionSuffix: z.string().optional(),
   /** Suffixe de l'input « Services proposés » (`string[]`), PROPRE au formulaire (hébergement `miq86g5vaw1kavrapkb`). */
   servicesSuffix: z.string().optional(),
+  /**
+   * Champs du DÉTAIL de la ressource, par suffixe d'input — les mêmes que la fiche du lieu
+   * (`profile-about-tl`, `roomPath`/`coworkingPath`/`bedRoomPath`) : listes `equipments`, `catering`,
+   * `services`, `roomType` ; textes `moreInfo` (« Bon à savoir »), `about` (« À propos du lieu »),
+   * `tip` (« Le petit truc en plus »). Fourni, l'aperçu montre CES blocs, sous les libellés de la fiche,
+   * à la place de `fieldSuffixes.equipments`/`descriptionSuffix`/`servicesSuffix`. Absent : rendu historique.
+   */
+  detailSuffixes: DetailSuffixesSchema,
 });
 
 /**
@@ -1391,8 +1421,9 @@ export const CoformResourceDirectorySectionSchema = z.object({
     /**
      * Garde géographique : ne conserve que les ressources dont le tiers-lieu
      * porteur est dans cette zone (`address.level1`). Reproduit
-     * `filters[address.level1]` du legacy — appliqué CÔTÉ CLIENT après
-     * résolution des lieux porteurs (l'`answer` ne porte pas d'adresse fiable).
+     * `filters[address.level1]` du legacy — envoyé au backend (`defaultFilters`),
+     * qui retire la clé puis filtre sur l'adresse des lieux porteurs résolus
+     * (l'`answer` ne porte pas d'adresse fiable).
      */
     scope: z.object({ addressLevel1: z.string() }).optional(),
     /** Colonnes de la grille de résultats. */
@@ -1408,8 +1439,36 @@ export const CoformResourceDirectorySectionSchema = z.object({
     showFilters: z.boolean().optional(),
     /** Titre de la colonne de filtres (défaut i18n « Filtres »). */
     filtersTitle: LocalizedString.optional(),
-    /* Les facettes prix sont figées (3 groupes heure / demi-journée / journée,
-       calqués sur Communecter — cf. `PRICE_FILTER_GROUPS`), pas de prop. */
+    /**
+     * Facettes prix (3 groupes heure / demi-journée / journée, calqués sur Communecter — cf.
+     * `PRICE_FILTER_GROUPS`), filtrées par le backend. Défaut : true.
+     */
+    priceFilters: z.boolean().optional(),
+    /**
+     * Facette « Capacité d'accueil » (tranches 1-10 / 10-30 / 30-50 / 50+, cf. `CAPACITY_FILTER_RANGES`),
+     * sur la capacité de la pastille : personnes (salle), postes (coworking), chambres (hébergement).
+     * Filtre CÔTÉ NAVIGATEUR. Défaut : false.
+     */
+    capacityFilter: z.boolean().optional(),
+    /**
+     * Facette géographique : zones d'un niveau (`scopeList`, ex. `level: ["3"]` = régions), comparées à
+     * l'adresse du LIEU PORTEUR (la réponse n'en a pas). Filtre CÔTÉ NAVIGATEUR. Absente : pas de facette.
+     */
+    regionFilter: z.object({
+      label: LocalizedString,
+      countryCode: z.array(z.string()),
+      level: z.array(z.string()),
+    }).optional(),
+    /**
+     * Facette « réseaux thématiques » du lieu porteur — même réglage que `filtersByPath` de la section
+     * `filters` (réponses CoForm qui rattachent un lieu à des thématiques). Les lieux membres des réseaux
+     * cochés partent au backend en `filters.parentId`. Absente : pas de facette.
+     */
+    thematicFilter: z.object({
+      label: LocalizedString,
+      thematicPath: z.string(),
+      finderPath: z.string(),
+    }).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });

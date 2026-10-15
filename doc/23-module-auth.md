@@ -252,6 +252,13 @@ L'appel passe par `apiClient.callEndpoint` et non par
 `key`. L'action n'est déclenchée qu'**au clic**, jamais au montage, pour qu'un scanner
 anti-spam ne réponde pas à la place du destinataire.
 
+**Après une acceptation**, la page rafraîchit le compte connecté (`me.refresh()`, non bloquant :
+la réponse est déjà enregistrée) — sans cela, le menu d'actions de la fiche proposerait encore
+« Accepter / Refuser » — et le bouton « Continuer » mène à la **fiche de la cible**
+(`/profil/<slug>`, même destination que la redirection du backend pour un costum `site-json`). Le
+lien ne portant que l'id, le slug est relu sur la fiche (`cheminFicheCible`, `lib/ficheCible.ts` :
+organisations, projets, événements, POI). Refus, ou fiche introuvable : retour à l'accueil.
+
 Ces paths sont montés en enfants de `/`. Les pages auth ne doivent donc **pas**
 être déclarées dans `config.pages` — sinon elles entreraient en collision avec
 les routes du module.

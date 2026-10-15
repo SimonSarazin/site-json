@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
+import { buildFinderDefaultValues, finderFieldName } from "@/modules/coform/utils/finderPrefill";
 import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 import {
     MapPin,
@@ -212,26 +213,17 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             if (isNewAnswer) {
                 // Nouvelle réponse : pré-remplir le finder
                 if (finder) {
-                    const entityId = entity.id as string;
-                    const entityValue: Record<string, unknown> = {
-                        [entityId]: {
-                            id: entityId,
-                            type: entity.serverData.collection,
-                            name: entity.serverData.name,
-                        },
-                    };
-                    const pathWithoutPrefix = finder.startsWith("answers.")
-                        ? finder.slice("answers.".length)
-                        : finder;
-                    defaultValues = pathWithoutPrefix
-                        .split(".")
-                        .reduceRight<Record<string, unknown>>((acc, part) => ({ [part]: acc }), entityValue) as AllStepsData;
+                    defaultValues = buildFinderDefaultValues(finder, {
+                        id: entity.id as string,
+                        type: entity.serverData.collection,
+                        name: entity.serverData.name,
+                    });
                 }
             } else {
                 // Réponse existante : utiliser les données sauvegardées
                 defaultValues = answer.serverData?.answers as AllStepsData | undefined;
             }
-            const finderFieldName = finder ? finder.split(".").pop() : undefined;
+            const lockedFinder = finder ? finderFieldName(finder) : undefined;
             // L'entity du profil EST le lieu lié à la réponse partagée. On
             // pousse son id+type au backend via elementId/elementType pour que
             // `Coform::getFormAccessInfo` entre en mode "par élément" et
@@ -244,7 +236,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                 formId,
                 answerId: answer._serverData?.id ?? answer.id,
                 defaultValues,
-                lockedFields: finderFieldName ? [finderFieldName] : undefined,
+                lockedFields: lockedFinder ? [lockedFinder] : undefined,
                 elementId: entity.id as string,
                 elementType: entityCollection,
             });

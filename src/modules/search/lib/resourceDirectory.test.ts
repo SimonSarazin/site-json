@@ -8,6 +8,7 @@ import {
   parseMeetingRooms,
   parseResourceDirectoryItem,
   resolveAnswerArea,
+  resolveAnswerDetails,
   resolveAnswerDescription,
   resolveAnswerEquipments,
   resolveAnswerParent,
@@ -286,6 +287,18 @@ describe("resolveAnswerServices", () => {
   });
   it("type sans `servicesSuffix` → []", () => {
     expect(resolveAnswerServices(COWORKING_ANSWER, COWORKING)).toEqual([]);
+  });
+});
+
+describe("resolveAnswerDetails", () => {
+  it("lit les champs déclarés dans `detailSuffixes`, sous les libellés fournis", () => {
+    const rt: ResourceTypeConf = { ...ACCOMMODATION, detailSuffixes: { services: ACCOMMODATION.servicesSuffix } };
+    expect(resolveAnswerDetails(ACCOMMODATION_ANSWER, rt, (k) => `L:${k}`)).toEqual({
+      tags: [{ label: "L:services", values: ["Petit-déjeuner", "Linge de lit fourni"] }],
+    });
+  });
+  it("type sans `detailSuffixes` → null (l'aperçu garde son rendu historique)", () => {
+    expect(resolveAnswerDetails(ACCOMMODATION_ANSWER, ACCOMMODATION, (k) => k)).toBeNull();
   });
 });
 

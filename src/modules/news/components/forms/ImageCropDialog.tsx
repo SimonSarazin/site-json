@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useT } from "@/hooks/useT";
 
 interface ImageCropDialogProps {
@@ -21,9 +22,21 @@ interface ImageCropDialogProps {
   /**
    * Fourni, un bouton « Utiliser l'image entière » s'ajoute : l'appelant reprend l'image sans la rogner.
    * Absent (défaut), le recadrage reste obligatoire — le comportement historique des visuels dont le
-   * cadrage est imposé (avatar rond, bannières).
+   * cadrage est imposé (avatar rond, bannières). Reçoit les dimensions réelles de la photo, déjà lues
+   * par le recadreur (bouton inactif tant qu'elles ne sont pas connues).
    */
-  onUseOriginal?: () => void;
+  onUseOriginal?: (taille: { width: number; height: number }) => void;
+  /**
+   * Fourni, un sélecteur de format s'affiche au-dessus du cadre : chaque option impose son ratio,
+   * `"original"` celui de la photo elle-même. La première option est sélectionnée à l'ouverture et
+   * remplace `aspect`. Absent (défaut) : ratio fixe `aspect`, sans sélecteur.
+   */
+  aspectOptions?: ReadonlyArray<AspectOption>;
+}
+
+export interface AspectOption {
+  label: string;
+  value: number | "original";
 }
 
 interface CropArea {
@@ -40,12 +53,33 @@ export function ImageCropDialog({
   onCrop,
   aspect = 16 / 9,
   onUseOriginal,
+  aspectOptions,
 }: ImageCropDialogProps) {
   const t = useT("modules/news");
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
+  const [formatIndex, setFormatIndex] = useState(0);
+  const [taillePhoto, setTaillePhoto] = useState<{ width: number; height: number } | null>(null);
+  // Nouvelle photo ou réouverture : l'appelant peut garder le dialogue monté entre deux photos (après
+  // « Annuler »). Sans remise à zéro, « Original » garderait le ratio de la photo PRÉCÉDENTE jusqu'à
+  // `onMediaLoaded`, et un « Appliquer » précoce découperait sa zone, hors de la nouvelle image.
+  // Remis pendant le rendu (et non dans un effet) : aucun rendu intermédiaire avec l'ancien état.
+  const [photoCourante, setPhotoCourante] = useState({ imageUrl, open });
+  if (photoCourante.imageUrl !== imageUrl || (open && !photoCourante.open)) {
+    setPhotoCourante({ imageUrl, open });
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setRotation(0);
+    setCroppedAreaPixels(null);
+    setFormatIndex(0);
+    setTaillePhoto(null);
+  } else if (photoCourante.open !== open) {
+    setPhotoCourante({ imageUrl, open });
+  }
+  const format = aspectOptions?.[formatIndex];
+  const ratio = format ? (format.value === "original" ? (taillePhoto ? taillePhoto.width / taillePhoto.height : aspect) : format.value) : aspect;
 
   const onCropChange = (location: { x: number; y: number }) => {
     setCrop(location);
@@ -85,6 +119,24 @@ export function ImageCropDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {aspectOptions && aspectOptions.length > 1 && (
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
+              value={String(formatIndex)}
+              onValueChange={(v) => v && setFormatIndex(Number(v))}
+              aria-label={t("forms.imageCrop.format")}
+              className="flex-wrap"
+            >
+              {aspectOptions.map((option, index) => (
+                <ToggleGroupItem key={option.label} value={String(index)}>
+                  {option.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          )}
+
           {/* Zone de crop */}
           <div className="relative w-full h-[400px] bg-black rounded-lg overflow-hidden">
             <Cropper
@@ -92,7 +144,8 @@ export function ImageCropDialog({
               crop={crop}
               zoom={zoom}
               rotation={rotation}
-              aspect={aspect}
+              aspect={ratio}
+              onMediaLoaded={(media) => setTaillePhoto({ width: media.naturalWidth, height: media.naturalHeight })}
               onCropChange={onCropChange}
               onZoomChange={onZoomChange}
               onCropComplete={onCropCompleteCallback}
@@ -146,7 +199,17 @@ export function ImageCropDialog({
             {t("forms.imageCrop.cancel")}
           </Button>
           {onUseOriginal && (
-            <Button variant="secondary" onClick={onUseOriginal}>
+            // Fermé dès le clic, comme `createCroppedImage` : l'envoi (asynchrone chez l'appelant) ne doit pas
+            // laisser le bouton cliquable une seconde fois.
+            <Button
+              variant="secondary"
+              disabled={!taillePhoto}
+              onClick={() => {
+                if (!taillePhoto) return;
+                onUseOriginal(taillePhoto);
+                onOpenChange(false);
+              }}
+            >
               {t("forms.imageCrop.useOriginal")}
             </Button>
           )}

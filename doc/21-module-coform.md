@@ -293,7 +293,7 @@ interface SmartCoFormProps {
   className?: string;
   showProgress?: boolean;
   showStepNumbers?: boolean;
-  defaultValues?: AllStepsData; // Pré-remplissage (mode édition)
+  defaultValues?: AllStepsData; // Réponse éditée, ou préremplissage d'une création
   answerId?: string;            // ID réponse en cours d'édition
   stepKey?: string;             // Afficher une seule étape (mode standalone)
   inputKey?: string;            // Afficher un seul champ (auto-résout stepKey)
@@ -307,6 +307,7 @@ interface SmartCoFormProps {
   lockedFields?: string[];      // Champs en lecture seule (pointer-events-none)
   submitButtonText?: string;    // Libellé du bouton d'envoi (mono-étape)
   hideBanner?: boolean;         // Form EMBARQUÉ : la surface hôte porte déjà son titre
+  hiddenFields?: readonly string[]; // Champs MASQUÉS par l'appelant, valeur conservée (cf. DynamicCoForm)
 }
 ```
 
@@ -341,6 +342,14 @@ Formulaire mono-étape basé sur react-hook-form + zodResolver. Gère :
 - Rendu de tous les types de champs via switch sur `field.componentType`
 - Logique conditionnelle via `useConditionalFields`
 - Champs verrouillés (`lockedFields`) : wrapper `pointer-events-none opacity-60`
+- Champs masqués par l'appelant (`hiddenFields`, même espace de clés que `lockedFields` : `field.name`,
+  préfixe de type compris) : non rendus, mais **toujours dans le schéma** — leur valeur (souvent
+  préremplie par `defaultValues`) part au submit. C'est la différence avec `access.restrictedFields`
+  et `hideInForm`, retirés au parse : en mono-étape `z.object` en strippe la valeur, qui serait
+  perdue. Un champ masqué **en erreur** est réaffiché pour être corrigé (sinon l'erreur listée
+  resterait inatteignable), et **reste** affiché ensuite — le remasquer à la première frappe valide
+  le démonterait pendant la saisie (`hooks/useHiddenFields.ts`, partagé avec `MultiStepCoForm`). Premier consommateur : l'onglet
+  profil « Structures » (structure d'un créneau). Préremplir un finder : `utils/finderPrefill.ts`.
 - Auto-submit sur blur via `useWatch` + debounce
 - Propagation de `isDirty` via `onDirtyChange`
 - Soumission programmatique via `submitRef`, rejet du brouillon via `discardDraftRef`
@@ -413,6 +422,7 @@ export interface CoFormModalProps {
   closeOnSubmit?: boolean;    // défaut: true si inputKey absent, false si inputKey fourni
   className?: string;
   lockedFields?: string[];
+  hiddenFields?: readonly string[]; // transmis à SmartCoForm (cf. plus haut)
 }
 ```
 
@@ -602,6 +612,43 @@ Valeur stockée : `Record<string, Record<string, EvaluationVoteValue>>` où la c
 Recherche et sélection d'entités Cocolight (organisations, citoyens, événements, projets, etc.).
 
 - Ouvre `FinderSearchModal` qui utilise `useFinderSearchResults` (React Query + debounce 300ms) appelant `searchCostum`
+- Modale de **hauteur fixe** (la zone de résultats défile) et réponse précédente **conservée** pendant la
+  recherche suivante (`keepPreviousData`) : la zone ne se vide jamais entre deux frappes. Avant, la
+  modale (centrée) changeait de taille et le champ de saisie sautait de 84 px à chaque frappe.
+- **Seule une réponse COURANTE conclut** (`isCurrentAnswer` : debounce écoulé, pas une réponse
+  conservée) : « aucun résultat », « déjà dans la liste » et « Ajouter » n'apparaissent qu'avec la réponse
+  de la saisie en cours. Sinon « Recherche en cours… » tient la place — une réponse VIDE conservée
+  (champ vidé puis retapé) affichait « Aucun résultat » et un « Ajouter » cliquable avant la réponse.
+- **Erreur** : message et bouton « Réessayer » (`retry`) — l'état « Recherche en cours… » ne se terminait
+  jamais. **Tout déjà sélectionné** : message dédié (« Les résultats pour … sont déjà sélectionnés »),
+  jamais « aucun résultat » (risque de doublon). L'ajout reste proposé : « n'existe pas encore ? » quand
+  tout ce qui répond est déjà dans la QUESTION (aucune liste à l'écran) ; l'encart discret « pas dans la
+  liste ? » quand c'est la sélection en cours qui a vidé la liste — sélectionner ne change pas la forme
+  de l'offre.
+- **Un élément sélectionné quitte les résultats** : il ne s'affiche que dans la zone « Sélectionnés »
+  (il apparaissait deux fois — coché dans la liste, et au-dessus) ; désélectionné, il y reprend sa place.
+  Vaut pour tous les montages de la modale (`FinderField`, `PlacesListView`, `CommunEditorsDialog`,
+  `useCommunProjectActions`). La carte activée disparaissant de sa zone, trois conséquences sont traitées :
+  - **focus clavier** : il passe à la carte qui prend la place DANS LA MÊME ZONE — la suivante, sinon la
+    précédente —, sinon au champ de recherche : on garde sa place dans la liste (Espace, Espace
+    sélectionne deux résultats d'affilée). Jamais dans l'autre zone, où l'Espace suivant ferait l'inverse
+    sur un autre élément ; ni vers une voisine en choix unique, où il remplacerait le choix. Le focus
+    n'est rendu que si la case activée le portait, et au clavier : à la souris, focaliser une carte ferait
+    défiler la liste. Arbitrage : suivre l'élément dans l'autre zone obligeait à retraverser la liste à
+    chaque sélection ;
+  - **annonce** : la bascule se dit dans une région `aria-live="polite"` (« Ajout à la sélection : … »,
+    « Retrait de la sélection : … », « Sélection : … » en choix unique), la case cochée n'étant plus sous
+    le focus pour la confirmer. Dite 150 ms APRÈS le déplacement du focus (un lecteur d'écran coupe ce
+    qu'il disait quand le focus change), et remontée à chaque bascule (deux homonymes à la suite) ;
+  - **double-clic** : le second clic est ignoré, sur TOUT contrôle de la zone de contenu. La liste se
+    décale d'un cran, et ce qui glisse sous le curseur — une carte voisine, ou le bouton « Ajouter » —
+    était activé à son tour : mesuré au navigateur, 8 double-clics sur 15 sélectionnaient aussi la voisine
+    (elle aurait remplacé l'élément visé en choix unique), 0 sur 15 ensuite ; même résultat pour une double
+    tape sur écran tactile émulé (Chrome). La garde lit le compte de clics du navigateur (`detail`) :
+    deux clics volontaires très rapprochés au même endroit n'en font qu'un ;
+  - ⚠️ **limites connues** : liste défilée, la carte cliquée disparaît sans que la zone « Sélectionnés »,
+    restée en haut, soit visible ; l'annonce n'a pas été écoutée avec un vrai lecteur d'écran, ni la
+    double tape essayée sur un appareil réel.
 - Sélection simple ou multiple selon `config.multiple`
 - Affiche les éléments sélectionnés via `FinderElementCard`
 - Contrôles additionnels : `addNew`, `invite` (email), `editElement`, `linkToAnswer`
@@ -609,6 +656,27 @@ Recherche et sélection d'entités Cocolight (organisations, citoyens, événeme
 Valeur stockée : `Record<string, FinderElement> | null` (clé = `element.id`).
 
 Types d'éléments recherchables (`FinderElementType`) : `organizations`, `citoyens`, `events`, `projects`, `news`, `cities`, `things`, `poi`, `classified`, `products`, `services`, `surveys`, `bookmarks`, `proposals`, `rooms`, `actions`, `networks`, `urls`, `circuits`, `risks`, `badges`.
+
+**Libellés (`elementLabel`, `buttonLabel`, `placeholderSearchField`).** Lus dans
+`params.finder<clé>` par `parseCoFormFields`. Absent, ou resté au **défaut du legacy**, un libellé
+se lit comme non configuré et le rendu prend le libellé traduit (`coform.finder.*`) : un défaut
+enregistré en français s'affichait tel quel en anglais (« Your Elément doesn't exist yet? »). Un
+défaut n'est un défaut que dans SON champ.
+
+- `elementLabel` et le placeholder : la modale de configuration legacy **enregistre** leurs défauts
+  (« Elément », placeholder traduit dans la langue de qui configure).
+- `buttonLabel` : **aucune modale legacy ne l'écrit**, mais `cplx/finder.php` le lit dans `params`.
+  Posé en base à la main, il s'affiche sur le bouton, comme dans `cplx/finder.php` ; égal au défaut
+  du legacy (`Search and add` et ses traductions fr / it), il est traduit comme les autres. Les
+  variantes costum du legacy, elles, l'ignorent (`rfflabs` : libellé en dur) ou n'ont pas de bouton
+  (recherche en ligne des variantes tiers-lieux) : React, qui les rend toutes par `FinderField`,
+  l'affiche pour toutes. Deux limites : il est rendu comme du **texte** (le legacy l'insère en
+  HTML) ; et ré-enregistrer la config du finder dans la modale legacy l'**efface** — le bloc
+  `params.finder<clé>` y est réécrit depuis les seuls champs de la modale (`finder.php`, `save` →
+  `Element::updatePathValue`, un `$set` du bloc ; lu dans le code, non rejoué).
+- La vue « par lieu » (`PlacesListView`) a ses propres libellés, accordés à la nature du lieu : le
+  `buttonLabel` du finder partagé n'y est pas repris.
+- Non repris : `elementGender` (genre du libellé, pour l'article « un / une » du legacy).
 
 **Filtres d'inclusion + exclusion.** La config finder legacy porte deux listes
 `{attributeName, valueName}` : `filter` (inclusions, « Filtres appliqués ») et
@@ -628,6 +696,59 @@ Quand un attribut porte **à la fois** inclusion et exclusion (ex. `tags`
 `$or`-objet + `tags:{$nin}` (le DSL ne combine pas `$in`+`$nin` sur une clé).
 ⚠️ Hypothèse : **une seule collision** attendue (`$or` mono-niveau → ≥2 attributs
 en collision donneraient un OR). Sans exclusion, sortie identique à l'historique.
+
+**Ajouter un élément (`addNew`).** Quand la recherche ne trouve rien — ou sous des
+résultats qui ne sont pas les bons (« Votre … n'est pas dans la liste ? ») —, le bouton
+« Ajouter » ouvre la modale de **création** du formulaire costum (`EntityFormModal`,
+cf. [28-module-formengine](28-module-formengine.md)), **imbriquée** dans la modale de
+recherche et pré-remplie avec le nom tapé. Comme le legacy (`finder.addInForm`),
+l'élément créé est **aussitôt rangé dans la question** (avec la sélection en cours ; il
+la remplace en choix unique), sans redirection vers sa fiche (`onCreated`).
+
+Le formulaire **costum** se déclare dans la **config du site**. Sans déclaration, le bouton
+ouvre la modale **standard** du type :
+
+```jsonc
+"coform": {
+  "finderAddNew": {
+    "finderaapStep1lurzepkc4q8n686r8h": "add-cae",   // une QUESTION (clé `finder<étape><id>`)
+    "organizations": "add-cae"                       // ou TOUT finder d'un type
+  }
+}
+```
+
+Précédence : **question > type > modale standard du type** ; pas de modale pour `citoyens`
+(l'invitation reprend sa place). Résolution :
+[`utils/finderAddNew.ts`](../src/modules/coform/utils/finderAddNew.ts).
+
+- **Un formulaire costum ne s'ouvre que déclaré.** Le legacy prenait d'office celui du costum
+  pour le type cherché (`typeObj[type].dynFormCostum`) ; ici c'est au site de le demander, parce
+  qu'un formulaire costum **estampille** ce qu'il crée (sous-type, mots-clés, rattachement au
+  costum) : une organisation créée depuis un finder « partenaire » naîtrait du type du site, et
+  entrerait dans son annuaire. Un site qui veut le comportement du legacy déclare le type
+  (`"organizations": "add-<son formulaire>"`). L'« Ajouter » d'un profil et la création
+  `inherit` de l'admin, eux, gardent leur règle propre (`siteCostumAddModal`, cf.
+  [08-module-profil](08-module-profil.md)).
+- **Une déclaration qui ne désigne aucune modale ouvrable** — faute de frappe (`add-ca`), modale
+  d'édition (`edit-cae`), formulaire retiré de `costumForms`, valeur mal formée — **retire le
+  bouton** « Ajouter » ; `FinderField` le dit dans la console, en développement. Elle ne retombe ni
+  sur le type ni sur le standard : le site a demandé un formulaire précis, en ouvrir un autre
+  créerait des éléments sans son estampille. Le schéma n'admet que `add-*`, mais il ne tourne pas
+  sur la config au runtime : c'est le resolveur qui contrôle (`isOpenableAddModal` — une modale
+  standard, ou `add-<id>` d'un `costumForms` du site, reconnu à son `id`). Le **préflight** échoue
+  sur une telle déclaration (`tests/preflight/edit-modal-scope.test.ts`, volet finder) et
+  `audit:config` la signale (`ref-morte`), avec ce même contrôle.
+- **Ce qu'« Ajouter » ouvre, site par site**, est figé par la garde d'impact
+  (`tests/preflight/__effective__/<site>.json`, clé `finderAddNew`) : une règle du moteur qui
+  changerait de formulaire sur un site apparaît comme un diff de SA fixture.
+- **Finder à plusieurs types** (`params.type` en liste — aucun en base de dev au 12/10, mais rien
+  n'y contraint la donnée) : le formulaire est celui du **premier** type. Convention d'ici :
+  l'écran de config du legacy n'enregistre qu'un type.
+- ⚠️ La clé d'une question est celle d'un MODÈLE d'AAP : ses copies la partagent (9 formulaires
+  en base pour celle-ci), et le réglage vaut pour chacune d'elles.
+
+Cas réel : la question « Partenaires du commun » du dépôt de la Fédération des CAE → formulaire
+costum `cae`, port du « Créer votre CAE » legacy (`typeObj.organizationsTls`).
 
 ---
 
@@ -993,9 +1114,11 @@ Wrapper sur `usePermissions(["coform"], entity, data)`. Retourne `CoFormPermissi
 
 ```ts
 const {
-  results,     // FinderSearchResult[]
-  isFetching,  // boolean
-  error,       // Error | null
+  results,         // FinderSearchResult[]
+  isFetching,      // boolean
+  isCurrentAnswer, // la réponse affichée est celle de la saisie courante (seule à pouvoir conclure)
+  error,           // Error | null — erreur de la saisie courante (ou hôte indisponible)
+  retry,           // () => void — relance la recherche de la saisie courante
 } = useFinderSearchResults({
   query: string,    // texte tapé (debounce appliqué en interne, 300ms)
   config: FinderConfig,
@@ -1005,10 +1128,12 @@ const {
 
 Hook React Query pour la recherche d'entités via `entity.searchCostum`. Caractéristiques :
 - Debounce 300ms intégré
-- Activation uniquement si `query.length >= 2` et entité disponible
+- Activation uniquement si `query.length >= FINDER_MIN_CHARS` (2, **exporté** : la modale compare au même
+  seuil) et entité disponible
+- Réponse précédente conservée pendant la suivante (`keepPreviousData`), jamais `isCurrentAnswer`
 - Cache 30s
 - Transforme `SearchEntity → FinderSearchResult` via `toFinderSearchResult`
-- Le filtrage des éléments déjà sélectionnés se fait côté composant
+- Le filtrage des éléments déjà sélectionnés (dans la question, ou dans la modale) se fait côté composant
 - Les `filters` envoyés sont construits par le builder partagé `buildFinderMongoFilters(config.filters, config.excludeFilters)` (DSL backend, inclusions + exclusions) — même sortie que la liste `getEligiblePlaces`
 
 ---

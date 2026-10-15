@@ -21,6 +21,10 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "poi": "add-poi"
+  },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",
@@ -261,6 +265,18 @@
         "defaultSortBy": {
           "created": -1
         }
+      }
+    }
+  },
+  "contributions": {
+    "/creneaux/searchProStatic": {
+      "ajout": {
+        "coform": "6a85af345d898a57cb49f029",
+        "adminOnly": false
+      },
+      "modifier": true,
+      "ficheStructure": {
+        "audience": "all"
       }
     }
   },

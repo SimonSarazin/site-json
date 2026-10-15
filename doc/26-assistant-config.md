@@ -110,7 +110,7 @@ puis `audit:config` en garde-fou qualité (liens morts, i18n).
 ### Côté intégration API
 
 - **Aucune dépendance IA** aujourd'hui ; serveur Express extensible (il existe
-  déjà des POST : `/api/admin/upload-image` dev-only, `/api/helloasso/checkout-intent`).
+  déjà des routes POST : `/api/admin/upload-image` dev-only, le relais `/api/realtime/push/*`).
 - Convention secrets : les `VITE_*` sont exposés client ; une
   **`ANTHROPIC_API_KEY` doit rester server-side** (route Express qui proxy
   l'appel Claude — la clé ne touche jamais le navigateur).
@@ -330,7 +330,7 @@ Deux catalogues à exposer à la skill :
 | **search** | `searchPro`, `searchProStatic`, `filters`, `searchHeader`, `cardCountCT`, `thematics` | `baseParams` (`sourceKey[]`, `defaultTypes[]`, `locality`), `list` (card/detailsMode/preview) | entité + données indexées (sourceKey) |
 | **news** | `news` | `props.entitySlug`, `maxItems`, `showComments/Reactions` | entité avec fil d'actus |
 | **coform** | routes `/coform` + sections form | réf. de formulaire | CoForm défini côté Communecter |
-| **cagnotte** | `actions`, `finance`, `*-summary`, `cagnotte-layout` | `idProjet`, layouts | projet + Stripe/HelloAsso (`/api/helloasso/checkout-intent`) |
+| **cagnotte** | `actions`, `finance`, `*-summary`, `cagnotte-layout` | `idProjet`, layouts | projet + moyens de paiement Stripe/HelloAsso configurés sur l'entité (`fundingEnvelope`) |
 | **profil** | `/profil/:slug` + `member`, profile-header/info | `config.profiles` (tabs, editModal, addConfig) | types d'entités du backend |
 | **auth** | `loginForm/registerForm/recoverPasswordForm` + `<AuthMenu>` | `config.auth` (variant, menu, SSO), `header.utilities.auth` | SSO/comptes Communecter |
 | **notification** | cloche header + section `notifications` | `header.utilities.notifications` | notifications backend |

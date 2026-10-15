@@ -1,0 +1,1637 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "title": {
+      "fr": "Open Atlas — Le réseau qui appartient à ceux qui le font vivre",
+      "en": "Open Atlas — The network that belongs to those who bring it to life"
+    },
+    "description": {
+      "fr": "Open Atlas développe Communecter, logiciel libre de réseaux sociaux personnalisés, et maintient son instance centrale Communecter.org, le réseau social des communs.",
+      "en": "Open Atlas develops Communecter, free software for personalised social networks, and maintains its central instance Communecter.org, the social network of the commons."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "favicon": "/images/openAtlas/favicon.png",
+    "ogImage": "/images/openAtlas/logo.png",
+    "themeColor": "#e2334e",
+    "keywords": [
+      "Open Atlas",
+      "Communecter",
+      "Communecter.org",
+      "logiciel libre",
+      "communs numériques",
+      "réseau social",
+      "tiers-lieux",
+      "accompagnement",
+      "La Réunion"
+    ],
+    "author": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    }
+  },
+  "header": {
+    "type": "transparent-scroll",
+    "path": "/",
+    "logo": "/images/openAtlas/logo.png",
+    "logoDark": "/images/openAtlas/logo-dark.png",
+    "logoAlt": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    },
+    "logoSize": "md",
+    "nav": [
+      {
+        "label": {
+          "fr": "Nos outils",
+          "en": "Our tools"
+        },
+        "path": "/outils"
+      },
+      {
+        "label": {
+          "fr": "Projets",
+          "en": "Projects"
+        },
+        "path": "/projets"
+      },
+      {
+        "label": {
+          "fr": "Communauté",
+          "en": "Community"
+        },
+        "path": "/communaute"
+      },
+      {
+        "label": {
+          "fr": "Accompagnement",
+          "en": "Support"
+        },
+        "path": "/accompagnement"
+      }
+    ],
+    "sticky": true,
+    "transparent": false,
+    "height": "lg",
+    "utilities": {
+      "piggyBank": false,
+      "pledge": false,
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": true
+    },
+    "ctaButton": {
+      "label": {
+        "fr": "Nous écrire",
+        "en": "Write to us"
+      },
+      "path": "/contact"
+    },
+    "logoClass": "h-9 sm:h-10 w-auto shrink-0 object-contain"
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Open Atlas — Le réseau qui appartient à ceux qui le font vivre",
+        "en": "Open Atlas — The network that belongs to those who bring it to life"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "id": "accueil",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-hero\"><div class=\"oa-wrap oa-hero__grid\"> <div class=\"oa-hero__text\"> <span class=\"oa-eyebrow\">Association loi 1901 · communs numériques</span> <h1 class=\"oa-h1\">Le réseau qui appartient <span class=\"oa-ink\">à ceux qui le font vivre.</span></h1> <p class=\"oa-lead\">Open Atlas permet à des collectifs, organisations ou citoyens de se créer des espaces de coopération ou réseaux sociaux personnalisés.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"#outils\">Découvrir Communecter</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Nous écrire</a> </div> </div> <div class=\"oa-hero__art\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark-lg.png\" alt=\"\" width=\"380\" height=\"380\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol-lg.png\" alt=\"\" width=\"380\" height=\"380\"> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-hero\"><div class=\"oa-wrap oa-hero__grid\"> <div class=\"oa-hero__text\"> <span class=\"oa-eyebrow\">Non-profit association · digital commons</span> <h1 class=\"oa-h1\">The network that belongs <span class=\"oa-ink\">to those who bring it to life.</span></h1> <p class=\"oa-lead\">Open Atlas enables collectives, organisations and citizens to create their own spaces for cooperation and personalised social networks.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"#outils\">Discover Communecter</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Write to us</a> </div> </div> <div class=\"oa-hero__art\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark-lg.png\" alt=\"\" width=\"380\" height=\"380\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol-lg.png\" alt=\"\" width=\"380\" height=\"380\"> </div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "outils",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Ce que nous construisons</span><h2 class=\"oa-h2\">Un logiciel, une instance centrale</h2><p class=\"oa-text\">Open Atlas développe Communecter, un logiciel libre, interopérable et facilement adaptable pour créer des plateformes personnalisées au niveau fonctionnel et dans le design. Open Atlas maintient Communecter.org, son instance centrale qui relie tous les projets en open data pour proposer un réseau social dédié aux communs, alimenté par les territoires et les plateformes personnalisées depuis maintenant 14 ans.</p></header> <div class=\"oa-grid oa-grid--2\"> <article class=\"oa-card\"> <span class=\"oa-kicker\">Logiciel libre · le moteur</span><h3 class=\"oa-h3\">Communecter</h3><p class=\"oa-text-sm\">Le logiciel libre développé et protégé par Open Atlas. C'est le moteur qui permet de créer des réseaux sociaux personnalisés, d'interroger les données d'un territoire de très nombreuses manières, et de les relier entre elles.</p> <ul class=\"oa-chips\"><li>Annuaire</li><li>Cartographie</li><li>Formulaires</li><li>Réseau social</li><li>Observatoire</li><li>API</li></ul> <a class=\"oa-more\" href=\"/outils\">Voir le détail des fonctionnalités →</a> </article> <article class=\"oa-card\"> <span class=\"oa-kicker\">communecter.org · instance centrale</span><h3 class=\"oa-h3\">Communecter.org</h3><p class=\"oa-text-sm\">L'instance centrale du logiciel Communecter, maintenue et protégée par Open Atlas. Elle relie tous les projets qui l'utilisent et donne accès à un réseau social dédié aux communs. Elle est aujourd'hui en pleine refonte pour une nouvelle version.</p> <a class=\"oa-more\" href=\"https://www.communecter.org\">Visiter communecter.org ↗</a> </article> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">What we build</span><h2 class=\"oa-h2\">One software, one central instance</h2><p class=\"oa-text\">Open Atlas develops Communecter, free, interoperable and easily adaptable software for building platforms personalised in both features and design. Open Atlas maintains Communecter.org, its central instance, which connects every project through open data to offer a social network dedicated to the commons, fed by territories and personalised platforms for 14 years now.</p></header> <div class=\"oa-grid oa-grid--2\"> <article class=\"oa-card\"> <span class=\"oa-kicker\">Free software · the engine</span><h3 class=\"oa-h3\">Communecter</h3><p class=\"oa-text-sm\">The free software developed and protected by Open Atlas. It is the engine for creating personalised social networks, querying a territory's data in many different ways, and connecting it all together.</p> <ul class=\"oa-chips\"><li>Directory</li><li>Mapping</li><li>Forms</li><li>Social network</li><li>Observatory</li><li>API</li></ul> <a class=\"oa-more\" href=\"/outils\">See all the features →</a> </article> <article class=\"oa-card\"> <span class=\"oa-kicker\">communecter.org · central instance</span><h3 class=\"oa-h3\">Communecter.org</h3><p class=\"oa-text-sm\">The central instance of the Communecter software, maintained and protected by Open Atlas. It connects every project that uses it and gives access to a social network dedicated to the commons. It is currently being rebuilt for a new version.</p> <a class=\"oa-more\" href=\"https://www.communecter.org\">Visit communecter.org ↗</a> </article> </div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "reseau",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--head\"><div class=\"oa-wrap oa-head-row\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Le réseau en direct</span><h2 class=\"oa-h2\">Les projets et la communauté d'Open Atlas</h2></header> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/projets\">Tous les projets</a> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/communaute\">La communauté</a> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--head\"><div class=\"oa-wrap oa-head-row\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">The network, live</span><h2 class=\"oa-h2\">Open Atlas projects and community</h2></header> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/projets\">All projects</a> <a class=\"oa-btn oa-btn--ghost oa-btn--sm\" href=\"/communaute\">The community</a> </div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "stats",
+          "id": "chiffres",
+          "props": {
+            "design": "tiles",
+            "layout": "horizontal",
+            "animated": false,
+            "columns": {
+              "sm": 3
+            },
+            "items": [
+              {
+                "label": {
+                  "fr": "projets publiés",
+                  "en": "published projects"
+                },
+                "source": {
+                  "type": "aacCommuns"
+                },
+                "highlight": true
+              },
+              {
+                "label": {
+                  "fr": "membres",
+                  "en": "members"
+                },
+                "source": {
+                  "type": "searchCount",
+                  "entityType": "citoyens",
+                  "baseParams": {
+                    "notSourceKey": true,
+                    "defaultTypes": [
+                      "citoyens"
+                    ],
+                    "defaultFilters": {
+                      "links.memberOf.555eba56c655675cdd65bf19": {
+                        "$exists": true
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                        "$exists": false
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                        "$exists": false
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "label": {
+                  "fr": "organisations",
+                  "en": "organisations"
+                },
+                "source": {
+                  "type": "searchCount",
+                  "entityType": "organizations",
+                  "baseParams": {
+                    "notSourceKey": true,
+                    "defaultTypes": [
+                      "NGO",
+                      "LocalBusiness",
+                      "Group",
+                      "GovernmentOrganization",
+                      "Cooperative"
+                    ],
+                    "defaultFilters": {
+                      "links.memberOf.555eba56c655675cdd65bf19": {
+                        "$exists": true
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                        "$exists": false
+                      },
+                      "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                        "$exists": false
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "aac-directory",
+          "id": "projets-apercu",
+          "props": {
+            "variant": "preview",
+            "display": "grid",
+            "columns": 3,
+            "pageSize": 3,
+            "filters": {
+              "search": false,
+              "usage": false,
+              "tags": false,
+              "maturity": false,
+              "sort": false
+            },
+            "showDepositButton": false,
+            "emptyText": {
+              "fr": "Aucun projet publié pour le moment.",
+              "en": "No published project yet."
+            },
+            "className": "mx-auto"
+          }
+        },
+        {
+          "type": "html",
+          "id": "approche",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Notre approche</span><h2 class=\"oa-h2\">Ce qui guide notre travail</h2></header> <ol class=\"oa-grid oa-grid--4 oa-principles\"><li><span class=\"oa-num\">01</span><h3 class=\"oa-h4\">Communs numériques</h3><p>Nos outils sont publiés en logiciel libre : le code s'étudie, se copie, s'améliore, il n'appartient à personne en particulier.</p></li><li><span class=\"oa-num\">02</span><h3 class=\"oa-h4\">Réseau social vivant</h3><p>Plutôt qu'un annuaire ou un site figé, toute notre expérience est dédiée à créer des interactions : faciliter une mutualisation via la plateforme, ajouter des membres à son réseau, créer et modifier sa fiche de présentation, ajouter des ressources, prendre des décisions ensemble.</p></li><li><span class=\"oa-num\">03</span><h3 class=\"oa-h4\">Intelligence collective</h3><p>Des outils pensés pour que les réseaux créés construisent de l'intelligence collective et révèlent ce qui se crée au plus près du terrain, dans vos collectifs ou organisations.</p></li><li><span class=\"oa-num\">04</span><h3 class=\"oa-h4\">Un numérique qui relie au réel</h3><p>Nos outils sont pensés pour limiter toute dépendance et n'utiliser le numérique que pour l'essentiel. Depuis 10 ans autour des tiers-lieux, notre travail vise à ce que les acteurs du réseau se retrouvent dans ces lieux physiques qui font réseau social.</p></li></ol></div></div>",
+              "en": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-stack\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Our approach</span><h2 class=\"oa-h2\">What guides our work</h2></header> <ol class=\"oa-grid oa-grid--4 oa-principles\"><li><span class=\"oa-num\">01</span><h3 class=\"oa-h4\">Digital commons</h3><p>Our tools are published as free software: the code can be studied, copied and improved, and belongs to no one in particular.</p></li><li><span class=\"oa-num\">02</span><h3 class=\"oa-h4\">A living social network</h3><p>Rather than a static directory or website, all our experience is devoted to creating interactions: pooling through the platform, adding members to your network, creating and editing your profile, adding resources, making decisions together.</p></li><li><span class=\"oa-num\">03</span><h3 class=\"oa-h4\">Collective intelligence</h3><p>Tools designed so that the networks they create build collective intelligence and reveal what is happening closest to the ground, in your collectives or organisations.</p></li><li><span class=\"oa-num\">04</span><h3 class=\"oa-h4\">Digital that connects to the real world</h3><p>Our tools are designed to limit dependency and use digital only for what matters. For 10 years around third places, our work has aimed to bring network members together in the physical places that make a social network.</p></li></ol></div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "reseaux",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band\"><div class=\"oa-wrap oa-split\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">Comment ça s'articule</span><h2 class=\"oa-h2\">Communecter.org au cœur, des réseaux tout autour</h2><p class=\"oa-text\">Communecter.org est l'instance centrale du logiciel Communecter : elle centralise et protège la donnée des communs. Autour d'elle, des réseaux sociaux personnalisés — basés sur le logiciel libre Communecter — offrent chacun une porte d'entrée différente sur ce même réseau, adaptée à un territoire ou une thématique.</p></header> <div class=\"oa-net\"> <svg viewBox=\"0 0 520 420\" fill=\"none\" aria-hidden=\"true\"> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"110\" y2=\"70\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"420\" y2=\"80\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"100\" y2=\"350\"></line> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"430\" y2=\"345\"></line> <circle class=\"is-cold\" cx=\"110\" cy=\"70\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"420\" cy=\"80\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"100\" cy=\"350\" r=\"7\"></circle> <circle class=\"is-cold\" cx=\"430\" cy=\"345\" r=\"7\"></circle> </svg> <div class=\"oa-net__hub\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark.png\" alt=\"\" width=\"84\" height=\"84\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol.png\" alt=\"\" width=\"84\" height=\"84\"> </div> <span class=\"oa-net__label\">Communecter.org</span> <a class=\"oa-net__p1\" href=\"https://tiers-lieux.org\">tiers-lieux.org</a> <a class=\"oa-net__p2\" href=\"https://lescommuns.tiers-lieux.org\">Appel à communs</a> <a class=\"oa-net__p3\" href=\"https://parent62.00.re/\">Parentalité 62</a> <a class=\"oa-net__p4\" href=\"https://equipements-sportifs-974.00.re/\">Sport 974</a> </div> </div></div>",
+              "en": "<div class=\"oa-band\"><div class=\"oa-wrap oa-split\"> <header class=\"oa-head\"><span class=\"oa-eyebrow\">How it fits together</span><h2 class=\"oa-h2\">Communecter.org at the core, networks all around</h2><p class=\"oa-text\">Communecter.org is the central instance of the Communecter software: it centralises and protects the data of the commons. Around it, personalised social networks — built on the free software Communecter — each offer a different way into the same network, adapted to a territory or a theme.</p></header> <div class=\"oa-net\"> <svg viewBox=\"0 0 520 420\" fill=\"none\" aria-hidden=\"true\"> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"110\" y2=\"70\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"420\" y2=\"80\"></line> <line class=\"is-hot\" x1=\"260\" y1=\"210\" x2=\"100\" y2=\"350\"></line> <line class=\"is-cold\" x1=\"260\" y1=\"210\" x2=\"430\" y2=\"345\"></line> <circle class=\"is-cold\" cx=\"110\" cy=\"70\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"420\" cy=\"80\" r=\"7\"></circle> <circle class=\"is-hot\" cx=\"100\" cy=\"350\" r=\"7\"></circle> <circle class=\"is-cold\" cx=\"430\" cy=\"345\" r=\"7\"></circle> </svg> <div class=\"oa-net__hub\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark.png\" alt=\"\" width=\"84\" height=\"84\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol.png\" alt=\"\" width=\"84\" height=\"84\"> </div> <span class=\"oa-net__label\">Communecter.org</span> <a class=\"oa-net__p1\" href=\"https://tiers-lieux.org\">tiers-lieux.org</a> <a class=\"oa-net__p2\" href=\"https://lescommuns.tiers-lieux.org\">Call for commons</a> <a class=\"oa-net__p3\" href=\"https://parent62.00.re/\">Parenting 62</a> <a class=\"oa-net__p4\" href=\"https://equipements-sportifs-974.00.re/\">Sport 974</a> </div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "accompagnement",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-split oa-split--top\"> <div class=\"oa-head\"> <span class=\"oa-eyebrow\">Au-delà du logiciel</span><h2 class=\"oa-h2\">Un accompagnement sur mesure</h2><p class=\"oa-text\">Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.</p> <div class=\"oa-box\"><span class=\"oa-kicker\">Un réseau, pas un guichet</span><p>Selon la taille et la nature du projet, Open Atlas peut mobiliser la communauté des prestataires qui gravitent autour de Communecter pour compléter son accompagnement.</p><ul class=\"oa-chips\"><li>OPTEOS</li><li>CoRD</li><li class=\"is-more\">+ d'autres prestataires selon le projet</li></ul></div> </div> <ol class=\"oa-steps\"><li><span class=\"oa-num\">01</span><span>Diagnostic des enjeux (ateliers en intelligence collective) et définition des besoins qui y répondent</span></li><li><span class=\"oa-num\">02</span><span>Création d'une plateforme spécifique qui y répond à partir des modules déjà existants</span></li><li><span class=\"oa-num\">03</span><span>Formation des équipes à la plateforme ainsi qu'à contribuer au logiciel</span></li><li><span class=\"oa-num\">04</span><span>Animation de communauté et accompagnement à l'adoption</span></li><li><span class=\"oa-num\">05</span><span>Développements spécifiques et intégrations sur mesure</span></li></ol></div></div>",
+              "en": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap oa-split oa-split--top\"> <div class=\"oa-head\"> <span class=\"oa-eyebrow\">Beyond the software</span><h2 class=\"oa-h2\">Tailored support</h2><p class=\"oa-text\">Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons.</p> <div class=\"oa-box\"><span class=\"oa-kicker\">A network, not a help desk</span><p>Depending on the size and nature of the project, Open Atlas can bring in the community of service providers around Communecter to complement its support.</p><ul class=\"oa-chips\"><li>OPTEOS</li><li>CoRD</li><li class=\"is-more\">+ other providers depending on the project</li></ul></div> </div> <ol class=\"oa-steps\"><li><span class=\"oa-num\">01</span><span>Assessment of the challenges (collective intelligence workshops) and definition of the needs that address them</span></li><li><span class=\"oa-num\">02</span><span>Building a dedicated platform that meets them from existing modules</span></li><li><span class=\"oa-num\">03</span><span>Training teams on the platform and on contributing to the software</span></li><li><span class=\"oa-num\">04</span><span>Community facilitation and adoption support</span></li><li><span class=\"oa-num\">05</span><span>Custom development and integrations</span></li></ol></div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "rejoindre",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-join\"><div class=\"oa-wrap\"> <h2 class=\"oa-h2\">Envie de contribuer, d'adhérer ou de discuter d'un projet ?</h2><p class=\"oa-text\">Que vous portiez un tiers-lieu, une collectivité, ou simplement l'envie de mettre la main dans le code, il y a une place pour vous dans le mouvement Open Atlas.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"/contact\">Adhérer à l'association</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Discuter d'un projet</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/communaute\">Rejoindre la communauté</a> </div> </div></div>",
+              "en": "<div class=\"oa-band oa-join\"><div class=\"oa-wrap\"> <h2 class=\"oa-h2\">Want to contribute, join or discuss a project?</h2><p class=\"oa-text\">Whether you run a third place, a local authority, or simply want to get your hands into the code, there is a place for you in the Open Atlas movement.</p> <div class=\"oa-actions\"> <a class=\"oa-btn oa-btn--primary\" href=\"/contact\">Join the association</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/contact\">Discuss a project</a> <a class=\"oa-btn oa-btn--ghost\" href=\"/communaute\">Join the community</a> </div> </div></div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/outils",
+      "title": {
+        "fr": "Nos outils — Open Atlas",
+        "en": "Our tools — Open Atlas"
+      },
+      "seo": {
+        "title": {
+          "fr": "Nos outils — des communs numériques pour rassembler, comprendre et agir — Open Atlas",
+          "en": "Our tools — digital commons to gather, understand and act — Open Atlas"
+        },
+        "description": {
+          "fr": "COstum, COcity, COevent, COForm, Observatoire, Appel à projets, OCECO, Smarterre, Communecter, Cocolight, COTOOLS : la famille d'outils libres d'Open Atlas.",
+          "en": "COstum, COcity, COevent, COForm, Observatory, Call for projects, OCECO, Smarterre, Communecter, Cocolight, COTOOLS: the Open Atlas family of free tools."
+        }
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "id": "nos-outils",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-tools-hero\"><div class=\"oa-wrap\"> <div class=\"oa-hero__grid\"> <div class=\"oa-hero__text\"> <a class=\"oa-back\" href=\"/\"><i class=\"oa-ico oa-i-arrow-left\" aria-hidden=\"true\"></i>Open Atlas</a> <span class=\"oa-eyebrow oa-eyebrow--muted\">Les communs numériques d'Open Atlas</span> <h1 class=\"oa-h1 oa-h1--xl\">Nos outils<span class=\"oa-ink\">.</span></h1> <p class=\"oa-lead oa-lead--xl\">Des outils libres pour <span class=\"oa-ink\">rassembler</span>, <span class=\"oa-cyan\">comprendre</span> et <span class=\"oa-lime\">agir ensemble</span>.</p> <p class=\"oa-text oa-text--md\">Depuis 2008, à La Réunion, Open Atlas développe des communs numériques au service des citoyens, des collectifs et des territoires. Une famille d'outils complémentaires pour transformer les liens en projets concrets.</p> <div class=\"oa-actions\"><a class=\"oa-btn oa-btn--primary oa-btn--square\" href=\"#familles\">Explorer nos outils<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a></div> </div> <div class=\"oa-hero__art oa-hero__art--muted\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark-lg.png\" alt=\"\" width=\"380\" height=\"380\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol-lg.png\" alt=\"\" width=\"380\" height=\"380\"> </div> </div> <ul class=\"oa-perks\"><li class=\"oa-perk\"><i class=\"oa-ico oa-i-lock\" aria-hidden=\"true\"></i><span><strong>Libres et ouverts</strong><span>Un numérique qui se partage et s'améliore.</span></span></li><li class=\"oa-perk\"><i class=\"oa-ico oa-i-database\" aria-hidden=\"true\"></i><span><strong>Des données reliées</strong><span>Des outils complémentaires, pas des silos.</span></span></li><li class=\"oa-perk\"><i class=\"oa-ico oa-i-heart-handshake\" aria-hidden=\"true\"></i><span><strong>Ancrés dans le réel</strong><span>Les besoins des acteurs et des territoires.</span></span></li></ul> </div></div>",
+              "en": "<div class=\"oa-band oa-tools-hero\"><div class=\"oa-wrap\"> <div class=\"oa-hero__grid\"> <div class=\"oa-hero__text\"> <a class=\"oa-back\" href=\"/\"><i class=\"oa-ico oa-i-arrow-left\" aria-hidden=\"true\"></i>Open Atlas</a> <span class=\"oa-eyebrow oa-eyebrow--muted\">Open Atlas digital commons</span> <h1 class=\"oa-h1 oa-h1--xl\">Our tools<span class=\"oa-ink\">.</span></h1> <p class=\"oa-lead oa-lead--xl\">Free tools to <span class=\"oa-ink\">bring people together</span>, <span class=\"oa-cyan\">understand</span> and <span class=\"oa-lime\">act together</span>.</p> <p class=\"oa-text oa-text--md\">Since 2008, in Réunion, Open Atlas has been developing digital commons for citizens, collectives and territories. A family of complementary tools to turn connections into concrete projects.</p> <div class=\"oa-actions\"><a class=\"oa-btn oa-btn--primary oa-btn--square\" href=\"#familles\">Explore our tools<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a></div> </div> <div class=\"oa-hero__art oa-hero__art--muted\"> <img class=\"oa-only-dark\" src=\"/images/openAtlas/logo-symbol-dark-lg.png\" alt=\"\" width=\"380\" height=\"380\"> <img class=\"oa-only-light\" src=\"/images/openAtlas/logo-symbol-lg.png\" alt=\"\" width=\"380\" height=\"380\"> </div> </div> <ul class=\"oa-perks\"><li class=\"oa-perk\"><i class=\"oa-ico oa-i-lock\" aria-hidden=\"true\"></i><span><strong>Free and open</strong><span>Digital tools that are shared and improved.</span></span></li><li class=\"oa-perk\"><i class=\"oa-ico oa-i-database\" aria-hidden=\"true\"></i><span><strong>Connected data</strong><span>Complementary tools, not silos.</span></span></li><li class=\"oa-perk\"><i class=\"oa-ico oa-i-heart-handshake\" aria-hidden=\"true\"></i><span><strong>Rooted in reality</strong><span>The needs of people and territories.</span></span></li></ul> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "familles",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt oa-band--flushb\"><div class=\"oa-wrap\"> <div class=\"oa-head-row\"> <header class=\"oa-head\"><span class=\"oa-kicker\">À chaque besoin, ses outils</span><h2 class=\"oa-h2 oa-h2--md\">Une famille, plusieurs usages.</h2></header> <p class=\"oa-text oa-text--aside\">Des solutions qui s'assemblent autour de votre projet, à votre rythme.</p> </div> <nav class=\"oa-chipnav\" aria-label=\"Familles d'outils\"><a href=\"#creer\">Créer votre réseau<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a><a href=\"#recolter\">Récolter et comprendre<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a><a href=\"#decider\">Décider et passer à l'action<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a><a href=\"#cooperer\">Coopérer au quotidien<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a></nav> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt oa-band--flushb\"><div class=\"oa-wrap\"> <div class=\"oa-head-row\"> <header class=\"oa-head\"><span class=\"oa-kicker\">Every need, its tools</span><h2 class=\"oa-h2 oa-h2--md\">One family, many uses.</h2></header> <p class=\"oa-text oa-text--aside\">Solutions that come together around your project, at your own pace.</p> </div> <nav class=\"oa-chipnav\" aria-label=\"Tool families\"><a href=\"#creer\">Build your network<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a><a href=\"#recolter\">Gather and understand<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a><a href=\"#decider\">Decide and take action<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a><a href=\"#cooperer\">Cooperate every day<i class=\"oa-ico oa-i-arrow-down\" aria-hidden=\"true\"></i></a></nav> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "creer",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--red\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">01</span><h3>Créer votre réseau</h3><p>Un territoire, une communauté, un événement : à chacun son espace, sans s'isoler du reste du réseau.</p></header> <div class=\"oa-grid oa-grid--3\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-layers\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COstum</h4><p class=\"oa-tool__tagline\">Votre site, votre identité</p><p>Un site personnalisé pour votre organisation, votre projet ou votre événement, connecté au réseau Communecter.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Pages et contenus sur mesure</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Annuaire, carte et agenda</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Charte graphique et domaine propre</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur COstum<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Le constructeur de pages assemble des blocs de contenu : actualités, communauté, formulaires, observatoire ou appels à projets. Les informations publiées enrichissent aussi le réseau commun.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-map-pin\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COcity</h4><p class=\"oa-tool__tagline\">Un portail pour votre territoire</p><p>Un point de rencontre entre citoyens, organisations et initiatives locales, à l'échelle d'une commune ou d'une région.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Annuaire et carte des acteurs</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Filières locales</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Actualités et observatoire territorial</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur COcity<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Ce modèle de site COstum regroupe les acteurs par filières : alimentation, santé, culture, énergie, numérique… Chaque filière peut ensuite disposer de son propre site, tout en restant reliée au territoire.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-calendar-days\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COevent</h4><p class=\"oa-tool__tagline\">Des événements qui rassemblent</p><p>Un portail collaboratif pour les festivals, les rencontres et les semaines thématiques, du programme aux participants.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Programme et sous-événements</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Calendrier, frise et carte</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Participation et export du programme</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur COevent<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Les participants peuvent proposer des événements et retrouver leurs favoris. Le programme peut être exporté en PDF. Un exemple d'usage : la Semaine des Tiers-Lieux.</p></details> </article></div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--red\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">01</span><h3>Build your network</h3><p>A territory, a community, an event: a space for each, without cutting it off from the rest of the network.</p></header> <div class=\"oa-grid oa-grid--3\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-layers\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COstum</h4><p class=\"oa-tool__tagline\">Your site, your identity</p><p>A personalised website for your organisation, project or event, connected to the Communecter network.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Tailored pages and content</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Directory, map and calendar</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Your own visual identity and domain</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about COstum<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>The page builder assembles content blocks: news, community, forms, observatory or calls for projects. What you publish also enriches the shared network.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-map-pin\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COcity</h4><p class=\"oa-tool__tagline\">A portal for your territory</p><p>A meeting point for citizens, organisations and local initiatives, at the scale of a town or a region.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Directory and map of local actors</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Local sectors</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>News and territorial observatory</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about COcity<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>This COstum site model groups local actors by sector: food, health, culture, energy, digital… Each sector can then have its own site while staying connected to the territory.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-calendar-days\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COevent</h4><p class=\"oa-tool__tagline\">Events that bring people together</p><p>A collaborative portal for festivals, gatherings and theme weeks, from the programme to the participants.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Programme and sub-events</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Calendar, timeline and map</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Participation and programme export</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about COevent<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Participants can suggest events and keep track of their favourites. The programme can be exported as a PDF. One example: the Third Places Week.</p></details> </article></div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "recolter",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--cyan\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">02</span><h3>Récolter et comprendre</h3><p>Faire émerger les connaissances du terrain et les rendre lisibles pour toute la communauté.</p></header> <div class=\"oa-grid oa-grid--2\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-clipboard-list\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COForm</h4><p class=\"oa-tool__tagline\">Des formulaires reliés aux acteurs</p><p>Questionner, caractériser et recueillir des connaissances avec des formulaires libres, personnalisés et multi-étapes.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Champs et étapes personnalisés</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Modèles réutilisables</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Exports CSV et PDF</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur COForm<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Une réponse peut créer ou mettre à jour une organisation ou un projet. Les formulaires proposent des règles d'accès, des dates d'ouverture, des champs géolocalisés, des votes et des évaluations. Les résultats peuvent alimenter un observatoire.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-chart-column\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Observatoire</h4><p class=\"oa-tool__tagline\">Rendre visible ce qui se construit</p><p>Des tableaux de bord vivants pour comprendre un territoire, une filière ou les résultats d'une démarche collective.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Indicateurs et graphiques</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Cartes et réseaux de relations</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Données issues des COForms</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur Observatoire<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Les informations de la plateforme deviennent des compteurs, des courbes, des cartes ou des graphes de relations. L'observatoire des Contrats de Transition Écologique illustre cette mise en visibilité des acteurs et des projets.</p></details> </article></div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--cyan\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">02</span><h3>Gather and understand</h3><p>Bring field knowledge to light and make it readable for the whole community.</p></header> <div class=\"oa-grid oa-grid--2\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-clipboard-list\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COForm</h4><p class=\"oa-tool__tagline\">Forms connected to people</p><p>Ask, describe and collect knowledge with free, personalised, multi-step forms.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Custom fields and steps</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Reusable templates</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>CSV and PDF exports</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about COForm<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>A response can create or update an organisation or a project. Forms offer access rules, opening dates, geolocated fields, votes and assessments. The results can feed an observatory.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-chart-column\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Observatory</h4><p class=\"oa-tool__tagline\">Make what is being built visible</p><p>Live dashboards to understand a territory, a sector or the results of a collective process.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Indicators and charts</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Maps and relationship networks</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Data from COForms</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about Observatory<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Platform data becomes counters, curves, maps or relationship graphs. The Ecological Transition Contracts observatory shows how this makes actors and projects visible.</p></details> </article></div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "decider",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--lime\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">03</span><h3>Décider et passer à l'action</h3><p>De l'idée au projet concret : organiser les décisions, les financements et les contributions.</p></header> <div class=\"oa-grid oa-grid--3\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-file-check\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Appel à projets</h4><p class=\"oa-tool__tagline\">Proposer · Évaluer · Financer · Suivre</p><p>Un parcours complet pour les collectivités, fondations et financeurs, du dépôt d'une proposition au suivi des projets financés.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Dossiers et budgets prévisionnels</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Évaluation et sélection</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Cofinancement et suivi des actions</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur Appel à projets<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Construit sur COForm, l'outil relie les porteurs, les évaluateurs et les financeurs. Le financement se positionne ligne par ligne ; les propositions peuvent devenir des projets, avec tâches, échéances et suivi. Usages : CTE, COSindni et Fondation Territoriale des Lumières.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-users\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>OCECO</h4><p class=\"oa-tool__tagline\">Une économie coopérative en pratique</p><p>Des outils de gouvernance ouverte et de gestion de projets pour impliquer les membres et rendre les contributions visibles.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Idées, décisions et budgets partagés</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Actions, tâches et kanban</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Bénévolat et monnaie temps</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur OCECO<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>OCECOForm adapte le parcours d'appel à projets à la vie d'une organisation : proposer, décider, financer et suivre ensemble. L'application OcecoMobi complète ce parcours avec les tâches, les notifications et les crédits de temps liés aux contributions.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-sprout\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Smarterre</h4><p class=\"oa-tool__tagline\">Faire filière, ensemble</p><p>Une démarche et des plateformes pour relier les filières locales et accompagner la transition écologique des territoires.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Mise en réseau des filières</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Partage des bonnes pratiques</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Méthode COEUR et action collective</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur Smarterre<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Les smarterritoires articulent des filières locales ouvertes, de la région au quartier. La méthode COEUR combine COstum, COForm, Observatoire et OCECO, puis met les communautés en lien. Exemples : TCO et COEUR NUM à La Réunion.</p></details> </article></div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--lime\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">03</span><h3>Decide and take action</h3><p>From idea to concrete project: organise decisions, funding and contributions.</p></header> <div class=\"oa-grid oa-grid--3\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-file-check\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Call for projects</h4><p class=\"oa-tool__tagline\">Propose · Assess · Fund · Follow up</p><p>A complete journey for local authorities, foundations and funders, from submitting a proposal to following up funded projects.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Applications and draft budgets</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Assessment and selection</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Co-funding and action follow-up</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about Call for projects<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Built on COForm, the tool connects project leaders, assessors and funders. Funding is pledged line by line; proposals can become projects, with tasks, deadlines and follow-up. Used by: CTE, COSindni and the Fondation Territoriale des Lumières.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-users\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>OCECO</h4><p class=\"oa-tool__tagline\">A cooperative economy in practice</p><p>Open governance and project management tools to involve members and make contributions visible.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Shared ideas, decisions and budgets</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Actions, tasks and kanban</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Volunteering and time currency</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about OCECO<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>OCECOForm adapts the call-for-projects journey to the life of an organisation: propose, decide, fund and follow up together. The OcecoMobi app completes it with tasks, notifications and time credits linked to contributions.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-sprout\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Smarterre</h4><p class=\"oa-tool__tagline\">Building sectors together</p><p>An approach and platforms to connect local sectors and support the ecological transition of territories.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Networking local sectors</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Sharing good practices</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>COEUR method and collective action</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about Smarterre<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Smart territories connect open local sectors, from the region down to the neighbourhood. The COEUR method combines COstum, COForm, Observatory and OCECO, then connects communities. Examples: TCO and COEUR NUM in Réunion.</p></details> </article></div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "cooperer",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--red oa-band--end\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">04</span><h3>Coopérer au quotidien</h3><p>Un socle partagé et des portes d'entrée complémentaires pour faire vivre les liens dans la durée.</p></header> <div class=\"oa-grid oa-grid--3\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-network\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Communecter</h4><p class=\"oa-tool__tagline\">Le socle social et territorial</p><p>Le réseau libre qui relie citoyens, organisations, projets et événements à leur territoire : qui fait quoi, où.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Annuaire, carte et agenda</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Actualités, annonces et ressources</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Discuter, Décider, Agir</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur Communecter<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Communecter est le socle des outils d'Open Atlas. On y crée et relie des fiches, on partage les besoins et les offres, et on organise les échanges, les propositions, les votes et les actions. L'instance centrale est accessible sur communecter.org.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-earth\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Cocolight</h4><p class=\"oa-tool__tagline\">Une autre porte d'entrée sur le réseau</p><p>Un client moderne de Communecter pour les sites personnalisés récents et les instances auto-hébergées ou fédérées.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Interface moderne</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Sites personnalisés</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Auto-hébergement et fédération</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur Cocolight<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Cocolight travaille sur la même base de données que Communecter. Il sert notamment des sites comme Ekilibre, SSBE et ESS974, ainsi que des installations locales, dont les CoPi sur Raspberry Pi.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-messages-square\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COTOOLS</h4><p class=\"oa-tool__tagline\">Les compagnons libres de la coopération</p><p>Une suite de logiciels libres hébergés pour échanger, écrire, partager des fichiers et se retrouver en ligne.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Chat Rocket.Chat</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Kanban, pad et drive</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Vidéo et visioconférence</span></li></ul> <details class=\"oa-tool__more\"><summary>En savoir plus sur COTOOLS<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Rocket.Chat est intégré au réseau, avec des salons par organisation, projet ou événement. La suite donne aussi accès à Wekan, Nextcloud, CodiMD, PeerTube et Jitsi Meet ; ces services complémentaires sont principalement accessibles par des liens.</p></details> </article></div> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt oa-family-band oa-family--red oa-band--end\"><div class=\"oa-wrap\"> <header class=\"oa-family__head\"><span class=\"oa-num\">04</span><h3>Cooperate every day</h3><p>A shared foundation and complementary entry points to keep connections alive over time.</p></header> <div class=\"oa-grid oa-grid--3\"><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-network\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Communecter</h4><p class=\"oa-tool__tagline\">The social and territorial foundation</p><p>The free network that connects citizens, organisations, projects and events to their territory: who does what, where.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Directory, map and calendar</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>News, announcements and resources</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Discuss, Decide, Act</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about Communecter<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Communecter is the foundation of Open Atlas's tools. You create and link profiles, share needs and offers, and organise exchanges, proposals, votes and actions. The central instance is available at communecter.org.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-earth\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>Cocolight</h4><p class=\"oa-tool__tagline\">Another way into the network</p><p>A modern Communecter client for recent personalised sites and self-hosted or federated instances.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Modern interface</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Personalised sites</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Self-hosting and federation</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about Cocolight<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Cocolight runs on the same database as Communecter. It powers sites such as Ekilibre, SSBE and ESS974, as well as local installations, including the CoPi on Raspberry Pi.</p></details> </article><article class=\"oa-tool\"> <div class=\"oa-tool__top\"><i class=\"oa-ico oa-i-messages-square\" aria-hidden=\"true\"></i><small>Open Atlas / outils</small></div> <h4>COTOOLS</h4><p class=\"oa-tool__tagline\">Free companions for cooperation</p><p>A suite of hosted free software to chat, write, share files and meet online.</p> <ul class=\"oa-checks\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Rocket.Chat</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Kanban, pad and drive</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Video conferencing</span></li></ul> <details class=\"oa-tool__more\"><summary>Learn more about COTOOLS<i class=\"oa-ico oa-i-chevron-down\" aria-hidden=\"true\"></i></summary><p>Rocket.Chat is built into the network, with rooms per organisation, project or event. The suite also gives access to Wekan, Nextcloud, CodiMD, PeerTube and Jitsi Meet; these complementary services are mainly reached through links.</p></details> </article></div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "relie",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band\"><div class=\"oa-wrap oa-split oa-split--lead\"> <div class=\"oa-head oa-head--wide\"> <span class=\"oa-kicker oa-cyan\">Ce qui nous relie</span> <h2 class=\"oa-h2 oa-h2--md\">Vos outils sont différents.<br>Vos données restent reliées.</h2> <p class=\"oa-text oa-text--strong\">Une organisation, un projet ou un événement créé dans un outil peut être retrouvé dans les autres. Les sites personnalisés ne sont pas des îles : ils participent à un même réseau, dont Communecter est le socle.</p> <p class=\"oa-text oa-text--small\">COForm alimente l'Observatoire et les parcours d'appel à projets. OCECO accompagne le passage à l'action. COstum les rassemble dans un espace à votre image.</p> </div> <div class=\"oa-relie\"> <div class=\"oa-relie__head\"><i class=\"oa-ico oa-i-network\" aria-hidden=\"true\"></i><span><strong>Communecter</strong><span>Le socle commun, social et territorial</span></span></div> <ul class=\"oa-checks oa-checks--2 oa-checks--lime\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Citoyens &amp; organisations</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Projets &amp; événements</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Connaissances &amp; ressources</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Liens &amp; contributions</span></li></ul> <a class=\"oa-link\" href=\"https://www.communecter.org\">Découvrir le réseau Communecter<i class=\"oa-ico oa-i-arrow-up-right\" aria-hidden=\"true\"></i></a> </div> </div></div>",
+              "en": "<div class=\"oa-band\"><div class=\"oa-wrap oa-split oa-split--lead\"> <div class=\"oa-head oa-head--wide\"> <span class=\"oa-kicker oa-cyan\">What connects us</span> <h2 class=\"oa-h2 oa-h2--md\">Your tools are different.<br>Your data stays connected.</h2> <p class=\"oa-text oa-text--strong\">An organisation, a project or an event created in one tool can be found in the others. Personalised sites are not islands: they belong to one network, with Communecter as its foundation.</p> <p class=\"oa-text oa-text--small\">COForm feeds the Observatory and calls for projects. OCECO supports taking action. COstum brings them together in a space that looks like you.</p> </div> <div class=\"oa-relie\"> <div class=\"oa-relie__head\"><i class=\"oa-ico oa-i-network\" aria-hidden=\"true\"></i><span><strong>Communecter</strong><span>The shared social and territorial foundation</span></span></div> <ul class=\"oa-checks oa-checks--2 oa-checks--lime\"><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Citizens &amp; organisations</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Projects &amp; events</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Knowledge &amp; resources</span></li><li><i class=\"oa-ico oa-i-check\" aria-hidden=\"true\"></i><span>Links &amp; contributions</span></li></ul> <a class=\"oa-link\" href=\"https://www.communecter.org\">Discover the Communecter network<i class=\"oa-ico oa-i-arrow-up-right\" aria-hidden=\"true\"></i></a> </div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "methode-coeur",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap\"> <header class=\"oa-head oa-head--wide\"><span class=\"oa-kicker oa-lime\">La méthode COEUR</span><h2 class=\"oa-h2 oa-h2--md\">Du lien à l'action collective.</h2><p class=\"oa-text\">COllaboration entre Organisations et Évènements pour UNir les Ressources : une démarche qui combine nos outils pour construire une communauté apprenante et la relier aux autres.</p></header> <ol class=\"oa-method\"><li><div class=\"oa-step__top\"><span>01</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Rassembler</h3><span class=\"oa-step__tool\">COstum</span><p>Le portail de votre communauté.</p></li><li><div class=\"oa-step__top\"><span>02</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Questionner</h3><span class=\"oa-step__tool\">COForm</span><p>Les connaissances du terrain.</p></li><li><div class=\"oa-step__top\"><span>03</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Comprendre</h3><span class=\"oa-step__tool\">Observatoire</span><p>Une lecture partagée des données.</p></li><li><div class=\"oa-step__top\"><span>04</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Agir</h3><span class=\"oa-step__tool\">OCECO</span><p>Des projets et des contributions.</p></li><li><div class=\"oa-step__top\"><span>05</span></div> <h3>Relier</h3><span class=\"oa-step__tool\">Smarterre</span><p>Des communautés qui font réseau.</p></li></ol> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt\"><div class=\"oa-wrap\"> <header class=\"oa-head oa-head--wide\"><span class=\"oa-kicker oa-lime\">The COEUR method</span><h2 class=\"oa-h2 oa-h2--md\">From connection to collective action.</h2><p class=\"oa-text\">COllaboration between Organisations and Events to UNite Resources (COEUR): an approach that combines our tools to build a learning community and connect it to others.</p></header> <ol class=\"oa-method\"><li><div class=\"oa-step__top\"><span>01</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Gather</h3><span class=\"oa-step__tool\">COstum</span><p>Your community's portal.</p></li><li><div class=\"oa-step__top\"><span>02</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Ask</h3><span class=\"oa-step__tool\">COForm</span><p>Knowledge from the field.</p></li><li><div class=\"oa-step__top\"><span>03</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Understand</h3><span class=\"oa-step__tool\">Observatory</span><p>A shared reading of the data.</p></li><li><div class=\"oa-step__top\"><span>04</span><i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></div> <h3>Act</h3><span class=\"oa-step__tool\">OCECO</span><p>Projects and contributions.</p></li><li><div class=\"oa-step__top\"><span>05</span></div> <h3>Connect</h3><span class=\"oa-step__tool\">Smarterre</span><p>Communities that form networks.</p></li></ol> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "usages",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band\"><div class=\"oa-wrap\"> <header class=\"oa-head oa-head--full\"><span class=\"oa-kicker\">Des outils à l'épreuve du terrain</span><h2 class=\"oa-h2 oa-h2--md\">Des usages, pas seulement du code.</h2></header> <div class=\"oa-usages\"><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Transition écologique</span><h3>Contrats de Transition Écologique</h3><p>Des appels à projets et un observatoire pour rendre visibles les initiatives, les acteurs et leur financement.</p><span class=\"oa-usage__tags\">Appel à projets · COForm · Observatoire</span></article><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Coopération territoriale</span><h3>COSindni — Saint-Denis</h3><p>Un parcours de proposition, d'évaluation et de financement de projets à Saint-Denis, à La Réunion.</p><span class=\"oa-usage__tags\">COstum · Appel à projets</span></article><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Communautés &amp; événements</span><h3>Les réseaux de tiers-lieux</h3><p>Des portails de réseau et un programme collaboratif, notamment pour la Semaine des Tiers-Lieux.</p><span class=\"oa-usage__tags\">COstum · COevent · Communecter</span></article><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Filières locales</span><h3>COEUR NUM &amp; TCO</h3><p>La mise en lien de la filière numérique réunionnaise et des démarches territoriales de la Côte Ouest.</p><span class=\"oa-usage__tags\">Smarterre · Méthode COEUR</span></article></div> </div></div>",
+              "en": "<div class=\"oa-band\"><div class=\"oa-wrap\"> <header class=\"oa-head oa-head--full\"><span class=\"oa-kicker\">Tools tested in the field</span><h2 class=\"oa-h2 oa-h2--md\">Real uses, not just code.</h2></header> <div class=\"oa-usages\"><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Ecological transition</span><h3>Ecological Transition Contracts</h3><p>Calls for projects and an observatory to make initiatives, actors and their funding visible.</p><span class=\"oa-usage__tags\">Call for projects · COForm · Observatory</span></article><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Territorial cooperation</span><h3>COSindni — Saint-Denis</h3><p>A journey for proposing, assessing and funding projects in Saint-Denis, Réunion.</p><span class=\"oa-usage__tags\">COstum · Call for projects</span></article><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Communities &amp; events</span><h3>Third-place networks</h3><p>Network portals and a collaborative programme, notably for the Third Places Week.</p><span class=\"oa-usage__tags\">COstum · COevent · Communecter</span></article><article class=\"oa-usage\"><span class=\"oa-usage__cat\">Local sectors</span><h3>COEUR NUM &amp; TCO</h3><p>Connecting Réunion's digital sector with the territorial initiatives of the West Coast.</p><span class=\"oa-usage__tags\">Smarterre · COEUR method</span></article></div> </div></div>"
+            }
+          }
+        },
+        {
+          "type": "html",
+          "id": "accompagner",
+          "props": {
+            "html": {
+              "fr": "<div class=\"oa-band oa-band--alt oa-band--rule\"><div class=\"oa-wrap oa-cta-row\"> <header class=\"oa-head\"><span class=\"oa-kicker\">Le numérique, avec l'humain</span><h2 class=\"oa-h2 oa-h2--md\">Construisons votre espace de coopération.</h2><p class=\"oa-text\">Diagnostic, personnalisation, formation et animation de communauté : Open Atlas accompagne aussi la prise en main et la vie de vos outils.</p></header> <a class=\"oa-btn oa-btn--primary oa-btn--square\" href=\"/accompagnement\">Notre accompagnement<i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></a> </div></div>",
+              "en": "<div class=\"oa-band oa-band--alt oa-band--rule\"><div class=\"oa-wrap oa-cta-row\"> <header class=\"oa-head\"><span class=\"oa-kicker\">Digital, with people</span><h2 class=\"oa-h2 oa-h2--md\">Let's build your cooperation space.</h2><p class=\"oa-text\">Assessment, customisation, training and community facilitation: Open Atlas also supports getting started with your tools and keeping them alive.</p></header> <a class=\"oa-btn oa-btn--primary oa-btn--square\" href=\"/accompagnement\">Our support<i class=\"oa-ico oa-i-arrow-right\" aria-hidden=\"true\"></i></a> </div></div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/projets",
+      "title": {
+        "fr": "Projets — Open Atlas",
+        "en": "Projects — Open Atlas"
+      },
+      "seo": {
+        "title": {
+          "fr": "Les projets — Open Atlas",
+          "en": "Projects — Open Atlas"
+        },
+        "description": {
+          "fr": "Les projets portés et suivis par Open Atlas : recherche, thématiques, budget et avancement.",
+          "en": "The projects led and followed by Open Atlas: search, topics, budget and progress."
+        }
+      },
+      "sections": [
+        {
+          "type": "aac-directory",
+          "id": "projets",
+          "props": {
+            "title": {
+              "fr": "Les projets",
+              "en": "Projects"
+            },
+            "description": {
+              "fr": "Les projets portés et suivis par Open Atlas et sa communauté.",
+              "en": "The projects led and followed by Open Atlas and its community."
+            },
+            "variant": "full",
+            "display": "grid",
+            "columns": 3,
+            "pageSize": 12,
+            "filters": {
+              "search": true,
+              "usage": false,
+              "tags": true,
+              "maturity": false,
+              "sort": true
+            },
+            "showDepositButton": false,
+            "emptyText": {
+              "fr": "Aucun projet publié pour le moment.",
+              "en": "No published project yet."
+            },
+            "className": "max-w-7xl mx-auto px-6 pb-20"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communaute",
+      "title": {
+        "fr": "Communauté — Open Atlas",
+        "en": "Community — Open Atlas"
+      },
+      "layout": "fullwidth",
+      "seo": {
+        "title": {
+          "fr": "La communauté — Open Atlas",
+          "en": "The community — Open Atlas"
+        },
+        "description": {
+          "fr": "Les personnes et les organisations membres d'Open Atlas.",
+          "en": "The people and organisations who are members of Open Atlas."
+        }
+      },
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "communaute-header",
+          "props": {
+            "headline": {
+              "fr": "La communauté Open Atlas",
+              "en": "The Open Atlas community"
+            },
+            "subhead": {
+              "fr": "Les personnes et les organisations membres d'Open Atlas.",
+              "en": "The people and organisations who are members of Open Atlas."
+            }
+          }
+        },
+        {
+          "type": "tabs",
+          "id": "communaute-onglets",
+          "props": {
+            "defaultTab": "membres",
+            "tabs": [
+              {
+                "id": "membres",
+                "label": {
+                  "fr": "Membres",
+                  "en": "Members"
+                },
+                "icon": "users",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "liste-membres",
+                    "props": {
+                      "showSearch": true,
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "defaultViewMode": "list",
+                      "showActiveFiltersTypes": false,
+                      "showActiveFiltersTags": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "notSourceKey": true,
+                        "defaultTypes": [
+                          "citoyens"
+                        ],
+                        "defaultFilters": {
+                          "links.memberOf.555eba56c655675cdd65bf19": {
+                            "$exists": true
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                            "$exists": false
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                            "$exists": false
+                          }
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "address",
+                          "tags",
+                          "geo",
+                          "geoPosition"
+                        ],
+                        "defaultSortBy": {
+                          "name": 1
+                        },
+                        "searchBy": [
+                          "name",
+                          "address.addressLocality",
+                          "tags"
+                        ],
+                        "indexStepList": 24
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "profile",
+                          "variant": "profile",
+                          "showDescription": true,
+                          "showAddress": true,
+                          "detailsMode": "drawer",
+                          "showStats": false
+                        },
+                        "preview": {
+                          "type": "default"
+                        },
+                        "itemAction": {
+                          "kind": "preview"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "organisations",
+                "label": {
+                  "fr": "Organisations",
+                  "en": "Organisations"
+                },
+                "icon": "building-2",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "liste-organisations",
+                    "props": {
+                      "showSearch": true,
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "defaultViewMode": "list",
+                      "showActiveFiltersTypes": false,
+                      "showActiveFiltersTags": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "notSourceKey": true,
+                        "defaultTypes": [
+                          "NGO",
+                          "LocalBusiness",
+                          "Group",
+                          "GovernmentOrganization",
+                          "Cooperative"
+                        ],
+                        "defaultFilters": {
+                          "links.memberOf.555eba56c655675cdd65bf19": {
+                            "$exists": true
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+                            "$exists": false
+                          },
+                          "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+                            "$exists": false
+                          }
+                        },
+                        "defaultFields": [
+                          "name",
+                          "slug",
+                          "collection",
+                          "type",
+                          "source",
+                          "shortDescription",
+                          "profilImageUrl",
+                          "profilMediumImageUrl",
+                          "profilThumbImageUrl",
+                          "address",
+                          "tags",
+                          "geo",
+                          "geoPosition"
+                        ],
+                        "defaultSortBy": {
+                          "name": 1
+                        },
+                        "searchBy": [
+                          "name",
+                          "shortDescription",
+                          "address.addressLocality",
+                          "tags"
+                        ],
+                        "indexStepList": 24
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "profile",
+                          "variant": "profile",
+                          "showDescription": true,
+                          "showAddress": true,
+                          "detailsMode": "drawer",
+                          "showStats": false
+                        },
+                        "preview": {
+                          "type": "default"
+                        },
+                        "itemAction": {
+                          "kind": "preview"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/accompagnement",
+      "title": {
+        "fr": "Accompagnement — Open Atlas",
+        "en": "Support — Open Atlas"
+      },
+      "seo": {
+        "title": {
+          "fr": "Un accompagnement sur mesure — Open Atlas",
+          "en": "Tailored support — Open Atlas"
+        },
+        "description": {
+          "fr": "Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.",
+          "en": "Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons."
+        }
+      },
+      "sections": [
+        {
+          "type": "content",
+          "id": "accompagnement-intro",
+          "props": {
+            "category": {
+              "fr": "Au-delà du logiciel",
+              "en": "Beyond the software"
+            },
+            "title": {
+              "fr": "Un accompagnement sur mesure",
+              "en": "Tailored support"
+            },
+            "description": {
+              "fr": "Open Atlas accompagne les collectivités, organisations et collectifs qui veulent déployer leur propre réseau ou plateforme personnalisée basée sur ce réseau social des communs qu'est Communecter.org.",
+              "en": "Open Atlas supports local authorities, organisations and collectives that want to deploy their own network or personalised platform built on Communecter.org, the social network of the commons."
+            },
+            "width": "wide",
+            "align": "left"
+          }
+        },
+        {
+          "type": "features-glass",
+          "id": "services",
+          "props": {
+            "headline": {
+              "fr": "Ce que nous proposons",
+              "en": "What we offer"
+            },
+            "bg": "muted",
+            "features": [
+              {
+                "icon": "search",
+                "title": {
+                  "fr": "Diagnostic",
+                  "en": "Assessment"
+                },
+                "color": "primary",
+                "description": {
+                  "fr": "Diagnostic des enjeux (ateliers en intelligence collective) et définition des besoins qui y répondent.",
+                  "en": "Assessment of the issues (collective intelligence workshops) and definition of the needs that address them."
+                }
+              },
+              {
+                "icon": "layout-template",
+                "title": {
+                  "fr": "Plateforme sur mesure",
+                  "en": "Tailored platform"
+                },
+                "color": "chart-2",
+                "description": {
+                  "fr": "Création d'une plateforme spécifique qui y répond à partir des modules déjà existants.",
+                  "en": "Creation of a specific platform that meets them, built from existing modules."
+                }
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "Formation",
+                  "en": "Training"
+                },
+                "color": "primary",
+                "description": {
+                  "fr": "Formation des équipes à la plateforme ainsi qu'à contribuer au logiciel.",
+                  "en": "Training teams to use the platform and to contribute to the software."
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Animation",
+                  "en": "Community building"
+                },
+                "color": "chart-2",
+                "description": {
+                  "fr": "Animation de communauté et accompagnement à l'adoption.",
+                  "en": "Community building and support for adoption."
+                }
+              },
+              {
+                "icon": "code",
+                "title": {
+                  "fr": "Développements",
+                  "en": "Development"
+                },
+                "color": "primary",
+                "description": {
+                  "fr": "Développements spécifiques et intégrations sur mesure.",
+                  "en": "Specific developments and tailored integrations."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "reseau-prestataires",
+          "props": {
+            "category": {
+              "fr": "Prestataires",
+              "en": "Service providers"
+            },
+            "title": {
+              "fr": "Un réseau, pas un guichet",
+              "en": "A network, not a service desk"
+            },
+            "description": {
+              "fr": "Selon la taille et la nature du projet, Open Atlas peut mobiliser la communauté des prestataires qui gravitent autour de Communecter pour compléter son accompagnement.",
+              "en": "Depending on the size and nature of the project, Open Atlas can call on the community of service providers around Communecter to complement its support."
+            },
+            "tags": [
+              {
+                "fr": "OPTEOS",
+                "en": "OPTEOS"
+              },
+              {
+                "fr": "CoRD",
+                "en": "CoRD"
+              },
+              {
+                "fr": "+ d'autres prestataires selon le projet",
+                "en": "+ other providers depending on the project"
+              }
+            ],
+            "width": "wide",
+            "align": "left"
+          }
+        },
+        {
+          "type": "cta",
+          "id": "accompagnement-cta",
+          "props": {
+            "headline": {
+              "fr": "Parlons de votre projet",
+              "en": "Let's talk about your project"
+            },
+            "subhead": {
+              "fr": "Décrivez-nous votre besoin : nous revenons vers vous pour en discuter.",
+              "en": "Tell us what you need: we will get back to you to discuss it."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Nous écrire",
+                  "en": "Write to us"
+                },
+                "href": "/contact",
+                "variant": "default"
+              }
+            ],
+            "align": "center"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/contact",
+      "title": {
+        "fr": "Contact — Open Atlas",
+        "en": "Contact — Open Atlas"
+      },
+      "seo": {
+        "title": {
+          "fr": "Nous écrire — Open Atlas",
+          "en": "Write to us — Open Atlas"
+        },
+        "description": {
+          "fr": "Une question, une envie d'adhérer, un projet à discuter : écrivez à Open Atlas.",
+          "en": "A question, a wish to join, a project to discuss: write to Open Atlas."
+        }
+      },
+      "sections": [
+        {
+          "type": "content",
+          "id": "contact-intro",
+          "props": {
+            "category": {
+              "fr": "Contact",
+              "en": "Contact"
+            },
+            "title": {
+              "fr": "Nous écrire",
+              "en": "Write to us"
+            },
+            "description": {
+              "fr": "Une question, l'envie d'adhérer à l'association, un projet à discuter ou une contribution au logiciel ? Écrivez-nous.",
+              "en": "A question, a wish to join the association, a project to discuss or a contribution to the software? Write to us."
+            },
+            "width": "prose",
+            "align": "left"
+          }
+        },
+        {
+          "type": "contactForm",
+          "id": "contact-form",
+          "props": {
+            "submitLabel": {
+              "fr": "Envoyer le message",
+              "en": "Send the message"
+            },
+            "successMessage": {
+              "fr": "Votre message a bien été envoyé.",
+              "en": "Your message has been sent."
+            },
+            "errorMessage": {
+              "fr": "Le message n'a pas pu être envoyé. Réessayez plus tard.",
+              "en": "The message could not be sent. Please try again later."
+            },
+            "fields": [
+              {
+                "name": "name",
+                "role": "senderName",
+                "label": {
+                  "fr": "Nom complet",
+                  "en": "Full name"
+                },
+                "type": "text",
+                "required": true,
+                "placeholder": {
+                  "fr": "Votre nom",
+                  "en": "Your name"
+                }
+              },
+              {
+                "name": "email",
+                "role": "senderEmail",
+                "label": {
+                  "fr": "Adresse e-mail",
+                  "en": "Email address"
+                },
+                "type": "email",
+                "required": true,
+                "placeholder": {
+                  "fr": "votre@email.fr",
+                  "en": "you@example.com"
+                },
+                "validation": "email"
+              },
+              {
+                "name": "subject",
+                "role": "subject",
+                "label": {
+                  "fr": "Sujet",
+                  "en": "Subject"
+                },
+                "type": "select",
+                "required": true,
+                "options": [
+                  {
+                    "fr": "Adhérer à l'association",
+                    "en": "Join the association"
+                  },
+                  {
+                    "fr": "Discuter d'un projet",
+                    "en": "Discuss a project"
+                  },
+                  {
+                    "fr": "Contribuer au logiciel",
+                    "en": "Contribute to the software"
+                  },
+                  {
+                    "fr": "Autre demande",
+                    "en": "Other request"
+                  }
+                ]
+              },
+              {
+                "name": "message",
+                "role": "message",
+                "label": {
+                  "fr": "Message",
+                  "en": "Message"
+                },
+                "type": "textarea",
+                "required": true,
+                "placeholder": {
+                  "fr": "Votre message…",
+                  "en": "Your message…"
+                }
+              },
+              {
+                "name": "rgpd",
+                "label": {
+                  "fr": "J'accepte que les informations saisies soient utilisées pour traiter ma demande (voir la politique de confidentialité).",
+                  "en": "I agree that the information entered may be used to handle my request (see the privacy policy)."
+                },
+                "type": "checkbox",
+                "required": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales — Open Atlas",
+        "en": "Legal notice — Open Atlas"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "mentions-legales",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Informations publiées pour le site d'Open Atlas en application de l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). Les éléments qui restent à établir sont signalés par la mention « [à compléter] ».</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">Open Atlas</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique : [à compléter]</li>\n<li>Numéro d'immatriculation (SIREN, SIRET ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Téléphone : [à compléter]</li>\n<li>Courriel : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Directeur de la publication</h2>\n<p class=\"text-muted-foreground mb-6\">Directeur ou directrice de la publication : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">Dénomination, adresse complète et numéro de téléphone de l'hébergeur du site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site s'appuie sur la plateforme libre Communecter. Licence applicable aux développements propres à ce site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">Les textes, images, logos et éléments graphiques propres au site sont protégés par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation préalable de l'éditeur est interdite.</p>\n<p class=\"text-muted-foreground mb-6\">Le site publie par ailleurs des contenus fournis par des tiers, notamment les <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a> et les fiches des membres et des organisations de la <a href=\"/communaute\" class=\"text-primary hover:underline\">communauté</a>. Leurs auteurs en conservent les droits. Licence applicable aux contenus publiés et aux données diffusées par le site : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Liens hypertextes</h2>\n<p class=\"text-muted-foreground mb-6\">Le site peut renvoyer vers des ressources extérieures, notamment depuis les fiches des membres et des organisations. L'éditeur n'exerce aucun contrôle sur ces ressources extérieures et ne saurait être tenu responsable de leur contenu ni des traitements qu'elles mettent en œuvre. Adresse à laquelle adresser toute demande relative à un lien : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Signalement d'un contenu</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création de comptes utilisateur. Si vous estimez qu'un contenu accessible sur le site est illicite ou porte atteinte à vos droits, vous pouvez le signaler à l'adresse suivante : [à compléter]. Pour en permettre le traitement, la notification prévue à l'article 6-I-5 de la LCEN doit comporter notamment :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>la date de la notification ;</li>\n<li>vos nom, prénom et coordonnées, ou la dénomination et le siège s'il s'agit d'une personne morale ;</li>\n<li>la description du contenu litigieux et son adresse (URL) exacte ;</li>\n<li>les motifs pour lesquels il devrait être retiré, y compris la mention des dispositions légales invoquées.</li></ul>\n<p class=\"text-muted-foreground mb-6\">Modalités de traitement des signalements (procédure, délais, modération éventuelle des contenus publiés) : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Accessibilité</h2>\n<p class=\"text-muted-foreground mb-6\">État de conformité au Référentiel général d'amélioration de l'accessibilité (RGAA) et statut de l'audit correspondant : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Les traitements de données personnelles mis en œuvre sur le site sont décrits dans la <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>. Coordonnées du délégué à la protection des données, s'il en a été désigné un : [à compléter].</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8\">Information published for the Open Atlas website pursuant to article 6-III of French law no. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN). Items still to be established are marked “[to be completed]”.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Publisher</h2>\n<p class=\"text-muted-foreground mb-2\">Open Atlas</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Legal form: [to be completed]</li>\n<li>Registration number (SIREN, SIRET or RNA): [to be completed]</li>\n<li>Registered office address: [to be completed]</li>\n<li>Telephone: [to be completed]</li>\n<li>Email: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Publication director</h2>\n<p class=\"text-muted-foreground mb-6\">Publication director: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hosting provider</h2>\n<p class=\"text-muted-foreground mb-6\">Name, full address and telephone number of the website host: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Design and development</h2>\n<p class=\"text-muted-foreground mb-6\">This website is built on the free software platform Communecter. Licence applying to the developments specific to this website: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">The texts, images, logos and graphic elements specific to this website are protected by intellectual property law. Any reproduction or representation, in whole or in part, without the prior authorisation of the publisher is prohibited.</p>\n<p class=\"text-muted-foreground mb-6\">The website also publishes content provided by third parties, in particular the <a href=\"/projets\" class=\"text-primary hover:underline\">projects</a> and the profiles of the members and organisations of the <a href=\"/communaute\" class=\"text-primary hover:underline\">community</a>. Their authors retain their rights. Licence applying to the published content and data: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hyperlinks</h2>\n<p class=\"text-muted-foreground mb-6\">The website may link to external resources, in particular from the profiles of members and organisations. The publisher has no control over these external resources and cannot be held responsible for their content or for the processing they carry out. Address for any request regarding a link: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Reporting content</h2>\n<p class=\"text-muted-foreground mb-4\">The website allows users to create an account. If you believe that content available on the website is unlawful or infringes your rights, you can report it at the following address: [to be completed]. To be processed, the notification provided for in article 6-I-5 of the LCEN must include in particular:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>the date of the notification;</li>\n<li>your surname, first name and contact details, or the name and registered office of a legal entity;</li>\n<li>a description of the disputed content and its exact address (URL);</li>\n<li>the reasons why it should be removed, including the legal provisions relied on.</li></ul>\n<p class=\"text-muted-foreground mb-6\">How reports are handled (procedure, time frames, any moderation of published content): [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Accessibility</h2>\n<p class=\"text-muted-foreground mb-6\">Compliance status with the French accessibility framework (RGAA) and status of the corresponding audit: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of personal data carried out on the website is described in the <a href=\"/confidentialite\" class=\"text-primary hover:underline\">privacy policy</a>. Contact details of the data protection officer, if one has been appointed: [to be completed].</p>\n<p class=\"text-muted-foreground mb-6\">Last updated: [to be completed]</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Confidentialité — Open Atlas",
+        "en": "Privacy policy — Open Atlas"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "confidentialite",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés dans le cadre du site d'Open Atlas, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés. Elle complète les <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">mentions légales</a>. Les éléments qui restent à établir sont signalés par la mention « [à compléter] » : ils seront renseignés dans une prochaine version de ce document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-2\">Le responsable des traitements décrits ci-dessous est Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Forme juridique et numéro d'immatriculation (SIREN ou RNA) : [à compléter]</li>\n<li>Adresse du siège : [à compléter]</li>\n<li>Courriel : [à compléter]</li>\n<li>Délégué à la protection des données, ou personne chargée des questions relatives aux données personnelles : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<p class=\"text-muted-foreground mb-4\">Le site permet la création d'un compte utilisateur et la connexion, ainsi que la consultation de l'annuaire de la <a href=\"/communaute\" class=\"text-primary hover:underline\">communauté</a> : les fiches des personnes et des organisations membres d'Open Atlas, ainsi que la consultation des <a href=\"/projets\" class=\"text-primary hover:underline\">projets</a> et de leurs fiches. Des données personnelles sont donc traitées à ces occasions ; leur détail reste à établir.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données collectées lors de la création d'un compte, de la connexion et de la récupération d'un mot de passe : [à compléter]</li>\n<li>Données publiées dans l'annuaire de la communauté et sur les fiches des membres : [à compléter]</li>\n<li>Données saisies dans le <a href=\"/contact\" class=\"text-primary hover:underline\">formulaire de contact</a> (nom, adresse e-mail, sujet, message) et destinataires de ces messages : [à compléter]</li>\n<li>Données éventuellement collectées automatiquement lors de la consultation du site, notamment par les journaux de connexion : [à compléter]</li>\n<li>Données éventuellement transmises à des services tiers intégrés au site : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<p class=\"text-muted-foreground mb-4\">Les finalités qui ressortent des fonctionnalités actuellement mises en ligne sont les suivantes :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>permettre la création, la gestion et la récupération d'un compte utilisateur ;</li>\n<li>présenter les personnes et les organisations membres de la communauté Open Atlas ;</li>\n<li>répondre aux messages envoyés par le formulaire de contact.</li></ul>\n<p class=\"text-muted-foreground mb-6\">La base légale retenue pour chacune de ces finalités — exécution du contrat, consentement, intérêt légitime ou obligation légale — ainsi que les éventuelles autres finalités poursuivies et les destinataires des données : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4\">Aucun bandeau de recueil du consentement aux cookies n'est affiché sur les pages du site. Cette absence ne permet pas de conclure qu'aucun traceur n'est déposé : l'inventaire des cookies et des informations enregistrées dans votre navigateur reste à réaliser.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies et traceurs éventuellement déposés, avec pour chacun l'émetteur, la finalité et la durée de vie : [à compléter]</li>\n<li>Informations éventuellement enregistrées dans le stockage local ou le stockage de session du navigateur : [à compléter]</li>\n<li>Outils de mesure d'audience et services tiers éventuellement utilisés : [à compléter]</li></ul>\n<p class=\"text-muted-foreground mb-6\">Si cet inventaire fait apparaître des traceurs soumis à consentement, un dispositif permettant de recueillir et de retirer ce consentement devra être mis en place avant leur dépôt. Les modalités de paramétrage de vos préférences seront alors décrites ici : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Les durées de conservation applicables à chaque catégorie de données, ainsi que les critères permettant de les déterminer, restent à établir : [à compléter]. Le sort réservé aux données et aux contenus publiés à la suppression d'un compte : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Vos droits</h2>\n<p class=\"text-muted-foreground mb-4\">Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition et de portabilité sur les données qui vous concernent, ainsi que du droit de définir des directives relatives à leur sort après votre décès. Lorsqu'un traitement repose sur votre consentement, vous pouvez le retirer à tout moment.</p>\n<p class=\"text-muted-foreground mb-6\">Adresse à laquelle exercer ces droits : [à compléter]. Vous pouvez également introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">L'article 32 du RGPD impose au responsable du traitement de mettre en œuvre les mesures techniques et organisationnelles appropriées pour assurer la sécurité des données. La description des mesures effectivement en place sur ce site — hébergement, protection des échanges, gestion des accès et des habilitations, sauvegardes, conduite à tenir en cas de violation de données — reste à fournir : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transferts hors Union européenne</h2>\n<p class=\"text-muted-foreground mb-6\">L'existence de transferts de données en dehors de l'Union européenne dépend du lieu d'hébergement du site et des services tiers éventuellement utilisés, qui ne sont pas documentés à ce stade. Le cas échéant, les destinataires concernés, les pays de destination et les garanties encadrant ces transferts (décision d'adéquation, clauses contractuelles types ou autre garantie appropriée) sont les suivants : [à compléter].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Modification de la politique</h2>\n<p class=\"text-muted-foreground mb-6\">La présente politique peut être modifiée, notamment pour tenir compte des évolutions du site, des traitements mis en œuvre ou de la réglementation applicable. La version qui vous est opposable est celle publiée sur cette page au moment de votre consultation.</p>\n<p class=\"text-muted-foreground mb-6\">Dernière mise à jour : [à compléter]</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Privacy policy</h1>\n<p class=\"text-muted-foreground mb-8\">This policy describes the processing of personal data carried out on the Open Atlas website, in accordance with the General Data Protection Regulation (GDPR) and the French Data Protection Act. It supplements the <a href=\"/mentions-legales\" class=\"text-primary hover:underline\">legal notice</a>. Items still to be established are marked “[to be completed]”: they will be filled in in a future version of this document.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Data controller</h2>\n<p class=\"text-muted-foreground mb-2\">The controller of the processing described below is Open Atlas.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Legal form and registration number (SIREN or RNA): [to be completed]</li>\n<li>Registered office address: [to be completed]</li>\n<li>Email: [to be completed]</li>\n<li>Data protection officer, or person in charge of personal data matters: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Data processed</h2>\n<p class=\"text-muted-foreground mb-4\">The website allows users to create an account and log in, and to browse the directory of the <a href=\"/communaute\" class=\"text-primary hover:underline\">community</a>: the profiles of the people and organisations who are members of Open Atlas, as well as browsing the <a href=\"/projets\" class=\"text-primary hover:underline\">projects</a> and their pages. Personal data is therefore processed on these occasions; the details remain to be established.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Data collected when creating an account, logging in and recovering a password: [to be completed]</li>\n<li>Data published in the community directory and on member profiles: [to be completed]</li>\n<li>Data entered in the <a href=\"/contact\" class=\"text-primary hover:underline\">contact form</a> (name, email address, subject, message) and recipients of these messages: [to be completed]</li>\n<li>Data that may be collected automatically when browsing the website, in particular through connection logs: [to be completed]</li>\n<li>Data that may be transmitted to third-party services integrated into the website: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Purposes and legal bases</h2>\n<p class=\"text-muted-foreground mb-4\">The purposes arising from the features currently online are the following:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>enabling the creation, management and recovery of a user account;</li>\n<li>presenting the people and organisations who are members of the Open Atlas community;</li>\n<li>answering messages sent through the contact form.</li></ul>\n<p class=\"text-muted-foreground mb-6\">The legal basis for each of these purposes — performance of a contract, consent, legitimate interest or legal obligation — as well as any other purposes pursued and the recipients of the data: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\" id=\"cookies\">4. Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-4\">No cookie consent banner is displayed on the website. This does not mean that no tracker is placed: the inventory of cookies and of the information stored in your browser remains to be carried out.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Cookies and trackers that may be placed, with for each the issuer, purpose and lifetime: [to be completed]</li>\n<li>Information that may be stored in the browser's local storage or session storage: [to be completed]</li>\n<li>Audience measurement tools and third-party services that may be used: [to be completed]</li></ul>\n<p class=\"text-muted-foreground mb-6\">If this inventory reveals trackers that require consent, a mechanism for giving and withdrawing consent will have to be put in place before they are placed. How to set your preferences will then be described here: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Retention periods</h2>\n<p class=\"text-muted-foreground mb-6\">The retention periods applying to each category of data, and the criteria used to determine them, remain to be established: [to be completed]. What happens to data and published content when an account is deleted: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Your rights</h2>\n<p class=\"text-muted-foreground mb-4\">Under the GDPR, you have the right to access, rectify and erase your data, to restrict or object to its processing and to data portability, as well as the right to set guidelines for what happens to your data after your death. Where processing is based on your consent, you may withdraw it at any time.</p>\n<p class=\"text-muted-foreground mb-6\">Address for exercising these rights: [to be completed]. You may also lodge a complaint with the French data protection authority, the CNIL (<a href=\"https://www.cnil.fr\" class=\"text-primary hover:underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Security</h2>\n<p class=\"text-muted-foreground mb-6\">Article 32 of the GDPR requires the controller to implement appropriate technical and organisational measures to ensure the security of the data. A description of the measures actually in place on this website — hosting, protection of exchanges, access and authorisation management, backups, procedure in the event of a data breach — remains to be provided: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Transfers outside the European Union</h2>\n<p class=\"text-muted-foreground mb-6\">Whether data is transferred outside the European Union depends on where the website is hosted and on any third-party services used, which are not documented at this stage. Where applicable, the recipients concerned, the destination countries and the safeguards governing these transfers (adequacy decision, standard contractual clauses or other appropriate safeguard) are as follows: [to be completed].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Changes to this policy</h2>\n<p class=\"text-muted-foreground mb-6\">This policy may be amended, in particular to reflect changes to the website, to the processing carried out or to the applicable regulations. The version that applies to you is the one published on this page at the time you consult it.</p>\n<p class=\"text-muted-foreground mb-6\">Last updated: [to be completed]</p>\n</div>"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "sidebar-columns",
+    "style": "plain",
+    "logo": "/images/openAtlas/logo-symbol-neutral.png",
+    "logoAlt": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    },
+    "logoTitle": {
+      "fr": "Open Atlas",
+      "en": "Open Atlas"
+    },
+    "description": {
+      "fr": "Open Atlas — association loi 1901, à l'origine du logiciel libre Communecter et de son instance centrale, Communecter.org. Développement soutenu par NLnet.",
+      "en": "Open Atlas — a French non-profit association behind the free software Communecter and its central instance, Communecter.org. Development supported by NLnet."
+    },
+    "copyright": {
+      "fr": "© Open Atlas",
+      "en": "© Open Atlas"
+    },
+    "columns": [
+      {
+        "title": {
+          "fr": "Outils",
+          "en": "Tools"
+        },
+        "links": [
+          {
+            "href": "/outils",
+            "label": {
+              "fr": "Nos outils",
+              "en": "Our tools"
+            }
+          },
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/",
+            "label": {
+              "fr": "Communecter (logiciel)",
+              "en": "Communecter (software)"
+            }
+          },
+          {
+            "href": "https://www.communecter.org",
+            "label": {
+              "fr": "Communecter.org (instance)",
+              "en": "Communecter.org (instance)"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Association",
+          "en": "Association"
+        },
+        "links": [
+          {
+            "href": "/accompagnement",
+            "label": {
+              "fr": "Accompagnement",
+              "en": "Support"
+            }
+          },
+          {
+            "href": "/projets",
+            "label": {
+              "fr": "Projets",
+              "en": "Projects"
+            }
+          },
+          {
+            "href": "/communaute",
+            "label": {
+              "fr": "Communauté",
+              "en": "Community"
+            }
+          },
+          {
+            "href": "/contact",
+            "label": {
+              "fr": "Nous contacter",
+              "en": "Contact us"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Références",
+          "en": "References"
+        },
+        "links": [
+          {
+            "href": "https://tiers-lieux.org",
+            "label": {
+              "fr": "tiers-lieux.org",
+              "en": "tiers-lieux.org"
+            }
+          },
+          {
+            "href": "https://parent62.00.re/",
+            "label": {
+              "fr": "parent62.00.re",
+              "en": "parent62.00.re"
+            }
+          },
+          {
+            "href": "https://lescommuns.tiers-lieux.org",
+            "label": {
+              "fr": "lescommuns.tiers-lieux.org",
+              "en": "lescommuns.tiers-lieux.org"
+            }
+          },
+          {
+            "href": "https://equipements-sportifs-974.00.re/",
+            "label": {
+              "fr": "equipements-sportifs-974.00.re",
+              "en": "equipements-sportifs-974.00.re"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Développeurs",
+          "en": "Developers"
+        },
+        "links": [
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/",
+            "label": {
+              "fr": "Dépôt Git",
+              "en": "Git repository"
+            }
+          },
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/oceco/-/blob/master/private/doc/rest-oceco.md?ref_type=heads",
+            "label": {
+              "fr": "Documentation API",
+              "en": "API documentation"
+            }
+          },
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/site-json",
+            "label": {
+              "fr": "Code du client",
+              "en": "Client code"
+            }
+          },
+          {
+            "href": "https://gitlab.adullact.net/pixelhumain/docker",
+            "label": {
+              "fr": "Docker du serveur",
+              "en": "Server Docker"
+            }
+          },
+          {
+            "href": "https://nlnet.nl/project/Communecter/",
+            "label": {
+              "fr": "Soutien NLnet",
+              "en": "NLnet support"
+            }
+          }
+        ]
+      }
+    ],
+    "legalLinks": [
+      {
+        "href": "/mentions-legales",
+        "label": {
+          "fr": "Mentions légales",
+          "en": "Legal notice"
+        }
+      },
+      {
+        "href": "/confidentialite",
+        "label": {
+          "fr": "Confidentialité",
+          "en": "Privacy policy"
+        }
+      }
+    ],
+    "bottomLinks": [
+      {
+        "href": "/login",
+        "label": {
+          "fr": "Se connecter",
+          "en": "Log in"
+        },
+        "visibility": {
+          "auth": "anonymous"
+        }
+      },
+      {
+        "href": "/register",
+        "label": {
+          "fr": "Créer un compte",
+          "en": "Create an account"
+        },
+        "visibility": {
+          "auth": "anonymous"
+        }
+      },
+      {
+        "href": "@profile",
+        "label": {
+          "fr": "Mon profil",
+          "en": "My profile"
+        },
+        "visibility": {
+          "auth": "required"
+        }
+      }
+    ]
+  },
+  "theme": {
+    "defaultMode": "dark",
+    "colors": {
+      "light": {
+        "background": "oklch(0.9950 0.0020 264)",
+        "foreground": "oklch(0.2200 0.0170 264)",
+        "card": "oklch(1.0000 0 0)",
+        "cardForeground": "oklch(0.2200 0.0170 264)",
+        "popover": "oklch(1.0000 0 0)",
+        "popoverForeground": "oklch(0.2200 0.0170 264)",
+        "primary": "oklch(0.5700 0.2100 18)",
+        "primaryForeground": "oklch(1.0000 0 0)",
+        "secondary": "oklch(0.9600 0.0080 264)",
+        "secondaryForeground": "oklch(0.2800 0.0200 264)",
+        "muted": "oklch(0.9650 0.0050 264)",
+        "mutedForeground": "oklch(0.5000 0.0200 264)",
+        "accent": "oklch(0.9500 0.0300 18)",
+        "accentForeground": "oklch(0.4600 0.1700 18)",
+        "destructive": "oklch(0.5200 0.2000 30)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.9100 0.0080 264)",
+        "input": "oklch(0.9100 0.0080 264)",
+        "ring": "oklch(0.5700 0.2100 18)",
+        "chart1": "oklch(0.5700 0.2100 18)",
+        "chart2": "oklch(0.4500 0.1000 264)",
+        "chart3": "oklch(0.6500 0.1300 200)",
+        "chart4": "oklch(0.7500 0.1500 75)",
+        "chart5": "oklch(0.5500 0.1500 300)",
+        "sidebar": "oklch(0.9800 0.0040 264)",
+        "sidebarForeground": "oklch(0.2200 0.0170 264)",
+        "sidebarPrimary": "oklch(0.5700 0.2100 18)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.9500 0.0300 18)",
+        "sidebarAccentForeground": "oklch(0.4600 0.1700 18)",
+        "sidebarBorder": "oklch(0.9100 0.0080 264)",
+        "sidebarRing": "oklch(0.5700 0.2100 18)"
+      },
+      "dark": {
+        "background": "oklch(0.1830 0.0172 268.7)",
+        "foreground": "oklch(0.9548 0.0058 264.5)",
+        "card": "oklch(0.2469 0.0228 262.4)",
+        "cardForeground": "oklch(0.9548 0.0058 264.5)",
+        "popover": "oklch(0.2469 0.0228 262.4)",
+        "popoverForeground": "oklch(0.9548 0.0058 264.5)",
+        "primary": "oklch(0.5506 0.2000 17.9)",
+        "primaryForeground": "oklch(1.0000 0 0)",
+        "secondary": "oklch(0.2836 0.0243 261.1)",
+        "secondaryForeground": "oklch(0.9548 0.0058 264.5)",
+        "muted": "oklch(0.2213 0.0192 262.1)",
+        "mutedForeground": "oklch(0.7338 0.0186 264.5)",
+        "accent": "oklch(0.3200 0.0900 18)",
+        "accentForeground": "oklch(0.9548 0.0058 264.5)",
+        "destructive": "oklch(0.6300 0.2000 30)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.9548 0.0058 264.5 / 0.1)",
+        "input": "oklch(0.9548 0.0058 264.5 / 0.18)",
+        "ring": "oklch(0.6802 0.1904 17.8)",
+        "chart1": "oklch(0.6802 0.1904 17.8)",
+        "chart2": "oklch(0.6800 0.1000 264)",
+        "chart3": "oklch(0.7200 0.1200 200)",
+        "chart4": "oklch(0.8000 0.1400 75)",
+        "chart5": "oklch(0.6800 0.1400 300)",
+        "sidebar": "oklch(0.2213 0.0192 262.1)",
+        "sidebarForeground": "oklch(0.9548 0.0058 264.5)",
+        "sidebarPrimary": "oklch(0.5506 0.2000 17.9)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.3200 0.0900 18)",
+        "sidebarAccentForeground": "oklch(0.9548 0.0058 264.5)",
+        "sidebarBorder": "oklch(0.9548 0.0058 264.5 / 0.1)",
+        "sidebarRing": "oklch(0.6802 0.1904 17.8)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Sora",
+          "sans-serif"
+        ],
+        "serif": [
+          "Roboto Slab",
+          "serif"
+        ],
+        "mono": [
+          "Roboto Mono",
+          "monospace"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.625rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.06)",
+        "shadowXs": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.08)",
+        "shadowSm": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 1px 2px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadow": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 1px 2px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadowMd": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 2px 4px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadowLg": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 4px 6px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadowXl": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.10), 0px 8px 10px -1px oklch(0.22 0.017 264 / 0.10)",
+        "shadow2xl": "0px 1px 3px 0px oklch(0.22 0.017 264 / 0.25)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 3px 0px oklch(0 0 0 / 0.25)",
+        "shadowXs": "0px 1px 3px 0px oklch(0 0 0 / 0.30)",
+        "shadowSm": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 1px 2px -1px oklch(0 0 0 / 0.35)",
+        "shadow": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 1px 2px -1px oklch(0 0 0 / 0.35)",
+        "shadowMd": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 2px 4px -1px oklch(0 0 0 / 0.35)",
+        "shadowLg": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 4px 6px -1px oklch(0 0 0 / 0.35)",
+        "shadowXl": "0px 1px 3px 0px oklch(0 0 0 / 0.35), 0px 8px 10px -1px oklch(0 0 0 / 0.35)",
+        "shadow2xl": "0px 1px 3px 0px oklch(0 0 0 / 0.60)"
+      }
+    }
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs",
+            "en": "Contributors"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "aac": {
+    "formId": "618b7b4abc572b35b4505da3",
+    "directory": {
+      "fields": {
+        "title": "answers.aapStep1.titre",
+        "description": "answers.aapStep1.description",
+        "tags": "answers.aapStep1.tags",
+        "depense": "answers.aapStep1.depense"
+      }
+    },
+    "detail": {
+      "gallery": "aapStep1.image"
+    }
+  }
+}

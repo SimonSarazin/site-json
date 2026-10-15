@@ -10,7 +10,8 @@
   },
   "testimonial": {
     "listen": "Listen",
-    "listenTitle": "Listen to the testimony"
+    "listenTitle": "Listen to the testimony",
+    "viewImage": "View full image"
   },
   "resource": {
     "open": "Open the link",
@@ -59,7 +60,6 @@
     "notProvided": "Not provided",
     "installation": "Facility",
     "installationEmpty": "No facility provided",
-    "validated": "Validated",
     "noName": "(No name)",
     "by": "By:",
     "showLess": "See less",
@@ -67,7 +67,16 @@
     "activitySheet": "Activity sheet",
     "structureSheet": "Organization sheet",
     "edit": "Edit",
-    "editError": "Unable to load this entry for editing."
+    "editTitle": "Edit — {{title}}",
+    "editLoading": "Loading the entry…",
+    "edited": "Changes saved.",
+    "editError": "Couldn't load this entry. Select Edit again to retry.",
+    "status": {
+      "validated": "Validated",
+      "pending": "Pending",
+      "inProgress": "In progress",
+      "refused": "Refused"
+    }
   },
   "CardPoiAmenities": {
     "amenities": "Amenities",
@@ -314,11 +323,9 @@
   "resourceDirectory.priceSuffix.fullDay": "/day",
   "resourceDirectory.priceSuffix.bed": "/bed",
   "resourceDirectory.priceSuffix.room": "/night",
-  "resourceDirectory.area": "Area:",
   "resourceDirectory.roomsCount": "{{count}} room",
   "resourceDirectory.roomsCount_other": "{{count}} rooms",
   "resourceDirectory.hostedTitle": "Host third place",
-  "resourceDirectory.solidaire": "Solidarity rate",
   "resourceDirectory.nameCoworking": "Coworking space",
   "resourceDirectory.nameMeeting": "Meeting room",
   "resourceDirectory.nameAccommodation": "Accommodation",
@@ -330,8 +337,17 @@
   "resourceDirectory.filterByParent": "See resources hosted by {{name}}",
   "resourceDirectory.activeParentFilter": "Resources hosted by {{name}}",
   "resourceDirectory.clearParentFilter": "Clear filter",
-  "resourceDirectory.contactByEmail": "Contact by email",
+  "resourceDirectory.contactByEmail": "Book by email",
   "resourceDirectory.mailtoSubject": "Booking request — {{name}}",
+  "resourceDirectory.detail.equipments": "Equipment",
+  "resourceDirectory.detail.catering": "Catering",
+  "resourceDirectory.detail.services": "Services offered",
+  "resourceDirectory.detail.roomType": "Room type",
+  "resourceDirectory.detail.moreInfo": "Good to know",
+  "resourceDirectory.detail.about": "About the place",
+  "resourceDirectory.detail.tip": "The little extra",
+  "resourceDirectory.detail.area": "Area",
+  "resourceDirectory.detail.solidarity": "Solidarity rate available",
   "Chargement des points… {{loaded}} / {{total}}": "Loading points… {{loaded}} / {{total}}",
   "Carte limitée aux {{loaded}} premiers résultats": "Map limited to the first {{loaded}} results",
   "Aucun résultat": "No results",
