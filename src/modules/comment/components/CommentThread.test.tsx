@@ -9,7 +9,8 @@ import { AuthModalContext } from "@/modules/auth/context/AuthModalContext";
 import type { Editor } from "@tiptap/core";
 import { loadEditorSurface } from "./editor/editorStore";
 import { stubSelectionGeometry } from "./editor/__tests__/jsdom";
-import type { CommentNode } from "../types";
+import type { CommentNode, CommentTarget } from "../types";
+import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
 import "../i18n";
 
 /**
@@ -41,6 +42,8 @@ const NODES = [node("c1"), node("c2"), node("c3")];
 let arbre: CommentNode[] = NODES;
 /** L'état de la requête simulée : messages chargés, et aucune relecture en cours. */
 const requete = { isSuccess: true, isFetching: false, isError: false, avecDonnees: true };
+/** La cible du fil simulé — stable, comme celle que rend `useCommentsQuery`. */
+const CIBLE = { type: "news", id: "x", path: null };
 
 /** La session simulée : connectée par défaut, anonyme quand un test le demande. */
 const session = vi.hoisted(() => ({ me: null as null | { id: string; isConnected: boolean; uploadDocument?: () => Promise<unknown> } }));
@@ -49,7 +52,7 @@ vi.mock("@/hooks/useCocolight", () => ({
 }));
 vi.mock("../hooks/useCommentsQuery", () => ({
   useCommentsQuery: () => ({
-    nodes: arbre, index: new Map(), host: null, target: { type: "news", id: "x" },
+    nodes: arbre, index: new Map(), host: null, target: CIBLE,
     isLoading: false, refetch: vi.fn(), ...requete,
     data: requete.avecDonnees ? { nodes: arbre } : undefined,
   }),
@@ -61,16 +64,29 @@ vi.mock("../hooks/useMarkThreadSeen", () => ({
 }));
 /** Les options reçues par les mutations : le fil y branche le rappel d'un envoi refusé. */
 const mutationsRecues = vi.hoisted(() => ({
-  options: null as null | { onSendFailed?: (draft: { text: string; mentions: unknown[]; parentId: string | null }) => void },
+  options: null as null | {
+    onSendFailed?: (draft: { text: string; mentions: unknown[]; parentId: string | null; images: unknown[] }) => void;
+  },
   /** Le signalement, STABLE d'un rendu à l'autre : on y lit ce que le fil a demandé, et quand fermer. */
   signaler: vi.fn(),
+  /** L'édition et l'envoi, stables eux aussi : on y lit la demande et ses rappels. */
+  modifier: vi.fn(),
+  poster: vi.fn(),
+  /** La correction EN VOL — `isPending` et `variables` de la mutation d'édition. */
+  editionEnVol: null as null | { commentId: string },
 }));
 vi.mock("../hooks/useCommentMutations", () => ({
   useCommentMutations: (options: typeof mutationsRecues.options) => {
     mutationsRecues.options = options;
     const stub = { mutate: vi.fn(), isPending: false };
     return {
-      add: stub, reply: stub, edit: stub, remove: stub, react: stub,
+      add: { mutate: mutationsRecues.poster, isPending: false }, reply: stub,
+      edit: {
+        mutate: mutationsRecues.modifier,
+        isPending: mutationsRecues.editionEnVol !== null,
+        variables: mutationsRecues.editionEnVol ?? undefined,
+      },
+      remove: stub, react: stub,
       report: { mutate: mutationsRecues.signaler, isPending: false },
     };
   },
@@ -78,10 +94,12 @@ vi.mock("../hooks/useCommentMutations", () => ({
 
 const { CommentThread } = await import("./CommentThread");
 
-function mount(props: Parameters<typeof CommentThread>[0] = {}) {
+function mount(
+  props: Parameters<typeof CommentThread>[0] = {},
+  client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   // Un connecté voit le composer (revue du 29/09 : il en était privé sans `userContext`), et sa
   // recherche de mentions passe par React Query.
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const wrapper = ({ children }: { children: ReactNode }) =>
     createElement(QueryClientProvider, { client }, createElement(LocalizationProvider, null, children));
   const { container, rerender } = render(createElement(CommentThread, props), { wrapper });
@@ -116,6 +134,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   arbre = NODES;
   marquage.appels.length = 0;
+  mutationsRecues.editionEnVol = null;
   requete.isSuccess = true;
   session.me = { id: ME, isConnected: true };
   requete.isError = false;
@@ -272,7 +291,7 @@ describe("CommentThread — repli d'office", () => {
     arbre = [node("r", reponses(6))];
     const { container } = mount();
     expect(container.querySelectorAll("[data-comment-row]")).toHaveLength(1);
-    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "ma réponse", mentions: [], parentId: "x3" }); });
+    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "ma réponse", mentions: [], parentId: "x3", images: [] }); });
     act(() => { fireEvent.keyDown(champDe(container)!, { key: "Enter", ctrlKey: true }); });
     expect(container.querySelector('[data-comment-id="x3"]')).not.toBeNull();
   });
@@ -290,7 +309,7 @@ describe("CommentThread — un fil affiché se marque lu", () => {
   it("demande le marquage des non-lus AFFICHÉS, par identifiant, une fois les messages chargés", () => {
     arbre = [node("r", [{ ...node("n1"), unread: true }, { ...node("n2"), unread: true }])];
     mount();
-    expect(dernier()).toEqual([{ type: "news", id: "x" }, ["n1", "n2"]]);
+    expect(dernier()).toEqual([CIBLE, ["n1", "n2"]]);
   });
 
   it("ne demande rien tant qu'une lecture des messages est en cours", () => {
@@ -316,7 +335,7 @@ describe("CommentThread — un fil affiché se marque lu", () => {
 describe("CommentThread — envoi refusé (revue du 29/09)", () => {
   it("remet le texte refusé dans le champ, curseur dedans — il était perdu", async () => {
     const { container } = mount();
-    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "texte à renvoyer", mentions: [], parentId: null }); });
+    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "texte à renvoyer", mentions: [], parentId: null, images: [] }); });
     await image();
     const champ = champDe(container)!;
     expect(champ.editor.getText()).toBe("texte à renvoyer");
@@ -326,7 +345,7 @@ describe("CommentThread — envoi refusé (revue du 29/09)", () => {
   it("le texte refusé revient tel que le fil l'aurait rendu, mentions comprises", () => {
     const { container } = mount();
     const camille = { id: "e".repeat(24), name: "Camille", slug: "camille" };
-    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "merci **beaucoup** @camille", mentions: [camille], parentId: null }); });
+    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "merci **beaucoup** @camille", mentions: [camille], parentId: null, images: [] }); });
     const champ = champDe(container)!;
     expect(champ.querySelector("strong")?.textContent).toBe("beaucoup");
     expect(champ.querySelector("[data-type='mention']")?.getAttribute("data-slug")).toBe("camille");
@@ -334,7 +353,7 @@ describe("CommentThread — envoi refusé (revue du 29/09)", () => {
 
   it("rétablit le « réponse à » d'une réponse refusée", () => {
     const { container } = mount();
-    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "ma réponse", mentions: [], parentId: "c2" }); });
+    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "ma réponse", mentions: [], parentId: "c2", images: [] }); });
     const champ = champDe(container)!;
     expect(champ.editor.getText()).toBe("ma réponse");
     // Le champ se nomme d'après ce qu'on y fait : on y répond de nouveau à Camille.
@@ -534,5 +553,211 @@ describe("CommentThread — image dans le texte", () => {
     await ouvrirImage(container.querySelector<HTMLElement>(".comment-composer-zone")!);
     expect(screen.queryByRole("tab")).toBeNull();
     expect(screen.getByLabelText("Adresse de l'image")).toBeTruthy();
+  });
+});
+
+/**
+ * Corrections de l'auto-revue du 16/10 (registre `comment-dev` : R4, A4, R3, B6, B2).
+ */
+describe("CommentThread — une correction refusée garde son texte (R4)", () => {
+  const manquantes = ["hasPointerCapture", "releasePointerCapture", "scrollIntoView"] as const;
+  beforeAll(() => {
+    for (const nom of manquantes) (Element.prototype as unknown as Record<string, unknown>)[nom] ??= () => false;
+  });
+  afterAll(() => {
+    for (const nom of manquantes) delete (Element.prototype as unknown as Record<string, unknown>)[nom];
+  });
+
+  it("le champ d'édition reste ouvert et rempli après l'envoi, et ne se ferme qu'au succès", async () => {
+    arbre = [{ ...node("c1"), author: { id: ME, name: "Moi", slug: "moi", avatarUrl: null }, text: "texte à corriger" }, node("c2")];
+    const { container } = mount();
+    const user = userEvent.setup();
+    const ligne = container.querySelector<HTMLElement>('[data-comment-id="c1"]')!;
+    await user.click(within(ligne).getByRole("button", { name: "Plus d'actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Modifier" }));
+    const edition = await vi.waitFor(() => {
+      const champ = ligne.querySelector<Champ>("[data-comment-field]");
+      if (!champ) throw new Error("champ d'édition absent");
+      return champ;
+    });
+
+    act(() => { fireEvent.keyDown(edition, { key: "Enter", ctrlKey: true }); });
+
+    expect(mutationsRecues.modifier).toHaveBeenCalledTimes(1);
+    const [demande, rappels] = mutationsRecues.modifier.mock.calls[0]! as [{ commentId: string; text: string }, { onSuccess: () => void }];
+    expect(demande).toMatchObject({ commentId: "c1", text: "texte à corriger" });
+    // Envoyé, pas encore accepté : le champ est toujours là, avec ce qu'on y a écrit — c'est lui
+    // qu'on corrigera si le serveur refuse.
+    const toujours = ligne.querySelector<Champ>("[data-comment-field]");
+    expect(toujours).not.toBeNull();
+    expect(toujours!.editor.getText()).toBe("texte à corriger");
+
+    act(() => rappels.onSuccess());
+    expect(ligne.querySelector("[data-comment-field]")).toBeNull();
+  });
+
+  /** Ouvre la correction d'un message à soi, l'envoie, et rend son champ et ses rappels. */
+  async function envoyerUneCorrection(container: HTMLElement, id: string) {
+    const user = userEvent.setup();
+    const ligne = () => container.querySelector<HTMLElement>(`[data-comment-id="${id}"]`);
+    await user.click(within(ligne()!).getByRole("button", { name: "Plus d'actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Modifier" }));
+    const champ = await vi.waitFor(() => {
+      const trouve = ligne()?.querySelector<Champ>("[data-comment-field]");
+      if (!trouve) throw new Error("champ d'édition absent");
+      return trouve;
+    });
+    act(() => { fireEvent.keyDown(champ, { key: "Enter", ctrlKey: true }); });
+    const [, rappels] = mutationsRecues.modifier.mock.calls[0]! as [unknown, { onSuccess: () => void }];
+    return { user, ligne, champ, rappels };
+  }
+  const aMoi = (id: string, text: string) =>
+    ({ ...node(id), author: { id: ME, name: "Moi", slug: "moi", avatarUrl: null }, text });
+
+  it("pendant SON envoi, le champ et « Annuler » sont figés ; refusée, la correction redevient modifiable", async () => {
+    arbre = [aMoi("c1", "texte à corriger"), node("c2")];
+    const { container, relire } = mount();
+    const { ligne, champ } = await envoyerUneCorrection(container, "c1");
+
+    mutationsRecues.editionEnVol = { commentId: "c1" };
+    relire();
+    expect(champ.editor.isEditable).toBe(false);
+    expect(within(ligne()!).getByRole("button", { name: "Annuler" }).hasAttribute("disabled")).toBe(true);
+
+    mutationsRecues.editionEnVol = null; // refusée : la mutation retombe
+    relire();
+    expect(champ.editor.isEditable).toBe(true);
+    expect(champ.editor.getText()).toBe("texte à corriger");
+  });
+
+  it("au succès, le focus parti ailleurs y reste — le champ du bas pris entre-temps", async () => {
+    arbre = [aMoi("c1", "texte à corriger"), node("c2")];
+    const { container } = mount();
+    const { ligne, rappels } = await envoyerUneCorrection(container, "c1");
+    const enBas = [...container.querySelectorAll<HTMLElement>("[data-comment-field]")]
+      .find(champ => !champ.closest("[data-comment-row]"))!;
+    act(() => { enBas.focus(); });
+
+    act(() => rappels.onSuccess());
+
+    expect(ligne()!.querySelector("[data-comment-field]")).toBeNull();
+    expect(document.activeElement).toBe(enBas);
+  });
+
+  it("au succès, le champ se ferme même replié entre-temps : il ne ressort pas seul au dépli", async () => {
+    arbre = [node("r", [aMoi("x0", "réponse à corriger"), node("x1"), node("x2"), node("x3"), node("x4")])];
+    const { container } = mount();
+    const { user, ligne, rappels } = await envoyerUneCorrection(container, "x0");
+
+    await user.click(container.querySelector<HTMLElement>("[data-comment-collapse]")!);
+    expect(ligne()).toBeNull();
+    act(() => rappels.onSuccess());
+    await user.click(container.querySelector<HTMLElement>("[data-comment-collapse]")!);
+
+    expect(ligne()).not.toBeNull();
+    expect(ligne()!.querySelector("[data-comment-field]")).toBeNull();
+  });
+});
+
+describe("CommentThread — le brouillon d'un envoi refusé, au complet (A4, R3, B6)", () => {
+  const CLE = COMMENT_QUERY_KEYS.REFUSED_DRAFT(CIBLE as CommentTarget, ME);
+  const IMAGE = { id: "1".repeat(24), url: null, thumbUrl: null, name: "capture.png" };
+
+  it("garé pendant que le fil était fermé, il revient à la réouverture — puis sa clé est vidée", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(CLE, { text: "envoyé trop tard", mentions: [], parentId: null, images: [] });
+
+    const { container } = mount({}, client);
+    await image();
+
+    expect(champDe(container)!.editor.getText()).toBe("envoyé trop tard");
+    // Repris : la clé est vidée, pas retirée — le fil, qui l'observe, doit pouvoir en recevoir un autre.
+    expect(client.getQueryData(CLE)).toBeNull();
+  });
+
+  it("garé PENDANT que le fil est ouvert — fermé puis rouvert avant le refus —, il y revient aussitôt", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = mount({}, client);
+    await image();
+    expect(champDe(container)!.editor.getText()).toBe("");
+
+    act(() => { client.setQueryData(CLE, { text: "refusé pendant la lecture", mentions: [], parentId: null, images: [] }); });
+    await image();
+
+    expect(champDe(container)!.editor.getText()).toBe("refusé pendant la lecture");
+    expect(client.getQueryData(CLE)).toBeNull();
+  });
+
+  it("une réponse garée retrouve son « réponse à » dès que le parent est affiché", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(CLE, { text: "ma réponse", mentions: [], parentId: "c2", images: [] });
+
+    const { container } = mount({}, client);
+    await image();
+
+    expect(champDe(container)!.getAttribute("aria-label")).toContain("Camille");
+  });
+
+  it("garé par un AUTRE compte, il ne revient pas — et reste à son auteur", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const deLAutre = COMMENT_QUERY_KEYS.REFUSED_DRAFT(CIBLE as CommentTarget, "f".repeat(24));
+    client.setQueryData(deLAutre, { text: "le texte d'un autre", mentions: [], parentId: null, images: [] });
+
+    const { container } = mount({}, client);
+    await image();
+
+    expect(champDe(container)!.editor.getText()).toBe("");
+    expect(client.getQueryData(deLAutre)).toBeDefined();
+  });
+
+  it("les images jointes reviennent avec le texte", () => {
+    session.me = { id: ME, isConnected: true, uploadDocument: vi.fn() };
+    const { container } = mount();
+
+    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "avec capture", mentions: [], parentId: null, images: [IMAGE] }); });
+
+    expect(container.querySelector("[data-composer-images]")?.textContent).toContain("capture.png");
+  });
+
+  it("un brouillon rendu puis RENVOYÉ ne revient plus — même après une session perdue puis retrouvée", async () => {
+    const { container, relire } = mount();
+    act(() => { mutationsRecues.options?.onSendFailed?.({ text: "deuxième essai", mentions: [], parentId: null, images: [] }); });
+    await image();
+    act(() => { fireEvent.keyDown(champDe(container)!, { key: "Enter", ctrlKey: true }); });
+    expect(mutationsRecues.poster).toHaveBeenCalledTimes(1);
+
+    session.me = null;
+    relire();
+    expect(champDe(container)).toBeNull();
+    session.me = { id: ME, isConnected: true };
+    relire();
+    await image();
+
+    expect(champDe(container)!.editor.getText()).toBe("");
+  });
+});
+
+/**
+ * Seul « Réessayer » qui reste à l'écran pendant une relance : celui de l'avertissement, au-dessus
+ * des messages gardés. Sans messages, React Query repasse la requête en `pending` dès la relance
+ * (`fetchState`) et l'écran d'erreur cède la place au chargement (relecture du lot, 16/10).
+ */
+describe("CommentThread — « Réessayer » pendant la relance (B2)", () => {
+  const reessayer = (container: HTMLElement) =>
+    within(container.querySelector<HTMLElement>("[data-thread-stale]")!).getByRole("button", { name: "Réessayer" });
+
+  it("celui de l'avertissement est inactif tant que la relecture est en vol : chaque clic l'annulait", () => {
+    requete.isError = true;
+    requete.avecDonnees = true;
+    requete.isFetching = true;
+    const { container } = mount();
+    expect(reessayer(container).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("redevient actif une fois la relecture retombée", () => {
+    requete.isError = true;
+    requete.avecDonnees = true;
+    const { container } = mount();
+    expect(reessayer(container).hasAttribute("disabled")).toBe(false);
   });
 });

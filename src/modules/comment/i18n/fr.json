@@ -96,7 +96,8 @@
       "alt": "Description",
       "altHint": "Ce que montre l'image, pour qui ne la voit pas",
       "insert": "Insérer"
-    }
+    },
+    "emojiSearch": "Rechercher un émoji"
   },
   "images": {
     "attach": "Joindre une image",
@@ -138,6 +139,13 @@
     "who": "{{names}} ont réagi",
     "whoOne": "{{names}} a réagi",
     "andOthers": "{{names}} et {{count}} autres"
+  },
+  "voters": {
+    "title": "Qui a réagi",
+    "description": "Les personnes qui ont réagi à ce message, réaction par réaction.",
+    "loading": "Chargement des réactions…",
+    "empty": "Aucune réaction pour l'instant",
+    "error": "Les réactions n'ont pas pu être chargées."
   },
   "reactionsTypes": {
     "love": "J'adore",
@@ -306,7 +314,8 @@
     "reportError": "Le signalement n'a pas pu être envoyé",
     "maybeSent": "Le message a peut-être été envoyé — la discussion a été rechargée",
     "maybeApplied": "L'opération a peut-être abouti — la discussion a été rechargée",
-    "draftRestored": "Votre texte est revenu dans le champ de saisie."
+    "draftRestored": "Votre texte est revenu dans le champ de saisie.",
+    "draftKept": "Rouvrez la discussion où vous l'avez écrit : votre texte vous y attendra quelques minutes."
   },
   "a11y": {
     "thread": "Fil de discussion",

@@ -2,13 +2,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactNode } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryObserver, skipToken } from "@tanstack/react-query";
 import type { Comment, EntityTypes } from "@communecter/cocolight-api-client";
 import { CocolightContext, type CocolightContextType } from "@/contexts/CocolightContext";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import { useCommentMutations } from "./useCommentMutations";
 import type { CommentThreadData } from "./useCommentsQuery";
-import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
+import { COMMENT_COUNTS_META, COMMENT_QUERY_KEYS } from "../constants/queryKeys";
 import { toCommentTree } from "../lib/commentTree";
 import type { CommentNode, CommentTarget } from "../types";
 
@@ -61,22 +61,27 @@ function failure(status: number) {
 }
 
 interface SetupOptions {
+  /** La cible du fil — sans `path` par défaut. */
+  readonly target?: CommentTarget;
   /** Ce que fait `save()` du brouillon créé — succès par défaut. */
   readonly onSave?: () => Promise<void>;
   readonly onDelete?: () => Promise<void>;
   readonly onVote?: () => Promise<void>;
   readonly onCountChange?: (delta: number) => void;
-  readonly onSendFailed?: (draft: { text: string; mentions: readonly unknown[]; parentId: string | null }) => void;
+  readonly onSendFailed?: (draft: { text: string; mentions: readonly unknown[]; parentId: string | null; images: readonly unknown[] }) => void;
   /** Nombre de réponses sous le message racine. */
   readonly withReplies?: number;
+  /** L'identifiant de la session — `null` : une session sans identifiant. */
+  readonly meId?: string | null;
 }
 
 function setup(options: SetupOptions = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  const target = options.target ?? TARGET;
   const { data, instances } = makeThread(options.withReplies ?? 0);
-  const threadKey = COMMENT_QUERY_KEYS.THREAD(TARGET, null);
+  const threadKey = COMMENT_QUERY_KEYS.THREAD(target, null);
   queryClient.setQueryData<CommentThreadData>(threadKey, data);
 
   const created = {
@@ -97,7 +102,7 @@ function setup(options: SetupOptions = {}) {
   instances.set(ROOT_ID, rootInstance as unknown as Comment);
 
   const cocolight = {
-    me: { id: ME_ID, serverData: { name: "Moi" } },
+    me: options.meId === null ? null : { id: options.meId ?? ME_ID, serverData: { name: "Moi" } },
     api: null,
     helper: {},
   } as unknown as CocolightContextType;
@@ -115,9 +120,9 @@ function setup(options: SetupOptions = {}) {
 
   const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-  const { result } = renderHook(
+  const { result, unmount } = renderHook(
     () => useCommentMutations({
-      target: TARGET,
+      target,
       entity,
       index: instances,
       onCountChange: options.onCountChange,
@@ -128,7 +133,9 @@ function setup(options: SetupOptions = {}) {
 
   const nodesNow = () => queryClient.getQueryData<CommentThreadData>(threadKey)?.nodes ?? [];
 
-  return { result, queryClient, threadKey, nodesNow, initialNodes: data.nodes, created, entity, rootInstance, invalidateSpy };
+  return {
+    result, unmount, queryClient, threadKey, nodesNow, initialNodes: data.nodes, created, entity, rootInstance, invalidateSpy,
+  };
 }
 
 /** Les invalidations portant sur la famille de clés donnée. */
@@ -202,7 +209,7 @@ describe("useCommentMutations — ajout", () => {
     // L'ajout reste annulé pour de bon…
     expect(nodesNow()).toStrictEqual(initialNodes);
     // … mais son texte revient à l'appelant, qui le remet dans le composer.
-    expect(onSendFailed).toHaveBeenCalledExactlyOnceWith({ text: "bonjour", mentions: [], parentId: null });
+    expect(onSendFailed).toHaveBeenCalledExactlyOnceWith({ text: "bonjour", mentions: [], parentId: null, images: [] });
     // La description dit le brouillon rendu (clé brute ici : ce fichier ne charge pas le bundle).
     const appels = toastSpies.error.mock.calls;
     expect(String((appels[appels.length - 1]?.[1] as { description?: unknown } | undefined)?.description))
@@ -503,5 +510,228 @@ describe("useCommentMutations — images", () => {
     await waitFor(() => expect(rootInstance.save).toHaveBeenCalled());
     expect((rootInstance.data as Record<string, unknown>).mediaImg)
       .toEqual({ countImages: 1, images: [DOC_A] });
+  });
+});
+
+/**
+ * Corrections de l'auto-revue du 16/10 (registre `comment-dev`, A1-A4, R3, C2).
+ */
+
+/** La charge passée au premier appel d'une doublure de `comment()`. */
+function chargeDe(doublure: { mock: { calls: unknown[][] } }): Record<string, unknown> {
+  return doublure.mock.calls[0]?.[0] as Record<string, unknown>;
+}
+describe("useCommentMutations — la réponse porte le `path` de son fil (A1)", () => {
+  const PATH = "forms.question1";
+  const AVEC_PATH: CommentTarget = { type: "forms", id: "a".repeat(24), path: PATH };
+
+  it("comme un message racine : ni le SDK ni le serveur ne le reprennent du parent", async () => {
+    const { result, rootInstance, entity } = setup({ target: AVEC_PATH });
+
+    await act(async () => { result.current.add.mutate({ text: "racine" }); });
+    await act(async () => { result.current.reply.mutate({ parentId: ROOT_ID, text: "réponse" }); });
+
+    await waitFor(() => expect(result.current.reply.isSuccess).toBe(true));
+    const racine = (entity as unknown as { comment: ReturnType<typeof vi.fn> }).comment.mock.calls[0][0];
+    const reponse = chargeDe(rootInstance.comment);
+    expect(racine.path).toBe(PATH);
+    expect(reponse.path).toBe(PATH);
+  });
+
+  it("le message optimiste d'une réponse porte aussi le `path`", async () => {
+    const { result, nodesNow } = setup({ target: AVEC_PATH, onSave: () => new Promise(() => {}) });
+
+    result.current.reply.mutate({ parentId: ROOT_ID, text: "réponse" });
+
+    await waitFor(() => expect((nodesNow()[0] as CommentNode).replies).toHaveLength(1));
+    expect((nodesNow()[0] as CommentNode).replies[0]!.path).toBe(PATH);
+  });
+
+  it("sans `path` au fil, la réponse n'en invente pas", async () => {
+    const { result, rootInstance } = setup();
+
+    await act(async () => { result.current.reply.mutate({ parentId: ROOT_ID, text: "réponse" }); });
+
+    await waitFor(() => expect(result.current.reply.isSuccess).toBe(true));
+    expect("path" in chargeDe(rootInstance.comment)).toBe(false);
+  });
+});
+
+describe("useCommentMutations — `markdownActive` (A2)", () => {
+  it("un message posté et une réponse se déclarent en markdown", async () => {
+    const { result, entity, rootInstance } = setup();
+
+    await act(async () => { result.current.add.mutate({ text: "**gras**" }); });
+    await act(async () => { result.current.reply.mutate({ parentId: ROOT_ID, text: "*italique*" }); });
+
+    await waitFor(() => expect(result.current.reply.isSuccess).toBe(true));
+    expect((entity as unknown as { comment: ReturnType<typeof vi.fn> }).comment.mock.calls[0][0].markdownActive).toBe(true);
+    expect(chargeDe(rootInstance.comment).markdownActive).toBe(true);
+  });
+
+  it("une édition le repose : `Comment::update` l'éteint quand la requête l'omet", async () => {
+    const { result, rootInstance } = setup();
+    rootInstance.data.markdownActive = false;
+
+    await act(async () => { result.current.edit.mutate({ commentId: ROOT_ID, text: "corrigé" }); });
+
+    await waitFor(() => expect(rootInstance.save).toHaveBeenCalled());
+    expect(rootInstance.data.markdownActive).toBe(true);
+  });
+});
+
+describe("useCommentMutations — le message confirmé entre dans l'index (A3)", () => {
+  it("ses actions répondent dès la confirmation, sans attendre la relecture du fil", async () => {
+    const { result, queryClient, threadKey, created } = setup();
+
+    await act(async () => { result.current.add.mutate({ text: "bonjour" }); });
+
+    await waitFor(() => expect(result.current.add.isSuccess).toBe(true));
+    const index = queryClient.getQueryData<CommentThreadData>(threadKey)?.index;
+    expect(index?.get(created.id)).toBe(created);
+    // L'index d'origine n'est pas modifié en place : une nouvelle carte, l'ancienne intacte.
+    expect(index?.has(ROOT_ID)).toBe(true);
+  });
+
+  it("une réponse confirmée aussi", async () => {
+    const { result, queryClient, threadKey, created } = setup();
+
+    await act(async () => { result.current.reply.mutate({ parentId: ROOT_ID, text: "réponse" }); });
+
+    await waitFor(() => expect(result.current.reply.isSuccess).toBe(true));
+    expect(queryClient.getQueryData<CommentThreadData>(threadKey)?.index.get(created.id)).toBe(created);
+  });
+});
+
+describe("useCommentMutations — le brouillon d'un envoi refusé (A4, R3)", () => {
+  const IMAGE = { id: "1".repeat(24), url: "blob:a", thumbUrl: "blob:a", name: "a.png" };
+
+  it("rend aussi les images jointes, déjà téléversées", async () => {
+    const onSendFailed = vi.fn();
+    const { result } = setup({ onSave: async () => { throw failure(400); }, onSendFailed });
+
+    result.current.add.mutate({ text: "avec image", imageDocIds: [IMAGE.id], imagePreviews: [IMAGE] });
+
+    await waitFor(() => expect(result.current.add.isError).toBe(true));
+    expect(onSendFailed).toHaveBeenCalledExactlyOnceWith({
+      text: "avec image", mentions: [], parentId: null, images: [IMAGE],
+    });
+  });
+
+  it("fil fermé avant le refus : le brouillon est GARDÉ pour la réouverture, et le toast le dit", async () => {
+    let refuser: (error: unknown) => void = () => {};
+    const onSendFailed = vi.fn();
+    const { result, unmount, queryClient } = setup({
+      onSave: () => new Promise<void>((_resolve, reject) => { refuser = reject; }),
+      onSendFailed,
+    });
+    const mutation = result.current.reply;
+
+    act(() => { mutation.mutate({ parentId: ROOT_ID, text: "réponse", imageDocIds: [IMAGE.id], imagePreviews: [IMAGE] }); });
+    await waitFor(() => expect(refuser).not.toBe(undefined));
+    unmount();
+    await act(async () => { refuser(failure(403)); await Promise.resolve(); });
+
+    await waitFor(() => expect(toastSpies.error).toHaveBeenCalled());
+    expect(onSendFailed).not.toHaveBeenCalled();
+    // Rangé sous son auteur : un autre compte, dans le même onglet, ne le retrouvera pas.
+    expect(queryClient.getQueryData(COMMENT_QUERY_KEYS.REFUSED_DRAFT(TARGET, ME_ID))).toEqual({
+      text: "réponse", mentions: [], parentId: ROOT_ID,
+      // Les aperçus locaux meurent avec le fil : seuls les documents repartent.
+      images: [{ ...IMAGE, url: null, thumbUrl: null }],
+    });
+    const appels = toastSpies.error.mock.calls;
+    expect(String((appels[appels.length - 1]?.[1] as { description?: unknown } | undefined)?.description))
+      .toMatch(/draftKept|Rouvrez la discussion/);
+  });
+
+  it("sans auteur identifié, rien n'est gardé — le toast dit le refus, pas un brouillon qui attend", async () => {
+    let refuser: (error: unknown) => void = () => {};
+    const { result, unmount, queryClient } = setup({
+      onSave: () => new Promise<void>((_resolve, reject) => { refuser = reject; }),
+      onSendFailed: vi.fn(),
+      meId: null,
+    });
+
+    act(() => { result.current.add.mutate({ text: "sans session" }); });
+    await waitFor(() => expect(refuser).not.toBe(undefined));
+    unmount();
+    await act(async () => { refuser(failure(403)); await Promise.resolve(); });
+
+    await waitFor(() => expect(toastSpies.error).toHaveBeenCalled());
+    expect(queryClient.getQueryCache().findAll({ queryKey: ["comment-refused-draft"] })).toHaveLength(0);
+    const appels = toastSpies.error.mock.calls;
+    expect(String((appels[appels.length - 1]?.[1] as { description?: unknown } | undefined)?.description))
+      .not.toMatch(/draftKept|Rouvrez la discussion/);
+  });
+
+  it("fil ROUVERT pendant l'envoi : il observe la clé, et le toast dit « revenu dans le champ »", async () => {
+    let refuser: (error: unknown) => void = () => {};
+    const { result, unmount, queryClient } = setup({
+      onSave: () => new Promise<void>((_resolve, reject) => { refuser = reject; }),
+      onSendFailed: vi.fn(),
+    });
+    // Le fil rouvert : un observateur de la clé du brouillon, comme `CommentThread` en pose un.
+    const observateur = new QueryObserver(queryClient, {
+      queryKey: COMMENT_QUERY_KEYS.REFUSED_DRAFT(TARGET, ME_ID), queryFn: skipToken,
+    });
+    const desabonner = observateur.subscribe(() => {});
+
+    act(() => { result.current.add.mutate({ text: "écrit, fermé, rouvert" }); });
+    await waitFor(() => expect(refuser).not.toBe(undefined));
+    unmount();
+    await act(async () => { refuser(failure(403)); await Promise.resolve(); });
+
+    await waitFor(() => expect(toastSpies.error).toHaveBeenCalled());
+    expect(observateur.getCurrentResult().data).toMatchObject({ text: "écrit, fermé, rouvert" });
+    const appels = toastSpies.error.mock.calls;
+    expect(String((appels[appels.length - 1]?.[1] as { description?: unknown } | undefined)?.description))
+      .toMatch(/draftRestored|revenu dans le champ/);
+    desabonner();
+  });
+});
+
+describe("useCommentMutations — les compteurs des hôtes (C2)", () => {
+  /** Les invalidations par marque `meta`, et leur mode de relecture. */
+  function invalidationsDesHotes(calls: readonly unknown[][]) {
+    return calls
+      .map(call => call[0] as { predicate?: (query: { meta?: Record<string, unknown> }) => boolean; refetchType?: string })
+      .filter(filtre => typeof filtre?.predicate === "function")
+      .map(filtre => ({
+        hote: filtre.predicate!({ meta: { [COMMENT_COUNTS_META]: true } }),
+        autre: filtre.predicate!({ meta: {} }),
+        refetchType: filtre.refetchType,
+      }));
+  }
+
+  it("sans hôte qui écoute (panneau, espace), un message confirmé périme les compteurs marqués, sans les relire", async () => {
+    const { result, invalidateSpy } = setup();
+
+    await act(async () => { result.current.add.mutate({ text: "depuis le panneau" }); });
+
+    await waitFor(() => expect(result.current.add.isSuccess).toBe(true));
+    expect(invalidationsDesHotes(invalidateSpy.mock.calls)).toEqual([{ hote: true, autre: false, refetchType: "none" }]);
+  });
+
+  it("un hôte qui écoute est prévenu, et lui seul : rien d'autre n'est périmé", async () => {
+    const onCountChange = vi.fn();
+    const { result, invalidateSpy } = setup({ onCountChange });
+
+    await act(async () => { result.current.add.mutate({ text: "sous l'actualité" }); });
+
+    await waitFor(() => expect(result.current.add.isSuccess).toBe(true));
+    expect(onCountChange).toHaveBeenCalledExactlyOnceWith(1);
+    expect(invalidationsDesHotes(invalidateSpy.mock.calls)).toEqual([]);
+  });
+
+  it("un envoi « peut-être écrit » fait RELIRE les compteurs marqués : seul le serveur sait", async () => {
+    const onCountChange = vi.fn();
+    const { result, invalidateSpy } = setup({ onCountChange, onSave: async () => { throw failure(500); } });
+
+    result.current.add.mutate({ text: "incertain" });
+
+    await waitFor(() => expect(result.current.add.isError).toBe(true));
+    expect(onCountChange).not.toHaveBeenCalled();
+    expect(invalidationsDesHotes(invalidateSpy.mock.calls)).toEqual([{ hote: true, autre: false, refetchType: "active" }]);
   });
 });

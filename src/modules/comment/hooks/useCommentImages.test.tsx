@@ -150,3 +150,36 @@ describe("useCommentImages", () => {
     expect(result.current.items).toEqual([]);
   });
 });
+
+/**
+ * Les images d'un envoi REFUSÉ reviennent avec son texte (revue du 16/10) : déjà téléversées, elles
+ * repartent telles quelles — sans elles, leurs documents restaient orphelins.
+ */
+describe("useCommentImages — remettre les images d'un envoi refusé", () => {
+  const DOC = "1".repeat(24);
+
+  it("les remet PRÊTES, avec leur document et leur aperçu : elles repartent au prochain envoi", () => {
+    const { result } = setup(vi.fn());
+    act(() => { result.current.restore([{ id: DOC, url: "blob:a", thumbUrl: "blob:a", name: "a.png" }]); });
+    expect(result.current.items).toEqual([
+      expect.objectContaining({ name: "a.png", previewUrl: "blob:a", status: "ready", docId: DOC }),
+    ]);
+    expect(result.current.docIds).toEqual([DOC]);
+    expect(result.current.busy).toBe(false);
+  });
+
+  it("une image déjà dans la liste n'est pas doublée", () => {
+    const { result } = setup(vi.fn());
+    const image = { id: DOC, url: null, thumbUrl: null, name: "a.png" };
+    act(() => { result.current.restore([image]); });
+    act(() => { result.current.restore([image]); });
+    expect(result.current.items).toHaveLength(1);
+  });
+
+  it("rien à remettre : la liste ne bouge pas", () => {
+    const { result } = setup(vi.fn());
+    const avant = result.current.items;
+    act(() => { result.current.restore([]); });
+    expect(result.current.items).toBe(avant);
+  });
+});

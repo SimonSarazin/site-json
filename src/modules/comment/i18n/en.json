@@ -96,7 +96,8 @@
       "alt": "Description",
       "altHint": "What the image shows, for those who cannot see it",
       "insert": "Insert"
-    }
+    },
+    "emojiSearch": "Search emoji"
   },
   "images": {
     "attach": "Attach an image",
@@ -138,6 +139,13 @@
     "who": "{{names}} reacted",
     "whoOne": "{{names}} reacted",
     "andOthers": "{{names}} and {{count}} others"
+  },
+  "voters": {
+    "title": "Who reacted",
+    "description": "The people who reacted to this message, reaction by reaction.",
+    "loading": "Loading reactions…",
+    "empty": "No reactions yet",
+    "error": "The reactions could not be loaded."
   },
   "reactionsTypes": {
     "love": "Love",
@@ -306,7 +314,8 @@
     "reportError": "The report could not be sent",
     "maybeSent": "The message may have been sent — the conversation was reloaded",
     "maybeApplied": "The action may have gone through — the conversation was reloaded",
-    "draftRestored": "Your text is back in the message field."
+    "draftRestored": "Your text is back in the message field.",
+    "draftKept": "Reopen the discussion where you wrote it: your text will wait for you there for a few minutes."
   },
   "a11y": {
     "thread": "Conversation thread",

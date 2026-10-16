@@ -69,7 +69,27 @@ export const COMMENT_QUERY_KEYS = {
   DISCUSSIONS: (depth: string, holder: string | null, userContextId: string | null = null) =>
     ["comment-discussions", depth, holder, userContextId] as const,
   DISCUSSIONS_PREFIX: () => ["comment-discussions"] as const,
+
+  /**
+   * Le brouillon d'un envoi refusé APRÈS la fermeture de son fil : donnée locale, jamais lue sur
+   * le réseau — elle ne vit que le temps de rouvrir le fil (5 min sans lecteur, le `gcTime` par
+   * défaut). Rangée sous son AUTEUR : un autre compte connecté ensuite dans le même onglet ne la
+   * retrouve pas.
+   *
+   * Producteur : `useCommentMutations` (refus d'un envoi, fil démonté)
+   * Consommateur : `CommentThread`, qui la lit au montage puis l'OBSERVE tant qu'il est ouvert, et
+   * la remet à `null` une fois le brouillon repris
+   */
+  REFUSED_DRAFT: (target: CommentTarget, authorId: string) =>
+    ["comment-refused-draft", ...targetSegment(target), authorId] as const,
 } as const;
+
+/**
+ * Marque (`meta`) d'une requête d'HÔTE qui affiche des nombres de messages — le fil d'actualités,
+ * et son « Commenter (N) ». Le module ne connaît pas ses hôtes : une écriture qu'aucun hôte n'a
+ * entendue (`onCountChange`) périme les requêtes qui portent cette marque.
+ */
+export const COMMENT_COUNTS_META = "commentCounts";
 
 export type CommentQueryKeyType = ReturnType<
   (typeof COMMENT_QUERY_KEYS)[keyof typeof COMMENT_QUERY_KEYS]

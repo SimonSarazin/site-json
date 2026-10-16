@@ -39,11 +39,18 @@ beforeAll(async () => {
   await loadEditorSurface();
 });
 
-// Le sélecteur d'émojis est un paquet lourd, chargé à l'ouverture : ici, un bouton qui en choisit un.
+// Le sélecteur d'émojis est un paquet lourd, chargé à l'ouverture : ici, un bouton qui en choisit un
+// — et qui retient les réglages reçus.
+const selecteur = vi.hoisted(() => ({ props: null as null | Record<string, unknown> }));
 vi.mock("emoji-picker-react", () => ({
-  default: ({ onEmojiClick }: { onEmojiClick: (choisi: { emoji: string }) => void }) =>
-    createElement("button", { type: "button", onClick: () => onEmojiClick({ emoji: "🎉" }) }, "choisir-un-émoji"),
+  default: (props: { onEmojiClick: (choisi: { emoji: string }) => void }) => {
+    selecteur.props = props as unknown as Record<string, unknown>;
+    return createElement("button", { type: "button", onClick: () => props.onEmojiClick({ emoji: "🎉" }) }, "choisir-un-émoji");
+  },
 }));
+// Le thème du site, tel que `next-themes` le résout (mode « système » compris).
+const theme = vi.hoisted(() => ({ resolu: undefined as string | undefined }));
+vi.mock("next-themes", () => ({ useTheme: () => ({ resolvedTheme: theme.resolu }) }));
 
 type Champ = HTMLElement & { editor: Editor };
 type Props = Partial<Parameters<typeof CommentComposer>[0]>;
@@ -972,6 +979,14 @@ describe("CommentComposer — mentions", () => {
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
+  it("figée pendant son envoi (`disabled`), l'édition ne s'annule ni par « Annuler » ni par Échap", () => {
+    const onCancel = vi.fn();
+    const { field } = mount({ mode: "edit", initialValue: "corrigé", onCancel, disabled: true });
+    expect(screen.getByRole("button", { name: "Annuler" }).hasAttribute("disabled")).toBe(true);
+    touche(field, "Escape");
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
   it("en mode édition, rend à l'envoi les mentions du message — elles disparaissaient à la correction", () => {
     const camille = { id: "e".repeat(24), name: "Camille", slug: "camille" };
     const { onSubmit, field } = mount({ mode: "edit", initialValue: "merci @camille", initialMentions: [camille] });
@@ -1831,6 +1846,68 @@ describe("CommentComposer — émoji", () => {
     expect(screen.queryByRole("button", { name: "choisir-un-émoji" })).toBeNull();
     envoie(field);
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("bravo 🎉 !", []);
+  });
+
+  /**
+   * Régression mesurée le 16/10 : sous les actualités, le sélecteur de `main`
+   * (`news/components/comment/CommentInput`) recevait thème, recherche traduite, aperçu masqué et
+   * taille ; celui du composer n'en recevait aucun.
+   */
+  it("reçoit les réglages qu'il avait sous les actualités : thème, recherche traduite, sans aperçu, taille", async () => {
+    theme.resolu = "light";
+    mount();
+    act(() => { fireEvent.click(bouton("Insérer un émoji")); });
+    await screen.findByRole("button", { name: "choisir-un-émoji" });
+    expect(selecteur.props).toMatchObject({
+      theme: "light",
+      searchPlaceholder: "Rechercher un émoji",
+      previewConfig: { showPreview: false },
+      width: 320,
+      height: 400,
+    });
+  });
+
+  it("suit le thème SOMBRE du site, mode « système » compris", async () => {
+    theme.resolu = "dark";
+    try {
+      mount();
+      act(() => { fireEvent.click(bouton("Insérer un émoji")); });
+      await screen.findByRole("button", { name: "choisir-un-émoji" });
+      expect(selecteur.props?.theme).toBe("dark");
+    } finally {
+      theme.resolu = undefined;
+    }
+  });
+
+  /**
+   * Dans la modale d'un espace, la grille est portalisée hors du verrou de défilement du dialogue,
+   * qui écoute le document et annulait molette et doigt. Ce qui est vérifié : l'événement n'atteint
+   * plus le document.
+   */
+  it("molette et doigt s'arrêtent à la grille : ils n'atteignent plus le document", async () => {
+    mount();
+    act(() => { fireEvent.click(bouton("Insérer un émoji")); });
+    const grille = await screen.findByRole("button", { name: "choisir-un-émoji" });
+    const auDocument = vi.fn();
+    document.addEventListener("wheel", auDocument);
+    document.addEventListener("touchmove", auDocument);
+    try {
+      fireEvent.wheel(grille);
+      fireEvent.touchMove(grille);
+      expect(auDocument).not.toHaveBeenCalled();
+    } finally {
+      document.removeEventListener("wheel", auDocument);
+      document.removeEventListener("touchmove", auDocument);
+    }
+  });
+});
+
+describe("CommentComposer — une correction garde son texte (revue du 16/10)", () => {
+  it("en édition, l'envoi ne vide pas le champ : c'est ce texte qu'on corrigera si le serveur refuse", () => {
+    const { field, onSubmit } = mount({ mode: "edit", initialValue: "texte corrigé" });
+    envoie(field);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("texte corrigé", []);
+    expect(field.editor.getText()).toBe("texte corrigé");
   });
 });
 

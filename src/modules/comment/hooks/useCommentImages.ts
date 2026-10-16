@@ -43,6 +43,11 @@ function makePreview(file: File): string | null {
   }
 }
 
+/** Une image DÉJÀ téléversée, remise dans la liste : prête d'emblée, son document existe. */
+function remise(image: CommentImage): PendingImage {
+  return { localId: nextLocalId(), name: image.name, previewUrl: image.url, status: "ready", docId: image.id };
+}
+
 function revoke(url: string | null): void {
   if (!url) return;
   if (typeof URL === "undefined" || typeof URL.revokeObjectURL !== "function") return;
@@ -59,6 +64,8 @@ export interface UseCommentImagesResult {
   readonly add: (files: readonly File[]) => void;
   readonly remove: (localId: string) => void;
   readonly reset: () => void;
+  /** Remet des images DÉJÀ téléversées — celles d'un envoi refusé. */
+  readonly restore: (images: readonly CommentImage[]) => void;
   /** Motifs du dernier refus, à afficher tels quels puis oubliés au prochain ajout. */
   readonly rejected: readonly ImageRejection[];
   /** Un téléversement au moins est en cours : l'envoi doit attendre. */
@@ -88,9 +95,15 @@ export interface UseCommentImagesResult {
  * Le téléversement démarre dès l'ajout, pas à l'envoi : au moment de poster, les identifiants
  * sont déjà là et le message part sans attente perceptible.
  */
-export function useCommentImages(): UseCommentImagesResult {
+export function useCommentImages(
+  /**
+   * Les images d'un brouillon gardé pendant que le fil était fermé (`CommentThread`) : leurs
+   * aperçus sont morts avec le fil, seuls leurs documents reviennent — rien que ce hook ait à révoquer.
+   */
+  initial?: readonly CommentImage[],
+): UseCommentImagesResult {
   const { me } = useCocolight();
-  const [items, setItems] = useState<readonly PendingImage[]>([]);
+  const [items, setItems] = useState<readonly PendingImage[]>(() => (initial ?? []).map(remise));
   const [rejected, setRejected] = useState<readonly ImageRejection[]>([]);
 
   // Les aperçus à révoquer au démontage. Un `Map` plutôt que l'état : le nettoyage doit voir la
@@ -172,6 +185,24 @@ export function useCommentImages(): UseCommentImagesResult {
     setRejected([]);
   }, []);
 
+  /**
+   * Remet les images d'un envoi REFUSÉ (revue du 16/10) : le brouillon revenait sans elles, et
+   * leurs documents, déjà téléversés, restaient orphelins au serveur. Prêtes d'emblée — leur
+   * document existe, il repartira tel quel. L'aperçu est celui que l'envoi affichait (`reset` ne
+   * l'a pas révoqué) ; `null` pour un brouillon gardé pendant que le fil était fermé.
+   */
+  const restore = useCallback((images: readonly CommentImage[]) => {
+    if (images.length === 0) return;
+    // Les identifiants locaux se tirent ICI, hors de l'updater (cf. `add`).
+    const remises = images.map(remise);
+    for (const item of remises) if (item.previewUrl) previews.current.set(item.localId, item.previewUrl);
+    setItems(courant => {
+      const deja = new Set(courant.map(item => item.docId));
+      return [...courant, ...remises.filter(item => !deja.has(item.docId))].slice(0, MAX_IMAGES);
+    });
+    setRejected([]);
+  }, []);
+
   const prets = useMemo(
     () => items.filter(item => item.status === "ready" && item.docId),
     [items],
@@ -198,6 +229,7 @@ export function useCommentImages(): UseCommentImagesResult {
     add,
     remove,
     reset,
+    restore,
     rejected,
     busy: items.some(item => item.status === "uploading"),
     full: items.length >= MAX_IMAGES,

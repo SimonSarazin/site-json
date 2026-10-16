@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { QueryObserver, skipToken, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, MessageSquareX } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
@@ -24,7 +25,8 @@ import { ReportCommentDialog } from "./ReportCommentDialog";
 import { VotersDialog } from "./VotersDialog";
 import { DateSeparator, UnreadSeparator } from "./ThreadSeparators";
 import { useCommentsQuery } from "../hooks/useCommentsQuery";
-import { useCommentMutations } from "../hooks/useCommentMutations";
+import { useCommentMutations, type SendDraft } from "../hooks/useCommentMutations";
+import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
 import { useCommentPermissions } from "../hooks/useCommentPermissions";
 import { useMarkThreadSeen } from "../hooks/useMarkThreadSeen";
 import { flattenThread, shouldStayExpanded } from "../lib/flattenThread";
@@ -90,25 +92,91 @@ export function CommentThread({
   const host = entity ?? query.host;
   const scope = scopeEntity ?? host;
   const permissions = useCommentPermissions(scope, enabled);
+  const queryClient = useQueryClient();
+  /**
+   * Le brouillon d'un envoi refusé APRÈS la fermeture du fil (revue du 16/10) : la mutation l'a
+   * gardé dans le cache, sous son auteur, et le fil le reprend — pour ce compte seulement. Garé
+   * avant le montage, il est lu ici, une fois, et remplit le composer dès le premier rendu ; garé
+   * pendant que le fil est ouvert, c'est l'observateur de la clé qui le reprend (plus bas).
+   *
+   * La clé se calcule ici et dans l'effet, jamais au rendu : calculée au rendu (`useMemo`, ou en
+   * clé de `useQuery`), elle faisait sauter tout ce composant au lint du compilateur React — sans
+   * un mot, ses règles cessaient de le lire (vu le 16/10 : une faute témoin n'était plus relevée).
+   */
+  const [garage] = useState(() => {
+    if (!query.target || !meId) return null;
+    const cle = COMMENT_QUERY_KEYS.REFUSED_DRAFT(query.target, meId);
+    const gare = queryClient.getQueryData<SendDraft | null>(cle);
+    return gare ? { cle, gare } : null;
+  });
+  const brouillonGare = garage?.gare ?? null;
   /**
    * Le brouillon d'un envoi REFUSÉ, rendu au composer : l'ajout est annulé (le message quitte le
-   * fil), mais le texte et ses mentions reviennent dans le champ, et le bandeau « réponse à »
-   * avec eux. `version` remonte le composer sur ce brouillon.
+   * fil), mais le texte, ses mentions et ses images reviennent dans le champ, et le bandeau
+   * « réponse à » avec eux. `version` remonte le composer sur ce brouillon ; `rendu` dit qu'il reste
+   * à reprendre — reparti, il ne revient plus (cf. l'envoi, plus bas).
    */
   const [brouillon, setBrouillon] = useState<{
     readonly texte: string; readonly mentions: readonly CommentMention[]; readonly version: number;
-  } | null>(null);
+    readonly rendu: boolean;
+  } | null>(() => (brouillonGare
+    ? { texte: brouillonGare.text, mentions: brouillonGare.mentions, version: 1, rendu: true }
+    : null));
   const [replyingTo, setReplyingTo] = useState<{ id: string; author: string } | null>(null);
+  /**
+   * Le message auquel répondait un brouillon rendu, tant que le fil ne le montre pas encore — un
+   * brouillon gardé pendant que le fil était fermé revient à sa réouverture, souvent avant les
+   * messages. Résolu au rendu dès que le parent est là ; disparu entre-temps, le brouillon
+   * repartira en message racine.
+   */
+  const [parentAttendu, setParentAttendu] = useState<string | null>(() => brouillonGare?.parentId ?? null);
+  if (parentAttendu !== null) {
+    const parent = findNode(query.nodes, parentAttendu);
+    if (parent) {
+      setParentAttendu(null);
+      setReplyingTo({ id: parent.id, author: parent.author.name });
+    } else if (query.isSuccess && !query.isFetching) {
+      setParentAttendu(null);
+    }
+  }
+  // Les pièces jointes du message en cours d'écriture. Hors du composer à dessein : celui-ci
+  // sera remplacé par un vrai éditeur (B11), pas cette mécanique-là.
+  const jointes = useCommentImages(brouillonGare?.images);
+  // L'image DANS le texte : téléversée sans être jointe, pour garder l'adresse écrite (`useInlineImageUpload`).
+  const importerDansLeTexte = useInlineImageUpload();
+  const remettreLesImages = jointes.restore;
+  const rendreLeBrouillon = useCallback((draft: SendDraft) => {
+    setBrouillon(precedent => ({
+      texte: draft.text, mentions: draft.mentions, version: (precedent?.version ?? 0) + 1, rendu: true,
+    }));
+    remettreLesImages(draft.images);
+    setParentAttendu(draft.parentId);
+  }, [remettreLesImages]);
+  /**
+   * Garé PENDANT que le fil est ouvert — fermé puis rouvert avant le refus : un observateur de la
+   * clé le reprend aussitôt, et la mutation, qui le voit, dit « revenu dans le champ » au lieu
+   * de « rouvrez la discussion » (relecture du lot, 16/10). Repris, le brouillon est remis à
+   * `null` sans être retiré : un observateur reste attaché à la requête qu'il observe, et une
+   * requête retirée puis recréée ne le préviendrait plus.
+   */
+  const cibleDuFil = query.target;
+  useEffect(() => {
+    if (garage) queryClient.setQueryData(garage.cle, null);
+    if (!cibleDuFil || !meId) return;
+    const cle = COMMENT_QUERY_KEYS.REFUSED_DRAFT(cibleDuFil, meId);
+    const observateur = new QueryObserver<SendDraft | null>(queryClient, { queryKey: cle, queryFn: skipToken });
+    return observateur.subscribe(({ data }) => {
+      if (!data) return;
+      queryClient.setQueryData(cle, null);
+      rendreLeBrouillon(data);
+    });
+  }, [garage, cibleDuFil, meId, queryClient, rendreLeBrouillon]);
   const mutations = useCommentMutations({
     target: query.target,
     entity: host,
     index: query.index,
     onCountChange,
-    onSendFailed: draft => {
-      setBrouillon(precedent => ({ texte: draft.text, mentions: draft.mentions, version: (precedent?.version ?? 0) + 1 }));
-      const parent = draft.parentId ? findNode(query.nodes, draft.parentId) : null;
-      if (parent) setReplyingTo({ id: parent.id, author: parent.author.name });
-    },
+    onSendFailed: rendreLeBrouillon,
   });
   /**
    * Un fil AFFICHÉ est un fil lu, où qu'il soit monté — et seulement ce qui a été affiché.
@@ -143,11 +211,6 @@ export function CommentThread({
     setNonLusDeLaVisite(precedent => new Set([...precedent, ...idsNonLus]));
   }
   const noeuds = useMemo(() => withUnread(query.nodes, nonLusDeLaVisite), [query.nodes, nonLusDeLaVisite]);
-  // Les pièces jointes du message en cours d'écriture. Hors du composer à dessein : celui-ci
-  // sera remplacé par un vrai éditeur (B11), pas cette mécanique-là.
-  const jointes = useCommentImages();
-  // L'image DANS le texte : téléversée sans être jointe, pour garder l'adresse écrite (`useInlineImageUpload`).
-  const importerDansLeTexte = useInlineImageUpload();
 
   const [pendingDelete, setPendingDelete] = useState<CommentNode | null>(null);
   const [reporting, setReporting] = useState<CommentNode | null>(null);
@@ -460,7 +523,11 @@ export function CommentThread({
       {relectureEchouee ? (
         <p role="status" data-thread-stale className="text-muted-foreground flex items-center justify-center gap-1 px-3 py-1.5 text-xs">
           {t("thread.staleError")}
-          <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => void query.refetch()}>
+          {/* Inactif pendant la relance : sans retour, on recliquait — et chaque clic annulait la
+              relecture en cours pour en lancer une autre (revue du 16/10). C'est le seul « Réessayer »
+              qui reste à l'écran pendant une relance : sans messages, React Query repasse la requête
+              en `pending` et l'écran d'erreur cède la place au chargement. */}
+          <Button variant="link" size="sm" className="h-auto p-0 text-xs" disabled={query.isFetching} onClick={() => void query.refetch()}>
             {t("thread.retry")}
           </Button>
         </p>
@@ -522,19 +589,38 @@ export function CommentThread({
                     initialValue={row.node.text}
                     initialMentions={row.node.mentions}
                     submitting={mutations.edit.isPending}
+                    // Figé pendant SON envoi — champ, barre, « Annuler » : corrigé entre-temps, le
+                    // texte perdait sa seconde correction à la fermeture, et « Annuler » fermait le
+                    // champ sans retenir l'écriture partie (relecture du lot, 16/10).
+                    disabled={mutations.edit.isPending && mutations.edit.variables?.commentId === row.node.id}
                     onUploadInlineImage={importerDansLeTexte}
                     onCancel={() => { setEditingId(null); rendreLeFocus(row.node.id); }}
                     onSubmit={(newText, newMentions) => {
+                      const id = row.node.id;
                       mutations.edit.mutate({
-                        commentId: row.node.id,
+                        commentId: id,
                         text: newText,
                         mentions: newMentions,
                         // Sans cela, corriger une faute de frappe effacerait les images du
                         // message : le backend retire `mediaImg` quand la requête l'omet.
                         imageDocIds: row.node.images.map(image => image.id),
+                      }, {
+                        // Fermé au SUCCÈS seulement (revue du 16/10) : fermé avant la réponse, un
+                        // refus — réseau qui flanche, droit retiré — emportait le texte corrigé sans
+                        // retour possible. En cas d'échec, le champ reste ouvert et rempli, et le
+                        // toast dit pourquoi — comme pour le signalement.
+                        onSuccess: () => {
+                          // Le focus revient à la ligne s'il y était resté (ou s'il n'est nulle
+                          // part) ; parti ailleurs — « Répondre » ouvert entre-temps —, il y reste.
+                          const actif = document.activeElement;
+                          const ligne = document.getElementById(messageAnchorId(id));
+                          if (!actif || actif === document.body || ligne?.contains(actif)) rendreLeFocus(id);
+                          // Fermé sans condition — figé pendant l'envoi, le champ ne porte que le
+                          // texte envoyé : replié entre-temps, il ressortait seul au dépli. Un autre
+                          // message ouvert depuis reste ouvert.
+                          setEditingId(courant => (courant === id ? null : courant));
+                        },
                       });
-                      setEditingId(null);
-                      rendreLeFocus(row.node.id);
                     }}
                   />
                 ) : undefined}
@@ -551,7 +637,7 @@ export function CommentThread({
         <div className="comment-composer-zone shrink-0">
           <CommentComposer
             key={brouillon?.version ?? 0}
-            autoFocus={brouillon !== null}
+            autoFocus={brouillon?.rendu === true}
             initialValue={brouillon?.texte}
             initialMentions={brouillon?.mentions}
             entity={scope}
@@ -566,8 +652,13 @@ export function CommentThread({
             imageRejections={jointes.rejected}
             onUploadInlineImage={importerDansLeTexte}
             onSubmit={(value, mentioned) => {
+              // Un brouillon rendu qui REPART ne doit plus revenir : remonté plus tard (session
+              // perdue puis retrouvée), le composer le ressortait alors qu'il avait été envoyé
+              // depuis (revue du 16/10). La version reste : le composer n'est pas remonté.
+              if (brouillon?.rendu) setBrouillon({ texte: "", mentions: [], version: brouillon.version, rendu: false });
               // Les identifiants sont lus AVANT d'écrire, et la liste vidée juste après : le
-              // téléversement, lui, a déjà eu lieu au moment où l'image a été choisie.
+              // téléversement, lui, a déjà eu lieu au moment où l'image a été choisie. Un refus
+              // les rend avec le brouillon (`SendDraft.images`).
               const imageDocIds = jointes.docIds;
               const imagePreviews = jointes.optimisticImages;
               envoiSuivi.current = value;

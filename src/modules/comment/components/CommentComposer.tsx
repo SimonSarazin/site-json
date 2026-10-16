@@ -1,5 +1,7 @@
 import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { lazy } from "vite-preload";
+import { useTheme } from "next-themes";
+import type { Theme } from "emoji-picker-react";
 import {
   Bold, Code, Heading, Italic, Link2, Link2Off, List, ListOrdered, Paperclip, Quote, Send, SmilePlus, SquareCode, Strikethrough, X,
 } from "lucide-react";
@@ -151,6 +153,10 @@ export function CommentComposer({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tactile = useCoarsePointer();
   const libelleEnvoi = String(t(mode === "edit" ? "composer.save" : "composer.send"));
+  // `resolvedTheme` résout aussi le mode « système ». Le type seul est importé : la valeur de
+  // l'énumération ferait charger tout le sélecteur avec la page.
+  const { resolvedTheme } = useTheme();
+  const themeEmojis = (resolvedTheme === "dark" ? "dark" : "light") as Theme;
   const aideId = useId();
   const adresseId = useId();
 
@@ -198,8 +204,10 @@ export function CommentComposer({
     // Les mentions sont celles du DOCUMENT : en retirer une en éditant la phrase ne notifie pas
     // quelqu'un qui n'est plus cité.
     onSubmit(lu.text, lu.mentions);
-    editeur.current?.clear();
-  }, [joint, disabled, submitting, retenu, idsEnRoute, onSubmit]);
+    // Une ÉDITION garde son texte : le champ reste ouvert jusqu'à l'accord du serveur, et c'est ce
+    // texte qu'on corrige si le serveur refuse (revue du 16/10). Réussie, elle démonte le champ.
+    if (mode !== "edit") editeur.current?.clear();
+  }, [joint, disabled, submitting, retenu, idsEnRoute, onSubmit, mode]);
 
   const ouvrirLeLien = (ouvert: boolean) => {
     // L'adresse du lien où se trouve le curseur, s'il y en a un : on la corrige, on ne la retape pas.
@@ -432,12 +440,28 @@ export function CommentComposer({
                 <SmilePlus className="size-3.5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto border-0 p-0" align="start">
+            <PopoverContent
+              className="w-auto border-0 p-0"
+              side="top"
+              align="start"
+              // Dans la modale d'un espace, la grille est portalisée HORS du verrou de défilement du
+              // dialogue, qui annulait molette et doigt : elle ne défilait plus (revue du 16/10 ;
+              // même parade que `select-objet.tsx`).
+              onWheel={event => event.stopPropagation()}
+              onTouchMove={event => event.stopPropagation()}
+            >
               {/* Monté seulement à l'ouverture : c'est la règle du dépôt pour les composants
                   lourds derrière un déclencheur. */}
               {emojiOpen ? (
                 <Suspense fallback={<div className="p-4 text-xs text-muted-foreground">…</div>}>
+                  {/* Les réglages du sélecteur des actualités sur `main` (`CommentInput`) : thème du
+                      site, recherche traduite, sans aperçu, taille réduite (revue du 16/10). */}
                   <EmojiPicker
+                    theme={themeEmojis}
+                    searchPlaceholder={String(t("composer.emojiSearch"))}
+                    previewConfig={{ showPreview: false }}
+                    width={320}
+                    height={400}
                     onEmojiClick={emoji => {
                       editeur.current?.insertText(emoji.emoji);
                       setEmojiOpen(false);
@@ -495,7 +519,9 @@ export function CommentComposer({
 
         <div className="flex shrink-0 items-center gap-1">
           {mode === "edit" && onCancel ? (
-            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+            // Figé avec le champ (`disabled`) : pendant l'envoi d'une correction, « Annuler » fermait
+            // le champ sans rien annuler — l'écriture était partie (relecture du lot, 16/10).
+            <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={onCancel}>
               {t("composer.cancel")}
             </Button>
           ) : null}

@@ -538,7 +538,9 @@ export function EditorSurface({
         // la saisie : il annule ce qu'on compose, pas l'édition du message.
         if (event.nativeEvent.isComposing) return;
         if (suggestion !== null && !editor.isDestroyed) exitSuggestion(editor.view, SUGGESTION_DE_MENTION);
-        else if (onCancel) onCancel();
+        // Figé (`disabled` : une correction en cours d'envoi), Échap ne ferme rien — la touche reste
+        // prise pour autant : une modale autour se fermerait, l'écriture partie (relecture du lot, 16/10).
+        else if (onCancel) { if (!disabled) onCancel(); }
         else return;
         event.preventDefault();
         event.stopPropagation();
