@@ -12,7 +12,13 @@
 > [Fédération des CAE](federation-des-cae.md) (le seul autre site AAC, modèle de config).
 > Mémoire : `[[project-projetsre]]`. Plan approuvé : `plan-d-tail-pour-integrer-iterative-lemon.md`.
 
-Dernière mise à jour : **2026-09-29** — lot 9 : l'onglet **« Actus et agenda »** n'est plus en démo ; il affiche les actualités et les événements du projet lié au commun. Onglet **« Argent et transparence »** en deux listes (dépenses / cofinanceurs), comme la maquette. **Revue avant commit** faite (bloquants corrigés, toutes les gates vertes). Reste le déploiement.
+Dernière mise à jour : **2026-10-15** — suites de la revue de la MR `aac-dev` :
+- merge de main : `choose` n'est plus deviné, mais il est déjà déclaré ici ;
+- interrupteur **`aac.detail.demoBlocks`** : allumé sur projets.re, **à couper avant la mise en ligne** ;
+- formulaire **mesuré en DEV et en PROD** : 1 réponse, 0 visible pour un anonyme ;
+- chemin `adresse` corrigé : il désignait une question de l'ancien formulaire.
+
+Reste le déploiement.
 
 ---
 
@@ -27,13 +33,13 @@ footer, pages de contenu) reste piloté par la config SiteForge.
 
 | | |
 |---|---|
-| Slug | `projetsre` — organisation « ProjetsRe », id `6ab104d13d704045d865e726` (communecter-dev, 21/09) |
-| Config | [`config.prod.projetsre.json`](../config.prod.projetsre.json) — 4 pages, 7 sections ; `.env` local pointé dessus |
-| Formulaire AAC | `6ab104ffa43c9446fb595a86` — 4 étapes (Proposition, Bilan, Financement, Suivi), **copie du formulaire de la Fédération des CAE** (mêmes identifiants de questions) |
-| Interface | clé **`editorial`** (fiche, cartes, coquille d'annuaire) |
+| Slug | **`projetsre1`** — organisation « ProjetsRe », id `6abb847deb4ce02b4c3e6b4e` (remplace l'entité `projetsre` du 21/09 depuis le 29/09) ; résolue en DEV et en PROD (15/10) |
+| Config | [`config.prod.projetsre.json`](../config.prod.projetsre.json) — 4 pages, 7 sections (fichier, CSS et images gardent le nom `projetsre`) |
+| Formulaire AAC | **`6abb8521ac535a1b7e617a0f`** — « ProjetsRe », `type: aap` sans `aapType`, 4 étapes (`aapStep1` à `aapStep4`), présent en DEV et en PROD (15/10) ; remplace `6ab104ffa43c9446fb595a86` |
+| Interface | clé **`editorial`** (fiche, cartes, coquille d'annuaire) ; contenu de démonstration par `aac.detail.demoBlocks` |
 | Feuille CSS | `src/index-projetsre.css` (créée) |
 | Branche | `aac-dev` |
-| SDK | `@communecter/cocolight-api-client` **1.0.192-local** |
+| SDK | `@communecter/cocolight-api-client` `^1.0.201` (depuis le merge de main du 15/10) |
 
 **Historique des chantiers**
 
@@ -49,13 +55,16 @@ footer, pages de contenu) reste piloté par la config SiteForge.
 | 23/09 | Claude | Héros de la fiche `editorial` au plus près de la maquette (financement, Exporter / Soutenir) — non commité |
 | 28/09 | Claude | Réactions sorties de la carte de financement (`CommunReactionStats`), dans la colonne d'Exporter / Soutenir — non commité |
 | 29/09 | Claude | Revue avant commit des lots 3 à 9 : bloquants corrigés, paquet `funding.reactions`, commentaires condensés — non commité |
+| 29/09 | — | Entité et formulaire remplacés : org `projetsre1` (`6abb847d…`), formulaire `6abb8521…` ; slug du site → `projetsre1` |
+| 15/10 | Claude | Suites de la revue de la MR `aac-dev` : merge de main (résolution indexée, non commitée), interrupteur `demoBlocks`, mesure DEV/PROD, chemin `adresse`, correctifs (repli Suspense, requête désactivée ≠ erreur), nettoyages — non commités |
 
 ## 2. Objectifs de la configuration
 
 1. Un site AAC complet dont l'annuaire et la fiche ont l'allure de la maquette projets.re.
 2. **Aucune fonctionnalité AAC perdue** : ce que la maquette n'a pas (grille/liste, tri, dépôt,
    suppression, sélection, projet lié, édition, galerie, défilement infini) est conservé et restylé.
-3. Ce que la maquette montre et que l'AAC n'a pas est affiché **en démonstration**, clairement marqué.
+3. Ce que la maquette montre et que l'AAC n'a pas est affiché **en démonstration**, clairement marqué —
+   seulement tant que `aac.detail.demoBlocks` est allumé.
 4. Pages **comme federationDesCae** : `/` (bandeau contribuer, aperçu de l'annuaire, bandeau déposer),
    `/aac/communs`, `/mentions-legales`, `/confidentialite`.
 5. Zéro changement de rendu pour les sites qui ne choisissent pas l'interface.
@@ -91,11 +100,37 @@ statique » (17/09). Budget/phasage : à confirmer.
 
 ## 6. Modèle de données réel
 
-Formulaire `6ab104ffa43c9446fb595a86`, lu le 21/09 par `POST <backend>/survey/coform/getformbyid`
-(`parentFormId`), `data.inputs.<étape>.inputs`. **0 réponse** à cette date. C'est une copie du
-formulaire de la Fédération des CAE : mêmes étapes, mêmes identifiants de questions — mais **sans**
-les questions de prose « modèle économique », « gouvernance », « cadre juridique »,
-« partenariats », « modalités de contribution » que la config de la Fédération déclare.
+### Formulaire `6abb8521ac535a1b7e617a0f` (« ProjetsRe »)
+
+Il est lu le 15/10 comme le lit l'application (`entity.form` puis `buildAacFormMeta`), en DEV et en
+PROD, avec le même résultat. Il compte 4 étapes : `aapStep1` porte 26 questions, `aapStep2` à
+`aapStep4` en portent 2 chacune.
+
+Toutes les questions déclarées par la config existent sur ce formulaire, **sauf l'ancien chemin
+`adresse`** :
+- `aapStep1mud6k0tblptwdgxwd5a` était la question du formulaire du 21/09 ;
+- la question adresse du formulaire actuel est **`aapStep1mumh6n3r1f11d73gwbn`**
+  (`tpls.forms.cplx.address`, sans libellé) ;
+- la config pointe sur elle depuis le 15/10.
+
+Comme le formulaire du 21/09, celui-ci n'a pas les questions de prose « modèle économique »,
+« gouvernance », « cadre juridique », « partenariats » et « modalités de contribution » que déclare la
+config de la Fédération.
+
+| Mesure (`directoryproposal`, anonyme, 15/10) | DEV | PROD |
+|---|---|---|
+| Réponses | 1 | 1 |
+| … avec un titre (ce que l'annuaire garde) | 1 | 1 |
+| … sélectionnées par ProjetsRe (ce que voit un anonyme) | **0** | **0** |
+| Contrôle (`zzzBogus`) | 0 | 0 |
+
+**Conséquence :** l'annuaire public reste vide tant qu'aucun commun n'est sélectionné. Le contexte de
+sélection est l'organisation `6abb847d…`, la 1ʳᵉ entrée de `form.parent`.
+
+`config:probe` (15/10, DEV et PROD) :
+- aucun `baseParams` sondable, puisque le site n'a que l'AAC ;
+- contrôle AAC sans constat : `choose` déclaré (`answers.aapStep2.choose`) = question du formulaire
+  (« Séléctionné pour l'afficher dans le 'directory' », libellé tel quel).
 
 | Écran | Question (étape `aapStep1` sauf mention) | Clé de config |
 |---|---|---|
@@ -105,7 +140,7 @@ les questions de prose « modèle économique », « gouvernance », « cadre ju
 | Filtre **Thème** | `aapStep1m03ot9qymmfgashp7l` — « Besoins auquel répond le commun » (`checkboxNew`, 10 catégories : outils de gestion, formation, gouvernance…) | `directory.fields.tags` — même choix que la Fédération ; la question libre « Tags » (50+ valeurs éparses) écartée |
 | Filtre **Stade** | `aapStep1m2ucu54mopm33osqxpd` — « Le commun est-il suffisamment mature… » (`radioNew`, 4 options) | `directory.fields.maturity` |
 | Filtre **Besoin** | — aucune question d'usages catégorisés | **masqué** (règle : filtre résolu sans option) |
-| Filtre **Commune** | `aapStep1mud6k0tblptwdgxwd5a` — « Adresse » (`tpls.forms.cplx.address`), **ajoutée après le lot 6** | `directory.fields.adresse` — la commune s'affiche aussi sur la carte, la ligne et la fiche |
+| Filtre **Commune** | `aapStep1mumh6n3r1f11d73gwbn` — question adresse (`tpls.forms.cplx.address`, **sans libellé** sur le formulaire) | `directory.fields.adresse` — la commune s'affiche aussi sur la carte, la ligne et la fiche |
 | Prose | `aapStep1lusoklfzokkn4svl1ei` « Cas d'usages » · `aapStep1m0w49vpl5jm001xwvsv` « Décrivez l'équipe ou la communauté » | `detail.sections` (`usages`, `equipe`) |
 | Galerie | documents `aapStep1.image` | `detail.gallery` |
 | Sélection | `aapStep2.choose` | `directory.fields.choose` |
@@ -138,6 +173,7 @@ le compteur de membres retombe sur `user_count` du backend (la Fédération comp
 |---|---|
 | Contrôleur + vue, pas de fork de composants | Seule garantie structurelle de « mêmes fonctionnalités » ; tenue par les tests de conformité |
 | Contenu de démo marqué « Exemple », commandes désactivées | Choix du commanditaire (17/09) ; le bandeau évite qu'on prenne ces données pour celles du commun |
+| Démo derrière un interrupteur, `aac.detail.demoBlocks`, faux par défaut (15/10) | Demandé par la revue de la MR : sans interrupteur, le site en ligne servirait des dons, des chiffres et des témoignages inventés sur des projets réels. Allumé sur projets.re tant que c'est une maquette |
 | Filtre Commune : rôle `adresse` + filtrage **client** | Un filtre demande un rôle ET un chemin ; le serveur n'a qu'un créneau `$or` (pris par la visibilité) et ne fait que des regex non ancrées — « Saint-Denis » ramènerait « Saint-Denis-de-la-Réunion » |
 | Rôle `adresse` **sans scan**, contrairement à `image` | Une question `tpls.forms.cplx.address` se devine pourtant à son `componentType` ; mais le rôle allume un filtre, et le deviner le ferait surgir chez les sites qui n'ont rien demandé |
 | Facette groupée par NOM de commune, pas par `localityId` | Clé de cache lisible, comparaison repliée comme les tags, et une adresse en texte libre (sans `localityId`) reste groupable. Limite : deux communes homonymes fusionnent |
@@ -164,6 +200,9 @@ le compteur de membres retombe sur `user_count` du backend (la Fédération comp
 3. Gates : `config:validate`, `audit:config`, `typecheck`, `lint`, `test:preflight` (deux fois : avant
    et après `npm run build`).
 4. Déploiement (`deploy:create`, `deploy:env`, `deploy:dns`) — **sur accord uniquement**.
+5. **Avant la mise en ligne** :
+   - couper `aac.detail.demoBlocks` (ou retirer la clé) ;
+   - sélectionner les communs à publier : sans sélection, l'annuaire public est vide (§ 6).
 
 **Prévisualiser sans le lot 0** : config jetable = celle de federationDesCae + les trois clés
 `editorial` + le thème projets.re, servie par
@@ -327,11 +366,39 @@ fork : les deux blocs reçoivent une mise en page `layout="list"` (même princip
 + `news` + `blog` + `src/lib/variants` **750 tests / 75 fichiers** ✅ · préflights `i18n-files`,
 `aac-variants`, `skill-integrity`, `lazy-entry-facades` ✅ · `npm run build` (client + SSR) ✅.
 
+**15/10 — suites de la revue de la MR `aac-dev`.**
+
+- **Merge de main** (`origin/main` `4daa30c3`, résolution indexée, non commitée) : main ne devine
+  plus `choose`. Les conflits sont résolus sur le comportement de main : `choose: null` et
+  `CONFIG_ONLY_ROLES`, plus les rôles `adresse` / `keywords`. La fiche masque à l'auteur l'étape de
+  `choose`, sinon l'étape d'évaluation **trouvée** (`evalStepKeyFound`). `sites.json` garde
+  `openAtlas` et `projetsre1`. projets.re déclare déjà `choose`, donc rien ne change ici.
+- **Démo derrière `aac.detail.demoBlocks`** : faux par défaut, `true` dans la config de projets.re.
+  Coupé, la fiche n'a ni blocs « Exemple » ni onglets Maturation et Coopérations. L'onglet
+  Communauté passe alors sur une colonne, avec un message quand aucun projet n'est lié.
+- **Chemin `adresse` corrigé** (§ 6) et **mesure DEV/PROD** du formulaire.
+- **Correctifs** :
+  - le repli `Suspense` de l'annuaire est le squelette de l'interface, pas celui par défaut ;
+  - un projet lié dont la requête n'est pas encore partie s'affiche en chargement, plus en erreur
+    (agenda, actualités) ;
+  - le lien « voir tout » passe par `NavLink` (lien externe hors du routeur) ;
+  - `GRID_COLS` est regroupé en un seul module ;
+  - les lectures de la réponse sont mémoïsées dans le contrôleur de la fiche.
+
+**Gates (15/10)** :
+- `typecheck` ✅ · `lint` 0 erreur (23 avertissements, tous antérieurs) · `npm run build` ✅ ·
+  `config:validate` ✅ (projets.re, tiers-lieux, open-atlas) ;
+- suite unitaire + préflights **6 439 tests / 554 fichiers** ✅, hors `site-assets` (dossiers vides
+  locaux sous `public/images/`, hors dépôt) ;
+- `lazy-entry-facades` : `search/components/SwitchDetailsMode.tsx` est **déjà sans façade sur main**
+  (build de `origin/main` seul, 15/10). Il est inscrit à `KNOWN_WITHOUT_FACADE`, avec la dette
+  existante.
+
 ## 11. Checklist d'avancement
 
 | # | Lot | État | Détail |
 |---|---|---|---|
-| 0 | Entité + formulaire Communecter | ✅ | Créés le 21/09 (communecter-dev) ; prod à confirmer |
+| 0 | Entité + formulaire Communecter | ✅ | `projetsre1` et formulaire `6abb8521…` présents en DEV et en PROD (mesurés le 15/10) ; 1 réponse, 0 sélectionnée |
 | 1 | Socle `src/lib/variants.ts` | ✅ | Commité `f97fc117` |
 | 2 | Fiche : contrôleur + vue | ✅ | Commité `cd7aea60` |
 | 3 | Registre de la fiche + préflight | ✅ | Non commité |
@@ -341,6 +408,7 @@ fork : les deux blocs reçoivent une mise en page `layout="list"` (même princip
 | 7 | Documentation | ✅ | doc/34 §3.4 et §3.1, doc/36, ce dossier, SKILL config-assistant |
 | 8 | Adresse + filtre « Commune » | ✅ | Rôle `adresse`, commune sur carte/ligne/fiche (`editorial`), filtre client — non commité ; **à voir sur des réponses réelles** (0 au 21/09) |
 | 9 | Onglet « Actus et agenda » réel | 🟡 | Fil d'actualités et agenda du projet lié — non commité ; tests ✅ ; **à voir sur un commun réel** (projet avec actus et événements) et en connecté (publication) |
+| 10 | Suites de la revue de la MR `aac-dev` (15/10) | 🟡 | Merge de main indexé (non commité), corrections non indexées — § 10 |
 
 ## 12. Dépendances SDK ↔ cocolight-api-client
 
@@ -351,8 +419,9 @@ retombent sur les identifiants (accents perdus).
 
 ## 13. Points d'attention / limitations
 
-- Le contenu de démonstration est **le même sur tous les communs** ; retirer un bloc quand la
-  fonctionnalité arrive (plan de retrait dans `demoContent.ts`).
+- Le contenu de démonstration est **le même sur tous les communs**. Il n'est rendu que si
+  `aac.detail.demoBlocks: true` ; coupé, les onglets Maturation et Coopérations disparaissent.
+  Retirer un bloc quand la fonctionnalité arrive (plan de retrait dans `demoContent.ts`).
 - **Actus et agenda** n'existent qu'avec un **projet lié** : sans projet, l'onglet affiche
   « Les actualités et l'agenda s'ouvrent dès qu'un projet est lié à ce commun. ». L'agenda liste
   les événements dont le projet est **organisateur ou participant** (`project.getEvents`), sur tout
@@ -373,7 +442,10 @@ retombent sur les identifiants (accents perdus).
 
 | Question | Responsable |
 |---|---|
-| Entité et formulaire en **prod** (les identifiants de communecter-dev valent-ils en prod ?) | Anatole |
+| ~~Entité et formulaire en prod~~ | **vérifié le 15/10** — `projetsre1` et `6abb8521…` résolus en PROD, mêmes identifiants et mêmes comptes qu'en DEV |
+| Sélectionner les communs à publier : 0 sélectionné, l'annuaire public est vide | admins ProjetsRe |
+| Couper `aac.detail.demoBlocks` à la mise en ligne | Anatole |
+| Libellé de la question adresse (`aapStep1mumh6n3r1f11d73gwbn`, vide sur le formulaire) | Anatole |
 | Domaine : `projetsre.00.re` ? (puis `coolifyApp`, `deploy:create/env/dns`) | à confirmer |
 | Logo : le logotype SVG texte provisoire convient-il ? | à confirmer |
 | Relecture des textes d'accueil et remplissage des « [à compléter] » des pages légales | commanditaire |

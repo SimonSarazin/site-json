@@ -141,7 +141,7 @@
         "keywords": "answers.aapStep1.tags",
         "maturity": "answers.aapStep1.aapStep1m2ucu54mopm33osqxpd",
         "choose": "answers.aapStep2.choose",
-        "adresse": "answers.aapStep1.aapStep1mud6k0tblptwdgxwd5a"
+        "adresse": "answers.aapStep1.aapStep1mumh6n3r1f11d73gwbn"
       },
       "defaultCardVariant": "editorial",
       "defaultShellVariant": "editorial"
@@ -166,7 +166,8 @@
           "field": "answers.aapStep1.aapStep1m0w49vpl5jm001xwvsv"
         }
       ],
-      "pageVariant": "editorial"
+      "pageVariant": "editorial",
+      "demoBlocks": true
     }
   },
   "cagnotteModuleConfig": {
