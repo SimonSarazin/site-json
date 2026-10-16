@@ -131,6 +131,7 @@ vi.mock("../hooks/useAacDirectoryContext", () => ({
     visibility: { isAdmin: false, currentUserId: "u1", contextId: "ctx" },
     baseUrl: "",
     isFormLoading: false,
+    variants: {},
   }),
 }));
 vi.mock("../hooks/useCommunFundingContext", () => ({
@@ -162,6 +163,7 @@ let detailSections: AacDetailSection[] = [];
 vi.mock("../hooks/useAacDetailSections", () => ({
   useAacDetailSections: () => ({ sections: detailSections, isLoading: isDetailSectionsLoading }),
   useAacGallerySubKey: () => null,
+  useAacDemoBlocks: () => false,
 }));
 // La question liée aux contributeurs à l'édition se résout par la même entrée de cache que la
 // config : sans formulaire déclaré ici, aucune question.

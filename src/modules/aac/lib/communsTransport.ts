@@ -139,6 +139,8 @@ export const AAC_SCAN_SIZE = 300;
 interface ProposalsResponse {
   results?: unknown[];
   count?: Record<string, number>;
+  /** Bloc annexe : les projets liés aux réponses de la page. */
+  projects?: unknown;
 }
 
 /** Une page brute de l'endpoint, déjà parsée en cartes. */
@@ -160,7 +162,9 @@ async function fetchCards(
   })) as ProposalsResponse;
 
   const rows = Array.isArray(page.results) ? page.results : [];
-  const cards = rows.map((raw) => parseAacAnswer(raw, { fields, contextId, baseUrl }));
+  const cards = rows.map((raw) =>
+    parseAacAnswer(raw, { fields, contextId, baseUrl, projects: page.projects })
+  );
 
   return { cards, total: page.count?.answers ?? cards.length };
 }

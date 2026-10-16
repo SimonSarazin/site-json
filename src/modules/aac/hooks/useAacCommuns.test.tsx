@@ -28,7 +28,9 @@ const FIELDS: AacCardFields = {
   image: null,
   depense: null,
   choose: null,
+  adresse: null,
   users: null,
+  keywords: null,
 };
 
 const SCAN_FILTERS: AacDirectoryFiltersState = { ...EMPTY_AAC_FILTERS, maturity: ["Oui"] };
@@ -49,23 +51,28 @@ function defaultRows() {
   ];
 }
 
-/** Un `Form` réduit à `getProposals`, qui pagine ce que `rows()` lui donne. */
-function makeForm(rows: () => unknown[]) {
+/** Un `Form` réduit à `getProposals`, qui pagine ce que `rows()` lui donne ; `blocks` : blocs annexes. */
+function makeForm(rows: () => unknown[], blocks: Record<string, unknown> = {}) {
   const getProposals = vi.fn(async (params: { indexMin: number; indexStep: number }) => {
     const all = rows();
     return {
       results: all.slice(params.indexMin, params.indexMin + params.indexStep),
       count: { answers: all.length },
+      ...blocks,
     };
   });
   return { form: { getProposals } as unknown as Form, getProposals };
 }
 
-function setup(filters: AacDirectoryFiltersState, rows: () => unknown[] = defaultRows) {
+function setup(
+  filters: AacDirectoryFiltersState,
+  rows: () => unknown[] = defaultRows,
+  blocks: Record<string, unknown> = {}
+) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  const { form, getProposals } = makeForm(rows);
+  const { form, getProposals } = makeForm(rows, blocks);
   const wrapper = ({ children }: { children: ReactNode }) =>
     createElement(
       QueryClientProvider,
@@ -157,5 +164,17 @@ describe("useAacCommuns — chemin paginé serveur (non-régression)", () => {
     expect(getProposals.mock.calls[0][0]).toMatchObject({ indexMin: 0, indexStep: 12 });
     expect(getProposals.mock.calls[1][0]).toMatchObject({ indexMin: 12, indexStep: 12 });
     expect(result.current.totalCount).toBe(30);
+  });
+});
+
+describe("useAacCommuns — projet lié", () => {
+  it("le bloc annexe `projects` de la page nomme le projet de chaque carte", async () => {
+    const rows = () => [{ ...row(0, "Oui"), project: { id: "p1", startDate: { sec: 1, usec: 0 } } }, row(1, "Oui")];
+    const projects = { p1: { _id: { $id: "p1" }, name: "SPORTS PEI", slug: "sportsPei" } };
+    const { result } = setup(EMPTY_AAC_FILTERS, rows, { projects });
+
+    await waitFor(() => expect(result.current.communs).toHaveLength(2));
+    expect(result.current.communs[0].project).toEqual({ id: "p1", name: "SPORTS PEI", slug: "sportsPei" });
+    expect(result.current.communs[1].project).toBeNull();
   });
 });

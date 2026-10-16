@@ -8,8 +8,10 @@ import {
 } from "../../lib/aacDisplay";
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
+import { AacCommunProjectLink } from "./AacCommunProjectLink";
 import { StatusPill } from "../StatusPill";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
+import { communPath } from "../../lib/communPath";
 
 interface AacCommunRowProps {
   commun: CommunCard;
@@ -23,8 +25,8 @@ interface AacCommunRowProps {
 /**
  * Un commun sur UNE LIGNE — le mode liste de l'annuaire.
  *
- * Mêmes FAITS que `AacCommunCard`, autre disposition : titre, description, tags,
- * collecte, membres et intéressés. La liste n'est pas une vue appauvrie de la
+ * Mêmes FAITS que `AacCommunCard`, autre disposition : titre, projet lié, description,
+ * tags, collecte, membres et intéressés. La liste n'est pas une vue appauvrie de la
  * carte, c'est la même information rangée pour être comparée d'une ligne à
  * l'autre — d'où les colonnes de droite, alignées et de largeur fixe : l'œil
  * descend une colonne de montants, pas une suite de blocs décalés.
@@ -79,7 +81,7 @@ export function AacCommunRow({ commun, onRequestDelete, isDeleting, className }:
           base à 0 et les colonnes ne passeraient jamais à la ligne en étroit. */}
       <div className="min-w-0 grow basis-48">
         <div className="flex items-center gap-2">
-          <Link to={`/aac/commun/${commun.id}`} className="min-w-0">
+          <Link to={communPath(commun.id)} className="min-w-0">
             <h3 className="truncate text-sm font-bold tracking-wide uppercase transition-colors hover:text-primary">
               {commun.hasTitle ? commun.title : String(t("directory.card.untitled"))}
             </h3>
@@ -90,6 +92,9 @@ export function AacCommunRow({ commun, onRequestDelete, isDeleting, className }:
               {String(t("directory.card.pending"))}
             </StatusPill>
           ) : null}
+
+          {/* Projet lié, sur la ligne du titre. */}
+          <AacCommunProjectLink project={commun.project} className="max-w-48 text-primary" />
         </div>
 
         <p

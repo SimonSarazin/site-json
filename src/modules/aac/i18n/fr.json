@@ -48,6 +48,7 @@
       "usageSubCategory": "Sous catégorie d'usage",
       "tags": "Filtrer par tag",
       "maturity": "Utilisable",
+      "commune": "Commune",
       "sort": "Trier par",
       "reset": "Effacer"
     },
@@ -55,6 +56,9 @@
       "untitled": "Commun sans titre",
       "noDescription": "(Pas de description)",
       "pending": "En attente",
+      "project": "Projet : {{name}}",
+      "inProject": "En projet",
+      "location": "Commune",
       "collected": "Collecté sur les cofinancements en cours",
       "noFunding": "Pas de demande de cofinancement en cours",
       "user": "utilisateur",
@@ -127,6 +131,12 @@
       "remaining": "Restant à financer",
       "cta": "Financer ce commun",
       "goalReached": "Objectif atteint",
+      "raised": "Financement réuni",
+      "cofinancersCount_one": "{{count}} cofinanceur",
+      "cofinancersCount_other": "{{count}} cofinanceurs",
+      "remainingToFund": "{{amount}} restant à financer",
+      "expensesTotal": "Total :",
+      "support": "Soutenir ce projet",
       "selectOrganization": "Sélectionnez une organisation",
       "noOrganizationFound": "Aucune organisation trouvée."
     },
@@ -192,6 +202,18 @@
       "pendingTitle": "Invitations en attente",
       "pendingInvitation": "Invitation envoyée",
       "seeProject": "Voir le projet"
+    },
+    "newsSection": {
+      "error": "Les actualités du projet n'ont pas pu être chargées."
+    },
+    "agendaSection": {
+      "upcoming": "À venir",
+      "past": "Passés",
+      "ongoing": "En cours",
+      "empty": "Aucun événement à venir.",
+      "emptyPast": "Aucun événement passé.",
+      "error": "Les événements du projet n'ont pas pu être chargés.",
+      "more": "Voir plus"
     },
     "prose": {
       "empty": "Aucun renseignement disponible."
@@ -308,5 +330,92 @@
   },
   "highlight": {
     "communs": "Communs déposés"
+  },
+  "editorial": {
+    "directory": {
+      "count_one": "{{count}} projet",
+      "count_other": "{{count}} projets",
+      "reset": "Réinitialiser les filtres",
+      "searchPlaceholder": "Rechercher un projet par son nom",
+      "filters": {
+        "tags": "Besoin",
+        "usage": "Besoin",
+        "maturity": "Utilisable",
+        "commune": "Commune",
+        "all": "Tous",
+        "selected_one": "{{count}} sélectionné",
+        "selected_other": "{{count}} sélectionnés",
+        "usageSubCategory": "Précisez le besoin",
+        "sort": "Trier",
+        "sortDefault": "Ordre par défaut"
+      },
+      "card": {
+        "raised": "{{raised}} € réunis sur {{needed}} €",
+        "interested": "Intéressés"
+      }
+    },
+    "detail": {
+      "breadcrumb": "Projets",
+      "project": "Le projet",
+      "peopleInvolved": "{{count}} personnes impliquées",
+      "commands": "Actions sur ce commun",
+      "export": "Exporter le dossier",
+      "soon": "Bientôt disponible",
+      "tabs": {
+        "label": "Rubriques du projet",
+        "fiche": "La fiche",
+        "action": "Passage à l'action",
+        "argent": "Argent et transparence",
+        "communaute": "Communauté",
+        "vie": "Actus et agenda",
+        "maturation": "Maturation",
+        "cooperations": "Coopérations"
+      },
+      "noProject": "Les jalons et les actions s'ouvrent dès qu'un projet est lié à ce commun.",
+      "noProjectLife": "Les actualités et l'agenda s'ouvrent dès qu'un projet est lié à ce commun.",
+      "noProjectCommunity": "Les contributeurs s'affichent dès qu'un projet est lié à ce commun.",
+      "impact": "Indicateurs d'impact",
+      "calls": {
+        "title": "Compagnon appels à projets",
+        "intro": "Quels appels ouverts correspondent à ce projet, et que faut-il préparer ?",
+        "cta": "Chercher les appels pertinents"
+      },
+      "feedback": {
+        "title": "Avis et idées ({{count}})",
+        "cta": "Donner mon avis"
+      },
+      "supports": {
+        "title": "Soutiens ({{count}})",
+        "cta": "Proposer mon soutien"
+      },
+      "news": "Actualités",
+      "expenses": "Dépenses engagées",
+      "agenda": "Agenda",
+      "maturation": {
+        "title": "Questions qui font mûrir le projet",
+        "intro": "Chaque réponse enrichit la fiche unique et sera réutilisée dans les prochains dossiers.",
+        "askedBy": "Posée par {{name}}",
+        "addTitle": "Ajouter une question",
+        "addIntro": "Notez une question posée par un financeur, un partenaire ou un habitant.",
+        "addPlaceholder": "Ex. Comment le projet se finance-t-il après la subvention ?",
+        "askedByPlaceholder": "Posée par (facultatif)",
+        "addCta": "Ajouter la question",
+        "assistantTitle": "Assistant de maturation",
+        "assistantIntro": "L'assistant lit la fiche et propose les questions que posera un financeur.",
+        "assistantCta": "Proposer des questions",
+        "keep": "Ajouter à la fiche"
+      },
+      "cooperations": {
+        "kicker": "Faire équipe plutôt que chacun dans son coin",
+        "title": "Coopérations possibles",
+        "intro": "Ces projets partagent un territoire, un besoin ou une expérience avec celui-ci. Pour chacun, voici ce qu'il y aurait de concret à mettre en commun.",
+        "open": "Ouvrir la coopération",
+        "see": "Voir ce projet"
+      }
+    },
+    "demo": {
+      "badge": "Exemple",
+      "notice": "Contenu de démonstration — cette fonctionnalité arrive bientôt."
+    }
   }
 }

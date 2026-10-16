@@ -97,6 +97,7 @@ export default function AacPage() {
                 usage: true,
                 tags: true,
                 maturity: true,
+                commune: true,
                 sort: true,
               },
               showDepositButton: true,
