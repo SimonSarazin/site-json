@@ -98,7 +98,7 @@ api.poi({ id }).comment({ … })   → ne lève plus de TypeError
 | # | Limite | Preuve | Conséquence |
 |---|---|---|---|
 | ~~Images~~ | ~~`uploadDocument` interdit explicitement `comments`~~ — **levé le 24/09** : le verrou était entièrement côté client | §13.2 à §13.5 | les images sont livrées (bouton, collage, glisser-déposer), vérifiées au navigateur le 07/10 |
-| `markdownActive` | `ADD_COMMENTS` est `additionalProperties: false` et ne l'expose pas | schéma de l'endpoint | le champ existe en base mais n'est pas postable → rendu markdown restreint, inconditionnel |
+| `markdownActive` | `ADD_COMMENTS` et `UPDATE_COMMENTS` ne l'exposent pas ; le backend le remet à faux quand il manque | schéma de l'endpoint | **demandé le 16/10** (§14.9) et posé par le module à chaque écriture : le SDK publié l'écarte à l'ajout — nos messages se lisent bruts dans le legacy — et le refuse à l'édition, où le brouillon de l'instance lève (`[DraftProxy]`) : la demande n° 12 conditionne toute correction faite depuis le module |
 | ~~`path` en lecture~~ | ~~`GET_COMMENTS` ne filtre pas sur le `path`~~ — **levé le 02/10** : nouvel endpoint `GET_COMMENTS_BY_PATH` et `getComments({path})` | §14.2 | le fil d'une question ne montre plus les messages de toutes les questions du formulaire |
 | `mentions` | six champs **tous requis** : `id, name, slug, type, value, count` | schéma de l'endpoint | un `{ id, name }` est refusé ; le legacy stocke `count` en **chaîne** et ajoute `avatar` — à l'ÉDITION, le SDK ramène désormais chaque mention aux six champs (§14.4) |
 | Résolution d'entité | `api` expose une méthode pour **8** des 10 types | `Api.d.ts` | `news` et `actions` se chargent depuis une entité porteuse ; pour un lien profond, le module construit l'entité par `helper.createFromCollection` (§10.4) |
@@ -368,7 +368,7 @@ l'édition, et son compteur suit **l'affichage** plutôt que le nombre de docume
 | # | Limite | Origine | Ce qu'on fait |
 |---|---|---|---|
 | B1 | ~~Pas d'image dans un message~~ | **Levé — livré le 24/09** (§13.2 à §13.4), vérifié au navigateur le 07/10 (§13.5) : bouton, collage, glisser-déposer, rendu et visionneuse | — |
-| B2 | `markdownActive` non postable | `ADD_COMMENTS` en `additionalProperties: false` | Rendu markdown restreint, inconditionnel |
+| B2 | `markdownActive` non postable | `ADD_COMMENTS` en `additionalProperties: false` | Rendu markdown restreint, inconditionnel, côté module. Le drapeau est **posé depuis le 16/10** et demandé au SDK (§14.9) : levé à sa publication. D'ici là, le SDK publié l'écarte à l'ajout — le legacy lit nos messages bruts — et lève à l'édition (`[DraftProxy]`) |
 | B3 | Mentions limitées aux citoyens | `searchMembers` en `personOnly` | Citoyens seuls |
 | B6 | Pas de filtre `path` **en lecture** | `GET_COMMENTS` n'a pas de bloc `request` | Filtrage côté client ; l'endpoint générique portera le filtre serveur |
 | B10 | L'édition d'un message n'est pas tracée | Mesuré (voir §7) | Aucune marque « modifié » — mieux vaut ne rien dire qu'affirmer faux |
@@ -1535,6 +1535,12 @@ ferait marquer le fil des messages sans chemin à la place du fil visé. Un fil 
 peut pas lire (§9.7) n'est en revanche **pas** un refus — la réponse est celle d'un fil où il n'y a
 rien à marquer, `{result:true, marked:0}`.
 
+**Depuis le 16/10, `ids`** (facultatif, §14.10) : la liste des messages **affichés**. Elle
+RESTREINT le filtre — `"_id" => ['$in' => …]` s'ajoute aux quatre clés, qui restent exigées —, si
+bien qu'un identifiant d'un autre fil ne marque rien. Un `ids` illisible (chaîne, tableau vide ou
+imbriqué, identifiant invalide, plus de 500) est un `bad-request` : lu comme absent, il ferait
+marquer tout le fil. Sans `ids`, tout le fil, comme avant.
+
 Côté client, `useMarkThreadSeen` n'appelle rien quand le fil ouvert n'a aucun non-lu — le cas le
 plus fréquent — et n'invalide le panneau que si le serveur dit avoir marqué quelque chose. Un fil
 déjà marqué pendant la visite ne l'est pas deux fois : sans cette retenue, le rafraîchissement qui
@@ -1556,6 +1562,19 @@ restauration de la base à l'identique.
 périodique n'est jamais coupée, parce qu'un flux peut mourir sans qu'aucun des deux bouts s'en
 aperçoive — **sauf après un refus** du serveur (pas connecté, pas le droit) : le redemander
 toutes les 30 s ne changeait rien (`intervalleDeSondage`, 02/10).
+
+**Corrigé le 16/10** — `connecte` dit que le flux de l'onglet est ouvert, pas qu'il porte
+`comment.changed`. Ouvert par la cloche des notifications, il l'est sur toute page : le panneau se
+croyait en temps réel et ne relisait plus ses compteurs que toutes les 5 min, alors qu'aucune règle
+du hub n'émet ce sujet. `useDiscussionsRealtime` rend donc l'état du flux **pour ce sujet** :
+`degrade` tant qu'aucun signal n'a été reçu dans l'onglet, `connecte` ensuite — le jour où la règle
+existera, le panneau passera de lui-même à 5 min. Le même jour, l'amortisseur est devenu **commun à
+l'onglet** (un par client de requêtes) : le panneau monte quatre abonnés, et une resynchronisation
+invalidait quatre fois le même préfixe, chaque invalidation annulant la relecture de la précédente.
+Et un signal reçu dans la fenêtre de 5 s est rattrapé **à la fin** de la fenêtre, au lieu d'attendre
+le signal suivant. Un même signal parvient à tous les abonnés dans le même tour : seul le premier
+le traite — sans quoi le deuxième, trouvant la fenêtre tout juste ouverte, programmait un rattrapage
+et le panneau était relu une seconde fois 5 s plus tard (relecture du lot, 16/10).
 
 L'état `degrade` mérite d'être compris : le flux est **ouvert**, les battements arrivent, mais le
 bus ne porte plus rien côté serveur. Le client ne peut pas le déduire seul — c'est le hub qui le
@@ -1583,7 +1602,9 @@ le serveur a pu écrire avant de tomber). L'édition et les réactions ne le fon
 changent aucun compteur du panneau.
 
 Ce n'est **pas** le couplage vers l'hôte que la règle du module interdit : `DISCUSSIONS` est une
-clé de ce module. Le compteur de l'hôte, lui, passe toujours par `onCountChange`.
+clé de ce module. Le compteur de l'hôte passe par `onCountChange` quand l'hôte écoute ; sinon par
+la marque `COMMENT_COUNTS_META` que l'hôte a posée sur sa requête (§22.1) — le module ne connaît
+toujours pas ses hôtes.
 
 Et le coût est nul quand le panneau n'est pas monté — le cas le plus fréquent, le fil étant surtout
 rendu dans une fiche : sans observateur, React Query marque la requête périmée sans la relancer.
@@ -1666,9 +1687,9 @@ sa spécification est reproduite ici pour reprise officielle.
 | Constante | `MARK_COMMENTS_SEEN` (le générateur en dérive `endpointApi.markCommentsSeen()` ; la méthode de façade `Api.markCommentsSeen()` est écrite à la main, §2) |
 | Route | `POST /co2/comment/seen`, `application/x-www-form-urlencoded` |
 | Auth | `bearer` |
-| Requête | `contextType` (enum, requis) · `contextId` (`^[a-f0-9]{24}$`, requis) · `path` (optionnel) |
+| Requête | `contextType` (enum, requis) · `contextId` (`^[a-f0-9]{24}$`, requis) · `path` (optionnel) · `ids` (optionnel, 1 à 500 identifiants — §14.10, 16/10) |
 | | `additionalProperties: false`, **aucun `default`** |
-| Réponse 200 | `oneOf` — refus `{result:false, msg}` · succès `{result:true, marked:int}` |
+| Réponse 200 | `oneOf` — refus `{result:false, code, msg}` · succès `{result:true, marked:int}` |
 
 ⚠️ **Aucun `default` sur aucun champ** : AJV tourne avec `useDefaults: true` côté client, un défaut
 déclaré serait **injecté** dans la requête. C'est le piège relevé au J0 avec `default:"news"`, et il
@@ -1910,8 +1931,8 @@ compteur, et sa branche `else` fait `exit;` — « corriger » le compteur tuera
 plafond de 5 images tient au seul **schéma d'écriture** (`mediaImg.images`, cinq au plus).
 
 **Le seul verrou restant était donc le schéma de requête du SDK** : `/co2/comment/save` est en
-`additionalProperties: false` et n'exposait pas `mediaImg` — le même mécanisme qui bloque
-`markdownActive` (B2). Il est désormais déclaré, avec `images` en tableau d'identifiants
+`additionalProperties: false` et n'exposait pas `mediaImg` — le même mécanisme qui bloquait
+`markdownActive` (B2, demandé au §14.9). Il est désormais déclaré, avec `images` en tableau d'identifiants
 `^[a-f0-9]{24}$` plafonné à 5, et `countImages` en entier **ou** chaîne (le legacy écrit une
 chaîne).
 
@@ -2070,16 +2091,26 @@ Et une mesure sans cause établie : sur le poste de test, `comment/save` a répo
 pendant ce temps. L'insertion et le rangement des fichiers ont lieu dans la première seconde ;
 ce qui suit côté backend reste à mesurer.
 
-## 14. Demande à l'équipe SDK — la liste complète (02/10)
+## 14. Demande à l'équipe SDK — la liste complète (mise à jour le 16/10)
 
 > **Le SDK n'est jamais commité** : cette section est la demande à transmettre à l'équipe SDK. Elle
 > réunit **tout** ce que le module attend de `@communecter/cocolight-api-client`, implémenté et
-> vérifié en local — sur la base **1.0.195**, puis reposé le 07/10 sur la **1.0.196**. Le détail de
-> chaque point vit dans la section citée ; les trois points ajoutés le 02/10 sont spécifiés ici
-> (§14.2 à §14.4) ; l'espace d'un commun, ajouté le 07/10, l'est au §14.6 ; le §14.7 dit comment un
-> refus arrive à l'appelant ; la création d'une discussion, ajoutée le 12/10, est au §14.8. Tant que le SDK n'est pas publié, `site-json` ne compile que par le lien
-> local : un `npm install` propre casse le `typecheck` du module. Ordre de livraison : le SDK
-> d'abord, la MR du module ensuite (§2.5).
+> vérifié en local sur la base **1.0.201** — la version qu'exige `main` (`^1.0.201`). Vérifié le 16/10
+> sur `origin/master` du SDK (`68d32db`, 1.0.201) : **aucune** des treize demandes n'y est couverte.
+> Les cinq constantes nouvelles en sont absentes, `GET_COMMENTS` et `ADD_COMMENTS` n'y acceptent
+> toujours que `news` (défaut compris), et ni `mediaImg` ni `markdownActive` n'y sont déclarés.
+>
+> **Ordre de livraison : le backend, puis le SDK, puis la MR du module.** Quatre des cinq endpoints
+> nouveaux appellent des actions que ce module AJOUTE au backend : `DiscussionsAction`
+> (`discussions`), `SeenAction` (`seen`), `DiscussionSpaceAction` (`space`) et
+> `DiscussionCreateAction` (`creatediscussion`) dans `citizenToolKit`, leurs routes dans `co2`. Tant
+> qu'elles ne sont pas déployées, ces endpoints répondent 404 ; `ids` (n° 13) suppose en outre la
+> `SeenAction` du 16/10. Et tant que le SDK n'est pas publié, `site-json` ne compile que par le lien
+> local : un `npm install` propre casse le `typecheck` du module (§2.5).
+>
+> Le détail de chaque point vit dans la section citée ; le §14.7 dit comment un refus arrive à
+> l'appelant. Le SDK local porte aussi `LINK_SELF_ROLE`, qui n'appartient **pas** à cette demande :
+> il vient d'un autre chantier, et ce module ne l'appelle pas. À ignorer en comparant les deux SDK.
 
 ### 14.1 Récapitulatif
 
@@ -2089,17 +2120,24 @@ ce qui suit côté backend reste à mesurer.
 | 2 | `BaseEntity.getComments({ path? })` et `BaseEntity.comment()`, remonté de `News` et `Comment` | méthodes | §2.1, §14.2 | `getComments` n'existe que sur `News` |
 | 3 | **`GET_COMMENTS_BY_PATH`** — nouveau | endpoint | §14.2 | le fil d'une question montre les messages de toutes les questions du formulaire |
 | 4 | `EntityRegistry` : rendre `Comment` aux dépendances de `poi` | registre | §2.1 | `api.poi({ id }).comment()` lève un `TypeError` |
-| 5 | **`GET_DISCUSSIONS`** — nouveau —, sa façade `Api.getDiscussions()` écrite à la main, et **`includeEmpty`** déclaré | endpoint + façade | §9, §14.3 | pas de panneau ; `includeEmpty` refusé par le schéma fermé |
-| 6 | **`MARK_COMMENTS_SEEN`** — nouveau — et sa façade `Api.markCommentsSeen()` | endpoint + façade | §11.6 | les non-lus ne s'éteignent jamais |
+| 5 | **`GET_DISCUSSIONS`** — nouveau, `auth: "bearer"` — et sa façade `Api.getDiscussions()` écrite à la main | endpoint + façade | §9, §14.3 (l'entrée complète) | pas de panneau « Discussions » |
+| 6 | **`MARK_COMMENTS_SEEN`** — nouveau, `auth: "bearer"` — et sa façade `Api.markCommentsSeen()` | endpoint + façade | §11.6 | les non-lus ne s'éteignent jamais |
 | 7 | Export `helper.createFromCollection` | export | §2 | lien profond vers une actualité ou une action : troisième colonne vide |
-| 8 | `mediaImg` sur `ADD_COMMENTS` et `UPDATE_COMMENTS.params`, `uploadDocument` permis sur `comments` | schéma + méthode | §13.2 à §13.4 | pas d'images, et une édition efface les images d'un message |
+| 8 | `mediaImg` sur `ADD_COMMENTS` et `UPDATE_COMMENTS.params` ; `folder: "comments"` accepté par `UPLOAD_DOCUMENT` | schéma | §13.2 à §13.4, §14.5 | pas d'images ; et corriger un message qui en porte lève au brouillon (`[DraftProxy]`) — le module y pose `mediaImg`, sans lequel la correction les effacerait |
 | 9 | **`Comment._update` en liste blanche**, mentions normalisées | méthode | §14.4 | éditer un message à mention ou à `path` échoue, et le serveur efface ses mentions |
-| 10 | **`GET_DISCUSSION_SPACE`** — nouveau, `auth: "none"` — et sa façade `Api.getDiscussionSpace()` | endpoint + façade | §15, §14.6 | pas d'espace de discussion sur la fiche d'un commun |
+| 10 | **`GET_DISCUSSION_SPACE`** — nouveau, `auth: "none"` — et sa façade `Api.getDiscussionSpace()` ; un fil y a **16 champs** (`step` depuis le 14/10) | endpoint + façade | §15, §14.6 | pas d'espace de discussion sur la fiche d'un commun |
 | 11 | **`CREATE_DISCUSSION`** — nouveau, `auth: "bearer"` — et sa façade `Api.createDiscussion()` | endpoint + façade | §16, §14.8 | pas de bouton « + » : on ne crée de discussion supplémentaire que depuis le legacy |
+| 12 | **`markdownActive`** (booléen) sur `ADD_COMMENTS` et `UPDATE_COMMENTS.params`, repris par `Comment._update` | schéma + méthode | §14.9 | **toute correction faite depuis le module lève au brouillon** (`[DraftProxy]`) — le module pose le champ sur l'instance ; et nos messages se lisent bruts dans le legacy |
+| 13 | **`ids`** sur `MARK_COMMENTS_SEEN` : les messages affichés, et eux seuls | schéma (backend du 16/10) | §11.6, §14.10 | tout le fil est marqué lu, y compris un message arrivé depuis le chargement, que personne n'a vu |
 
 Régénération, dans cet ordre : `generate:module:publish` → `generate:methodeapi` → `typecheck` →
 `lint` → `build:esm:rollup` → `build:node` → `build:browser` → `build:types`. Les pièges qui
 invalident une vérification naïve sont au §2.2 : le runtime lit le module **généré**, jamais le JSON.
+
+**Recette attendue.** Chaque sous-section qui suit se termine par les vérifications que l'équipe SDK
+peut rejouer chez elle, sans les sondes de ce dépôt (rangées dans un dossier de travail non
+versionné). Elles se rejouent hors réseau : la validation AJV a lieu avant l'envoi, et un
+intercepteur qui bloque la requête suffit à lire ce qui serait parti.
 
 **Rien à demander pour le lot du 13/10 (§9.10).** `GET_DISCUSSIONS` rend un champ de plus,
 `indexed` (booléen) : le schéma de réponse est ouvert, il passe tel quel, et l'écran ne le lit pas.
@@ -2159,47 +2197,103 @@ async getComments(options: { path?: string | null } = {}): Promise<Comment[]>
 // sinon        → endpointApi.getComments({ pathParams: { type, id } })
 ```
 
-Vérifié par le SDK reconstruit (`sonde-lotR-backend.ts`) : sans `path`, deux messages de deux fils ;
-avec, le seul message du fil demandé.
+Mesuré en local le 02/10 contre le backend de développement : sans `path`, deux messages de deux
+fils ; avec, le seul message du fil demandé.
 
-### 14.3 `GET_DISCUSSIONS` — déclarer `includeEmpty`
+**Recette attendue** — `entity.getComments()` sur un formulaire à deux fils rend les messages des
+deux ; `entity.getComments({ path })`, ceux du seul fil demandé ; un `path` hors de la règle (une
+espace, une barre oblique, plus de 256 caractères) lève `ApiValidationError` avant tout appel ; un
+`type` hors des dix lève de même.
 
-Le backend lit `includeEmpty` (§9.9) ; le schéma de requête, **fermé**
-(`additionalProperties: false`), ne le déclarait pas. Tout appel qui l'envoyait échouait donc à la
-validation, avant même de partir.
+### 14.3 `GET_DISCUSSIONS` — l'entrée complète
+
+Le panneau « Discussions » (§9). `POST /co2/comment/discussions`, corps
+`application/x-www-form-urlencoded`, **`auth: "bearer"`** — sans jeton, la façade lève avant tout
+appel. Schéma de requête **fermé**, aucun champ requis, **aucun `default`** :
 
 ```json
-"includeEmpty": { "type": "string", "enum": ["0", "1"] }
+{
+  "name": "Panneau Discussions",
+  "path": "/co2/comment/discussions",
+  "constant": "GET_DISCUSSIONS",
+  "constantCocolight": "GET_DISCUSSIONS",
+  "functionCocolight": "getDiscussions",
+  "method": "POST",
+  "auth": "bearer",
+  "contentType": "application/x-www-form-urlencoded",
+  "request": {
+    "type": "object",
+    "properties": {
+      "depth":        { "type": "string", "enum": ["rail", "fils", "fil", "all"] },
+      "carrier":      { "type": "string", "pattern": "^[a-z]+:[a-f0-9]{24}$" },
+      "carrierType":  { "type": "string", "enum": ["citoyens", "organizations", "projects", "events", "cities", "poi", "classifieds"] },
+      "carrierId":    { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+      "contextType":  { "…": "les dix types commentables, comme ADD_COMMENTS" },
+      "contextId":    { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+      "path":         { "type": "string" },
+      "limit":        { "type": "integer", "minimum": 1, "maximum": 1000 },
+      "includeEmpty": { "type": "string", "enum": ["0", "1"] }
+    },
+    "required": [],
+    "additionalProperties": false
+  },
+  "responses": { "200": "oneOf — refus { result: false, code, msg } · rail/fils/all · fil (§9)" }
+}
 ```
 
-**Aucun `default`** — même piège qu'au §2.2 : AJV l'injecterait. Absent, le serveur vaut `1`.
+Le mode se **déduit** du périmètre reçu : rien → le rail ; `carrier` (ou `carrierType` +
+`carrierId`) → les fils de ce porteur ; `contextType` + `contextId` (+ `path`) → ce seul fil. `depth`
+ne sert qu'à demander `all`, qui ne se déduit pas. D'où l'absence de tout `default` : AJV tourne avec
+`useDefaults: true`, et un `depth` injecté défairait la déduction du serveur — le piège du §2.2.
+`includeEmpty` dit si les porteurs et fils VIERGES sont rendus (§9.9) : absent, le serveur vaut `1`.
+
+La réponse est décrite au §9 ; elle n'est pas fermée, et le module la lit sans rien supposer de plus
+que ce qu'il affiche.
+
+**Recette attendue** — un appel sans jeton lève `ApiAuthenticationError` avant tout envoi ; un
+appel vide part avec un corps vide (aucun `depth` injecté) ; `includeEmpty: "0"` passe, `0` (le
+nombre) et `"2"` lèvent `ApiValidationError` ; une clé hors des neuf lève de même.
 
 ### 14.4 `Comment._update` — la charge en liste blanche
 
 Le brouillon d'un message relu porte tous les champs de la lecture : `path`, `mentions`,
-`contextId`… `_update` ne remontait que `text` et `mediaImg` dans `params` et laissait le reste à la
+`contextId`… Dans la 1.0.201, `_update` ne remonte que `text` dans `params` et laisse le reste à la
 **racine** ; or `UPDATE_COMMENTS` est fermé — `{ id, params }` seulement. Éditer un message à
 mention ou à `path` levait donc `ApiValidationError`. Et retirer ces champs ne suffit pas :
-`Comment::update` fait `$unset mentions` dès que `params.mentions` manque.
+`Comment::update` fait `$unset mentions` dès que `params.mentions` manque, `$unset mediaImg` dès que
+`params.mediaImg` manque, et remet `markdownActive` à faux dès qu'il manque.
 
 ```ts
 const params = { text };                               // « " " » si vide, comme avant
 if (mentions.length > 0) params.mentions = mentions;   // normalisées, voir ci-dessous
 const media = Comment._mediaImgForWrite(payload.mediaImg);
 if (media) params.mediaImg = media;
+if (typeof payload.markdownActive === "boolean") params.markdownActive = payload.markdownActive; // §14.9
 await this.endpointApi.updateComments({ id, params });
 ```
 
-Chaque mention est ramenée aux **six champs du contrat** : une mention relue porte en plus
-`avatar`, et un `count` en chaîne (`"1"`), que le schéma refuse —
-`{ id, name, slug, type, value, count: Number(count) || 1 }`.
+Les mentions sont **normalisées**, et une seule mention de travers ne fait plus refuser toute
+l'édition :
+
+- une liste PHP à trous se relit en **objet** (`{ "0": …, "2": … }`) : on en reprend les valeurs ;
+- une mention dont l'`id` n'est pas un identifiant (`^[a-f0-9]{24}$`), ou sans `slug` en chaîne, est
+  **écartée** — c'est le cas de mentions legacy écrites de travers ;
+- chacune est ramenée aux **six champs du contrat** :
+  `{ id, name: name ?? slug, slug, type: type ?? "citoyens", value: value ?? name ?? slug, count: Number(count) || 1 }`
+  — une mention relue porte en plus `avatar`, et un `count` en chaîne (`"1"`), que le schéma refuse.
 
 Côté appelant, le front pose la liste **recalculée** sur le texte édité — les mentions encore
 présentes, avec leur type stocké (une organisation reste une organisation) ; vide, rien n'est
 envoyé, et le serveur retire les mentions.
 
-Vérifié par `sonde-edition-mentions.ts`, qui bloque l'envoi par un intercepteur — **zéro
+Vérifié en local le 29/09 par une sonde qui bloque l'envoi par un intercepteur — **zéro
 écriture** : message à mention, message à `path` et témoin passent désormais la validation.
+
+**Recette attendue** — trois messages relus, édités sans toucher qu'au texte : un message à mention
+relue (`avatar`, `count: "1"`), un message à `path`, un message dont une mention legacy a un `id`
+illisible. Chacun passe la validation ; la requête est `{ id, params }` et rien d'autre à la racine ;
+`params.mentions` porte les six champs, `count` en nombre, la mention illisible en moins ;
+`params.markdownActive` vaut ce que porte le brouillon (§14.9).
 
 ⚠️ **À trancher avec l'équipe backend** : `Comment::update` fait aussi `$unset media` faute de
 `params.media` — l'aperçu de lien d'un commentaire legacy —, et ni le SDK ni le front ne le
@@ -2212,13 +2306,19 @@ l'écriture retraite l'aperçu côté serveur — c'est à l'équipe backend de 
 |---|---|
 | `entity.getComments({ path })` | `hooks/useCommentsQuery.tsx` |
 | `helper.createFromCollection(type, client, { id })` | `hooks/useCommentsQuery.tsx` |
-| `entity.comment(data)` puis `save()` ; `comment.save()` (édition), `delete()`, `addVote()`, `addReportAbuse()` | `hooks/useCommentMutations.tsx` |
+| `entity.comment(data)` puis `save()` — une réponse, `parent.comment(data)` ; `data` porte `markdownActive: true`, et le `path` du fil pour un message comme pour une réponse | `hooks/useCommentMutations.tsx` |
+| `comment.save()` (édition, `markdownActive: true` posé au brouillon), `delete()`, `addVote()`, `addReportAbuse()` | `hooks/useCommentMutations.tsx` |
 | `comment.getVotes()` | `hooks/useCommentVoters.ts` |
-| `entity.uploadDocument(…)` | `hooks/useCommentImages.ts` |
+| `me.uploadDocument(file, { contentKey: "slider", docType: "image", folder: "comments", ownerId: me.id })` — une pièce jointe | `hooks/useCommentImages.ts` |
+| `me.uploadDocument(file, { contentKey: "mdImage", docType: "image", folder: "comments", ownerId: me.id })` — une image écrite DANS le texte | `hooks/useInlineImageUpload.ts` |
 | `api.getDiscussions(payload)` | `hooks/useDiscussionsQuery.ts` |
-| `api.markCommentsSeen(…)` | `hooks/useMarkThreadSeen.ts` |
+| `api.markCommentsSeen({ contextType, contextId, path?, ids })` | `hooks/useMarkThreadSeen.ts` |
 | `api.getDiscussionSpace({ contextType, contextId })` | `hooks/useDiscussionSpaceQuery.ts` |
 | `api.createDiscussion({ contextType, contextId, name, audience })` | `hooks/useCreateDiscussion.ts` |
+
+Le téléversement part de **`me`**, la personne connectée — jamais d'une entité `comments`. Ce qu'il
+faut au module est donc `folder: "comments"` dans `UPLOAD_DOCUMENT` (n° 8). Le SDK local retire aussi
+`comments` de la liste d'exclusion de `BaseEntity.uploadDocument` (§13.2) ; le module n'en dépend pas.
 
 ### 14.6 `GET_DISCUSSION_SPACE` — l'espace de discussion d'un commun (07/10)
 
@@ -2262,18 +2362,27 @@ plus de 200 lignes de dépense à proposer (§17.2). Et le serveur refuse (`bad-
 `includeEmpty` posté sous une autre forme qu'une chaîne ; le schéma du client ne l'admet déjà
 qu'en `"0"` ou `"1"`.
 
+**Ajout du 14/10** — un seizième champ, **`step`** (`string | null`) : pour un fil de QUESTION, la clé
+de l'étape du formulaire où vit la question — deux étapes peuvent porter une question de même clé ;
+`null` pour tout autre fil. Le fil rendu par `CREATE_DISCUSSION` (§14.8) le porte aussi, à `null`.
+Additif, comme `line` : un client qui l'ignore ne change pas.
+
+**Recette attendue** — sans jeton, l'appel part et rend l'espace d'un visiteur (`canComment: false`,
+`creatableAudiences: []`) ; avec, les compteurs de la session ; `contextType: "forms"` ou un
+`includeEmpty` hors de `"0"`/`"1"` lèvent `ApiValidationError` avant tout envoi ; un refus du
+serveur arrive en `ApiResponseError` (§14.7) ; chaque fil rendu porte les seize champs.
+
 ### 14.7 Un refus arrive en exception (mesuré le 09/10)
 
 Rien à demander ici : un fait du client, commun aux quatre façades de ce module (`getDiscussions`,
-`markCommentsSeen`, `getDiscussionSpace`, `createDiscussion`), que leur JSDoc doit dire (`@throws`)
-et non « tester `result` » :
+`markCommentsSeen`, `getDiscussionSpace`, `createDiscussion`), que leur JSDoc dit (`@throws`, dans
+le SDK local) au lieu de « tester `result` » :
 
 - le serveur refuse en HTTP 200 avec `{ result: false, code, msg }` ; la façade ne **rend pas** ce
   corps : `EndpointApi.call()` lève `ApiResponseError` (statut 200), le corps rangé dans
   `error.responseData`. `code` vaut `login`, `bad-request` ou `hidden` selon l'action (§9.4, §11.3,
-  §15.3) ; les schémas de réponse de `GET_DISCUSSIONS` et de `MARK_COMMENTS_SEEN` gagnent à le
-  déclarer dans leur branche de refus, comme le fait celui de `GET_DISCUSSION_SPACE` — sans
-  urgence, ces schémas n'étant pas fermés ;
+  §15.3) — `forbidden`, `bad-name`, `too-many` et `failed` en plus pour `CREATE_DISCUSSION` ; les
+  schémas de réponse des quatre endpoints le déclarent dans leur branche de refus ;
 - sur un endpoint `auth: "bearer"`, sans jeton, elle lève `ApiAuthenticationError` **avant tout
   appel** : le refus `login` du serveur n'est jamais reçu ;
 - une requête que le schéma refuse lève `ApiValidationError`, avant tout appel aussi.
@@ -2313,11 +2422,12 @@ Réponse, en HTTP 200 :
               "path": "<appel>.moreDiscussions_<…>.<commun>.discu_<…>.comment",
               "total": 0, "unread": 0, "last": null, "mine": false,
               "title": "Budget 2026", "carrier": null, "virtual": true,
-              "kind": "discussion", "group": null, "audience": "authorAdmin", "line": null } }
+              "kind": "discussion", "group": null, "audience": "authorAdmin", "line": null,
+              "step": null } }
 ```
 
-`thread` a la forme d'un fil de `GET_DISCUSSION_SPACE` (§15.3) : c'est le fil créé, vide, avec le
-`path` à passer à `getComments({ path })`. Un refus rend `{ result: false, code, msg }` — codes
+`thread` a la forme — les seize champs — d'un fil de `GET_DISCUSSION_SPACE` (§14.6, §15.3) : c'est le
+fil créé, vide, avec le `path` à passer à `getComments({ path })`. Un refus rend `{ result: false, code, msg }` — codes
 `login`, `bad-request`, `hidden`, `forbidden`, `bad-name`, `too-many`, `failed` (§16.2) — que la
 façade rend en **exception** (§14.7).
 
@@ -2336,6 +2446,66 @@ async createDiscussion(options: CreateDiscussionData): Promise<unknown> {
 Mesuré contre le SDK local (12/10) : une audience hors liste, un nom vide ou de plus de 120
 caractères, une clé de trop lèvent `ApiValidationError` avant tout appel ; `forbidden` et `bad-name`
 arrivent en `ApiResponseError` (statut 200, corps dans `responseData`).
+
+**Recette attendue** — exactement ces cas : sans jeton, `ApiAuthenticationError` avant tout envoi ;
+audience hors liste, `name` vide ou de 121 caractères, clé de trop : `ApiValidationError` avant tout
+envoi ; un refus du serveur, `ApiResponseError` portant `code` dans `responseData`.
+
+### 14.9 `markdownActive` — dire au legacy qu'un message est en markdown (16/10)
+
+Le composer du module n'écrit que du **markdown**. Le legacy ne met un message en forme que si son
+drapeau `markdownActive` est vrai (`comments.js`, `commentPodSimple.php`), et le backend le
+recalcule à chaque écriture : `Comment::insert` comme `Comment::update` écrivent
+`markdownActive = isset(…) && filter_var(…, FILTER_VALIDATE_BOOLEAN)` — absent, il passe à faux. Sans
+ce champ, nos messages mis en forme se lisent bruts dans le legacy (image du texte comprise), et une
+simple correction faite depuis le module y éteint la mise en forme d'un message.
+
+```json
+"markdownActive": { "type": "boolean" }
+```
+
+dans `ADD_COMMENTS.request.properties` et dans `UPDATE_COMMENTS.request.properties.params.properties`
+— **sans `default`** (§2.2). C'est `ADD_COMMENTS` qui ouvre le champ au **brouillon d'édition** : le
+brouillon d'une instance `Comment` se construit sur ce schéma (`SCHEMA_CONSTANTS`) et lève sur tout
+champ qu'il ne déclare pas — l'ajouter à `UPDATE_COMMENTS` seul ne suffirait pas. À l'écriture, `Comment._add` le transmet tel quel : l'extraction suit le
+schéma. `Comment._update` le reprend du brouillon en booléen strict (la ligne du §14.4). Le formulaire
+l'envoie en chaîne (`true`), que `filter_var` lit vrai.
+
+Le module pose `markdownActive: true` à chaque message, chaque réponse et chaque édition.
+
+**Recette attendue** — `entity.comment({ text, markdownActive: true })` passe la validation et
+envoie `markdownActive=true` ; l'édition d'un message relu à `markdownActive: false`, brouillon
+remis à `true`, envoie `params[markdownActive]=true` ; une chaîne (`"true"`) posée au brouillon
+lève `ApiValidationError` à l'ajout et n'est pas reprise à l'édition. Avec le SDK publié, le champ
+est écarté en silence **à l'ajout** — l'extraction ne garde que le schéma — mais **lève à
+l'édition** : `comment.data.markdownActive = true` rencontre le `[DraftProxy]` (`ApiValidationError`,
+`throwOnError` par défaut). Le module posant le champ à chaque correction, la demande n° 12 est
+indispensable à l'édition, comme la n° 8 l'est à celle d'un message à images (`mediaImg`).
+
+### 14.10 `ids` — ne marquer lus que les messages affichés (16/10)
+
+`MARK_COMMENTS_SEEN` marquait **tout** le fil : un message arrivé entre le chargement du fil et le
+marquage passait « lu » sans que personne l'ait vu. Le client sait ce qu'il a montré : il l'envoie.
+
+```json
+"ids": {
+  "type": "array",
+  "items": { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+  "minItems": 1,
+  "maxItems": 500
+}
+```
+
+Facultatif et **sans `default`** : absent, tout le fil est marqué, comme avant. Les identifiants
+RESTREIGNENT le filtre, ils ne l'élargissent jamais — le contexte et le chemin restent exigés, si
+bien qu'un identifiant d'un autre fil ne marque rien. Côté backend (`SeenAction`, 16/10), un `ids`
+illisible, vide ou de plus de 500 identifiants est **refusé** (`bad-request`) : lu comme absent, il
+ferait marquer tout le fil. Le module envoie les non-lus affichés de la visite, 500 au plus par
+appel, le reste à l'appel suivant.
+
+**Recette attendue** — `ids` de 500 identifiants passe, de 501 lève `ApiValidationError` ; un
+identifiant à 23 caractères ou un tableau vide lèvent de même ; sans `ids`, l'appel part comme
+avant.
 
 ## 15. Espace de discussion d'un commun (07/10, repris le 09/10)
 
@@ -3679,6 +3849,61 @@ crochets, ses étoiles. Le moteur commun les rend au texte (`createCommentMarkdo
 - **L'auteur qui corrige son message voit ses images tierces dans l'éditeur** : c'est lui qui les a
   choisies.
 - Les notifications et courriels (serveur) montrent le markdown brut, comme avant.
+
+## 22. Auto-revue du 16/10 — les corrections
+
+Avant sa MR, la branche a été relue d'un bloc après la fusion de `main` : les gates du relecteur,
+une relecture générale, et trois relectures croisées contre les défauts déjà relevés dans les
+relectures reçues. Chaque constat a été relu au commit, puis corrigé avec le test qui le tient.
+Les chapitres ci-dessus décrivent l'état qui en résulte ; celui-ci dit ce qui a changé, et où.
+
+### 22.1 Ce qu'on écrit
+
+| Constat | Ce qui a changé | Où |
+|---|---|---|
+| Une RÉPONSE partait sans le `path` de son fil (un message racine l'envoyait) : elle restait « nouvelle » à chaque visite, l'espace l'ignorait, et elle ouvrait un fil fantôme dans le panneau | La réponse porte le `path` du fil, et son affichage optimiste aussi | `useCommentMutations` |
+| Une correction se fermait avant la réponse du serveur : refusée, le texte corrigé était perdu | Le champ d'édition reste ouvert et rempli jusqu'au succès, figé pendant l'envoi — champ et « Annuler » — puis fermé, le focus repris s'il n'est pas parti ailleurs | `CommentThread`, `CommentComposer` |
+| Un envoi refusé après la fermeture du fil annonçait « remis dans le champ » sans rien y remettre | Le brouillon est gardé dans le cache, sous son auteur — un autre compte connecté ensuite dans le même onglet ne le retrouve pas —, et revient à la réouverture du fil, « réponse à » compris ; un fil rouvert pendant l'envoi le reprend aussitôt, et le toast dit lequel des deux | `useCommentMutations`, `CommentThread` |
+| Un envoi refusé rendait son texte sans ses images, dont les documents restaient orphelins | Les images reviennent avec le brouillon et repartent telles quelles | `useCommentImages` |
+| Un brouillon rendu puis renvoyé ressortait après une session perdue puis retrouvée | Reparti, il ne revient plus | `CommentThread` |
+| Les actions d'un message à peine confirmé levaient « introuvable » jusqu'à la relecture du fil | L'instance rendue par le serveur entre dans l'index à la confirmation | `useCommentMutations` |
+| Nos messages se lisaient bruts dans le legacy, et une correction y éteignait la mise en forme | `markdownActive: true` à chaque écriture — effectif à la publication du SDK (§14.9) | `useCommentMutations` |
+| « Commenter (N) » d'une actualité ignorait un message posté depuis le panneau, ou un envoi « peut-être écrit » | Les requêtes d'hôte qui portent des compteurs se déclarent (`meta`), le module les périme quand une écriture leur échappe — le fil d'actualités comme la page d'une actualité | `useCommentMutations`, `useNewsQuery`, `useNewsByIdQuery` |
+
+### 22.2 Ce qu'on lit
+
+| Constat | Ce qui a changé | Où |
+|---|---|---|
+| Ouvert par la cloche, le flux rendait le panneau « temps réel » et ne le relisait plus que toutes les 5 min, alors que rien n'émet `comment.changed` | Le flux ne compte qu'une fois le sujet reçu ; amortisseur commun à l'onglet — un signal compte une fois pour tous ses abonnés —, rattrapage en fin de fenêtre | §11.4, `useDiscussionsRealtime` |
+| Le marquage « lu » visait tout le fil — un message arrivé depuis le chargement passait lu sans avoir été vu — et un non-lu arrivé pendant un marquage en vol n'était pas repris | Il envoie les identifiants affichés (`ids`, §14.10, `SeenAction`), 500 au plus par appel, et se relance à l'atterrissage d'un marquage abouti. Un échec ne relance rien : le prochain essai attend un message de plus ou la réouverture du fil, jamais une boucle d'appels | `useMarkThreadSeen` |
+| Une relecture ratée remplaçait rail et fils valides par l'erreur, focus perdu et pli refermé | Une panne garde la dernière liste ; un refus la retire | `DiscussionPanel` |
+| « Réessayer » ne disait rien pendant la relance, et chaque clic l'annulait | Celui de l'avertissement d'une relecture ratée, au-dessus des messages gardés, est inactif pendant la relance. Les écrans d'erreur sans messages n'en ont pas besoin : React Query repasse alors la requête en `pending`, et ils cèdent la place au chargement | `CommentThread` |
+| La modale des votants s'intitulait « Ajouter une réaction » et disait « Aucun message », échec compris | Ses propres libellés, un état d'échec — une relecture ratée garde la liste —, sa largeur réelle | `VotersDialog` |
+| Le formulaire « Nouvelle discussion » se rouvrait seul au retour du droit | Le droit perdu le ferme | `SpacePanel` |
+
+### 22.3 La fiche d'un commun et le composer
+
+| Constat | Ce qui a changé | Où |
+|---|---|---|
+| Une relecture ratée de la config de l'appel remplaçait encore la fiche — modale de discussion et message compris | La carte d'erreur seulement sans config | `AacCommunDetailPage` |
+| Après une relecture ratée, le sommaire cessait de suivre la lecture | Il suit les données, pas le succès de la dernière lecture | `AacCommunDetailPage` |
+| Un palier dont la clé de dépense est introuvable retombait sur sa position : il pouvait ouvrir le fil d'une autre dépense | Pas de clé, pas de bouton | `CommunFinancingSection` |
+| Sous les actualités, le sélecteur d'émojis avait perdu thème sombre, recherche traduite, aperçu masqué et taille | Rendus (`main`, `CommentInput`) | `CommentComposer` |
+| Dans la modale d'un espace, la grille d'émojis ne défilait ni à la molette ni au doigt | Les deux s'arrêtent à la grille | `CommentComposer` |
+
+### 22.4 Ce qui le prouve, et ce qui reste
+
+Chaque ligne a son test, au plus près du défaut ; les recettes de la demande SDK (§14.3, §14.4,
+§14.9, §14.10) ont été rejouées hors réseau sur le SDK local — 16 cas, tous conformes. `ids` a
+été éprouvé contre le vrai backend : un `ids` illisible (chaîne, identifiant invalide, tableau
+imbriqué, 501 identifiants) est refusé sans rien écrire ; un identifiant marque ce message et lui
+seul ; celui d'un autre fil ne marque rien ; 500 passent ; sans `ids`, tout le fil est marqué comme
+avant — 17 contrôles, écritures défaites à la fin.
+
+Restent hors de ce lot : la publication du SDK et le déploiement du backend (§14, ordre de
+livraison) ; « Copier le lien » d'un message, qui ne confirme rien ; et les nettoyages relevés sans
+effet sur l'utilisateur — exports et clés de traduction sans lecteur, doublons de composants,
+commentaires périmés.
 
 ## Voir aussi
 
