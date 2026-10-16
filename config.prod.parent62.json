@@ -488,7 +488,7 @@
                   "lg": 2
                 },
                 "headlineStyle": "text",
-                "accentColor": "var(--p62-marine)",
+                "accentColor": "var(--p62-pastille-encre)",
                 "width": "wide",
                 "tileLayout": "pillRow",
                 "size": "lg",
@@ -538,7 +538,7 @@
                 "illustrationBackgroundImage": "/images/parent62/fond-degrade-territoire.png",
                 "illustrationMaxHeight": "80vh",
                 "illustrationAspectRatio": "996/945",
-                "badgeColor": "var(--p62-marine)",
+                "badgeColor": "var(--p62-pastille-encre)",
                 "animate": true,
                 "backgroundImageAlt": {
                   "fr": "Carte du Pas-de-Calais et ses territoires",
@@ -694,7 +694,7 @@
                 "design": "card",
                 "showControls": true,
                 "linkTitleAndImage": true,
-                "badgeColor": "var(--p62-marine)"
+                "badgeColor": "var(--p62-pastille-encre)"
               }
             },
             "align": "stretch",
@@ -722,7 +722,7 @@
             "maxWidth": "7xl",
             "background": "var(--p62-marine)",
             "accentColor": "var(--p62-turquoise)",
-            "accentTextColor": "var(--p62-marine)",
+            "accentTextColor": "#ffffff",
             "headlineStyle": "badge"
           }
         }
@@ -19614,15 +19614,15 @@
     "typography": {
       "fontFamily": {
         "sans": [
-          "Hanken Grotesk",
+          "Open Sans",
           "sans-serif"
         ],
         "serif": [
-          "Patrick Hand",
+          "Playpen Sans",
           "sans-serif"
         ],
         "mono": [
-          "Spline Sans Mono",
+          "Open Sans",
           "monospace"
         ]
       },

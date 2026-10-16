@@ -15,10 +15,15 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-13** — annuaire des acteurs du soutien à la parentalité
-(`/annuaire-acteurs-parentalite`, 38 organisations importées), fiche profil et formulaire d'édition dédié
-`parent62-acteur` sur les vrais champs du formulaire, correctif admin (colonnes « Année »/INFORESO et
-« Type »/Ressources invisibles) — détail en §9septquadragies. Précédemment : **2026-10-08** — relecture de la MR `parents62` : 12 constats corrigés (régressions,
+Dernière mise à jour : **2026-10-16** — différenciation acteurs/partenaires par tag (`"Partenaires"`,
+`mutation.stamps`), deux passages de relecture avant merge (routage d'édition, scope réel des annuaires,
+réseaux sociaux, i18n, `HeaderStacked`, lightbox), pastilles d'accueil illisibles en mode sombre
+corrigées (`--p62-pastille-encre`) et titre « Zoom sur le réseau » en Open Sans — détail en
+§9septquadragies.6 à .12 et §9octoquadragies. Précédemment : **2026-10-13** — annuaire des acteurs du
+soutien à la parentalité (`/annuaire-acteurs-parentalite`, 38 organisations importées), fiche profil et
+formulaire d'édition dédié `parent62-acteur` sur les vrais champs du formulaire, correctif admin (colonnes
+« Année »/INFORESO et « Type »/Ressources invisibles) — détail en §9septquadragies. Précédemment :
+**2026-10-08** — relecture de la MR `parents62` : 12 constats corrigés (régressions,
 dette pré-existante étendue, bonnes pratiques) sur la gestion des rôles, l'export PDF, la grille équipe,
 la pagination numérotée (troncature `1 … 30 31 32 33 34`, bug « Previous »/« Next » resté en anglais, et
 l'annonce d'accessibilité qui disait « sur 2 » au lieu du total réel « sur 537 » — les trois trouvés en
@@ -4533,6 +4538,55 @@ antérieures à ce lot et non issues de l'import `youthCare`).
 | `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
 | Tests ciblés (profil parent62, testimonial, detailsMode, header) | ✅ 57/57 |
 | `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 848/849 |
+
+## 9octoquadragies. Pastilles « texte » illisibles en mode sombre (accueil)
+
+Les trois pastilles sans fond en marine (`accentColor`/`badgeColor: var(--p62-marine)`) — « Vous êtes… »,
+badge territoires, « À la une » — devenaient quasi invisibles en mode sombre : `--p62-marine` (#2c3e50) est
+documenté **fixe clair/sombre** (couleur de marque), et le fond de page sombre (`oklch(0.22 0.035 250)`)
+est quasiment la même teinte marine. Nouveau token `--p62-pastille-encre` (`index-parent62.css`) : hérite
+de `--p62-marine` en clair, bascule blanc en sombre — les trois usages de config pointent dessus au lieu
+du token de marque directement, qui reste inchangé partout ailleurs (fonds pleins, bandeaux territoire).
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `test:unit` complet (garde RAM) | ✅ sans régression (aucun fichier `.ts`/`.tsx` touché — CSS + config seuls) |
+
+### 9octoquadragies.2 Thème en Open Sans / Playpen Sans, titre « Zoom sur le réseau » et badge toujours blanc
+
+**Changement de police du THÈME, voulu et confirmé** : `theme.typography.fontFamily` (sans/mono →
+Open Sans, serif → Playpen Sans) — remplace Hanken Grotesk/Patrick Hand/Spline Sans Mono sur tout le
+site. Snapshot de garde resynchronisé (`npm run config:example -- theme --write`,
+`.claude/skills/config-assistant/examples/theme.json`), `tests/preflight/archetypes.test.ts` repasse au
+vert. Le `h2` de la section « Zoom sur le réseau » (`sectionBadgeClass`, classe `font-serif`) garde en
+plus une règle scopée à son seul `id` (`#zoom-reseau h2 { font-family: "Open Sans", sans-serif; }`,
+`index-parent62.css`) — demande explicite sur ce titre précis, qui bascule sur `sans` plutôt que le
+nouveau `serif` (Playpen Sans) que les autres titres en badge gardent. Même règle étendue au `h3` de chaque carte
+d'actualité (`TeaserCard`) : il héritait déjà d'Open Sans via `--font-sans` (pas de classe de police
+propre), posé ici en EXPLICITE pour ne plus en dépendre si `theme.typography.sans` change un jour. Le
+`id` de `articleTeaser` est déjà rendu tel quel sur le `<section>` DOM (`ArticleTeaser.tsx`), ciblable
+sans toucher au composant.
+
+**`accentTextColor` du badge « Zoom sur le réseau »** — la même édition concurrente avait posé
+`var(--color-white)`, variable qui n'existe nulle part dans `index-parent62.css` (n'aurait rien résolu).
+Confirmé : le badge doit rester blanc en toute circonstance (pas une bascule clair/sombre comme
+§9octoquadragies.1, un blanc FIXE) → `"#ffffff"`.
+
+⚠️ **Contraste à noter, pas corrigé** : `accentTextColor` valait jusqu'ici `var(--p62-marine)`
+**délibérément**, documenté à DEUX endroits (`src/lib/accentStyle.ts` et
+`ArticleTeaserSectionSchema`, `src/modules/blog/schema.ts`) — « blanc sur la turquoise de parent62
+(`accentColor`) ne tient que 1,93:1, contre 5,68:1 pour le marine » (WCAG, seuil AA texte normal : 4,5:1).
+Le badge reste blanc sur demande explicite malgré ce contraste sous le seuil — décision produit assumée,
+pas un oubli.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` | ✅ |
+| `tests/preflight/archetypes.test.ts` (snapshot `theme` resynchronisé, `config:example -- theme --write`) | ✅ 3/3 |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 855/856 |
 
 ## 10. Checklist d'avancement
 

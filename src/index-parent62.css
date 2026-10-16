@@ -283,6 +283,12 @@ footer nav { font-family: var(--font-serif); }
      commentaire/parent62-unite-couleurs-home.md. Fixes clair/sombre. */
   --p62-marine: #2c3e50;
   --p62-turquoise: #4ecdc4;
+  /* Encre des pastilles « texte » en marine (« Vous êtes… », territoires, « À la une ») : sans fond,
+     posées à même le fond de PAGE — qui, lui, suit le mode (`--background`). `--p62-marine` reste fixe
+     clair/sombre (couleur de marque, cf. ci-dessus) ; cette variable-ci en hérite en clair mais bascule
+     blanc en sombre (bloc `.dark` plus bas), où `--background` est un marine quasi identique en teinte
+     et en clarté (oklch 0.22 250 vs #2c3e50 ≈ oklch 0.28 250) — le texte y disparaissait. */
+  --p62-pastille-encre: var(--p62-marine);
 
   /* Case « Parent » du bloc « Vous êtes… » (accueil) : fond plein vert de marque et son texte noir,
      le plus lisible sur ce vert : 7,56:1 (AAA). Le blanc n'y tient que 2,78:1, sous AA. Fixes clair/sombre. */
@@ -310,6 +316,7 @@ footer nav { font-family: var(--font-serif); }
   --p62-map-bg-from: #146e60;
   --p62-map-bg-to: #567a62;
   --p62-map-bg-encre: #ffffff;
+  --p62-pastille-encre: #ffffff;
 }
 
 /* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */
@@ -320,6 +327,20 @@ footer nav { font-family: var(--font-serif); }
 .p62-deep h2 {
   color: #4fc3c3;
   text-align: center;
+}
+
+/* Section « Zoom sur le réseau » (accueil, `articleTeaser` id="zoom-reseau") : demande explicite d'Open
+   Sans sur le titre de bandeau ET le titre de chaque carte d'actualité, SCOPÉ à cette seule section — pas
+   `theme.typography` (s'applique déjà à tout le site). Le `id` de la section est rendu tel quel sur le
+   <section> DOM (`ArticleTeaser.tsx`), donc ciblable sans changement de composant.
+   - `h2` : le badge de titre porte `font-serif` (`sectionBadgeClass`, classe partagée) → sans cette
+     règle il hériterait de Playpen Sans (actuel `--font-serif` du thème) au lieu d'Open Sans.
+   - `h3` : le titre de chaque carte (`TeaserCard`) n'a pas de classe de police propre, il hérite déjà du
+     `--font-sans` ambiant (Open Sans, cf. `theme.typography`) — règle posée ici en EXPLICITE pour ne plus
+     en dépendre si `theme.typography.sans` change un jour. */
+#zoom-reseau h2,
+#zoom-reseau h3 {
+  font-family: "Open Sans", sans-serif;
 }
 
 /* Bulle territoire : cercle plein coloré (taille via --s), libellé centré. */

@@ -95,15 +95,15 @@
     "typography": {
       "fontFamily": {
         "sans": [
-          "Hanken Grotesk",
+          "Open Sans",
           "sans-serif"
         ],
         "serif": [
-          "Patrick Hand",
+          "Playpen Sans",
           "sans-serif"
         ],
         "mono": [
-          "Spline Sans Mono",
+          "Open Sans",
           "monospace"
         ]
       },
