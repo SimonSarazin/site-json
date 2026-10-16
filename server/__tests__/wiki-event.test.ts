@@ -40,6 +40,17 @@ describe("mise à jour", () => {
   });
 });
 
+describe("migration de l'ancien modèle", () => {
+  it("remplace {{Evenement et CR}} par {{Evenement}}", () => {
+    const neuf = wikitexte(evt, { url: "U", fiche: "F", image: "i.jpg" });
+    const ancien = "{{Evenement et CR\n|name=Vieux\n}}\n\n== Compte-rendu ==\nNotes\n";
+    const texte = fusionner(ancien, neuf);
+    expect(texte.startsWith("{{Evenement\n")).toBe(true);
+    expect(texte).not.toContain("Evenement et CR");
+    expect(texte).toContain("Notes");
+  });
+});
+
 describe("création : garde-fous", () => {
   const env = { ...process.env };
   afterEach(() => {

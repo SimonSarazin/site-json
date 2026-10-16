@@ -93,8 +93,9 @@ function sansLien(description, url) {
  */
 export function fusionner(existant, neuf) {
   const modele = /^\{\{Evenement[\s\S]*?\n\}\}/;
+  const ancien = /^\{\{Evenement et CR[\s\S]*?\n\}\}/;
   const description = /== Description ==\n[\s\S]*?(?=\n== |$)/;
-  let texte = existant.replace(modele, () => neuf.match(modele)[0]);
+  let texte = existant.replace(ancien.test(existant) ? ancien : modele, () => neuf.match(modele)[0]);
   const section = neuf.match(description)?.[0];
   if (description.test(texte)) texte = texte.replace(description, () => section ?? "");
   else if (section) texte = texte.replace(/\n== Compte-rendu ==/, () => `\n${section}\n\n== Compte-rendu ==`);
