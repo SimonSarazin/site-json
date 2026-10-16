@@ -112,6 +112,8 @@ vi.mock("@/modules/cagnotte/components/CagnotteDialog", () => ({
 }));
 
 const { CommunFinancingCard } = await import("./CommunFinancingCard");
+const { CommunReactionStats } = await import("./CommunReactionStats");
+const { CommunSectionNavContext } = await import("@/modules/aac/hooks/useCommunSectionNav");
 type PostLoginIntent = Parameters<typeof CommunFinancingCard>[0]["postLoginIntent"];
 
 function makeConfig(depenseStepKey: string | null, typeCoFinancer: string | null = null): AacResolvedConfig {
@@ -288,6 +290,193 @@ describe("CommunFinancingCard — le compteur de cofinanceurs compte ce que la t
 
     const boite = screen.getByText("detail.financing.cofinancers").closest("div");
     expect(boite?.querySelector("div")?.textContent).toBe("3");
+  });
+});
+
+describe("CommunFinancingCard — mise en page `hero` (interface editorial)", () => {
+  const DEPENSES_3_COFINANCEURS = [
+    {
+      poste: "Serveur",
+      priceInt: 1000,
+      financer: [
+        { id: "org1", name: "CAE Sud", amount: 500 },
+        { name: "Anonyme A", amount: 100 },
+        { name: "Anonyme B", amount: 50 },
+      ],
+    },
+  ];
+
+  it("« Financement réuni » et son résumé remplacent la carte « Financement participatif »", () => {
+    depenses = DEPENSES_3_COFINANCEURS;
+    renderCard({ layout: "hero" });
+
+    expect(screen.getByText("detail.financing.raised")).toBeTruthy();
+    expect(screen.getByText("detail.financing.cofinancersCount_other")).toBeTruthy();
+    expect(screen.getByText(/detail\.financing\.remainingToFund/)).toBeTruthy();
+    expect(screen.queryByText("detail.financing.title")).toBeNull();
+  });
+
+  it("un seul cofinanceur : le résumé passe au singulier", () => {
+    depenses = [{ poste: "Serveur", priceInt: 1000, financer: [{ id: "org1", name: "CAE Sud", amount: 500 }] }];
+    renderCard({ layout: "hero" });
+
+    expect(screen.getByText("detail.financing.cofinancersCount_one")).toBeTruthy();
+  });
+
+  it("pas de réactions dans la carte (la vue les place) ; l'emplacement vient AVANT « Soutenir »", () => {
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    renderCard({ layout: "hero", secondaryAction: <button type="button">Exporter</button> });
+
+    for (const cta of [/detail\.contribute/, /detail\.vote/, /detail\.use/]) {
+      expect(screen.queryByRole("button", { name: cta })).toBeNull();
+    }
+    const exporter = screen.getByRole("button", { name: "Exporter" });
+    const soutenir = screen.getByRole("button", { name: /detail\.financing\.support/ });
+    expect(exporter.compareDocumentPosition(soutenir) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("hors connexion, « Soutenir ce projet » ouvre la connexion, PAS la cagnotte (M14)", () => {
+    me = ANONYMOUS;
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    renderCard({ layout: "hero" });
+
+    fireEvent.click(screen.getByRole("button", { name: /detail\.financing\.support/ }));
+    expect(openLogin).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("cagnotte-open")).toBeNull();
+  });
+
+  it("connecté, « Soutenir ce projet » ouvre la cagnotte", () => {
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    renderCard({ layout: "hero" });
+
+    fireEvent.click(screen.getByRole("button", { name: /detail\.financing\.support/ }));
+    expect(screen.getByTestId("cagnotte-open")).toBeTruthy();
+  });
+});
+
+/** L'interface editorial, réduite à ce qui compte ici : réactions à part et carte `hero`, une seule intention de page. */
+function EditorialHarness() {
+  const [intent, setIntent] = useState<PostLoginIntent>(null);
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false } } }));
+  const shared = {
+    answerQuery: ANSWER,
+    aacConfig: makeConfig("etapeA"),
+    postLoginIntent: intent,
+    onPostLoginIntent: setIntent,
+  };
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LocalizationProvider>
+        <CommunReactionStats {...shared} compact />
+        <CommunFinancingCard formData={{ id: "f1", name: "Appel", inputs: {} } as never} funding={null} layout="hero" {...shared} />
+      </LocalizationProvider>
+    </QueryClientProvider>
+  );
+}
+
+describe("Interface editorial — réactions à part et carte `hero` rejouent chacune SA demande", () => {
+  async function connecterEditorial(rerender: (ui: React.ReactElement) => void) {
+    const opts = openLogin.mock.calls[0]?.[0] as { onSuccess?: () => void } | undefined;
+    await act(async () => {
+      opts?.onSuccess?.();
+    });
+    me = CONNECTED;
+    await act(async () => {
+      rerender(<EditorialHarness />);
+    });
+  }
+
+  it("« Je contribue » hors connexion : la réaction part une fois connecté, la cagnotte reste fermée", async () => {
+    me = ANONYMOUS;
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    const { rerender } = render(<EditorialHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /detail\.contribute/ }));
+    await connecterEditorial(rerender);
+
+    expect(toggleReaction).toHaveBeenCalledTimes(1);
+    expect(toggleReaction).toHaveBeenCalledWith("a1", "utilise", "u1", "Alice");
+    expect(screen.queryByTestId("cagnotte-open")).toBeNull();
+  });
+
+  it("« Soutenir » hors connexion : la cagnotte s'ouvre une fois connecté, aucune réaction", async () => {
+    me = ANONYMOUS;
+    depenses = [{ poste: "Serveur", priceInt: 1000 }];
+    const { rerender } = render(<EditorialHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /detail\.financing\.support/ }));
+    await connecterEditorial(rerender);
+
+    expect(screen.getByTestId("cagnotte-open")).toBeTruthy();
+    expect(toggleReaction).not.toHaveBeenCalled();
+  });
+});
+
+describe("CommunFinancingCard — les liens mènent à leur section, selon l'interface", () => {
+  /** Les éléments sur lesquels `scrollIntoView` a été appelé. */
+  const scrolled: Element[] = [];
+  beforeEach(() => {
+    scrolled.length = 0;
+    Element.prototype.scrollIntoView = vi.fn(function (this: Element) {
+      scrolled.push(this);
+    });
+    depenses = [{ poste: "Serveur", priceInt: 1000, financer: [{ id: "org1", name: "CAE Sud", amount: 500 }] }];
+  });
+
+  /** La carte dans une interface qui fournit SA navigation (onglets…) : on note ce qu'elle demande. */
+  function renderInInterface(layout: "full" | "hero") {
+    const showSection = vi.fn();
+    render(
+      <CommunSectionNavContext.Provider value={showSection}>
+        <PageHarness layout={layout} />
+      </CommunSectionNavContext.Provider>,
+    );
+    return showSection;
+  }
+
+  it("`hero` : montant et « N cofinanceurs » demandent leur section", () => {
+    const showSection = renderInInterface("hero");
+
+    fireEvent.click(screen.getByText("detail.financing.raised"));
+    expect(showSection).toHaveBeenLastCalledWith("besoins-financiers");
+
+    fireEvent.click(screen.getByRole("button", { name: "detail.financing.cofinancersCount_one" }));
+    expect(showSection).toHaveBeenLastCalledWith("cofinanceurs");
+  });
+
+  it("réactions rendues à part : la valeur « Contributeurs » demande les cofinanceurs", () => {
+    const showSection = vi.fn();
+    render(
+      <CommunSectionNavContext.Provider value={showSection}>
+        <EditorialHarness />
+      </CommunSectionNavContext.Provider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /detail\.contributors/ }));
+    expect(showSection).toHaveBeenLastCalledWith("cofinanceurs");
+  });
+
+  it("`full` dans une interface qui fournit sa navigation : les mêmes demandes passent par elle", () => {
+    const showSection = renderInInterface("full");
+
+    fireEvent.click(screen.getByText("detail.financing.cofinancers"));
+    expect(showSection).toHaveBeenLastCalledWith("cofinanceurs");
+    expect(scrolled).toEqual([]);
+  });
+
+  it("fiche verticale (aucun fournisseur) : défilement direct vers l'ancre", () => {
+    render(
+      <>
+        <section id="besoins-financiers" />
+        <section id="cofinanceurs" />
+        <PageHarness />
+      </>,
+    );
+
+    fireEvent.click(screen.getByText("detail.financing.cofinancers"));
+    fireEvent.keyDown(screen.getByText("detail.financing.collected"), { key: "Enter" });
+
+    expect(scrolled.map((el) => el.id)).toEqual(["cofinanceurs", "besoins-financiers"]);
   });
 });
 

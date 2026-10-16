@@ -49,6 +49,12 @@ export function useAacGallerySubKey(): string | null {
   return siteConfig.aac?.detail?.gallery ?? null;
 }
 
+/** Blocs de démonstration de la fiche (`config.aac.detail.demoBlocks`), masqués par défaut. */
+export function useAacDemoBlocks(): boolean {
+  const { config: siteConfig } = useSite();
+  return siteConfig.aac?.detail?.demoBlocks === true;
+}
+
 /** Le form d'usage dont le finder partagé filtre « J'utilise » (`config.aac.detail.usageFormId`). */
 export function useAacUsageFormId(): string | null {
   const { config: siteConfig } = useSite();

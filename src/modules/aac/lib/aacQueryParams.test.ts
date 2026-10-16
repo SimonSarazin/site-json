@@ -91,11 +91,14 @@ describe("splitAacFilters — ce qui part au serveur", () => {
 });
 
 describe("splitAacFilters — ce qui reste client", () => {
-  it("usage, sous-usage et maturité imposent le balayage", () => {
+  it("usage, sous-usage, maturité et commune imposent le balayage", () => {
     for (const p of [
       { usage: ["1_alpha"] },
       { usageSub: ["0_beta"] },
       { maturity: ["Oui"] },
+      // La commune ne peut pas partir : le créneau `$or` est unique, et la
+      // branche « tableau » du pass-through ne fait que des regex non ancrées.
+      { commune: ["Saint-Denis"] },
     ]) {
       const { server, client, needsScan } = splitAacFilters(f(p), FIELDS);
       expect(needsScan, JSON.stringify(p)).toBe(true);

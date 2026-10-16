@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { AacHiddenTagsBadge } from "./AacHiddenTagsBadge";
 import { AacCommunDeleteButton } from "./AacCommunDeleteButton";
+import { AacCommunProjectLink } from "./AacCommunProjectLink";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 import {
   AAC_VISIBLE_TAGS,
@@ -9,6 +10,7 @@ import {
   progressBarWidth,
 } from "../../lib/aacDisplay";
 import { Link } from "react-router";
+import { communPath } from "../../lib/communPath";
 
 interface AacCommunCardProps {
   commun: CommunCard;
@@ -94,11 +96,16 @@ export function AacCommunCard({ commun, onRequestDelete, isDeleting, className }
           // n'existe pas dans site-json.
           <div className="h-40 w-full rounded-[10px] bg-muted" />
         )}
+        {/* Projet lié, en surimpression sur le visuel. */}
+        <AacCommunProjectLink
+          project={commun.project}
+          className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] rounded-full border border-border bg-card/90 px-2 py-0.5 font-medium text-primary backdrop-blur-sm"
+        />
       </div>
 
       <div className="relative block pt-3">
         <div className="pb-px">
-          <Link to={`/aac/commun/${commun.id}`}>
+          <Link to={communPath(commun.id)}>
             <h3 className="line-clamp-2 h-14.25 text-[17.5px] leading-[28.5px] font-medium text-primary">
               {commun.hasTitle ? commun.title : String(t("directory.card.untitled"))}
             </h3>
@@ -192,7 +199,7 @@ export function AacCommunCard({ commun, onRequestDelete, isDeleting, className }
               seule affordance de la moitié basse de la carte, le titre étant
               loin au-dessus. La rendre inerte laissait cliquer dans le vide. */}
           <Link
-            to={`/aac/commun/${commun.id}`}
+            to={communPath(commun.id)}
             // Le nom du commun EST le libellé : une grille de 30 cartes
             // exposerait sinon 30 liens identiques dans la liste de liens d'un
             // lecteur d'écran, sans contexte programmatique pour les distinguer

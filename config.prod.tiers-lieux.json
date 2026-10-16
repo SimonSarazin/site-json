@@ -312,7 +312,7 @@
               "fr": "La plateforme pour référencer, mutualiser et cofinancer les communs des tiers-lieux",
               "en": "The platform to reference, pool and co‑finance the commons of third places"
             },
-            "path": "https://lescommuns.tiers-lieux.org/#les-communs"
+            "path": "/aac/communs"
           },
           {
             "label": {
@@ -3433,6 +3433,48 @@
           }
         }
       ]
+    },
+    {
+      "path": "/aac/communs",
+      "title": {
+        "fr": "Appel à communs",
+        "en": "Call for commons"
+      },
+      "seo": {
+        "title": {
+          "fr": "Appel à communs - Le réseau social des tiers-lieux",
+          "en": "Call for commons - The third places social network"
+        },
+        "description": {
+          "fr": "La plateforme pour référencer, mutualiser et cofinancer les communs des tiers-lieux.",
+          "en": "The platform to reference, pool and co-finance the commons of third places."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "aac-directory",
+          "id": "appel-a-communs",
+          "props": {
+            "title": {
+              "fr": "Les communs des tiers-lieux",
+              "en": "The commons of third places"
+            },
+            "description": {
+              "fr": "Référencez, mutualisez et cofinancez les communs utiles aux tiers-lieux.",
+              "en": "Reference, pool and co-finance the commons that serve third places."
+            },
+            "variant": "full",
+            "display": "grid",
+            "columns": 3,
+            "pageSize": 12,
+            "showDepositButton": true,
+            "className": "max-w-7xl mx-auto px-6 pb-20"
+          }
+        }
+      ]
     }
   ],
   "footer": {
@@ -6484,6 +6526,91 @@
       }
     }
   ],
+  "aac": {
+    "formId": "6438366673d20a0de1533c77",
+    "directory": {
+      "fields": {
+        "description": "answers.aapStep1.aapStep1lzi62x3etw49gyc424d",
+        "tags": "answers.aapStep1.aapStep1m03ot9qymmfgashp7l",
+        "maturity": "answers.aapStep1.aapStep1m2ucu54mopm33osqxpd",
+        "users": "links.tls",
+        "choose": "answers.aapStep2.choose"
+      },
+      "defaultCardVariant": "default",
+      "defaultShellVariant": "default"
+    },
+    "detail": {
+      "pageVariant": "default",
+      "gallery": "aapStep1.image",
+      "usageFormId": "636cd563e2439b7fc12cd680",
+      "placeKind": "tiersLieu",
+      "sections": [
+        {
+          "id": "modele",
+          "title": {
+            "fr": "Modèle économique",
+            "en": "Business model"
+          },
+          "icon": "layers",
+          "field": "answers.aapStep1.aapStep1lpvinn7ld70wbk7w339"
+        },
+        {
+          "id": "gouvernance",
+          "title": {
+            "fr": "Mode de gouvernance",
+            "en": "Governance"
+          },
+          "icon": "users-round",
+          "field": "answers.aapStep1.aapStep1lpvioouzejcnjy7ffw"
+        },
+        {
+          "id": "juridique",
+          "title": {
+            "fr": "Cadre juridique",
+            "en": "Legal framework"
+          },
+          "icon": "scale",
+          "field": "answers.aapStep1.aapStep1lpvip7f9pa6et762ysa"
+        },
+        {
+          "id": "partenariats",
+          "title": {
+            "fr": "Partenariats & coopération",
+            "en": "Partnerships & cooperation"
+          },
+          "icon": "hand-heart",
+          "field": "answers.aapStep1.aapStep1lpvipvzp13vf2jypqgxq"
+        },
+        {
+          "id": "contribution",
+          "title": {
+            "fr": "Modalités de contribution",
+            "en": "How to contribute"
+          },
+          "icon": "file-text",
+          "field": "answers.aapStep1.aapStep1lqb428ajrbhwdbmg6qi"
+        },
+        {
+          "id": "usages",
+          "title": {
+            "fr": "Cas d'usages",
+            "en": "Use cases"
+          },
+          "icon": "users",
+          "field": "answers.aapStep1.aapStep1lusoklfzokkn4svl1ei"
+        },
+        {
+          "id": "equipe",
+          "title": {
+            "fr": "Équipe & communauté",
+            "en": "Team & community"
+          },
+          "icon": "user-check",
+          "field": "answers.aapStep1.aapStep1m0w49vpl5jm001xwvsv"
+        }
+      ]
+    }
+  },
   "commandPalette": {
     "enabled": true,
     "triggerVariant": "compact",

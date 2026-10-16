@@ -173,3 +173,35 @@ describe("CommunCofinancersTable — photo et lien du cofinanceur, lus sur sa fi
     expect(api.user).not.toHaveBeenCalled();
   });
 });
+
+describe("CommunCofinancersTable — rendu `list` (interface editorial)", () => {
+  it("une ligne par cofinanceur, avec son montant et le lien de son profil", async () => {
+    fiches = { org1: { name: "CAE Sud", slug: "cae-sud" } };
+    depenses = [
+      {
+        poste: "Serveur",
+        priceInt: 1000,
+        financer: [
+          { id: "org1", name: "CAE Sud", amount: 500 },
+          { name: "Anonyme", amount: 40 },
+        ],
+      },
+    ];
+    renderTable({ layout: "list" });
+
+    expect(screen.queryByRole("table")).toBeNull();
+    const lignes = screen.getAllByRole("listitem");
+    expect(lignes).toHaveLength(2);
+    expect(lignes[0].textContent).toMatch(/500/);
+    expect(lignes[1].textContent).toContain("Anonyme");
+    const lien = await screen.findByRole("link", { name: "CAE Sud" });
+    expect(lien.getAttribute("href")).toBe("/profil/cae-sud");
+  });
+
+  it("sans cofinanceur, le message vide, sans cadre de tableau", () => {
+    renderTable({ layout: "list" });
+
+    expect(screen.getByText("detail.cofinancers.empty")).toBeTruthy();
+    expect(screen.queryByRole("list")).toBeNull();
+  });
+});

@@ -215,5 +215,11 @@
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
     }
+  },
+  {
+    "slug": "projetsre1",
+    "config": "config.prod.projetsre.json",
+    "css": "index-projetsre",
+    "images": "projetsre"
   }
 ]

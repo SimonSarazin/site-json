@@ -45,7 +45,7 @@ export function useAacFundingResource(
   options?: UseAacFundingResourceOptions,
 ): {
   targetResource: CagnotteResource | undefined;
-  /** Slug du projet lié — résolu depuis `fundingData.projects[]`, 0 requête réseau supplémentaire. */
+  /** Slug du projet lié : celui de l'enveloppe, sinon celui de l'entité projet. */
   projectSlug: string | undefined;
   /**
    * Vrai tant que la ressource n'est pas résolue (hôte, enveloppe, projets de l'organisation).
@@ -91,6 +91,13 @@ export function useAacFundingResource(
     selectedProjectContextId,
   );
 
+  const answerResource = useMemo(
+    () => (options?.answer ? buildResourceFromAnswer(options.answer, options.step) : null),
+    [options?.answer, options?.step],
+  );
+
+  const targetResource = savedSelectedResource ?? answerResource ?? undefined;
+
   /**
    * Réparation des dépenses orphelines de CE commun (dépense sans palier projet) :
    * une écriture sur le projet lié et sur la réponse, réservée à qui a le droit de
@@ -98,9 +105,10 @@ export function useAacFundingResource(
    * deux surfaces qui passent par ici (fiche commun, `MilestoneListField`) sont des
    * surfaces d'édition ; l'adaptateur, lui, n'écrit plus (M40). Même entité et
    * mêmes `ownerIds` que le contrôleur de la fiche — même entrée de cache pour le
-   * projet, donc aucune requête supplémentaire.
+   * projet, donc aucune requête supplémentaire. Les réparations ne viennent que de
+   * l'enveloppe : sans elle, rien n'est écrit.
    */
-  const projectEntity = useCommunProjectEntity(savedSelectedResource?.projectId);
+  const projectEntity = useCommunProjectEntity(targetResource?.projectId);
   const ownerIds = useMemo(() => resolveCommunOwnerIds(asOwnerAnswer(options?.answer)), [options?.answer]);
   const repairPerms = useCagnottePermissions(projectEntity, { ownerIds });
   useOrphanDepenseRepair({
@@ -109,16 +117,9 @@ export function useAacFundingResource(
     enabled: repairPerms.canCreateMilestone,
   });
 
-  const answerResource = useMemo(
-    () => (options?.answer ? buildResourceFromAnswer(options.answer, options.step) : null),
-    [options?.answer, options?.step],
-  );
-
-  const targetResource = savedSelectedResource ?? answerResource ?? undefined;
-
   const projectSlug = fundingData?.projects?.find(
     (project) => project.id === targetResource?.projectId
-  )?.slug || undefined;
+  )?.slug || projectEntity?.serverData?.slug || undefined;
 
   const isLoading = !!options?.isHostLoading || isEnvelopeLoading || isProjectsLoading;
 

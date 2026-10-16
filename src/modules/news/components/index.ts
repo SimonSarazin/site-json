@@ -2,6 +2,7 @@
 export { NewsItem } from "./NewsItem";
 export { NewsContent } from "./NewsContent";
 export { NewsDetailPage } from "./NewsDetailPage";
+export { NewsFeed } from "./NewsFeed";
 
 // Section components
 // Note: NewsSection component not exported here to avoid conflict with NewsSection type from schema
