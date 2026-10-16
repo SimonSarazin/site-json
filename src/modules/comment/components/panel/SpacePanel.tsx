@@ -167,6 +167,9 @@ export function SpacePanel({ space, title, target, onSelect, scopeEntity, header
   // Le serveur a dit à ce lecteur ce qu'il peut créer. Refusé ou sans liste, l'espace n'annonce
   // aucune audience (`useDiscussionSpaceQuery`) : il n'y a alors rien où créer.
   const peutCreer = query.creatableAudiences.length > 0;
+  // Le droit perdu (session expirée, refus) FERME le formulaire : masqué seulement, il se rouvrait
+  // seul au retour du droit, sans qu'on l'ait demandé (revue du 16/10).
+  if (creation && !peutCreer) setCreation(false);
   // L'adresse désigne un fil que la liste ne porte pas : réservé, ou disparu (cf. la colonne du fil).
   const introuvable = target !== null && messageDErreur === null && !query.isLoading && ouvert === null;
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
@@ -29,11 +29,18 @@ import type { CommentTarget } from "../types";
  * « nouveau », le fond de mention. Il est marqué périmé sans être relu (`refetchType: "none"`) :
  * les repères restent pendant la lecture, et la prochaine ouverture le relit, sans eux.
  *
+ * ── Les messages AFFICHÉS, et eux seuls ────────────────────────────────────────────────────
+ * L'appel porte leurs identifiants (`ids`). Sans eux, le serveur marquait tout le fil : un message
+ * arrivé entre le chargement et le marquage passait « lu » sans avoir été vu (revue du 16/10).
+ *
  * ── Même si le fil s'est fermé entre-temps ─────────────────────────────────────────────────
  * Ces invalidations sont de l'hygiène de cache, pas un état du composant : les appliquer après
  * un démontage est sans danger, et nécessaire — le fil se démonte à chaque changement de fil,
  * et le panneau garderait sinon la pastille du fil qu'on vient de quitter.
  */
+/** Plafond d'identifiants par appel — celui du serveur (`SeenAction::IDS_MAX`). Le reste part au suivant. */
+const SEEN_IDS_MAX = 500;
+
 export function useMarkThreadSeen(target: CommentTarget | null, unreadIds: readonly string[]): void {
   const { api, me } = useCocolight();
   const queryClient = useQueryClient();
@@ -46,6 +53,14 @@ export function useMarkThreadSeen(target: CommentTarget | null, unreadIds: reado
   const marques = useRef(new Map<string, ReadonlySet<string>>());
   /** Un marquage en vol : le rendu suivant ne doit pas en lancer un second. */
   const enVol = useRef(false);
+  /**
+   * Des non-lus arrivés PENDANT un marquage en vol (ou au-delà du plafond d'un appel). L'effet
+   * s'arrêtait sur `enVol`, et rien ne le relançait à l'atterrissage : le message restait
+   * « nouveau » jusqu'au changement suivant (revue du 16/10). `relance` rejoue l'effet — après un
+   * marquage abouti seulement : un échec n'en relance aucun (cf. le `catch`).
+   */
+  const enAttente = useRef(false);
+  const [relance, setRelance] = useState(0);
 
   const cle = target ? threadValue(target) : null;
   const connecte = !!me?.isConnected;
@@ -56,10 +71,14 @@ export function useMarkThreadSeen(target: CommentTarget | null, unreadIds: reado
     if (!cle || !target || !connecte) return;
     const ids = signature ? signature.split(",") : [];
     const deja = marques.current.get(cle) ?? new Set<string>();
-    if (!ids.some(id => !deja.has(id)) || enVol.current) return;
+    const nouveaux = ids.filter(id => !deja.has(id));
+    if (nouveaux.length === 0) return;
+    if (enVol.current) { enAttente.current = true; return; }
 
+    const envoyes = nouveaux.slice(0, SEEN_IDS_MAX);
+    if (envoyes.length < nouveaux.length) enAttente.current = true;
     enVol.current = true;
-    marques.current.set(cle, new Set([...deja, ...ids]));
+    marques.current.set(cle, new Set([...deja, ...envoyes]));
 
     void (async () => {
       try {
@@ -69,6 +88,7 @@ export function useMarkThreadSeen(target: CommentTarget | null, unreadIds: reado
           contextType: target.type,
           contextId: target.id,
           ...(target.path ? { path: target.path } : {}),
+          ids: envoyes,
         });
 
         const marked = Number((res as { marked?: unknown } | null)?.marked ?? 0);
@@ -86,10 +106,19 @@ export function useMarkThreadSeen(target: CommentTarget | null, unreadIds: reado
         // Un marquage perdu n'est pas une panne : la pastille restera allumée, et la prochaine
         // ouverture réessaiera. On rend l'ensemble d'avant pour autoriser cette seconde chance.
         marques.current.set(cle, deja);
+        // … mais pas tout de suite : l'appel suivant échouerait de même, et au-delà du plafond il
+        // repartirait sans fin, les mêmes 500 messages en tête — une boucle d'appels tant que le fil
+        // reste ouvert. Le prochain essai attend un vrai changement : un message de plus, ou la
+        // réouverture du fil.
+        enAttente.current = false;
         console.warn("[useMarkThreadSeen] marquage non abouti", error);
       } finally {
         enVol.current = false;
+        if (enAttente.current) {
+          enAttente.current = false;
+          setRelance(n => n + 1);
+        }
       }
     })();
-  }, [cle, target, signature, connecte, api, queryClient]);
+  }, [cle, target, signature, connecte, api, queryClient, relance]);
 }

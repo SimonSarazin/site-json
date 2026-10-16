@@ -97,6 +97,8 @@ const etat = {
     | "echecApresAccord" | "illisibleApresAccord" | "refusApresAccord",
   /** Une erreur du rail, quand un test en veut une : refus codé ou échec réseau. */
   railErreur: null as unknown,
+  /** L'erreur du rail survient sur une RELECTURE : React Query garde alors la liste déjà servie. */
+  railServiAvant: false,
   /** La session : connectée par défaut. */
   connecte: true,
 };
@@ -160,7 +162,10 @@ vi.mock("../../hooks/useDiscussionsQuery", () => ({
     }
     // Une requête DÉSACTIVÉE n'a jamais d'erreur : le panneau en garde une, au repos, pour les fils.
     if (scope.kind === "rail" && enabled && etat.railErreur) {
-      return { ...vide, canComment: null, isLoading: false, isPending: false, isError: true, isSuccess: false, error: etat.railErreur };
+      return {
+        ...vide, canComment: null, isLoading: false, isPending: false, isError: true, isSuccess: false, error: etat.railErreur,
+        ...(etat.railServiAvant ? { carriers: PORTEURS, data: { depth: "rail" } } : {}),
+      };
     }
     return {
       carriers: scope.kind === "rail" && servi ? rail : [],
@@ -230,6 +235,7 @@ describe("DiscussionPanel", () => {
     etat.chargementTransverse = false;
     etat.lienProfond = "attente";
     etat.railErreur = null;
+    etat.railServiAvant = false;
     etat.rafraichi = false;
     etat.connecte = true;
     relireLeLien.mockClear();
@@ -675,6 +681,28 @@ describe("DiscussionPanel", () => {
       monter();
       expect(screen.getByText("Les discussions n'ont pas pu être chargées.")).toBeTruthy();
       expect(screen.queryByText("Network Error")).toBeNull();
+    });
+  });
+
+  /**
+   * Une PANNE de relecture garde la liste déjà servie (revue du 16/10) : elle la remplaçait par
+   * l'erreur pendant 30 s à 1 min, focus perdu et pli refermé. L'espace d'un commun le faisait déjà.
+   */
+  describe("relecture en panne", () => {
+    it("le rail déjà servi RESTE à l'écran : pas de message d'erreur à sa place", () => {
+      etat.railErreur = new Error("Network Error");
+      etat.railServiAvant = true;
+      monter();
+      expect(screen.getByText("Toitures solaires")).toBeTruthy();
+      expect(screen.queryByText("Les discussions n'ont pas pu être chargées.")).toBeNull();
+    });
+
+    it("un REFUS, lui, retire la liste : la session a pu changer", () => {
+      etat.railErreur = refusalError("login");
+      etat.railServiAvant = true;
+      monter();
+      expect(screen.getByText("Connectez-vous pour retrouver vos discussions.")).toBeTruthy();
+      expect(screen.queryByText("Toitures solaires")).toBeNull();
     });
   });
 });

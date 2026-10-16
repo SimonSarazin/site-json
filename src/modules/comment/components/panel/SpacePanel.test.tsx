@@ -819,6 +819,30 @@ describe("SpacePanel", () => {
       });
     };
 
+    /**
+     * Le droit perdu FERME le formulaire (revue du 16/10) : masqué seulement, il se rouvrait seul
+     * au retour du droit — session retrouvée, refus levé —, sans qu'on l'ait demandé.
+     */
+    it("droit perdu puis retrouvé : le formulaire ne se rouvre pas de lui-même", async () => {
+      let servi: unknown = PEUT_CREER;
+      const { container, client } = monter({ sert: async () => servi });
+      await servir();
+      fireEvent.click(plus()!);
+      expect(formulaire(container)).not.toBeNull();
+
+      servi = CONNECTE;
+      await act(async () => { await client.invalidateQueries(); });
+      await servir();
+      expect(plus()).toBeNull();
+      expect(formulaire(container)).toBeNull();
+
+      servi = PEUT_CREER;
+      await act(async () => { await client.invalidateQueries(); });
+      await servir();
+      expect(plus()).not.toBeNull();
+      expect(formulaire(container)).toBeNull();
+    });
+
     it("ne l'offre pas à qui le serveur n'annonce aucune audience — connecté compris", async () => {
       const { container } = monter();
       await servir();

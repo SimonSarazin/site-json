@@ -292,7 +292,18 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
 
   /** Une erreur du panneau, traduite d'après son code — jamais le texte brut du serveur. */
   const messageDErreur = (code: DiscussionErrorCode) => String(t(errorLabelKey(code)));
-  const railError = rail.isError ? messageDErreur(errorCodeOf(rail.error)) : null;
+  /**
+   * Une erreur ne prend la colonne que s'il n'y a rien à montrer, ou que le serveur a dit NON.
+   * Une PANNE de relecture garde la dernière liste servie, comme l'espace d'un commun : elle
+   * remplaçait rail et fils valides pendant 30 s à 1 min, focus perdu et pli refermé (revue du
+   * 16/10). Un REFUS, lui, retire la liste — la session a pu changer.
+   */
+  const erreurDe = (requete: { isError: boolean; error: unknown; data: unknown }): string | null => {
+    if (!requete.isError) return null;
+    const code = errorCodeOf(requete.error);
+    return requete.data === undefined || isRefusalCode(code) ? messageDErreur(code) : null;
+  };
+  const railError = erreurDe(rail);
 
   /**
    * La requête qui alimente la colonne des fils, selon le mode en cours. La nommer une fois
@@ -307,7 +318,7 @@ export function DiscussionPanel({ param, headerEnd, className }: DiscussionPanel
    * contraire de la vérité : il y a peut-être tout ce qu'on cherche, on n'a simplement pas pu
    * le demander. Constaté au navigateur, en anonyme, sur le serveur de dev.
    */
-  const filsError = filsQuery.isError ? messageDErreur(errorCodeOf(filsQuery.error)) : null;
+  const filsError = erreurDe(filsQuery);
 
   /**
    * Un fil SENSIBLE ne se monte que sur l'accord du serveur (mode `fil`) : une actualité peut être

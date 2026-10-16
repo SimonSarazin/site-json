@@ -67,7 +67,7 @@ describe("useMarkThreadSeen", () => {
   it("marque le fil, relit le panneau, et déclare le fil PÉRIMÉ sans le relire", async () => {
     const { invalider } = monter(["a", "b"]);
     await waitFor(() => expect(invalider).toHaveBeenCalledTimes(2));
-    expect(session.markCommentsSeen).toHaveBeenCalledWith({ contextType: "news", contextId: CIBLE.id });
+    expect(session.markCommentsSeen).toHaveBeenCalledWith({ contextType: "news", contextId: CIBLE.id, ids: ["a", "b"] });
     expect(invalider).toHaveBeenCalledWith({
       queryKey: COMMENT_QUERY_KEYS.DISCUSSIONS_PREFIX(), refetchType: "active",
     });
@@ -121,6 +121,57 @@ describe("useMarkThreadSeen", () => {
     await waitFor(() => expect(avertir).toHaveBeenCalled());
     rerender({ ids: ["a", "b", "c"] });
     await waitFor(() => expect(session.markCommentsSeen).toHaveBeenCalledTimes(2));
+    avertir.mockRestore();
+  });
+});
+
+/**
+ * Le marquage ne vise que ce qui a été AFFICHÉ (revue du 16/10, R6) : sans identifiants, le serveur
+ * marquait tout le fil — un message arrivé depuis le chargement passait « lu » sans avoir été vu —,
+ * et un non-lu arrivé pendant un marquage en vol n'était jamais repris.
+ */
+describe("useMarkThreadSeen — les messages affichés, et eux seuls", () => {
+  it("n'envoie que les non-lus pas encore marqués de la visite", async () => {
+    const { rerender } = monter(["a", "b"]);
+    await waitFor(() => expect(session.markCommentsSeen).toHaveBeenCalledTimes(1));
+    rerender({ ids: ["a", "b", "c"] });
+    await waitFor(() => expect(session.markCommentsSeen).toHaveBeenCalledTimes(2));
+    expect(session.markCommentsSeen.mock.calls[1]![0]).toMatchObject({ ids: ["c"] });
+  });
+
+  it("un non-lu arrivé PENDANT un marquage en vol est marqué à l'atterrissage", async () => {
+    let repondre: (valeur: unknown) => void = () => {};
+    session.markCommentsSeen.mockReturnValueOnce(new Promise(resolve => { repondre = resolve; }));
+    const { rerender } = monter(["a"]);
+    await waitFor(() => expect(session.markCommentsSeen).toHaveBeenCalledTimes(1));
+
+    rerender({ ids: ["a", "b"] });
+    await laisserFiler();
+    // En vol : on n'en lance pas un second…
+    expect(session.markCommentsSeen).toHaveBeenCalledTimes(1);
+
+    repondre({ result: true, marked: 1 });
+    // … mais l'atterrissage reprend ce qui est arrivé entre-temps.
+    await waitFor(() => expect(session.markCommentsSeen).toHaveBeenCalledTimes(2));
+    expect(session.markCommentsSeen.mock.calls[1]![0]).toMatchObject({ ids: ["b"] });
+  });
+
+  it("au-delà de 500 identifiants, le reste part à l'appel suivant — le plafond du serveur", async () => {
+    const ids = Array.from({ length: 501 }, (_, i) => `m${i}`);
+    monter(ids);
+    await waitFor(() => expect(session.markCommentsSeen).toHaveBeenCalledTimes(2));
+    expect((session.markCommentsSeen.mock.calls[0]![0] as { ids: string[] }).ids).toHaveLength(500);
+    expect((session.markCommentsSeen.mock.calls[1]![0] as { ids: string[] }).ids).toEqual(["m500"]);
+  });
+
+  it("un marquage en échec ne relance rien, même au-delà de 500 : pas de boucle d'appels", async () => {
+    session.markCommentsSeen.mockRejectedValue(new Error("réseau"));
+    const avertir = vi.spyOn(console, "warn").mockImplementation(() => {});
+    monter(Array.from({ length: 600 }, (_, i) => `m${i}`));
+    await waitFor(() => expect(avertir).toHaveBeenCalled());
+    // Le temps de plusieurs tours : chaque échec relançait aussitôt les mêmes 500 premiers messages.
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(session.markCommentsSeen).toHaveBeenCalledTimes(1);
     avertir.mockRestore();
   });
 });

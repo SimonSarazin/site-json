@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCommentVoters } from "../hooks/useCommentVoters";
 import { initialesDe } from "../lib/initiales";
@@ -31,23 +32,37 @@ export interface VotersDialogProps {
  */
 export function VotersDialog({ commentId, instance, onOpenChange }: VotersDialogProps) {
   const t = useT("modules/comment");
-  const { voters, isLoading } = useCommentVoters({ commentId, instance, enabled: true });
+  const { voters, data, isLoading, isError, refetch } = useCommentVoters({ commentId, instance, enabled: true });
   const grouped = groupVotersByReaction(voters);
+  // Sans instance, la requête ne part pas : rien ne viendra, c'est un échec et non une liste vide.
+  // Une relecture ratée, elle, garde la liste servie — React Query la conserve à travers l'erreur
+  // —, comme le panneau et le fil (relecture du lot, 16/10).
+  const enEchec = !instance || (isError && data === undefined);
 
+  // Ses propres libellés (revue du 16/10) : elle s'intitulait « Ajouter une réaction », chargeait
+  // « la discussion » et disait « Aucun message » — un échec compris —, sous une description vide ;
+  // et `max-w-sm` cédait au `sm:max-w-lg` de la base dès 640 px.
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>{t("reactions.add")}</DialogTitle>
-          <DialogDescription className="sr-only">
-            {t("a11y.reactionCount", undefined, { reaction: "", count: voters.length })}
-          </DialogDescription>
+          <DialogTitle>{t("voters.title")}</DialogTitle>
+          <DialogDescription className="sr-only">{t("voters.description")}</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">{t("thread.loading")}</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{t("voters.loading")}</p>
+        ) : enEchec ? (
+          <div className="flex flex-col items-center gap-2 py-6 text-sm">
+            <p className="text-muted-foreground">{t("voters.error")}</p>
+            {instance ? (
+              <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                {t("thread.retry")}
+              </Button>
+            ) : null}
+          </div>
         ) : voters.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">{t("thread.empty")}</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{t("voters.empty")}</p>
         ) : (
           <ScrollArea className="max-h-80">
             <div className="space-y-4 pe-2">
