@@ -15,28 +15,6 @@ export const AmpliPathSchema = z.object({
 
 export type AmpliPath = z.infer<typeof AmpliPathSchema>;
 
-/**
- * @deprecated Forme STATIQUE historique de `config.ampli` : un tableau recopié
- * à la main depuis Co. La forme cible est `ampli: true`, qui lit les amplis dans
- * `costum.ampli` (cf. `CostumAmpliEntrySchema`).
- *
- * Conservée UNIQUEMENT tant que la prod (tiers-lieux) n'est pas migrée : sa
- * config doit rester valide (`tests/preflight/sites-configs.test.ts`) et le site
- * se comporter à l'identique. Réduite aux champs réellement lus — les surcharges
- * de textes (`hero`, `intro`, `features`…) n'étaient employées par aucune config.
- */
-export const LegacyAmpliConfigSchema = z.object({
-    slug: z.string().min(1),
-    /** Ignoré : la page ampli est toujours pleine largeur (valeur de toutes les configs). */
-    layout: z.enum(["default", "modern", "compact", "fullwidth"]).optional(),
-    props: z.object({
-        coform: z.string().min(1),
-        path: AmpliPathSchema,
-    }),
-});
-
-export type LegacyAmpliConfig = z.infer<typeof LegacyAmpliConfigSchema>;
-
 /** Chaîne non vide après `trim`, sinon `undefined` — jamais d'échec. */
 const softString = z.string().trim().min(1).optional().catch(undefined);
 

@@ -20,9 +20,8 @@ vi.mock("../components/AmpliTabs", () => ({ AmpliTabs: () => <nav data-testid="t
 vi.mock("../AmpliRenderer", () => ({ AmpliRenderer: () => <div data-testid="renderer" /> }));
 
 let amplis: AmpliModel[];
-let mode: "costum" | "legacy" | "off";
 vi.mock("../hooks/useAmplis", () => ({
-  useAmplis: () => ({ mode, amplis }),
+  useAmplis: () => ({ mode: "costum", amplis }),
   useAmpli: (slug: string | undefined) => amplis.find((ampli) => ampli.slug === slug) ?? null,
 }));
 
@@ -51,7 +50,6 @@ describe("AmpliPage", () => {
 
   beforeEach(() => {
     amplis = [SINISTRE];
-    mode = "costum";
   });
 
   it("rend l'ampli : onglets, sections, SEO à son nom", async () => {
@@ -68,15 +66,6 @@ describe("AmpliPage", () => {
     expect(await screen.findByText("Ampli non trouvé")).toBeInTheDocument();
     expect(screen.getByText("Aucun ampli « inconnu » n'existe sur ce site.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Voir tous les amplis/ })).toHaveAttribute("href", "/ampli");
-  });
-
-  // En forme de config historique, `/ampli` n'est pas une route : pas de lien mort.
-  it("ne propose pas la liste en forme de config historique", async () => {
-    mode = "legacy";
-    render("inconnu");
-
-    expect(await screen.findByText("Ampli non trouvé")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Voir tous les amplis/ })).toBeNull();
   });
 
   // Décision : pas de repli CMS. Sans formulaire, la page le DIT au lieu de

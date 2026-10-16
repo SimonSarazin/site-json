@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { AmpliTabs } from "../components/AmpliTabs";
-import { useAmpli, useAmplis } from "../hooks/useAmplis";
+import { useAmpli } from "../hooks/useAmplis";
 import { ampliTitle } from "../lib/costumAmpli";
 import { isConfiguredAmpli } from "../types";
 
@@ -20,9 +20,6 @@ import { isConfiguredAmpli } from "../types";
 function AmpliNotFound({ slug }: { slug?: string }) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
-    // La liste n'existe qu'en mode `costum` : en forme de config historique,
-    // `/ampli` n'est pas une route.
-    const { mode } = useAmplis();
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <SiteHeader />
@@ -42,14 +39,14 @@ function AmpliNotFound({ slug }: { slug?: string }) {
                         </p>
                     </div>
                     <div className="pt-4 flex flex-wrap justify-center gap-3">
-                        {mode === "costum" && (
-                            <Button asChild className="gap-2">
-                                <Link to="/ampli">
-                                    <LayoutGrid className="w-4 h-4" />
-                                    {String(t("AmpliPage.backToList"))}
-                                </Link>
-                            </Button>
-                        )}
+                        {/* `/ampli/:slug` n'est monté que si les amplis sont activés :
+                            l'annuaire existe donc toujours quand cette page s'affiche. */}
+                        <Button asChild className="gap-2">
+                            <Link to="/ampli">
+                                <LayoutGrid className="w-4 h-4" />
+                                {String(t("AmpliPage.backToList"))}
+                            </Link>
+                        </Button>
                         <Button asChild variant="outline" className="gap-2">
                             <Link to="/">
                                 <Home className="w-4 h-4" />

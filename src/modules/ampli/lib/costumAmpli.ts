@@ -1,32 +1,29 @@
 /**
  * Les amplis d'un site — lecture, normalisation, filtrage. Fonctions PURES.
  *
- * Deux sources, un seul modèle (`AmpliModel`) :
- *  - `ampli: true` → `costum.ampli.<slug>` du porteur du site, la source de
- *    vérité de Co (déjà présente dans `entity.serverData.costum`, au SSR comme
- *    au client : `element/about` la renvoie) ;
- *  - `ampli: [...]` → la forme STATIQUE historique, dépréciée, conservée tant
- *    que la prod n'est pas migrée (cf. `LegacyAmpliConfigSchema`).
+ * Une seule source : `costum.ampli.<slug>` du porteur du site, la vérité de Co,
+ * déjà présente dans `entity.serverData.costum` au SSR comme au client
+ * (`element/about` la renvoie). La config du site ne fait qu'ACTIVER la
+ * fonctionnalité (`ampli: true`).
  *
  * Rappel (skill config-assistant) : la config n'est JAMAIS parsée par Zod au
- * runtime. Tout ce qui arrive ici est du JSON brut — d'où les `safeParse`, y
- * compris sur la forme tableau.
+ * runtime. Tout ce qui arrive ici est du JSON brut — d'où les `safeParse`.
  */
 
 import { isPlainObj } from "@/lib/costumLists";
-import { CostumAmpliEntrySchema, LegacyAmpliConfigSchema } from "../schema";
+import { CostumAmpliEntrySchema } from "../schema";
 import type { AmpliModel } from "../types";
 
-export type AmpliSourceMode = "costum" | "legacy" | "off";
+export type AmpliSourceMode = "costum" | "off";
 
-/** D'où viennent les amplis, selon la valeur BRUTE de `config.ampli`. */
+/**
+ * Les amplis sont-ils activés ? Lu sur la valeur BRUTE de `config.ampli`, donc
+ * `true` STRICT : une config qui porte encore la forme tableau historique (ou
+ * la chaîne `"true"`) est traitée comme désactivée, pas comme une source.
+ */
 export function ampliSourceMode(ampli: unknown): AmpliSourceMode {
-  if (ampli === true) return "costum";
-  if (Array.isArray(ampli)) return "legacy";
-  return "off";
+  return ampli === true ? "costum" : "off";
 }
-
-const OBJECT_ID = /^[0-9a-f]{24}$/i;
 
 function warnDev(message: string, detail?: unknown): void {
   if (import.meta.env.DEV) console.warn(`[ampli] ${message}`, detail ?? "");
@@ -78,38 +75,9 @@ export function listCostumAmplis(costum: unknown): AmpliModel[] {
   return keepFirstBySlug(amplis, "costum.ampli");
 }
 
-/** @deprecated Forme tableau historique de `config.ampli` — cf. `LegacyAmpliConfigSchema`. */
-export function listLegacyAmplis(entries: unknown[]): AmpliModel[] {
-  const amplis: AmpliModel[] = [];
-  entries.forEach((raw, index) => {
-    const parsed = LegacyAmpliConfigSchema.safeParse(raw);
-    if (!parsed.success) {
-      warnDev(`config.ampli[${index}] ignoré : forme invalide`, parsed.error.issues);
-      return;
-    }
-    const { slug, props } = parsed.data;
-    amplis.push({
-      slug,
-      // Pas de nom en forme historique : hero et SEO gardent leurs libellés
-      // génériques, exactement comme avant.
-      tags: [],
-      path: props.path,
-      coform: OBJECT_ID.test(props.coform) ? props.coform : null,
-    });
-  });
-  return keepFirstBySlug(amplis, "config.ampli");
-}
-
-/** Les amplis du site, quelle que soit la source. */
+/** Les amplis du site : ceux du costum si la fonctionnalité est activée. */
 export function listAmplis(ampliConfig: unknown, costum: unknown): AmpliModel[] {
-  switch (ampliSourceMode(ampliConfig)) {
-    case "costum":
-      return listCostumAmplis(costum);
-    case "legacy":
-      return listLegacyAmplis(ampliConfig as unknown[]);
-    default:
-      return [];
-  }
+  return ampliSourceMode(ampliConfig) === "costum" ? listCostumAmplis(costum) : [];
 }
 
 export function findAmpli(amplis: AmpliModel[], slug: string): AmpliModel | null {

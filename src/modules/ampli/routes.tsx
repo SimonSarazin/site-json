@@ -43,8 +43,6 @@ const ampliLoader = async ({ params, request }: LoaderFunctionArgs, queryClient?
  * « ampli introuvable » à la place du catch-all du site. Précédent :
  * `aac/routes.tsx`.
  *  - `true` → `/ampli` (liste des amplis de `costum.ampli`) + `/ampli/:slug` ;
- *  - tableau (forme historique dépréciée) → `/ampli/:slug` SEUL, comme avant :
- *    la prod qui l'emploie ne gagne pas de page nouvelle ;
  *  - absent / `false` → aucune route.
  *
  * @param queryClient - Client React Query pour le pré-chargement SSR
@@ -52,8 +50,7 @@ const ampliLoader = async ({ params, request }: LoaderFunctionArgs, queryClient?
  * @returns Liste des routes du module ampli
  */
 export const routes: ModuleRouteFactory = (queryClient?: QueryClient, config?: SiteConfig): RouteObject[] => {
-    const mode = ampliSourceMode(config?.ampli);
-    if (mode === "off") return [];
+    if (ampliSourceMode(config?.ampli) === "off") return [];
 
     const ampliRoute: RouteObject = {
         path: "ampli/:slug",
@@ -80,8 +77,6 @@ export const routes: ModuleRouteFactory = (queryClient?: QueryClient, config?: S
             }
         ],
     };
-
-    if (mode === "legacy") return [ampliRoute];
 
     return [
         {

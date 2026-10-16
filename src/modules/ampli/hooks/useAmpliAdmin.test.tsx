@@ -72,10 +72,10 @@ describe("useCanManageAmplis", () => {
     expect(renderHook(() => useCanManageAmplis()).result.current).toBe(false);
   });
 
-  // Forme tableau : les amplis viennent du fichier de config, pas du costum —
-  // il n'y a rien à créer ni à supprimer en base.
-  it("la ferme en forme tableau, même pour un admin", () => {
-    ampliConfig = [{ slug: "amplifions", props: { coform: "x", path: PATH } }];
+  // Amplis non activés : le site ne lit aucun costum, il n'y a rien à créer ni
+  // à supprimer en base.
+  it("la ferme quand les amplis ne sont pas activés, même pour un admin", () => {
+    ampliConfig = undefined;
 
     expect(renderHook(() => useCanManageAmplis()).result.current).toBe(false);
   });

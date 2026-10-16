@@ -23,7 +23,6 @@ const COSTUM = {
     sinistre: { slug: "sinistre", name: "Sinistre", path: PATH, coform: "6927e9f0db22da724360303c" },
   },
 };
-const LEGACY = [{ slug: "amplifions", props: { coform: "69426516f7a7f229f7399da2", path: PATH } }];
 
 describe("useAmplis", () => {
   beforeEach(() => {
@@ -39,12 +38,14 @@ describe("useAmplis", () => {
     expect(result.current.amplis.map((ampli) => ampli.slug)).toEqual(["sinistre"]);
   });
 
-  it("la forme tableau lit la config, jamais le costum", () => {
-    ampliConfig = LEGACY;
+  // La forme tableau historique a été retirée du schéma : une config restée
+  // dessus n'active plus rien.
+  it("une config encore en forme tableau n'active aucun ampli", () => {
+    ampliConfig = [{ slug: "amplifions", props: { coform: "69426516f7a7f229f7399da2", path: PATH } }];
     const { result } = renderHook(() => useAmplis());
 
-    expect(result.current.mode).toBe("legacy");
-    expect(result.current.amplis.map((ampli) => ampli.slug)).toEqual(["amplifions"]);
+    expect(result.current.mode).toBe("off");
+    expect(result.current.amplis).toEqual([]);
   });
 
   it("sans `config.ampli`, aucun ampli même si le costum en déclare", () => {

@@ -7,15 +7,14 @@ import {
   findAmpli,
   listAmplis,
   listCostumAmplis,
-  listLegacyAmplis,
   resolveAmpliInput,
 } from "./costumAmpli";
 import type { AmpliModel } from "../types";
 
 /**
- * Lecture des amplis d'un site. Les fixtures reprennent les documents RÉELS :
+ * Lecture des amplis d'un site. La fixture reprend le document RÉEL :
  * `costum.ampli.sinistre` tel que `element/about` le renvoie sur le backend de
- * dev (coform posé), et l'entrée tableau historique de `config.prod.tiers-lieux.json`.
+ * dev (coform posé).
  */
 
 const SINISTRE_PATH = {
@@ -37,18 +36,6 @@ const SINISTRE_ENTRY = {
   coform: "6927e9f0db22da724360303c",
 };
 
-const LEGACY_TIERS_LIEUX = {
-  slug: "amplifions",
-  layout: "fullwidth",
-  props: {
-    coform: "69426516f7a7f229f7399da2",
-    path: {
-      name: "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c7qpi",
-      address: "navigatorDesTierslieux17122025_0808_0.adresse",
-    },
-  },
-};
-
 const model = (overrides: Partial<AmpliModel> = {}): AmpliModel => ({
   slug: "sinistre",
   name: "Sinistre",
@@ -60,11 +47,12 @@ const model = (overrides: Partial<AmpliModel> = {}): AmpliModel => ({
 });
 
 describe("ampliSourceMode", () => {
-  it("`true` lit le costum, un tableau la forme historique, le reste désactive", () => {
+  it("seul `true` active les amplis", () => {
     expect(ampliSourceMode(true)).toBe("costum");
-    expect(ampliSourceMode([])).toBe("legacy");
-    expect(ampliSourceMode([LEGACY_TIERS_LIEUX])).toBe("legacy");
     expect(ampliSourceMode(false)).toBe("off");
+    // La forme tableau historique a été retirée : une config restée dessus
+    // n'active plus rien (elle ne décrit aucun ampli du costum).
+    expect(ampliSourceMode([{ slug: "amplifions" }])).toBe("off");
     expect(ampliSourceMode(undefined)).toBe("off");
     // La config n'est pas parsée par Zod au runtime : une chaîne n'active rien.
     expect(ampliSourceMode("true")).toBe("off");
@@ -159,30 +147,12 @@ describe("listCostumAmplis", () => {
   });
 });
 
-describe("listLegacyAmplis (forme historique dépréciée)", () => {
-  it("convertit l'entrée tableau de la prod, sans nom", () => {
-    expect(listLegacyAmplis([LEGACY_TIERS_LIEUX])).toEqual([
-      {
-        slug: "amplifions",
-        tags: [],
-        path: LEGACY_TIERS_LIEUX.props.path,
-        coform: "69426516f7a7f229f7399da2",
-      },
-    ]);
-  });
-
-  it("ignore une entrée invalide", () => {
-    expect(listLegacyAmplis([{ slug: "x" }, LEGACY_TIERS_LIEUX]).map((ampli) => ampli.slug)).toEqual(["amplifions"]);
-  });
-});
-
 describe("listAmplis", () => {
-  it("aiguille sur la valeur de config.ampli", () => {
+  it("ne lit le costum que si les amplis sont activés", () => {
     const costum = { ampli: { sinistre: SINISTRE_ENTRY } };
     expect(listAmplis(true, costum).map((ampli) => ampli.slug)).toEqual(["sinistre"]);
-    // En forme historique, le costum n'est PAS lu.
-    expect(listAmplis([LEGACY_TIERS_LIEUX], costum).map((ampli) => ampli.slug)).toEqual(["amplifions"]);
     expect(listAmplis(undefined, costum)).toEqual([]);
+    expect(listAmplis([{ slug: "amplifions" }], costum)).toEqual([]);
   });
 });
 

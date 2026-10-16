@@ -18,8 +18,6 @@ const { routes } = await import("./routes");
 const config = (ampli: unknown) => ({ ampli }) as unknown as SiteConfig;
 const matcher = (url: string, cfg?: SiteConfig) => matchRoutes(routes(undefined, cfg), url);
 
-const LEGACY = [{ slug: "amplifions", props: { coform: "69426516f7a7f229f7399da2", path: { name: "a.b", address: "a.c" } } }];
-
 describe("routes du module ampli — gate sur config.ampli", () => {
   it("sans `config.ampli` (ou `false`), AUCUNE route : l'URL tombe sur le catch-all du site", () => {
     expect(routes(undefined, undefined)).toEqual([]);
@@ -49,15 +47,11 @@ describe("routes du module ampli — gate sur config.ampli", () => {
     });
   });
 
-  // Forme historique conservée pour la prod : son comportement ne change pas,
-  // elle ne gagne donc PAS la page liste.
-  describe("`ampli: [...]` (forme historique dépréciée)", () => {
-    it("sert la page d'un ampli", () => {
-      expect(matcher("/ampli/amplifions", config(LEGACY))).not.toBeNull();
-    });
-
-    it("ne sert PAS la liste `/ampli`", () => {
-      expect(matcher("/ampli", config(LEGACY))).toBeNull();
-    });
+  // La forme tableau historique a été retirée : une config restée dessus
+  // n'active plus rien, exactement comme une config sans `ampli`.
+  it("une config encore en forme tableau ne monte aucune route", () => {
+    const legacy = [{ slug: "amplifions", props: { coform: "69426516f7a7f229f7399da2", path: { name: "a.b", address: "a.c" } } }];
+    expect(routes(undefined, config(legacy))).toEqual([]);
+    expect(matcher("/ampli/amplifions", config(legacy))).toBeNull();
   });
 });

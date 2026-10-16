@@ -62,7 +62,7 @@ Le concept "Ampli" est directement lié au système **Meeteem** — une interfac
 src/modules/ampli/
 ├── module.config.ts                # name: "ampli", type: "core", enabled: true
 ├── index.ts                        # API publique
-├── schema.ts                       # CostumAmpliEntrySchema (costum.ampli) + LegacyAmpliConfigSchema (déprécié) + AmpliPathSchema
+├── schema.ts                       # CostumAmpliEntrySchema (costum.ampli) + AmpliPathSchema
 ├── types.ts                        # Types canoniques : AmpliModel, ConfiguredAmpli, MeeteemCard, AmpliSummaryData, …
 ├── routes.tsx                      # /ampli (liste) + /ampli/:slug et ses onglets — gatés sur config.ampli
 │
@@ -79,7 +79,7 @@ src/modules/ampli/
 │   └── answersQuery.ts            # Filtres et champs des réponses — PARTAGÉS par la page et les compteurs de la liste
 │
 ├── hooks/
-│   ├── useAmplis.ts               # useAmplis() / useAmpli(slug) — aiguillage costum / tableau historique
+│   ├── useAmplis.ts               # useAmplis() / useAmpli(slug) — lecture de costum.ampli
 │   ├── useAmpliAdmin.ts           # Gate admin + création/suppression d'un ampli (SDK : createAmpli / removeAmpli)
 │   ├── useAmpliAnswerCounts.ts    # « N propositions » de chaque carte de /ampli
 │   ├── useAmpliContext.tsx         # useAmpliContext() — throw si hors Provider
@@ -151,8 +151,9 @@ La config n'**active** que la fonctionnalité. Trois valeurs, lues **brutes** (l
 | `config.ampli` | Source des amplis | Routes montées |
 |---|---|---|
 | `true` | `costum.ampli` du porteur du site | `/ampli` (liste) + `/ampli/:slug` |
-| tableau | la forme statique historique — **dépréciée** | `/ampli/:slug` seul |
 | absent / `false` / autre | aucun | aucune (catch-all du site) |
+
+`true` STRICT : la config n'étant jamais parsée par Zod au runtime, `"true"` en chaîne — ou un reste de la forme tableau historique — n'active rien.
 
 ### Côté Co : `costum.ampli.<slug>`
 
@@ -194,13 +195,11 @@ Lecture par `CostumAmpliEntrySchema` (`safeParse`, donnée backend) puis `listCo
 
 Doublon de slug : la première entrée gagne (avertissement en DEV).
 
-### Forme tableau historique (dépréciée)
+### Ce qui a disparu de la config
 
-`LegacyAmpliConfigSchema` — `{ slug, layout?, props: { coform, path } }`, une entrée par ampli, recopiée à la main depuis Co. Conservée **uniquement** pour la prod (`config.prod.tiers-lieux.json`) : sa config doit rester valide (`tests/preflight/sites-configs.test.ts`) et le site se comporter à l'identique — pas de nom (hero et SEO génériques), pas de page liste. `layout` est accepté mais ignoré (la page est toujours pleine largeur, valeur de toutes les configs).
+La forme tableau (`ampli: [{ slug, layout?, props: { coform, path } }]`), qui recopiait à la main dans le fichier de site ce que Co détient déjà, a été retirée : une config restée dessus n'active plus aucun ampli. Les anciennes surcharges de textes (`hero`, `intro`, `features`, `message`, `community`, `dashboard`, `news`, `seo`) avaient disparu avec elle — aucune config ne les employait, les sections n'ont plus que leurs libellés i18n.
 
-Les anciennes surcharges de textes (`hero`, `intro`, `features`, `message`, `community`, `dashboard`, `news`, `seo`) ont disparu : aucune config ne les employait. Les sections n'ont plus que leurs libellés i18n.
-
-**Pour migrer un site** : déclarer ses amplis dans `costum.ampli` (avec `coform`), puis remplacer le tableau par `"ampli": true`. Une fois la prod migrée, supprimer `LegacyAmpliConfigSchema`, `listLegacyAmplis` et les branches `legacy` des hooks et des routes.
+**Migrer un site resté sur l'ancienne forme** : déclarer ses amplis dans `costum.ampli` (avec `slug`, `coform` et `path`), PUIS passer la config à `"ampli": true`. Dans l'autre ordre, l'annuaire est vide et `/ampli/<slug>` répond « ampli introuvable ».
 
 **Section JSON publique `meeteem`** : en plus de la page `/ampli/:slug`, le module expose une section de type `"meeteem"` utilisable dans n'importe quelle page JSON — elle porte ses propres `coform`/`path`, indépendamment de `config.ampli`. Voir [`MeeteemSectionProps`](#section-meeteem-section-json-publique).
 
@@ -216,7 +215,7 @@ Les anciennes surcharges de textes (`hero`, `intro`, `features`, `message`, `com
 /ampli/:slug/news      → AmpliPage — tab "news" (coming soon)
 ```
 
-**Gate sur `config.ampli`** (même patron que `aac/routes.tsx`) : le module est `core`, donc découvert sur TOUS les sites. Sans gate, `/ampli/:slug` était servi partout avec une page « ampli introuvable » ; désormais, sans `config.ampli`, la factory rend `[]` et l'URL tombe sur le catch-all du site. `/ampli` n'est monté qu'en mode `true` — la forme tableau historique ne gagne pas de page nouvelle.
+**Gate sur `config.ampli`** (même patron que `aac/routes.tsx`) : le module est `core`, donc découvert sur TOUS les sites. Sans gate, `/ampli/:slug` était servi partout avec une page « ampli introuvable » ; désormais, sans `config.ampli`, la factory rend `[]` et l'URL tombe sur le catch-all du site. `/ampli` et `/ampli/:slug` sont montées ensemble : il n'existe plus de mode qui n'offrirait que la page d'un ampli.
 
 Le loader (`ampliLoader`) extrait `slug` depuis les paramètres d'URL et dérive `activeTab` depuis les segments du pathname (`pathSegments[2]` si présent, sinon `'home'`). Le composant `AmpliPage` combine `loaderData.activeTab` (SSR) avec un fallback `useLocation()` pour la navigation client-side.
 
@@ -254,8 +253,7 @@ Bearer + gate serveur `isInterfaceAdmin`). Elles écrivent dans `costum.ampli` *
 | Retour | `slug` + l'entrée complète → redirection vers `/ampli/<slug>` | — |
 
 **Le gate d'affichage** (`useCanManageAmplis`) : `siteAdmin` au sens du back-office — admin du porteur ou
-super-admin de la plateforme (`resolveAdminAccessLevel`) —, en mode `costum` **seulement** (en forme tableau
-les amplis viennent du fichier de config : rien à écrire en base), et jamais avant l'hydratation (`me` et les
+super-admin de la plateforme (`resolveAdminAccessLevel`) —, amplis **activés** seulement, et jamais avant l'hydratation (`me` et les
 liens de l'entité sont vides au SSR). Le serveur revérifie le droit : ce gate n'est qu'un confort d'affichage.
 
 **Collision de slug — garde CLIENT obligatoire.** Le serveur dérive la clé du `name` et **écrase sans
@@ -828,12 +826,12 @@ Groupes de clés dans `fr.json` / `en.json` :
 | `components/sections/AmpliFeatures.test.tsx` | Formulaire rendu dans la colonne gauche avec le bon coform et le libellé d'envoi ; section qui reste montée pendant le chargement (régression du `return null`) ; compteurs en squelette puis chiffrés |
 | `utils/scrollToSection.test.ts` | Défilement vers une ancre : cible absente (pas de throw), `prefers-reduced-motion`, focus sur le premier élément interactif, section réduite à un squelette |
 | `components/sections/AmpliHeader.test.tsx` | Les 3 CTA du hero, nom de l'ampli en titre (repli sur le titre générique), et les ancres visées par « Proposer une idée » (avec focus) et « Voir les propositions » |
-| `lib/costumAmpli.test.ts` | Fixtures RÉELLES (`costum.ampli.sinistre`, entrée tableau de tiers-lieux) : aiguillage `ampliSourceMode` (dont `"true"` en chaîne), slug du champ ou de la clé, entrée sans `path` ignorée, doublon de slug, `coform` absent ou mal formé → ampli listé non configuré, tags en objet PHP, nom vide ; forme historique ; `resolveAmpliInput` ; `filterAmplis` (casse, accents, OU des tags, slug comme titre) ; `collectAmpliTags` |
+| `lib/costumAmpli.test.ts` | Fixture RÉELLE (`costum.ampli.sinistre`) : `ampliSourceMode` (`"true"` en chaîne et forme tableau → désactivé), slug du champ ou de la clé, entrée sans `path` ignorée, doublon de slug, `coform` absent ou mal formé → ampli listé non configuré, tags en objet PHP, nom vide ; `resolveAmpliInput` ; `filterAmplis` (casse, accents, OU des tags, slug comme titre) ; `collectAmpliTags` |
 | `lib/answersQuery.test.ts` | Filtres partagés (formulaire, existence du nom, finder) et champs projetés sans `answers.undefined` |
-| `hooks/useAmplis.test.tsx` | Aiguillage costum / tableau (le costum n'est pas lu) / désactivé, liste stable d'un rendu à l'autre, `useAmpli` par slug |
-| `routes.test.tsx` | Gate : aucune route sans `config.ampli` ; `true` → `/ampli` + `/ampli/:slug` et ses onglets ; tableau → `/ampli/:slug` seul |
+| `hooks/useAmplis.test.tsx` | Lecture du costum, config absente ou restée en forme tableau → aucun ampli, liste stable d'un rendu à l'autre, `useAmpli` par slug |
+| `routes.test.tsx` | Gate : aucune route sans `config.ampli` ni avec une config restée en forme tableau ; `true` → `/ampli` + `/ampli/:slug` et ses onglets |
 | `pages/AmpliListPage.test.tsx` | Cartes (lien, description, 3 tags + « +N », « N propositions » au singulier/pluriel, squelette, rien sans formulaire), navigation au clic, recherche, puces `aria-pressed`, « Effacer les filtres », accès direct (slug connu → page ; inconnu → alerte en ligne, effacée à la saisie), état vide ; gestion : rien pour un visiteur, création → page du nouvel ampli, suppression après confirmation |
-| `hooks/useAmpliAdmin.test.tsx` | Gate de gestion (admin du porteur, super-admin, anonyme, forme tableau, avant hydratation) ; création puis rechargement de l'entité DANS CET ORDRE, échec sans entité porteuse ; suppression par le slug |
+| `hooks/useAmpliAdmin.test.tsx` | Gate de gestion (admin du porteur, super-admin, anonyme, amplis non activés, avant hydratation) ; création puis rechargement de l'entité DANS CET ORDRE, échec sans entité porteuse ; suppression par le slug |
 | `components/AmpliCreateDialog.test.tsx` | Identifiant dérivé du nom, refus d'un slug déjà pris et d'un nom sans identifiant, envoi vide bloqué, brouillon envoyé (mots-clés découpés) + redirection, saisie oubliée à la fermeture |
 | `components/AmpliDeleteButton.test.tsx` | Rien sans confirmation, ce qui survit annoncé, renoncement, suppression de CET ampli, confirmation verrouillée pendant l'appel |
 | `pages/AmpliPage.test.tsx` | Rendu normal (onglets, sections, SEO au nom), slug inconnu avec lien vers la liste (pas en forme historique), ampli sans formulaire → « en préparation » sans sections |
@@ -917,9 +915,13 @@ Le mapping `costum.ampli.<slug>.path.*` doit correspondre exactement aux noms de
 
 L'outil legacy de Co n'écrit pas `coform` dans l'entrée (il le range dans les blocs CMS des pages de l'ampli). Sans repli volontaire, un ampli créé par cet outil apparaît dans la liste mais sa page affiche « Ampli en préparation » tant que le champ n'est pas posé en base.
 
-### 4 ter. Prod encore en forme tableau
+### 4 ter. Le costum de prod doit porter `slug`, `coform` et `path`
 
-`config.prod.tiers-lieux.json` garde la forme `ampli: [...]` : l'entrée du costum de prod porte un autre slug (`amplifiions`) et pas de `coform`. Migrer = corriger le costum en base PUIS passer la config à `true` — dans l'autre ordre, `/ampli/amplifions` tomberait en 404.
+`config.prod.tiers-lieux.json` est passée à `"ampli": true`, mais l'entrée du costum de prod
+(`costum.ampli.amplifiions`) ne porte encore ni `slug`, ni `coform`, ni `path` : tant que ces trois champs
+ne sont pas posés en base, l'annuaire du site est vide et `/ampli/amplifions` répond « ampli introuvable ».
+Le champ `slug` suffit à garder l'URL publique (`"slug": "amplifions"`), la clé `amplifiions` n'a pas à être
+renommée — et les pages Co (`#amplifiions-*`) restent en place.
 
 ### 5. Cache des answers via `AMPLI_QUERY_KEYS.FETCH_ANSWERS`
 

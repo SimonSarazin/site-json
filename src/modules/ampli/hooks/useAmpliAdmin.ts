@@ -24,8 +24,8 @@ export interface AmpliDraft {
  * Le serveur revérifie le droit : ce gate n'est qu'un confort d'affichage.
  *
  * Deux restrictions de plus :
- *  - `costum` SEULEMENT — en forme tableau (dépréciée) les amplis viennent du
- *    fichier de config, pas du costum : rien à créer ni à supprimer en base ;
+ *  - amplis ACTIVÉS seulement (`config.ampli !== true` → rien à créer ni à
+ *    supprimer : le site ne lit aucun costum) ;
  *  - jamais avant l'hydratation — `me` et les liens de l'entité sont toujours
  *    vides au SSR, les lire plus tôt ferait diverger le premier rendu client.
  */

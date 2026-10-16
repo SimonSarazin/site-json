@@ -23,13 +23,9 @@ export { useFetchAnswerQuery } from "./hooks/useFetchAnswerQuery";
 export { useAmplis, useAmpli } from "./hooks/useAmplis";
 
 export type { AmpliModel } from "./types";
-export type { AmpliPath, CostumAmpliEntry, LegacyAmpliConfig } from "./schema";
+export type { AmpliPath, CostumAmpliEntry } from "./schema";
 
-export {
-    AmpliPathSchema,
-    CostumAmpliEntrySchema,
-    LegacyAmpliConfigSchema,
-} from "./schema";
+export { AmpliPathSchema, CostumAmpliEntrySchema } from "./schema";
 
 // Query keys centralisés (single source of truth)
 export { AMPLI_QUERY_KEYS } from "./constants/queryKeys";
