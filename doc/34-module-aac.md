@@ -523,7 +523,7 @@ de `config.theme`). La clé voyage par `useAacDirectoryContext().variants`, avec
   d'édition (coquille de la page), dialogue de suppression (section). Une vue ne peut pas les perdre.
 - **Carte et ligne vont par paire** (la bascule grille/liste est un choix du visiteur) ; le
   **squelette** est obligatoire dès qu'une interface change les dimensions d'un commun : c'est lui
-  que rend le SSR.
+  que rend le SSR, et le repli `Suspense` tant que la carte se charge.
 - **Le sommaire est opt-in** (`useCommunToc`, appelé par la vue) : une vue à onglets n'en a pas, et
   un `IntersectionObserver` y suivrait des ancres que Radix ne rend pas.
 - **Les gestes de filtrage sont partagés** (`lib/directoryFilterActions.ts`) : une disposition choisit
@@ -535,14 +535,18 @@ coquille) ; sa déclaration `lazy(() => import("…"))` dans `variants/lazyVaria
 par registre concerné. Les tests de conformité la prennent **d'office** (paramétrés sur `keys()`) :
 `detail.conformance.test.tsx` — les quatre commandes reçoivent les props du contrôleur, financement
 ssi `funding !== null`, paliers et contributeurs ssi phase `project` (actualités et agenda aussi,
-pour une interface qui les rend), chaque bloc atteignable (ancre ou onglet) ; `directory.conformance.test.tsx` — lien vers la fiche, badge « en attente »,
+pour une interface qui les rend), chaque bloc atteignable (ancre ou onglet), aucun contenu de
+démonstration sans `demoBlocks` ; `directory.conformance.test.tsx` — lien vers la fiche, badge « en attente »,
 suppression par item, et **un contrôle marqué `data-aac-filter="<nom>"` par filtre activé**.
 
 **Contenu de démonstration** (`variants/editorial/demo/`). Ce que la maquette montre et que l'AAC
 ne sait pas faire (maturation, coopérations, avis, soutiens, indicateurs d'impact, appels à
 projets) est rendu avec des données **figées, identiques sur tous les communs**, chaque bloc
 portant le bandeau « Exemple » et ses commandes désactivées. Quand une fonctionnalité arrive, son
-bloc lit le view-model et `demoContent.ts` rétrécit — il disparaît quand il est vide.
+bloc lit le view-model et `demoContent.ts` rétrécit — il disparaît quand il est vide. Ces blocs ne
+sont rendus que si **`config.aac.detail.demoBlocks: true`** (faux par défaut, `vm.demoBlocks`) ;
+coupés, les onglets Maturation et Coopérations disparaissent aussi. **À couper avant la mise en
+ligne d'un site réel** : un visiteur y lirait des dons et des chiffres qui n'existent pas.
 
 **Actualités et agenda** (onglet « Actus et agenda » de l'interface `editorial`). Ils sont ceux du
 **projet lié** au commun, donc rendus en phase `project` seulement (`vm.objectives.news` /

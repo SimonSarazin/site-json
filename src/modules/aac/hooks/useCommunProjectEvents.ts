@@ -23,7 +23,7 @@ export function communEventsBounds(bucket: CommunEventsBucket, now: Date) {
 
 export function useCommunProjectEvents(projectId: string | null | undefined, bucket: CommunEventsBucket) {
   const { me } = useCocolight();
-  const { project, isLoading: isProjectLoading } = useCommunProjectEntityQuery(projectId);
+  const { project, isUnresolved: isProjectUnresolved } = useCommunProjectEntityQuery(projectId);
   // Ancre figée au montage : `next()` la rejoue à chaque page.
   const [now] = useState(() => new Date());
 
@@ -37,13 +37,15 @@ export function useCommunProjectEvents(projectId: string | null | undefined, buc
   });
 
   const events = useMemo<Event[]>(() => data?.pages?.flatMap((page) => page?.results ?? []) ?? [], [data?.pages]);
+  const isProjectPending = !project && !isProjectUnresolved;
 
   return {
     events,
     now,
-    isLoading: isProjectLoading || isLoading,
-    /** Le projet n'a pas pu être résolu, ou la requête a échoué. */
-    isError: (!isProjectLoading && !project) || !!error,
+    /** Projet en attente, puis événements en vol. */
+    isLoading: isProjectPending || isLoading,
+    /** Projet non résolu, ou échec de la requête des événements. */
+    isError: isProjectUnresolved || !!error,
     hasNextPage: !!hasNextPage,
     isFetchingNextPage,
     fetchNextPage,

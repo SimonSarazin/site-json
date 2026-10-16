@@ -373,6 +373,7 @@
       },
       "noProject": "Les jalons et les actions s'ouvrent dès qu'un projet est lié à ce commun.",
       "noProjectLife": "Les actualités et l'agenda s'ouvrent dès qu'un projet est lié à ce commun.",
+      "noProjectCommunity": "Les contributeurs s'affichent dès qu'un projet est lié à ce commun.",
       "impact": "Indicateurs d'impact",
       "calls": {
         "title": "Compagnon appels à projets",

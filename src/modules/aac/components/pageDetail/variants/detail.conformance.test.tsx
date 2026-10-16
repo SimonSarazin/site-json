@@ -126,6 +126,7 @@ function makeVM(overrides: Partial<CommunDetailReadyVM> = {}): CommunDetailReady
     ],
     isProseLoading: false,
     gallery: { images: [{ src: "http://b/a.jpg", alt: "a.jpg" }] },
+    demoBlocks: false,
     actions: pack("action-bar"),
     overlays: { edit: null, milestones: {} },
     ...overrides,
@@ -290,6 +291,38 @@ describe.each(AAC_DETAIL_VARIANTS.keys())("interface de fiche « %s »", (key) =
 
     await renderVariant(key, makeVM({ gallery: null }));
     expect(nowhere(byTestId("probe-gallery"))).toBe(true);
+  });
+
+  it("sans `demoBlocks` : aucun contenu de démonstration, nulle part", async () => {
+    await renderVariant(key, makeVM());
+
+    expect(nowhere(() => document.querySelector("[data-demo-notice]") !== null)).toBe(true);
+  });
+});
+
+describe("interface « editorial » — contenu de démonstration", () => {
+  const demoTabs = () =>
+    ["editorial.detail.tabs.maturation", "editorial.detail.tabs.cooperations"].filter(
+      (label) => screen.queryByText(label) !== null
+    );
+
+  it("`demoBlocks` coupé : ni onglet Maturation ni onglet Coopérations", async () => {
+    await renderVariant("editorial", makeVM());
+
+    expect(demoTabs()).toEqual([]);
+  });
+
+  it("`demoBlocks` allumé : onglets et blocs marqués « Exemple »", async () => {
+    await renderVariant("editorial", makeVM({ demoBlocks: true }));
+
+    expect(demoTabs()).toHaveLength(2);
+    expect(document.querySelector("[data-demo-notice]")).not.toBeNull();
+  });
+
+  it("sans projet lié, `demoBlocks` coupé : l'onglet Communauté n'est pas vide", async () => {
+    await renderVariant("editorial", makeVM({ objectives: { phase: "none" } }));
+
+    expect(reachable(() => screen.queryByText("editorial.detail.noProjectCommunity") !== null)).toBe(true);
   });
 });
 

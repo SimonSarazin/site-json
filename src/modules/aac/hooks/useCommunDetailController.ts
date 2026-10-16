@@ -21,7 +21,7 @@ import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "./useCommunRawDepenses";
 import { useAacFundingResource } from "./useAacFundingResource";
 import { useCommunFundingHost } from "./useCommunFundingHost";
 import { useCommunFundingContext } from "./useCommunFundingContext";
-import { useAacDetailSections, useAacGallerySubKey } from "./useAacDetailSections";
+import { useAacDemoBlocks, useAacDetailSections, useAacGallerySubKey } from "./useAacDetailSections";
 import { useAacFormMeta, useAacFormParams } from "./useAacFormMeta";
 import { editorIdsOf, resolveEditorsQuestion } from "../lib/communEditors";
 import { resolveCommunSeo } from "../lib/communSeo";
@@ -114,6 +114,8 @@ export interface CommunDetailReadyVM extends CommunDetailBaseVM {
     isProseLoading: boolean;
     /** `null` : le site ne déclare pas de galerie (`config.aac.detail.gallery`). */
     gallery: { images: GalleryImage[] } | null;
+    /** Blocs de démonstration de l'interface (`config.aac.detail.demoBlocks`), faux par défaut. */
+    demoBlocks: boolean;
     /** Props de la barre d'actions (`CommunActionBar`), un gate par action. */
     actions: CommunActionBarProps;
     /** Overlays sans position, rendus par la coquille de la page hors de toute interface. */
@@ -216,6 +218,7 @@ export function useCommunDetailController(): CommunDetailVM {
     const { sections: detailSections, isLoading: isDetailSectionsLoading } =
         useAacDetailSections(formId ?? null);
     const gallerySubKey = useAacGallerySubKey();
+    const demoBlocks = useAacDemoBlocks();
 
     // Question qui alimente `links.canEdit` (`addToLinks`), si le formulaire en déclare une.
     // Même entrée de cache que `useAacConfig`.
@@ -260,11 +263,30 @@ export function useCommunDetailController(): CommunDetailVM {
     // SEO calculé avant les gardes, donc émis dans tous les états : le SSR rend le squelette
     // (la config de l'appel n'est pas préchargée). Repli : nom de l'appel, puis libellé générique.
     const seoPath = answerId ? communPath(answerId) : "/aac";
-    const communSeo = resolveCommunSeo(answerQuery.data, {
-        fields: directory.fields,
-        depenseStepKey: config?.roles.depenseStepKey ?? null,
-        baseUrl: getBaseUrl(),
-    });
+    const depenseStepKey = config?.roles.depenseStepKey ?? null;
+    const communSeo = useMemo(
+        () => resolveCommunSeo(answerQuery.data, { fields: directory.fields, depenseStepKey, baseUrl: getBaseUrl() }),
+        [answerQuery.data, directory.fields, depenseStepKey]
+    );
+
+    // Lectures de la réponse, mémoïsées avant les gardes : références stables pour les vues.
+    const card = useMemo(
+        () =>
+            answerQuery.data
+                ? parseAacAnswer(answerQuery.data, {
+                      fields: directory.fields,
+                      contextId: directory.contextId,
+                      baseUrl: getBaseUrl(),
+                  })
+                : null,
+        [answerQuery.data, directory.fields, directory.contextId]
+    );
+    const usageLabels = useMemo(() => readUsageLabels(directory.formParams), [directory.formParams]);
+    const galleryImages = useMemo(
+        () => extractGalleryImages(answerQuery.data?.documents, getBaseUrl(), gallerySubKey),
+        [answerQuery.data?.documents, gallerySubKey]
+    );
+
     const seo: AacSeoProps = {
         title: communSeo.title || formQuery.data?.name || String(t("page.communDetail")),
         description: communSeo.description || String(t("page.communDetailDescription")),
@@ -278,7 +300,7 @@ export function useCommunDetailController(): CommunDetailVM {
     if (answerQuery.error || formQuery.error) return { status: "error", kind: "data", ...base };
     // Sans config, ni gates ni blocs déclarés : erreur explicite plutôt qu'une fiche vidée.
     if (configError) return { status: "error", kind: "config", ...base };
-    if (!answerQuery.data || !formQuery.data) return { status: "error", kind: "not-found", ...base };
+    if (!answerQuery.data || !formQuery.data || !card) return { status: "error", kind: "not-found", ...base };
 
     const answer = answerQuery.data;
     const formData = formQuery.data;
@@ -330,11 +352,9 @@ export function useCommunDetailController(): CommunDetailVM {
         ]);
     };
 
-    const galleryImages = extractGalleryImages(answer.documents, getBaseUrl(), gallerySubKey);
-
     // Étape résolue de la dépense, où `CommunHero` lit le descriptif long.
     const depositStep = (answer.answers as Record<string, Record<string, unknown>> | undefined)?.[
-        config?.roles.depenseStepKey || DEFAULT_AAC_STEP
+        depenseStepKey || DEFAULT_AAC_STEP
     ];
     const longDescription = depositStep?.description;
 
@@ -351,19 +371,15 @@ export function useCommunDetailController(): CommunDetailVM {
             depositedOnName: originFormName,
         },
         summary: {
-            card: parseAacAnswer(answer, {
-                fields: directory.fields,
-                contextId: directory.contextId,
-                baseUrl: getBaseUrl(),
-            }),
+            card,
             longDescription: typeof longDescription === "string" ? longDescription : "",
-            usageLabels: readUsageLabels(directory.formParams),
+            usageLabels,
         },
         funding: showFunding
             ? {
                   card: {
                       formData,
-                      answerQuery: answer ?? {},
+                      answerQuery: answer,
                       aacConfig: config,
                       funding: targetResource,
                       onFunded: handleFunded,
@@ -384,7 +400,7 @@ export function useCommunDetailController(): CommunDetailVM {
                   },
                   cofinancers: {
                       formData,
-                      answerQuery: answer ?? {},
+                      answerQuery: answer,
                       aacConfig: config,
                       funding: targetResource,
                   },
@@ -414,6 +430,7 @@ export function useCommunDetailController(): CommunDetailVM {
         prose,
         isProseLoading: isDetailSectionsLoading,
         gallery: gallerySubKey ? { images: galleryImages } : null,
+        demoBlocks,
         actions: {
             api,
             answerId: answerId ?? null,

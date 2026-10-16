@@ -1,6 +1,6 @@
-import { Link } from "react-router";
 import { ArrowRight, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NavLink from "@/components/layout/NavLink";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useT } from "@/hooks/useT";
@@ -47,10 +47,10 @@ export default function AacDirectoryShellDefault({ id, vm }: AacDirectoryShellPr
           {vm.moreLink && (
             <div className="flex justify-center">
               <Button asChild size="lg" variant="outline" className="rounded-full">
-                <Link to={vm.moreLink.href}>
+                <NavLink to={vm.moreLink.href}>
                   {vm.moreLink.label ?? String(t("directory.more"))}
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                </Link>
+                </NavLink>
               </Button>
             </div>
           )}

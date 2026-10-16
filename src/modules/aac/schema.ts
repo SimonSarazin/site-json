@@ -151,6 +151,8 @@ export const AacDetailSchema = z.object({
    * Inconnue ou omise ⇒ `default`. (`variant` désigne déjà un mode sur `aac-directory`.)
    */
   pageVariant: z.string().optional(),
+  /** Contenu de démonstration de l'interface `editorial` (blocs marqués « Exemple »). Omis ⇒ masqué. */
+  demoBlocks: z.boolean().optional(),
 });
 
 export const AacConfigSchema = z.object({

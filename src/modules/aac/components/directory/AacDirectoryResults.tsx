@@ -11,6 +11,7 @@ import {
   AAC_DIRECTORY_SKELETON_VARIANTS,
 } from "./variants/items";
 import type { AacDisplayMode } from "../../schema";
+import { directoryGridCols } from "../../lib/directoryGrid";
 import type { AacCommunCard as CommunCard } from "../../lib/parseAacAnswer";
 
 interface AacDirectoryResultsProps {
@@ -53,14 +54,6 @@ interface AacDirectoryResultsProps {
   /** Libellés exacts des usages, transmis aux communs. */
   usageLabels?: Readonly<Record<string, string>>;
 }
-
-/** Classes de grille figées : Tailwind ne peut pas générer `md:grid-cols-${n}`. */
-const GRID_COLS: Record<number, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-1 sm:grid-cols-2",
-  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-};
 
 /**
  * Les résultats de l'annuaire, dans le mode demandé.
@@ -110,12 +103,21 @@ export function AacDirectoryResults({
     void AAC_DIRECTORY_SKELETON_VARIANTS.preload(itemVariant);
   }, [itemVariant]);
 
-  // Une frontière pour tous les états, aucune si tout est embarqué ; repli : le squelette par défaut (embarqué).
+  // Aucune frontière si tout est embarqué. Repli : le squelette de l'interface, celui par défaut
+  // tant que son chunk manque.
   const bounded = (node: ReactNode) =>
     allEmbedded(Card, Row, Skeleton) ? (
       node
     ) : (
-      <Suspense fallback={<AacDirectorySkeleton display={display} columns={columns} />}>{node}</Suspense>
+      <Suspense
+        fallback={
+          <Suspense fallback={<AacDirectorySkeleton display={display} columns={columns} />}>
+            <Skeleton display={display} columns={columns} />
+          </Suspense>
+        }
+      >
+        {node}
+      </Suspense>
     );
 
   const retryButton = onRetry ? (
@@ -172,7 +174,7 @@ export function AacDirectoryResults({
           ))}
         </div>
       ) : (
-        <div className={cn("grid gap-6", GRID_COLS[columns] ?? GRID_COLS[3])}>
+        <div className={cn("grid gap-6", directoryGridCols(columns))}>
           {communs.map((commun) => (
             <Card
               key={commun.id}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProseContent } from "@/components/shared/ProseContent";
 import { useT } from "@/hooks/useT";
+import { cn } from "@/lib/utils";
 import { usageLabelFromId } from "../../lib/aacUsage";
 import { CommunActionBar } from "../../components/pageDetail/CommunActionBar.tsx";
 import { CommunFinancingCard } from "../../components/pageDetail/CommunFinancingCard.tsx";
@@ -47,7 +48,8 @@ const SECTION_TAB: Readonly<Record<string, TabKey>> = {
 
 /**
  * Fiche d'un commun, interface « editorial » (fiche à onglets de la maquette projets.re).
- * Vue du contrôleur : blocs réels de l'AAC avec les props du contrôleur, contenu de `demo/` pour le reste.
+ * Vue du contrôleur : blocs réels de l'AAC avec les props du contrôleur, contenu de `demo/` pour le reste
+ * si `vm.demoBlocks`.
  *  - « Soutenir » est la carte de financement en mise en page `hero` ;
  *  - les réactions sont dans la colonne Exporter / Soutenir à partir de `lg`, sous la description sinon ;
  *  - pas de sommaire : un lien de section ouvre son onglet puis y défile (`SECTION_TAB`, `tabbedSectionNav`).
@@ -160,12 +162,16 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
               <TabsTrigger value="communaute" className="flex-none">{String(t("editorial.detail.tabs.communaute"))}</TabsTrigger>
               <TabsTrigger value="vie" className="flex-none">{String(t("editorial.detail.tabs.vie"))}</TabsTrigger>
               {/* Onglets de démonstration : libellé en rouge. */}
-              <TabsTrigger value="maturation" className="flex-none">
-                <span className="text-destructive">{String(t("editorial.detail.tabs.maturation"))}</span>
-              </TabsTrigger>
-              <TabsTrigger value="cooperations" className="flex-none">
-                <span className="text-destructive">{String(t("editorial.detail.tabs.cooperations"))}</span>
-              </TabsTrigger>
+              {vm.demoBlocks && (
+                <>
+                  <TabsTrigger value="maturation" className="flex-none">
+                    <span className="text-destructive">{String(t("editorial.detail.tabs.maturation"))}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="cooperations" className="flex-none">
+                    <span className="text-destructive">{String(t("editorial.detail.tabs.cooperations"))}</span>
+                  </TabsTrigger>
+                </>
+              )}
             </TabsList>
 
             <TabsContent value="fiche" className="mt-6 grid gap-8 lg:grid-cols-3">
@@ -196,10 +202,12 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
                   </EditorialSection>
                 )}
               </div>
-              <aside className="min-w-0 space-y-6">
-                <DemoImpactBlock />
-                <DemoCallsBlock />
-              </aside>
+              {vm.demoBlocks && (
+                <aside className="min-w-0 space-y-6">
+                  <DemoImpactBlock />
+                  <DemoCallsBlock />
+                </aside>
+              )}
             </TabsContent>
 
             <TabsContent value="action" className="mt-6">
@@ -233,16 +241,27 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
               </TabsContent>
             )}
 
-            <TabsContent value="communaute" className="mt-6 grid gap-8 lg:grid-cols-2">
+            <TabsContent value="communaute" className={cn("mt-6 grid gap-8", vm.demoBlocks && "lg:grid-cols-2")}>
               <div className="min-w-0 space-y-6">
-                <ProjectPhaseSection objectives={objectives} id="contributeurs" title={String(t("detail.toc.contributors"))}>
+                <ProjectPhaseSection
+                  objectives={objectives}
+                  id="contributeurs"
+                  title={String(t("detail.toc.contributors"))}
+                  fallback={
+                    <EditorialSection title={String(t("detail.toc.contributors"))}>
+                      <p className="mt-3 text-sm text-muted-foreground">{String(t("editorial.detail.noProjectCommunity"))}</p>
+                    </EditorialSection>
+                  }
+                >
                   {(project) => <CommunContributorsSection {...project.contributors} />}
                 </ProjectPhaseSection>
-                <DemoFeedbackBlock />
+                {vm.demoBlocks && <DemoFeedbackBlock />}
               </div>
-              <div className="min-w-0 space-y-6">
-                <DemoSupportsBlock />
-              </div>
+              {vm.demoBlocks && (
+                <div className="min-w-0 space-y-6">
+                  <DemoSupportsBlock />
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="vie" className="mt-6 grid gap-8 lg:grid-cols-3">
@@ -272,13 +291,17 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
               )}
             </TabsContent>
 
-            <TabsContent value="maturation" className="mt-6">
-              <DemoMaturationTab />
-            </TabsContent>
+            {vm.demoBlocks && (
+              <>
+                <TabsContent value="maturation" className="mt-6">
+                  <DemoMaturationTab />
+                </TabsContent>
 
-            <TabsContent value="cooperations" className="mt-6">
-              <DemoCooperationsTab />
-            </TabsContent>
+                <TabsContent value="cooperations" className="mt-6">
+                  <DemoCooperationsTab />
+                </TabsContent>
+              </>
+            )}
           </Tabs>
         </div>
       </div>

@@ -17,11 +17,11 @@ export function CommunNewsSection({ projectId }: CommunNewsSectionProps) {
     useLoadNamespace("modules/aac");
     useLoadNamespace("modules/news");
     const t = useT("modules/aac");
-    const { project, isLoading } = useCommunProjectEntityQuery(projectId);
+    const { project, isUnresolved } = useCommunProjectEntityQuery(projectId);
 
     if (!projectId) return null;
 
-    if (!isLoading && !project) {
+    if (isUnresolved) {
         return (
             <div className="p-4 rounded-lg border border-border bg-surface/60">
                 <p className="text-sm text-muted-foreground leading-relaxed">{String(t("detail.newsSection.error"))}</p>
@@ -29,5 +29,6 @@ export function CommunNewsSection({ projectId }: CommunNewsSectionProps) {
         );
     }
 
-    return <NewsFeed entity={project} entityType="projects" isEntityLoading={isLoading} />;
+    // Ni projet ni échec : requête en vol ou pas encore partie.
+    return <NewsFeed entity={project} entityType="projects" isEntityLoading={!project} />;
 }

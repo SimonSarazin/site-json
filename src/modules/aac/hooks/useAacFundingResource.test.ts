@@ -100,7 +100,7 @@ describe("useAacFundingResource — monte la réparation des orphelines, gardée
 
   it("le droit se calcule sur l'entité du projet lié et le déposant du commun, comme sur la fiche", () => {
     mocks.savedSelectedResource = RESSOURCE;
-    const projet = { id: "proj-1", serverData: {} };
+    const projet = { id: "proj-1" };
     mocks.projectEntity = projet;
 
     renderHook(() => useAacFundingResource("answer-1", { answer: { userId: "deposant" } }));

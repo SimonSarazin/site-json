@@ -36,8 +36,10 @@ vi.mock("@tanstack/react-query", () => ({
 
 let configState: { config: unknown; isLoading: boolean; error: Error | null };
 vi.mock("./useAacConfig", () => ({ useAacConfig: () => configState }));
+// Référence stable, comme le contexte réel (`fields` mémoïsé).
+const directory = { formId: "f1", fields: {}, contextId: "ctx", context: null, variants: { detail: "editorial" } };
 vi.mock("./useAacDirectoryContext", () => ({
-  useAacDirectoryContext: () => ({ formId: "f1", fields: {}, contextId: "ctx", context: null, variants: { detail: "editorial" } }),
+  useAacDirectoryContext: () => directory,
 }));
 vi.mock("./useCommunFundingContext", () => ({ useCommunFundingContext: () => ({ context: null }) }));
 vi.mock("./useCommunFundingHost", () => ({ useCommunFundingHost: () => ({ hostEntity: null, isLoading: false }) }));
@@ -52,6 +54,7 @@ vi.mock("./useAacFormMeta", () => ({
 vi.mock("./useAacDetailSections", () => ({
   useAacDetailSections: () => ({ sections: [], isLoading: false }),
   useAacGallerySubKey: () => null,
+  useAacDemoBlocks: () => false,
 }));
 
 const { useCommunDetailController } = await import("./useCommunDetailController");
@@ -115,5 +118,31 @@ describe("useCommunDetailController — l'ordre des gardes", () => {
     answerId = undefined;
     const { result } = renderHook(() => useCommunDetailController());
     expect(result.current.seo.path).toBe("/aac");
+  });
+});
+
+describe("useCommunDetailController — lectures de la réponse mémoïsées", () => {
+  const readyVM = (vm: ReturnType<typeof useCommunDetailController>) => {
+    if (vm.status !== "ready") throw new Error(`fiche non prête : ${vm.status}`);
+    return vm;
+  };
+
+  it("un re-rendu garde la même carte et les mêmes libellés : les mémos des vues ne repartent pas", () => {
+    const { result, rerender } = renderHook(() => useCommunDetailController());
+    const first = readyVM(result.current);
+    rerender();
+    const second = readyVM(result.current);
+
+    expect(second.summary.card).toBe(first.summary.card);
+    expect(second.summary.usageLabels).toBe(first.summary.usageLabels);
+  });
+
+  it("une nouvelle réponse donne une nouvelle carte", () => {
+    const { result, rerender } = renderHook(() => useCommunDetailController());
+    const first = readyVM(result.current);
+    answerQ = ok({ _id: { $id: "a1" }, form: "f1", answers: { aapStep1: { titre: "Renommé" } }, documents: [] });
+    rerender();
+
+    expect(readyVM(result.current).summary.card).not.toBe(first.summary.card);
   });
 });

@@ -28,7 +28,7 @@ export interface AacDirectorySkeletonProps {
  * Interfaces d'un commun dans l'annuaire : trois registres jumelés sur une même clé
  * (`cardVariant`, sinon `config.aac.directory.defaultCardVariant`).
  *  - carte et ligne vont par paire (bascule grille/liste) ;
- *  - squelette aux mesures de la carte, car rendu par le SSR.
+ *  - squelette aux mesures de la carte : rendu par le SSR et en repli `Suspense`.
  * `default` embarqués ; les autres entrées sont déclarées dans `variants/lazyVariants.ts`.
  */
 export const AAC_DIRECTORY_CARD_VARIANTS = makeVariantRegistry<AacCommunItemProps>(

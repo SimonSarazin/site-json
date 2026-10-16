@@ -119,7 +119,7 @@ export function useAacFundingResource(
 
   const projectSlug = fundingData?.projects?.find(
     (project) => project.id === targetResource?.projectId
-  )?.slug || projectEntity?.serverData.slug || undefined;
+  )?.slug || projectEntity?.serverData?.slug || undefined;
 
   const isLoading = !!options?.isHostLoading || isEnvelopeLoading || isProjectsLoading;
 

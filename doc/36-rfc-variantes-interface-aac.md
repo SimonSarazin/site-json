@@ -46,6 +46,8 @@ démonstration**, figé et identique sur tous les communs, marqué « Exemple »
 (`variants/editorial/demo/`). L'export du dossier reste un bouton désactivé : imprimer des données
 de démo produirait un faux document. **Mise à jour** : « Actus et agenda » est désormais réel — les
 actualités et les événements Communecter du projet lié au commun (doc/34, « Actualités et agenda »).
+**Mise à jour** : ce contenu n'est rendu que si `aac.detail.demoBlocks` est vrai (faux par défaut ;
+doc/34 §3.4).
 
 **Écart 2 — la fiche de la maquette est à ONGLETS, celle de l'AAC un défilement à sommaire.**
 Un `IntersectionObserver` sur des ancres d'onglets fermés — que Radix ne rend pas — tourne à vide.

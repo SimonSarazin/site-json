@@ -1,13 +1,6 @@
 import { cn } from "@/lib/utils";
+import { directoryGridCols } from "../../lib/directoryGrid";
 import type { AacDirectorySkeletonProps } from "../../components/directory/variants/items";
-
-/** Mêmes classes de grille que `AacDirectoryResults` — Tailwind ne génère pas `grid-cols-${n}`. */
-const GRID_COLS: Record<number, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-1 sm:grid-cols-2",
-  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-};
 
 /**
  * Squelette des communs, interface « editorial », aux mesures de la carte et de la ligne.
@@ -35,7 +28,7 @@ export default function DirectorySkeletonEditorial({ columns = 3, count = 6, dis
   }
 
   return (
-    <div className={cn("grid gap-6", GRID_COLS[columns] ?? GRID_COLS[3])} aria-busy="true">
+    <div className={cn("grid gap-6", directoryGridCols(columns))} aria-busy="true">
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="flex min-h-64 flex-col rounded-lg border border-border bg-card p-5 shadow-sm">
           <div className="h-3 w-32 animate-pulse rounded bg-muted" />

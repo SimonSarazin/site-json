@@ -253,4 +253,12 @@ describe.each(AAC_DIRECTORY_SHELL_VARIANTS.keys())("disposition d'annuaire « %s
     for (const name of FILTERS) expect(filterControl(name)).toBeNull();
     expect(screen.queryByRole("radio", { name: "directory.display.list" })).toBeNull();
   });
+
+  it("vitrine : un lien « voir tout » externe s'ouvre hors du routeur", async () => {
+    const vm = makeVM({ mode: "preview", moreLink: { href: "https://exemple.org/communs", label: "Tout voir" } });
+    await renderLazy(Shell as LazyVariant<never>, <Shell vm={vm} />);
+
+    const link = document.querySelector('a[href="https://exemple.org/communs"]');
+    expect(link?.getAttribute("target")).toBe("_blank");
+  });
 });

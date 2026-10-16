@@ -373,6 +373,7 @@
       },
       "noProject": "Milestones and actions open as soon as a project is linked to this commons.",
       "noProjectLife": "News and agenda open as soon as a project is linked to this commons.",
+      "noProjectCommunity": "Contributors appear as soon as a project is linked to this commons.",
       "impact": "Impact indicators",
       "calls": {
         "title": "Calls for projects companion",

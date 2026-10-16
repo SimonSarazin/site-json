@@ -1,4 +1,3 @@
-import { Link } from "react-router";
 import { ArrowRight, LayoutGrid, List, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import NavLink from "@/components/layout/NavLink";
 import { useT } from "@/hooks/useT";
 import { AacDirectoryResults } from "../../components/directory/AacDirectoryResults";
 import { AacDepositButton } from "../../components/directory/AacDepositButton";
@@ -58,10 +58,10 @@ export default function DirectoryShellEditorial({ id, vm }: AacDirectoryShellPro
           {vm.moreLink && (
             <div className="flex justify-center">
               <Button asChild variant="outline">
-                <Link to={vm.moreLink.href}>
+                <NavLink to={vm.moreLink.href}>
                   {vm.moreLink.label ?? String(t("directory.more"))}
                   <ArrowRight className="ml-1 size-4" aria-hidden="true" />
-                </Link>
+                </NavLink>
               </Button>
             </div>
           )}

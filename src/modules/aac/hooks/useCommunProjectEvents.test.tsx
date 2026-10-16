@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("@/hooks/useCocolight", () => ({ useCocolight: () => ({ me: null }) }));
 
-let projetCourant: { project: { id: string; getEvents: ReturnType<typeof vi.fn> } | null; isLoading: boolean };
+let projetCourant: { project: { id: string; getEvents: ReturnType<typeof vi.fn> } | null; isUnresolved: boolean };
 vi.mock("./useCommunProjectEntity", () => ({
   useCommunProjectEntityQuery: () => projetCourant,
 }));
@@ -21,7 +21,7 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 beforeEach(() => {
-  projetCourant = { project: { id: "p1", getEvents: vi.fn(async () => page([{ id: "e1" }])) }, isLoading: false };
+  projetCourant = { project: { id: "p1", getEvents: vi.fn(async () => page([{ id: "e1" }])) }, isUnresolved: false };
 });
 
 describe("useCommunProjectEvents", () => {
@@ -50,8 +50,8 @@ describe("useCommunProjectEvents", () => {
     });
   });
 
-  it("projet en résolution : chargement, pas d'erreur", () => {
-    projetCourant = { project: null, isLoading: true };
+  it("projet pas encore résolu (requête en vol ou pas encore partie) : chargement, pas d'erreur", () => {
+    projetCourant = { project: null, isUnresolved: false };
     const { result } = renderHook(() => useCommunProjectEvents("p1", "upcoming"), { wrapper });
 
     expect(result.current.isLoading).toBe(true);
@@ -59,7 +59,7 @@ describe("useCommunProjectEvents", () => {
   });
 
   it("projet non résolu : erreur, pas de chargement sans fin", () => {
-    projetCourant = { project: null, isLoading: false };
+    projetCourant = { project: null, isUnresolved: true };
     const { result } = renderHook(() => useCommunProjectEvents("p1", "upcoming"), { wrapper });
 
     expect(result.current.isLoading).toBe(false);

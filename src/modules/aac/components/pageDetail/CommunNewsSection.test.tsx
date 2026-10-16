@@ -14,7 +14,7 @@ vi.mock("@/modules/news/components/NewsFeed", () => ({
   },
 }));
 
-let projetCourant: { project: { id: string } | null; isLoading: boolean };
+let projetCourant: { project: { id: string } | null; isUnresolved: boolean };
 vi.mock("@/modules/aac/hooks/useCommunProjectEntity", () => ({
   useCommunProjectEntityQuery: () => projetCourant,
 }));
@@ -23,7 +23,7 @@ const { CommunNewsSection } = await import("./CommunNewsSection");
 
 beforeEach(() => {
   feedProps.length = 0;
-  projetCourant = { project: { id: "p1" }, isLoading: false };
+  projetCourant = { project: { id: "p1" }, isUnresolved: false };
 });
 afterEach(cleanup);
 
@@ -40,15 +40,16 @@ describe("CommunNewsSection", () => {
     expect(feedProps[feedProps.length - 1]).toMatchObject({ entity: projetCourant.project, entityType: "projects", isEntityLoading: false });
   });
 
-  it("projet en résolution : le fil affiche son squelette", () => {
-    projetCourant = { project: null, isLoading: true };
+  it("projet pas encore résolu (requête en vol ou pas encore partie) : le squelette du fil, pas l'erreur", () => {
+    projetCourant = { project: null, isUnresolved: false };
     render(<CommunNewsSection projectId="p1" />);
 
+    expect(screen.queryByText("detail.newsSection.error")).toBeNull();
     expect(feedProps[feedProps.length - 1]).toMatchObject({ entity: null, isEntityLoading: true });
   });
 
   it("projet non résolu : un message, pas de fil vide trompeur", () => {
-    projetCourant = { project: null, isLoading: false };
+    projetCourant = { project: null, isUnresolved: true };
     render(<CommunNewsSection projectId="p1" />);
 
     expect(screen.queryByTestId("feed")).toBeNull();
