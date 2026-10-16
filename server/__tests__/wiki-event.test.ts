@@ -51,6 +51,16 @@ describe("migration de l'ancien modèle", () => {
   });
 });
 
+describe("nom de modèle variable", () => {
+  it("écrit l'appel avec le modèle choisi et le remplace en mise à jour", () => {
+    const event = wikitexte(evt, { url: "U", fiche: "F", image: "", modele: "Event" });
+    expect(event.startsWith("{{Event\n")).toBe(true);
+    const texte = fusionner("{{Evenement\n|name=Vieux\n}}\n\n== Compte-rendu ==\nNotes\n", event);
+    expect(texte.startsWith("{{Event\n")).toBe(true);
+    expect(texte).toContain("Notes");
+  });
+});
+
 describe("création : garde-fous", () => {
   const env = { ...process.env };
   afterEach(() => {

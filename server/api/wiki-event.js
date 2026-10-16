@@ -14,6 +14,7 @@
  * ── CONFIGURATION (serveur uniquement, jamais dans le dépôt) ─────────────────
  *   WIKI_API_URL        ex. https://movilab.org/api.php
  *   WIKI_PAGE_BASE_URL  ex. https://movilab.org/index.php?title=   (défaut : dérivé de WIKI_API_URL)
+ *   WIKI_TEMPLATE       modèle à utiliser en priorité (défaut : `Evenement`, puis `Event` s'il n'existe pas)
  *   WIKI_BOT_USER       identifiant du bot password (Nom@NomDuBot)
  *   WIKI_BOT_PASSWORD   mot de passe du bot password
  * Sans `WIKI_API_URL`, la fonction est absente : 503.
@@ -93,17 +94,17 @@ function sansLien(description, url) {
  * régénérés. Le compte-rendu et tout ce que les participants ont écrit sur le wiki sont conservés.
  */
 export function fusionner(existant, neuf) {
-  const modele = /^\{\{Evenement[\s\S]*?\n\}\}/;
-  const ancien = /^\{\{Evenement et CR[\s\S]*?\n\}\}/;
+  // Premier appel de modèle de la page, quel que soit son nom : le wiki peut en changer (Evenement, Event…).
+  const modele = /^\{\{[^\n|{}]+\n[\s\S]*?\n\}\}/;
   const description = /== Description ==\n[\s\S]*?(?=\n== |$)/;
-  let texte = existant.replace(ancien.test(existant) ? ancien : modele, () => neuf.match(modele)[0]);
+  let texte = existant.replace(modele, () => neuf.match(modele)[0]);
   const section = neuf.match(description)?.[0];
   if (description.test(texte)) texte = texte.replace(description, () => section ?? "");
   else if (section) texte = texte.replace(/\n== Compte-rendu ==/, () => `\n${section}\n\n== Compte-rendu ==`);
   return texte;
 }
 
-export function wikitexte(evt, { url, fiche, image }) {
+export function wikitexte(evt, { url, fiche, image, modele = "Evenement" }) {
   const organisateurs = Object.values(evt.organizer || {}).map((o) => o?.name).filter(Boolean).join(",");
   const tags = Array.isArray(evt.tags) ? evt.tags.join(",") : "";
   const debut = jour(evt.startDate, evt.timeZone);
@@ -114,7 +115,7 @@ export function wikitexte(evt, { url, fiche, image }) {
   const resume = String(evt.shortDescription || "").trim() || complete.replace(/\s+/g, " ");
 
   return [
-    "{{Evenement",
+    `{{${modele}`,
     `|Main_Picture=${param(image)}`,
     `|name=${param(evt.name)}`,
     `|type=${param(TYPES[evt.type] || TYPES.others)}`,
@@ -186,6 +187,13 @@ async function sessionWiki(c) {
       if (r.error?.code === "fileexists-no-change" || r.upload?.warnings?.exists || r.upload?.warnings?.duplicate) return nom;
       console.warn("[wiki-event] televersement image:", JSON.stringify(r.error || r.upload?.warnings || r.upload?.result));
       return null;
+    },
+    // Premier modèle qui existe sur CE wiki : les configurations diffèrent d'un wiki à l'autre.
+    choisirModele: async () => {
+      const candidats = [process.env.WIKI_TEMPLATE, "Evenement", "Event"].filter(Boolean);
+      const r = await appel({ action: "query", titles: candidats.map((m) => `Modèle:${m}`).join("|") });
+      const existants = new Set((r.query?.pages || []).filter((p) => !p.missing && !p.invalid).map((p) => p.title));
+      return candidats.find((m) => existants.has(`Modèle:${m}`)) || candidats[0];
     },
     lire: async (title) => {
       const r = await appel({ action: "query", prop: "revisions", rvprop: "content", rvslots: "main", titles: title });
@@ -282,7 +290,8 @@ export async function wikiEventCreateHandler(req, res) {
         imageErreur = "televersement en erreur";
       }
     }
-    const neuf = wikitexte(evt, { url, fiche: fiche(req, evt), image });
+    const modele = await wiki.choisirModele();
+    const neuf = wikitexte(evt, { url, fiche: fiche(req, evt), image, modele });
     const existant = await wiki.lire(titre);
     const r = existant === null ? await wiki.creer(titre, neuf) : await wiki.modifier(titre, fusionner(existant, neuf));
     if (r.error) {
