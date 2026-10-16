@@ -180,7 +180,10 @@ async function sessionWiki(c) {
   return {
     televerser: async (nom, blob) => {
       const r = await appel({ action: "upload", filename: nom, file: blob, ignorewarnings: "1", comment: "Image de l'événement, depuis tiers-lieux.org", token: csrf }, "multipart");
-      return r.upload?.result === "Success" || r.error?.code === "fileexists-no-change" ? r.upload?.filename || nom : null;
+      if (r.upload?.result === "Success") return r.upload.filename || nom;
+      if (r.error?.code === "fileexists-no-change" || r.upload?.warnings?.exists || r.upload?.warnings?.duplicate) return nom;
+      console.warn("[wiki-event] televersement image:", JSON.stringify(r.error || r.upload?.warnings || r.upload?.result));
+      return null;
     },
     lire: async (title) => {
       const r = await appel({ action: "query", prop: "revisions", rvprop: "content", rvslots: "main", titles: title });
@@ -193,7 +196,8 @@ async function sessionWiki(c) {
 }
 
 const IMAGE_MAX = 9 * 1024 * 1024;
-const EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp" };
+// Le wiki n'accepte ni WebP ni AVIF : tout ce qui n'est pas JPEG/PNG/GIF est converti en JPEG.
+const NATIFS = { "image/jpeg": "jpg", "image/png": "png", "image/gif": "gif" };
 
 /** Image de l'événement, téléchargée depuis le backend ; null si absente ou inutilisable. */
 async function lireImage(evt, id, hotes = []) {
@@ -205,11 +209,18 @@ async function lireImage(evt, id, hotes = []) {
     if (!autorises.includes(url.origin)) return null;
     const r = await fetch(url, { signal: AbortSignal.timeout(DELAI_MS) });
     const type = (r.headers.get("content-type") || "").split(";")[0].trim();
-    const ext = EXTENSIONS[type];
-    if (!r.ok || !ext) return null;
-    const buf = await r.arrayBuffer();
+    if (!r.ok || !type.startsWith("image/")) return null;
+    let buf = Buffer.from(await r.arrayBuffer());
     if (buf.byteLength > IMAGE_MAX) return null;
-    return { blob: new Blob([buf], { type }), nom: `Evenement_${id}.${ext}` };
+    let ext = NATIFS[type];
+    let mime = type;
+    if (!ext) {
+      const { default: sharp } = await import("sharp");
+      buf = await sharp(buf).flatten({ background: "#ffffff" }).jpeg({ quality: 88 }).toBuffer();
+      ext = "jpg";
+      mime = "image/jpeg";
+    }
+    return { blob: new Blob([buf], { type: mime }), nom: `Evenement_${id}.${ext}` };
   } catch {
     return null;
   }
@@ -259,12 +270,14 @@ export async function wikiEventCreateHandler(req, res) {
   try {
     const wiki = await sessionWiki(c);
     let image = "";
+    let imageErreur = null;
     const img = await lireImage(evt, req.params.id, [`${req.protocol}://${req.get("host")}`]);
     if (img) {
       try {
         image = (await wiki.televerser(img.nom, img.blob)) || "";
+        if (!image) imageErreur = "televersement refuse";
       } catch {
-        // La page se crée sans image plutôt que de ne pas se créer.
+        imageErreur = "televersement en erreur";
       }
     }
     const neuf = wikitexte(evt, { url, fiche: fiche(req, evt), image });
@@ -273,7 +286,8 @@ export async function wikiEventCreateHandler(req, res) {
     if (r.error) {
       return res.status(502).json({ msg: "ecriture refusee par le wiki", code: r.error.code });
     }
-    return res.json({ title: titre, url, updated: existant !== null });
+    // La page se crée sans image plutôt que de ne pas se créer, mais l'échec est signalé.
+    return res.json({ title: titre, url, updated: existant !== null, ...(imageErreur && { imageErreur }) });
   } catch {
     return res.status(502).json({ msg: "wiki injoignable ou connexion refusee" });
   }

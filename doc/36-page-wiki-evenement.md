@@ -26,7 +26,7 @@ Le bot password se crée sur le wiki (Spécial:BotPasswords) avec les droits « 
 Si la page existe déjà, le même `POST` la met à jour : seuls l'appel du modèle (nom, date, lieu, image, résumé…) et la section « Description » sont régénérés depuis tiers-lieux.org. Le compte-rendu et tout ce qui a été écrit sur le wiki sont conservés. L'image est retéléversée. À déclencher depuis le bouton après une modification de l'événement ; ce n'est pas automatique.
 
 
-L'image de l'événement (JPG, PNG, GIF ou WebP, moins de 9 Mo, hébergée sur le backend) est téléversée sur le wiki par le compte robot, puis renseignée dans `Main_Picture`. Sans image, ou si le téléversement échoue, le modèle affiche son logo par défaut. Le bot password doit donc aussi avoir le droit « téléverser des fichiers ».
+L'image de l'événement (moins de 9 Mo, hébergée sur le backend ; WebP et autres formats refusés par le wiki sont convertis en JPEG) est téléversée sur le wiki par le compte robot, puis renseignée dans `Main_Picture`. Sans image, ou si le téléversement échoue, le modèle affiche son logo par défaut. Le bot password doit donc aussi avoir le droit « téléverser des fichiers ».
 
 C'est l'étape 2 qui sert de preuve de droit : le compte robot n'écrit jamais sur la seule foi du navigateur, et le contenu de la page vient du backend, pas de la requête.
 
