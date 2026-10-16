@@ -222,6 +222,9 @@
     "slug": "projetsre1",
     "config": "config.prod.projetsre.json",
     "css": "index-projetsre",
-    "images": "projetsre"
+    "images": "projetsre",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
   }
 ]
