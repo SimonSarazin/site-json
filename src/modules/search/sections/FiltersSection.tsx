@@ -856,8 +856,9 @@ export function FiltersSection({
           const answerConf = isPathGroup ? filtersByPathOptions[group] : filtersByAnswersOptions[group];
           const answerLoading = isPathGroup ? filterByPathResult.isLoading : filterAnswerResult.isLoading;
           const answerOptionNames = groupData ? Object.keys(groupData.values) : [];
-          // Cible du groupe : éléments liés (`_id`/orgaNameArray, défaut historique)
-          // ou réponses elles-mêmes (prédicat de chemin) — cf. answerFilterClause.
+          // Cible du groupe : éléments liés (`_id`/orgaNameArray, défaut historique), documents
+          // rattachés (`parentId`/orgaNameArray) ou réponses elles-mêmes (prédicat de chemin)
+          // — cf. answerFilterClause.
           const toggleAnswerOption = (
             optionKey: string,
             option: { name?: string; orgaNameArray?: string[] },
@@ -886,7 +887,8 @@ export function FiltersSection({
           );
           // Widget COMPACT déclaré en config (filtersByAnswers/Path[group].select) :
           // remplace l'accordéon. La sélection des groupes « par réponses » vit
-          // dans searchByPath/_id (orgaNameArray) — isFilterSelected en tient compte.
+          // dans searchByFields, clé = option (`_id`/`parentId` + orgaNameArray, ou chemin
+          // de réponse) — isFilterSelected en tient compte.
           const answerSelectConf = filtersByAnswersOptions[group]?.select ?? filtersByPathOptions[group]?.select;
           if (answerSelectConf) {
             const fieldOptions = [...answerOptionNames]

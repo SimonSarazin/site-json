@@ -315,8 +315,8 @@ function ResourceDirectoryList({
   // depuis les cartes via `ResourceDirectoryActionsProvider`.
   const [activeParent, setActiveParent] = useState<ActiveResourceParent | null>(null);
 
-  // Facettes prix (`field`) → `searchByFields` → filtres SERVEUR. Réseaux thématiques : `_id` (lieux
-  // membres) n'existe pas sur une réponse → renvoyé en `parentId`, croisé avec le lieu cliqué.
+  // Facettes prix (`field`) → `searchByFields` → filtres SERVEUR. Réseaux thématiques : posés en
+  // `parentId` (lieux membres, `filterTarget: "parentId"`), recomposés ici avec le lieu cliqué.
   const { filters } = useMemo(
     () => searchByFieldsToQuery(pf.searchByFields ?? {}),
     [pf.searchByFields],
@@ -345,6 +345,7 @@ function ResourceDirectoryList({
     isPending,
     isFetchingNextPage,
     error,
+    refetch,
   } = useSearchQuery({
     queryKeyPrefix: RD_LIST_PREFIX,
     searchText: "",
@@ -394,7 +395,12 @@ function ResourceDirectoryList({
     () => items.map((it) => it.model.parent?.id).filter((v): v is string => !!v),
     [items],
   );
-  const { parents, isLoading: parentsLoading, isError: parentsError } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
+  const {
+    parents,
+    isLoading: parentsLoading,
+    isError: parentsError,
+    refetch: refetchParents,
+  } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
 
   // Facettes CLIENT : type (`selectedFilters.resourceType`), capacité (`selectedFilters.capacity`),
   // zone du lieu porteur (`searchByFields`, type `scopeList`).
@@ -435,11 +441,23 @@ function ResourceDirectoryList({
         </p>
       </div>
 
-      {/* Zone cochée : elle se juge sur l'adresse des lieux porteurs — s'ils n'ont pas pu être lus, la
-          liste vide serait un « Aucun résultat » faux. */}
+      {/* Échec de chargement : un message d'ERREUR (et non « Aucun résultat », qui dirait qu'il n'y a rien)
+          et de quoi réessayer. Zone cochée : elle se juge sur l'adresse des lieux porteurs — s'ils n'ont
+          pas pu être lus, la liste vide serait un « Aucun résultat » faux. */}
       {error || (zones.length > 0 && parentsError) ? (
-        <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          {t("Aucun résultat trouvé.")}
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          <span>{t(error ? "resourceDirectory.loadError" : "resourceDirectory.parentsError")}</span>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => void (error ? refetch() : refetchParents())}
+          >
+            {t("resourceDirectory.retry")}
+          </Button>
         </div>
       ) : !aucunLieu && (isPending || (zones.length > 0 && parentsLoading)) ? (
         // Zone cochée : tant que les lieux porteurs ne sont pas lus, aucune ressource ne passe le filtre —

@@ -55,6 +55,17 @@ export function matchesCapacity(capacity: { min: number; max: number } | null, r
   });
 }
 
+/** Clés de zone d'une adresse, de la plus large à la plus fine — `localityId` = la commune (options `cities`). */
+const ZONE_KEYS = ["level1", "level2", "level3", "level4", "level5", "localityId"] as const;
+
+/**
+ * Ids de TOUTES les zones d'une adresse (pays, région, département… commune) : une facette de zone
+ * se compare à n'importe lequel (cf. `matchesZones`), quel que soit le niveau de ses options.
+ */
+export function addressZoneIds(address: Record<string, unknown> | undefined): string[] {
+  return ZONE_KEYS.map((cle) => address?.[cle]).filter((v): v is string => typeof v === "string" && v !== "");
+}
+
 /** Ids des zones cochées dans un groupe `scopeList` (`{ id, type: "level3" }`) — lus dans `searchByFields`. */
 export function selectedZones(searchByFields: Record<string, SearchByFieldValue> | undefined): string[] {
   const ids: string[] = [];
@@ -80,8 +91,10 @@ export function matchesZones(zonesOfParent: readonly string[] | undefined, zoneI
 
 /**
  * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `parentId` du groupe
- * `filtersByPath` en `filterTarget: "parentId"`, champ propre à cette cible : aucun autre groupe ne
- * l'écrit) — et non dans `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau coché SANS
+ * `filtersByPath` en `filterTarget: "parentId"`). ⚠ TOUTE entrée `parentId` sans `type` est prise pour un
+ * réseau : un autre groupe de la page déclaré en `filterTarget: "parentId"` serait croisé avec le lieu
+ * cliqué comme un réseau. Seule la facette thématique de l'annuaire le déclare aujourd'hui — et non dans
+ * `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau coché SANS
  * lieu membre y disparaîtrait et le filtre avec. `null` = aucun réseau coché ; `[]` = des réseaux
  * cochés, mais aucun lieu membre.
  */

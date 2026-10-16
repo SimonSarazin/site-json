@@ -126,8 +126,11 @@ export interface EntityMutationSpec {
  * l'entité (`source.key`) : sur un annuaire, la fiche vient d'ailleurs (un lieu de tiers-lieux.org a
  * `source.key: "laRosee"`, `"franceTierslieux"`…), le cache du costum du FORMULAIRE reste froid et
  * `setCostumScope` épingle un contexte NU, sans aucun champ, et tout champ costum est refusé. D'où
- * `loadCostumScope` (charge le costum en live, cache de session, puis épingle)
- * avant tout repli sur `setCostumScope`. Hors mode live : inchangé (registre bundlé).
+ * `loadCostumScope` (charge le costum en live, cache de session, puis épingle). S'il échoue ou ne rend
+ * rien, on N'ÉPINGLE PAS : en live, `setCostumScope` ne ferait qu'épingler ce même contexte nu (le
+ * registre bundlé est ignoré, le cache est froid). On laisse la provenance gouverner le schéma — ce qui
+ * suffit quand elle EST le costum du formulaire ; sinon le save échoue sur l'erreur de champ, comme
+ * avant ce correctif. Hors mode live : `setCostumScope` (registre bundlé), inchangé.
  *
  * Échec NON bloquant : un costum hors registre lève (« fournissez costumId/costumType ») ; on laisse
  * alors le save échouer avec l'erreur de champ, plus parlante qu'une erreur d'identité costum.
@@ -140,10 +143,13 @@ async function pinSchemaCostumScope(target: unknown, slug: string | undefined): 
   };
   if (getCostumForceLive() && typeof holder.loadCostumScope === "function") {
     try {
-      if (await holder.loadCostumScope(slug)) return;
+      if (!(await holder.loadCostumScope(slug))) {
+        console.warn(`[costum] schéma « ${slug} » introuvable en live : non épinglé`);
+      }
     } catch (err) {
-      console.warn(`[costum] chargement live du schéma « ${slug} » impossible, repli sur le registre`, err);
+      console.warn(`[costum] chargement live du schéma « ${slug} » impossible : non épinglé`, err);
     }
+    return;
   }
   if (typeof holder.setCostumScope !== "function") return;
   try {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  addressZoneIds,
   defaultOpenFilterGroups,
   matchesCapacity,
   matchesZones,
@@ -135,5 +136,17 @@ describe("defaultOpenFilterGroups", () => {
       "resourceType",
       "thematic",
     ]);
+  });
+});
+
+describe("addressZoneIds", () => {
+  it("toutes les zones de l'adresse, commune comprise (level5 et localityId aussi)", () => {
+    expect(
+      addressZoneIds({ level1: "FR", level3: "OCC", level4: "31", level5: "Z5", localityId: "C1", postalCode: "31120" }),
+    ).toEqual(["FR", "OCC", "31", "Z5", "C1"]);
+  });
+  it("adresse absente ou vide : aucune zone", () => {
+    expect(addressZoneIds(undefined)).toEqual([]);
+    expect(addressZoneIds({ level1: "" })).toEqual([]);
   });
 });

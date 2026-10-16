@@ -115,15 +115,6 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     expect(dernierFichier(padFileToSquare)).toBe(photo);
   });
 
-  it("photo de profil : si la mise au carré échoue, la photo part telle quelle (rien n'est perdu)", async () => {
-    padFileToSquare.mockRejectedValueOnce(new Error("canvas refusé"));
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    await choisirPhoto("profile");
-    fireEvent.click(screen.getByText("image entière"));
-    await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
-    expect(dernierFichier(state.uploadImage)).toBe(photo);
-  });
-
   it("grande bannière : allégée avant l'envoi, zone de recadrage aux dimensions du fichier envoyé", async () => {
     const legere = new File(["legere"], "photo.png", { type: "image/png" });
     lightenImage.mockResolvedValueOnce(legere);
@@ -135,21 +126,30 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     expect((dernierFichier(state.uploadBanner) as { file: File }).file).toBe(legere);
   });
 
-  it("photo de profil : allégée AVANT la mise au carré (photo déjà carrée ou carré en échec : jamais à pleine taille)", async () => {
-    const legere = new File(["legere"], "photo.jpg", { type: "image/jpeg" });
-    lightenImage.mockResolvedValueOnce(legere);
-    padFileToSquare.mockClear();
+  it("photo de profil non carrée : mise au carré seule (un passage canvas), sans allègement préalable", async () => {
     await choisirPhoto("profile");
     fireEvent.click(screen.getByText("image entière"));
     await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
+    expect(dernierFichier(padFileToSquare)).toBe(photo);
+    expect(lightenImage).not.toHaveBeenCalled();
     expect(dernierFichier(state.uploadImage)).toBe(carre);
-    expect(dernierFichier(padFileToSquare)).toBe(legere);
   });
 
-  it("photo de profil, carré en échec : c'est la version ALLÉGÉE qui part", async () => {
+  it("photo déjà carrée (rendue telle quelle) : allégée avant l'envoi", async () => {
     const legere = new File(["legere"], "photo.jpg", { type: "image/jpeg" });
+    padFileToSquare.mockImplementationOnce(async (f: File) => f);
     lightenImage.mockResolvedValueOnce(legere);
+    await choisirPhoto("profile");
+    fireEvent.click(screen.getByText("image entière"));
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
+    expect(dernierFichier(lightenImage)).toBe(photo);
+    expect(dernierFichier(state.uploadImage)).toBe(legere);
+  });
+
+  it("mise au carré en échec : allégée avant l'envoi", async () => {
+    const legere = new File(["legere"], "photo.jpg", { type: "image/jpeg" });
     padFileToSquare.mockRejectedValueOnce(new Error("canvas refusé"));
+    lightenImage.mockResolvedValueOnce(legere);
     vi.spyOn(console, "warn").mockImplementation(() => {});
     await choisirPhoto("profile");
     fireEvent.click(screen.getByText("image entière"));

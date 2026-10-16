@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { ResourceParentInfo } from "../contexts/resourceDirectory";
+import { addressZoneIds } from "../lib/resourceDirectoryFilters";
 
 interface SearchCostumEntity {
   searchCostum(data?: Partial<GlobalAutocompleteCostumData>): Promise<PaginatorPage<unknown>>;
@@ -89,9 +90,7 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
           streetAddress: str(addr?.streetAddress),
           postalCode: str(addr?.postalCode),
           addressLocality: str(addr?.addressLocality),
-          zones: ["level1", "level2", "level3", "level4"]
-            .map((lvl) => str(addr?.[lvl]))
-            .filter((zone): zone is string => !!zone),
+          zones: addressZoneIds(addr),
           coords: coordsOf(sd),
         });
       }
@@ -106,5 +105,6 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
     isLoading: result.isLoading,
     isFetched: result.isFetched,
     isError: result.isError,
+    refetch: result.refetch,
   };
 }

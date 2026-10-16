@@ -618,9 +618,11 @@ au-dessus de la grille le retire. La facette « type » (client) s'applique par-
 - **`regionFilter`** — groupe `scopeList` (zones chargées par `FiltersSection`) ; la sélection
   (`locality`) n'est PAS envoyée (une réponse n'a pas d'adresse) : filtre **CÔTÉ CLIENT** sur
   `address.level*` du lieu porteur — l'id coché est cherché parmi TOUTES les zones de l'adresse,
-  quel qu'en soit le niveau (dans les DOM, une même zone sert de pays, de région et de département).
-  Si les lieux porteurs n'ont pas pu être lus, la liste affiche une erreur plutôt qu'un « Aucun
-  résultat » faux. Les lieux porteurs sont donc lus pour TOUTES les ressources
+  quel qu'en soit le niveau (`addressZoneIds` : `level1`…`level5` et `localityId`, la commune — dans
+  les DOM, une même zone sert de pays, de région et de département).
+  Échec de chargement : message d'ERREUR dédié (`resourceDirectory.loadError`, ou
+  `resourceDirectory.parentsError` quand une zone est cochée et que les lieux porteurs n'ont pas pu
+  être lus) avec un bouton « Réessayer », jamais le « Aucun résultat » de la liste vide. Les lieux porteurs sont donc lus pour TOUTES les ressources
   chargées, pas seulement celles affichées.
 
 Groupes ouverts à l'arrivée : les deux premiers groupes RÉELLEMENT déclarés, dans cet ordre

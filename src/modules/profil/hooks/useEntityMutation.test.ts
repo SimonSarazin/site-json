@@ -398,14 +398,15 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
         }
       });
 
-      it("chargement live sans résultat ou en échec : repli sur setCostumScope", async () => {
+      it("chargement live sans résultat ou en échec : rien n'est épinglé (setCostumScope n'épinglerait qu'un contexte nu)", async () => {
         costumLive.actif = true;
         const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
         try {
           for (const cas of ["rien", "erreur"] as const) {
             const { editable } = avecChargementLive(cas);
             await runEntityMutation(specEdit(editable, "navigatorDesTierslieux"), { name: "Le lieu" }, { me: null });
-            expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+            expect(editable.scopes).toEqual([]);
+            expect(editable.saves).toBe(1); // la provenance gouverne : le save part
           }
         } finally {
           costumLive.actif = false;

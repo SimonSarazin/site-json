@@ -9,7 +9,7 @@ export interface ResourceParentInfo {
   streetAddress?: string;
   postalCode?: string;
   addressLocality?: string;
-  /** Ids des zones de l'adresse (`level1`…`level4`, tous niveaux confondus) — filtre de zone de l'annuaire. */
+  /** Ids des zones de l'adresse (`level1`…`level5` et `localityId`, tous niveaux confondus) — filtre de zone de l'annuaire. */
   zones?: string[];
   coords?: { lat: number; lng: number } | null;
 }
