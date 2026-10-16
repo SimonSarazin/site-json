@@ -233,7 +233,12 @@
   },
   "aac": {
     "ah": "677e7e389058e31575550ac8",
-    "formId": "6438366673d20a0de1533c77"
+    "formId": "6438366673d20a0de1533c77",
+    "directory": {
+      "fields": {
+        "choose": "answers.aapStep2.choose"
+      }
+    }
   },
   "cagnotteModuleConfig": {
     "defaultType": "aac"

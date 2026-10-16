@@ -10,7 +10,7 @@
  * Aucune requête supplémentaire : tout vient de l'entrée de cache d'
  * `aacConfigQuery`, lue par des `select` différents.
  */
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import type { Form } from "@communecter/cocolight-api-client";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -25,6 +25,7 @@ import {
 } from "./useAacFormMeta";
 import type { AacContext } from "./aacConfigQuery";
 import { useAacPermissions } from "./useAacPermissions";
+import { diagnoseAacChoose } from "../lib/diagnoseAacChoose";
 import {
   resolveAacCardFields,
   EMPTY_AAC_CARD_FIELDS,
@@ -101,6 +102,9 @@ export interface AacInterfaceVariants {
   directoryShell?: string;
 }
 
+/** Un avertissement par formulaire et par constat : le contexte est lu par chaque surface AAC. */
+const WARNED_CHOOSE = new Set<string>();
+
 export function useAacDirectoryContext(): AacDirectoryContext {
   const { config: siteConfig } = useSite();
   const { entity, api } = useCocolight();
@@ -123,8 +127,21 @@ export function useAacDirectoryContext(): AacDirectoryContext {
     [meta, config, siteConfig.aac?.directory?.fields]
   );
 
+  // En développement, le décalage `choose` config ⇄ formulaire est dit dans la console : sinon il
+  // ne se voit qu'à un annuaire trop large ou vide (cf. `diagnoseAacChoose`, et `config:probe`).
+  const declaredChoose = siteConfig.aac?.directory?.fields?.choose;
+  useEffect(() => {
+    if (!import.meta.env.DEV || !meta) return;
+    const finding = diagnoseAacChoose(meta, declaredChoose);
+    const key = `${meta.formId}|${finding?.message ?? ""}`;
+    if (!finding || WARNED_CHOOSE.has(key)) return;
+    WARNED_CHOOSE.add(key);
+    console.warn(`[aac] ${finding.message}`);
+  }, [meta, declaredChoose]);
+
   // Un visiteur NON ADMINISTRATEUR ne voit que les communs sélectionnés, plus
   // les siens — parité avec le filtre `applyFor: "forUser"` du bloc legacy.
+  // Uniquement si la config déclare `choose` (AAC) : cf. `splitAacFilters`.
   // Les gates DOIVENT entrer dans le calcul : sans eux, `anyOnewithLinkCanAnswer` est lu comme
   // absent et `canEditCommun` répond faux là où la fiche répond vrai.
   const permData = useMemo<AacPermissionData>(() => ({ gates: config?.gates }), [config?.gates]);

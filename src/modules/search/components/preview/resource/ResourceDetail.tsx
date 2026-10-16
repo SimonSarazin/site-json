@@ -17,8 +17,11 @@ export interface ResourceDetailProps {
   area?: { label: string; value: string } | null;
   /** Listes à pastilles (équipements, services…). */
   tags?: { label: string; values: string[] }[];
-  /** Textes libres saisis (markdown ou HTML), rendus via `ProseContent`. */
-  notes?: { label: string; value: string }[];
+  /**
+   * Textes libres saisis (markdown ou HTML), rendus via `ProseContent`. `plainText` : texte brut, sauts
+   * de ligne gardés tels quels — le rendu historique de l'annuaire, sans `detailSuffixes`.
+   */
+  notes?: { label: string; value: string; plainText?: boolean }[];
   /** Boutons en pied (réserver, contacter, voir le lieu…). */
   actions?: ReactNode;
 }
@@ -121,10 +124,14 @@ export function ResourceDetail({
         {notes.map((note) => (
           <div key={note.label} className="space-y-1">
             <p className="text-sm font-medium text-foreground">{note.label}</p>
-            <ProseContent
-              text={note.value}
-              className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
-            />
+            {note.plainText ? (
+              <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{note.value}</p>
+            ) : (
+              <ProseContent
+                text={note.value}
+                className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
+              />
+            )}
           </div>
         ))}
 

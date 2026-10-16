@@ -13,6 +13,7 @@ import { COFORM_QUERY_KEYS } from "@/modules/coform/constants";
 import type { PreviewProps } from "../../schema";
 import {
   SEARCH_QUERY_KEYS,
+  SEARCH_STAT_COUNT_PREFIX,
   SEARCH_STATIC_LIST_PREFIX,
   SEARCH_STATIC_MAP_PREFIX,
 } from "../../constants/queryKeys";
@@ -110,6 +111,8 @@ export default function PreviewCoformAnswer({ item, preview, onClose, onEdited }
   const handleEdited = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_LIST_PREFIX) });
     queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STATIC_MAP_PREFIX) });
+    // Un changement de statut (« Validé »…) fait entrer ou sortir la réponse d'un chiffre de tuile.
+    queryClient.invalidateQueries({ queryKey: SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STAT_COUNT_PREFIX) });
     // Listes gérées du compte (onglet profil « Structures ») : le détail s'y ouvre aussi, et la
     // modification peut changer statut, titre ou structure — le créneau change alors de groupe.
     if (meId) {

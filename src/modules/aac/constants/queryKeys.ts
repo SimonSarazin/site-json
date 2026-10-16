@@ -27,9 +27,9 @@ export const AAC_QUERY_KEYS = {
 
   // Listing des communs d'un AAC, ISOLÉ PAR CAMPAGNE.
   //
-  // ⚠️ USER-SCOPÉ depuis la bascule sur `directoryproposal` : un visiteur non
-  // administrateur ne reçoit que les communs SÉLECTIONNÉS plus les siens
-  // (filtre `$or` posé par `splitAacFilters`). Deux visiteurs différents n'ont
+  // ⚠️ USER-SCOPÉ depuis la bascule sur `directoryproposal` : sur un AAC
+  // (`choose` déclaré en config), un visiteur non administrateur ne reçoit que
+  // les communs SÉLECTIONNÉS plus les siens (filtre `$or` posé par `splitAacFilters`). Deux visiteurs différents n'ont
   // donc pas la même liste — d'où `userId` en DERNIER segment, faute de quoi le
   // cache d'un admin serait servi à un anonyme.
   // Producteur : useAacCommuns

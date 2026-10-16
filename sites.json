@@ -208,6 +208,15 @@
     }
   },
   {
+    "slug": "openAtlas",
+    "config": "config.prod.open-atlas.json",
+    "css": "index-open-atlas",
+    "images": "openAtlas",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
+  },
+  {
     "slug": "projetsre1",
     "config": "config.prod.projetsre.json",
     "css": "index-projetsre",

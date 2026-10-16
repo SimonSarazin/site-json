@@ -312,9 +312,10 @@ export function useCommunDetailController(): CommunDetailVM {
             ? isSelectedIn(chooseValue, directory.contextId)
             : null;
 
-    // Étape d'évaluation masquée (et hors schéma) pour qui n'administre pas l'appel.
+    // Étape masquée (et hors schéma) au non-admin : celle de `choose`, sinon l'étape d'évaluation trouvée par scan.
     // Pas de `useMemo` après les retours anticipés ; `SmartCoForm` compare le contenu.
-    const hiddenStepsForEdit = !perms.isAdmin && chooseStepKey ? [chooseStepKey] : [];
+    const evalStepKey = chooseStepKey ?? config?.roles.evalStepKeyFound ?? null;
+    const hiddenStepsForEdit = !perms.isAdmin && evalStepKey ? [evalStepKey] : [];
 
     // Relit la fiche ; les caches de l'annuaire sont invalidés par la mutation elle-même.
     const handleSelectionDone = async () => {

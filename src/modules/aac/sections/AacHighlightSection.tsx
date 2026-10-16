@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
-import { useAacCommunsCount } from "../hooks/useAacCommunsCount";
-import { useAacDirectoryContext } from "../hooks/useAacDirectoryContext";
+import { useAacCommunsCountState } from "../hooks/useAacCommunsCountState";
 import type { AacHighlightSectionProps } from "../schema";
 
 interface Props {
@@ -28,17 +27,14 @@ export default function AacHighlightSection({ id, props }: Props) {
   const { t: localize } = useLocalization();
   const { title, description, className, tone = "primary", cta, count } = props;
 
-  // Le décompte sera-t-il connu UN JOUR ? Sans AAC déclaré (`config.aac.formId`)
-  // non ; mais pas davantage si la résolution du formulaire a échoué (formulaire
-  // supprimé, 403) ou s'est terminée sans rien produire (pas d'entité costum,
-  // donc requête jamais activée) : la requête du décompte attend `resolved` et
-  // resterait `pending` pour toujours. Dans tous ces cas c'est une ABSENCE, pas
-  // une attente — pas de médaillon du tout, plutôt qu'un squelette perpétuel.
-  const { formId, resolved, isFormLoading, configError } = useAacDirectoryContext();
-  const isCountReachable =
-    formId !== null && !configError && (isFormLoading || Boolean(resolved));
-  const wantsCount = count?.source === "communs" && isCountReachable;
-  const { count: communsCount, error: countError } = useAacCommunsCount(wantsCount);
+  // Un décompte qui ne sera jamais connu (cf. `useAacCommunsCountState`) est une
+  // ABSENCE, pas une attente — pas de médaillon du tout, plutôt qu'un squelette perpétuel.
+  const {
+    count: communsCount,
+    error: countError,
+    reachable,
+  } = useAacCommunsCountState(count?.source === "communs");
+  const wantsCount = count?.source === "communs" && reachable;
 
   const isPrimary = tone === "primary";
 

@@ -3,7 +3,7 @@
  * perdre l'image si la compression échoue. La compression canvas est injectée (jsdom n'a pas de canvas).
  */
 import { describe, it, expect, vi } from "vitest";
-import { lightenImage, LIGHT_IMAGE_BYTES, UPLOAD_COMPRESSION } from "./imageUtils";
+import { fitWithin, lightenImage, LIGHT_IMAGE_BYTES, UPLOAD_COMPRESSION } from "./imageUtils";
 
 const image = (octets: number, type = "image/jpeg") => new File([new Uint8Array(octets)], "photo", { type });
 const lourde = () => image(8 * 1024 * 1024);
@@ -45,5 +45,15 @@ describe("lightenImage", () => {
     const compress = vi.fn().mockRejectedValue(new Error("Compression failed"));
 
     expect(await lightenImage(originale, compress)).toBe(originale);
+  });
+});
+
+describe("fitWithin", () => {
+  it("ramène le plus grand côté sous le plafond, proportions gardées, en px entiers", () => {
+    expect(fitWithin(6875, 4544, 1920)).toEqual({ width: 1920, height: 1269 });
+    expect(fitWithin(3000, 4000, 1920)).toEqual({ width: 1440, height: 1920 });
+  });
+  it("n'agrandit jamais", () => {
+    expect(fitWithin(800, 400, 1920)).toEqual({ width: 800, height: 400 });
   });
 });

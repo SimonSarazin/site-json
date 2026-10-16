@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Section } from "@/types/site-schema";
+import { AacDirectoryFieldsSchema } from "./schema";
 
 /**
  * La section `aac` (`AacConfigStub`) — un aperçu de debug de la config résolue —
@@ -30,5 +31,22 @@ describe("sections du module aac", () => {
   it("`aac-highlight` reste acceptée", () => {
     const r = Section.safeParse({ type: "aac-highlight", props: { title: { fr: "Bande" } } });
     expect(r.success).toBe(true);
+  });
+});
+
+/**
+ * `choose` est la seule clé de `aac.directory.fields` dont la FORME est contrainte : un chemin sans
+ * `answers.` était ignoré en silence au runtime — l'annuaire d'un AAC publiait alors tout.
+ */
+describe("aac.directory.fields.choose", () => {
+  it("accepte une réponse `answers.<étape>.<id>`", () => {
+    expect(AacDirectoryFieldsSchema.safeParse({ choose: "answers.aapStep2.choose" }).success).toBe(true);
+    expect(AacDirectoryFieldsSchema.safeParse({}).success).toBe(true);
+  });
+
+  it("refuse un chemin sans `answers.` ou incomplet", () => {
+    for (const choose of ["aapStep2.choose", "answers.aapStep2", "answers..choose", "answers.aap Step2.choose"]) {
+      expect(AacDirectoryFieldsSchema.safeParse({ choose }).success).toBe(false);
+    }
   });
 });

@@ -25,6 +25,7 @@ const KNOWN_WITHOUT_FACADE = new Set([
   "src/modules/interop/components/MediawikiLink.tsx",
   "src/modules/interop/DiscourseSection.tsx",
   "src/modules/interop/MediawikiSection.tsx",
+  "src/modules/search/components/SwitchDetailsMode.tsx",
 ]);
 
 function walk(dir: string, out: string[] = []): string[] {

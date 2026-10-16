@@ -30,7 +30,8 @@ import { PLACE_KINDS } from "@/modules/coform/utils/finderFilters";
  * racine. Une valeur illisible est ignorée au runtime (retour au scan), pas
  * appliquée de travers.
  *
- * Facultatif — sans lui, `resolveAacCardFields` déduit par type et par libellé.
+ * Facultatif — sans lui, `resolveAacCardFields` déduit par type et par libellé,
+ * SAUF `choose`, qui ne se déduit jamais (cf. sa clé ci-dessous).
  * Pour lire les questions d'un form et leurs libellés :
  * `POST <backend>/survey/coform/getformbyid` avec `parentFormId=<formId>` (sans
  * auth) → `data.inputs.<étape>.inputs`.
@@ -42,7 +43,25 @@ export const AacDirectoryFieldsSchema = z.object({
   maturity: z.string().optional(),
   image: z.string().optional(),
   depense: z.string().optional(),
-  choose: z.string().optional(),
+  /**
+   * L'étape de SÉLECTION d'un commun pour l'annuaire de l'appel — jamais déduite.
+   *
+   * AAC : à déclarer, sous la forme `answers.<étape>.choose` (badge, bouton
+   * « Ajouter à l'annuaire », annuaire public restreint aux sélectionnés).
+   * AAP : à omettre — il n'a pas d'étape de sélection ; ni statut, ni
+   * restriction, toute proposition titrée est publique.
+   *
+   * Seule clé dont la FORME est contrainte : un chemin sans `answers.` serait
+   * ignoré en silence au runtime (l'annuaire publierait tout) — `config:validate`
+   * le refuse donc. Que le chemin désigne une VRAIE question, et qu'un AAC n'ait
+   * pas oublié la clé, seul le formulaire le dit : `config:probe` le vérifie.
+   */
+  choose: z
+    .string()
+    .regex(/^answers\.[^.\s]+\.[^.\s]+$/, {
+      message: "choose est une réponse : answers.<étape>.<id> (ex. answers.aapStep2.choose)",
+    })
+    .optional(),
   /**
    * L'ADRESSE du commun : question `tpls.forms.cplx.address` (ou texte, lu sans commune).
    * Strictement opt-in (ni scan, ni défaut) : non renseigné ⇒ filtre « Commune » masqué.

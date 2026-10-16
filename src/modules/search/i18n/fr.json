@@ -10,7 +10,8 @@
     },
     "testimonial": {
         "listen": "Écouter",
-        "listenTitle": "Écouter le témoignage"
+        "listenTitle": "Écouter le témoignage",
+        "viewImage": "Agrandir l'image"
     },
     "resource": {
         "open": "Ouvrir le lien",
