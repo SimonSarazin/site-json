@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { runEntityMutation, type EntityMutationSpec } from "./useEntityMutation";
+import { runEntityMutation, CITOYEN_CREATE_UNSUPPORTED, type EntityMutationSpec } from "./useEntityMutation";
 
 // Mode costum LIVE (`VITE_COSTUM_FORCE_LIVE`) piloté par test ; désactivé par défaut.
 const costumLive = vi.hoisted(() => ({ actif: false }));
@@ -89,12 +89,23 @@ function makeEditable(serverData: Data = { name: "X" }) {
  * Faux draft éditable dont le proxy REJETTE les champs hors liste blanche — réplique du
  * `[DraftProxy]` de la lib, dont la liste est celle du costum de PROVENANCE (`source.key`) et
  * non celle du site. `setCostumScope(slug, {pinSchema:true})` ouvre les champs de `slug`.
+ *
+ * `froid` réplique la lib en FORCE_LIVE quand son cache live n'a pas (ou plus) ce costum :
+ * `setCostumScope` (synchrone) épingle alors un contexte NU qui n'ouvre rien, tant que
+ * `loadCostumScope(slug)` ne l'a pas chargé. `loads` trace ces chargements, `ordre` l'enchaînement.
  */
-function makeEditableAvecListeBlanche(autorises: string[], champsCostum: Record<string, string[]>) {
+function makeEditableAvecListeBlanche(
+  autorises: string[],
+  champsCostum: Record<string, string[]>,
+  opts: { froid?: boolean; loadEchoue?: boolean } = {},
+) {
   const scopes: Array<{ slug: string; opts?: { pinSchema?: boolean } }> = [];
+  const loads: string[] = [];
+  const ordre: string[] = [];
+  const charges = new Set<string>();
   let permis = new Set(autorises);
   const e = {
-    saves: 0, slug: "edited", serverData: { name: "X" }, scopes,
+    saves: 0, slug: "edited", serverData: { name: "X" }, scopes, loads, ordre,
     data: new Proxy({} as Data, {
       set: (cible, prop, valeur) => {
         if (typeof prop !== "string") return false;
@@ -103,10 +114,19 @@ function makeEditableAvecListeBlanche(autorises: string[], champsCostum: Record<
         return true;
       },
     }),
-    setCostumScope: (slug: string, opts?: { pinSchema?: boolean }) => {
-      scopes.push({ slug, opts });
+    loadCostumScope: async (slug: string) => {
+      loads.push(slug);
+      ordre.push(`load:${slug}`);
+      if (opts.loadEchoue) throw new Error("réseau indisponible");
+      charges.add(slug);
+      return true;
+    },
+    setCostumScope: (slug: string, o?: { pinSchema?: boolean }) => {
+      scopes.push({ slug, opts: o });
+      ordre.push(`pin:${slug}`);
       // Sans `pinSchema`, la lib ne pose que le scope d'ADMINISTRATION : le schéma ne bouge pas.
-      if (opts?.pinSchema) permis = new Set([...permis, ...(champsCostum[slug] ?? [])]);
+      // Cache froid : contexte NU, l'épingle n'ouvre aucun champ.
+      if (o?.pinSchema && (!opts.froid || charges.has(slug))) permis = new Set([...permis, ...(champsCostum[slug] ?? [])]);
     },
     save: async () => { e.saves += 1; },
   };
@@ -359,13 +379,54 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     });
 
     /**
+     * Régression : formulaire citoyen SSBE (`typepro`), lib en FORCE_LIVE. `api.me()` ne charge pas le
+     * costum de sa provenance, donc au moment d'éditer le cache live est vide : `setCostumScope` seul
+     * épinglait un contexte NU → `[DraftProxy] Le champ "typepro" n'est pas autorisé.` (reproduit avec
+     * la lib 1.0.198 contre le legacy). Le chargement live doit précéder l'épingle.
+     */
+    it("cache live froid : loadCostumScope AVANT l'épingle → le champ costum passe", async () => {
+      costumLive.actif = true;
+      try {
+        const editable = makeEditableAvecListeBlanche(["name"], { sportSanteBienetre: ["typepro", "othersTypepro"] }, { froid: true });
+        await runEntityMutation(
+          { ...specEdit(editable, "sportSanteBienetre"), entityType: "citoyens" },
+          { name: "Moi", typepro: "Éducateur(ice) Sportif(ive)" },
+          { me: null },
+        );
+        expect(editable.ordre).toEqual(["load:sportSanteBienetre", "pin:sportSanteBienetre"]);
+        expect(editable.data).toMatchObject({ typepro: "Éducateur(ice) Sportif(ive)" });
+        expect(editable.saves).toBe(1);
+      } finally {
+        costumLive.actif = false;
+      }
+    });
+
+    it("chargement live en échec : non bloquant, l'épingle est quand même posée (erreur de champ si cache froid)", async () => {
+      costumLive.actif = true;
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      try {
+        const chaud = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { loadEchoue: true });
+        await runEntityMutation(specEdit(chaud, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null });
+        expect(chaud.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+        expect(chaud.saves).toBe(1);
+        const froid = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { froid: true, loadEchoue: true });
+        await expect(
+          runEntityMutation(specEdit(froid, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null }),
+        ).rejects.toThrow(/n'est pas autorisé/);
+        warn.mockRestore();
+      } finally {
+        costumLive.actif = false;
+      }
+    });
+
+    /**
      * Costum LIVE : `get()` ne précharge que le costum de la PROVENANCE ; celui du formulaire reste
      * froid et `setCostumScope` épinglait un contexte NU (aucun champ). Le formulaire charge alors le
      * costum en live (`loadCostumScope`).
      */
     describe("costum LIVE (VITE_COSTUM_FORCE_LIVE)", () => {
       const avecChargementLive = (resultat: "ok" | "rien" | "erreur") => {
-        const editable = makeEditableAvecListeBlanche(["name"], {});
+        const editable = makeEditableAvecListeBlanche(["name"], {}, { froid: true });
         const charges: string[] = [];
         Object.assign(editable, {
           loadCostumScope: async (slug: string) => {
@@ -381,7 +442,7 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
         return { editable, charges };
       };
 
-      it("charge le costum en live avant l'écriture : le champ costum passe, sans repli", async () => {
+      it("charge le costum en live avant l'écriture, puis épingle : le champ costum passe", async () => {
         costumLive.actif = true;
         try {
           const { editable, charges } = avecChargementLive("ok");
@@ -391,14 +452,14 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
             { me: null },
           );
           expect(charges).toEqual(["navigatorDesTierslieux"]);
-          expect(editable.scopes).toEqual([]);
+          expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
           expect(editable.data).toMatchObject({ holderOrganization: "SCIC Machin" });
         } finally {
           costumLive.actif = false;
         }
       });
 
-      it("chargement live sans résultat ou en échec : repli sur setCostumScope", async () => {
+      it("chargement live sans résultat ou en échec : non bloquant, l'épingle est posée quand même", async () => {
         costumLive.actif = true;
         const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
         try {
@@ -449,6 +510,42 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
  * (CAE : `organizationsTls`, presets `tags:"CAE"`/`role:"admin"`). Le relais n'a de sens que sur un
  * SCOPE COSTUM : `me`/un parent (BaseEntity) ne connaissent pas ce 2e argument.
  */
+/**
+ * Un citoyen ne se CRÉE pas par cette voie (docs/33 §2 : il naît par l'inscription ; `element/save`
+ * citoyens est une mise à jour seule). L'ancien mapping `SDK_METHOD.citoyens = "organization"` aurait
+ * fait naître une ORGANISATION d'un formulaire citoyen ouvert en mode ajout — en silence.
+ */
+describe("runEntityMutation — création de citoyen refusée AVANT tout appel SDK", () => {
+  const specAdd = (): EntityMutationSpec => ({ ...base, mode: "add", entityType: "citoyens", buildPayload: (d) => d });
+
+  it("cible directe (me) : erreur explicite, aucune méthode SDK appelée, aucun save", async () => {
+    const sdk = makeSdk();
+    await expect(runEntityMutation(specAdd(), { name: "Jean" }, { me: sdk.me })).rejects.toThrow(CITOYEN_CREATE_UNSUPPORTED);
+    expect(sdk.calls).toEqual([]);
+    expect(sdk.getSaves()).toBe(0);
+  });
+
+  it("scope costum AMBIANT ou EXPLICITE : refusé de la même façon (jamais `me.costum(slug).organization`)", async () => {
+    const sdk = makeSdk();
+    await expect(runEntityMutation({ ...specAdd(), costumSlug: "sportSanteBienetre" }, { name: "Jean" }, { me: sdk.me }))
+      .rejects.toThrow(/création de citoyen non supportée/);
+    await expect(runEntityMutation(specAdd(), { name: "Jean" }, { me: sdk.me, contextEntity: fakeRef }))
+      .rejects.toThrow(/création de citoyen non supportée/);
+    expect(sdk.calls).toEqual([]);
+  });
+
+  it("l'ÉDITION d'un citoyen reste possible (chemin submitEntityEdit inchangé)", async () => {
+    const editable = makeEditable();
+    await runEntityMutation(
+      { ...base, mode: "edit", entityType: "citoyens", target: editable as unknown as EntityTypes, buildPayload: (d) => d },
+      { name: "Jean", typepro: "Médecins" },
+      { me: null },
+    );
+    expect(editable.saves).toBe(1);
+    expect(editable.data).toEqual({ name: "Jean", typepro: "Médecins" });
+  });
+});
+
 describe("runEntityMutation — sous-type costum ciblé (subType)", () => {
   const caePorteur = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "federationDesCae" } } as unknown as EntityTypes;
   const specOrga = (over: Partial<EntityMutationSpec> = {}): EntityMutationSpec => ({
