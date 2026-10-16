@@ -535,6 +535,7 @@
               }
             ],
             "scrollTarget": "section-lieux",
+            "searchHref": "/lieux",
             "placeholder": {
               "fr": "Ville, département, code postal ...",
               "en": "City, ZIP code ..."

@@ -14,6 +14,7 @@ import type { SearchBaseParamsInput } from "@/modules/search/lib/buildSearchPayl
 import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
 import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
 import { usePageFiltersUrlSync } from "@/modules/search/hooks/usePageFiltersUrlSync";
+import { buildViewAllHref } from "@/modules/search/lib/viewAllHref";
 import { getEntityIcon } from "@/lib/entityIcons";
 
 const getEntityTitle = (entity: SearchEntity): string => {
@@ -203,12 +204,17 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   }, []);
 
   /**
-   * Lance la recherche : pousse le texte saisi dans le contexte `PageFilters`
-   * (→ le `searchProStatic` de la page filtre la liste) puis scrolle vers
-   * `props.scrollTarget` (id de la section résultats — pas de scroll si absent).
+   * Lance la recherche. Avec `props.searchHref` : ouvre cette page avec le texte saisi et les filtres
+   * actifs (même construction que le lien « voir tous » des listes, `buildViewAllHref`). Sinon : pousse
+   * le texte dans le contexte `PageFilters` (→ le `searchProStatic` de la page filtre la liste) puis
+   * scrolle vers `props.scrollTarget` (pas de scroll si absent).
    * Déclenché par le bouton « Rechercher » et par Entrée.
    */
   const triggerSearch = () => {
+    if (props.searchHref) {
+      navigate(buildViewAllHref(props.searchHref, searchParams, search.trim()));
+      return;
+    }
     pageFilters?.setSearchQuery(search);
     setDismissed(true);
     if (props.scrollTarget && typeof document !== "undefined") {

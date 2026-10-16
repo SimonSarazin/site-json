@@ -597,6 +597,17 @@ redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lie
 aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
 
 
+### 14/10 — accueil : « Rechercher » ouvre /lieux
+
+**Fait** : sur l'accueil, « Rechercher » (et Entrée) ouvre `/lieux` avec le texte saisi et le filtre
+de catégorie actif (« Coworker », « Se réunir »…), même champ vide — au lieu de filtrer les 5 lieux
+mis en avant. Option moteur `searchHref` du bloc `hero-search` (absente : comportement inchangé) ;
+`/reservation`, qui a le même bloc, n'est pas modifiée.
+
+**Vérifié** au navigateur : champ vide → `/lieux` ; « Coworker » + « Lille » →
+`/lieux?typologies=Bureaux partagés / Coworking&search=Lille`, recherche et filtre repris (33 lieux).
+Tests de `HeroSearch` (3).
+
 ### 12/10 — annuaire des ressources : filtres Thématique, Capacité, Géographique
 
 **Fait** (`/annuaire-ressources`) : plus de filtre Tarif ; filtres, dans l'ordre : Type de ressource,

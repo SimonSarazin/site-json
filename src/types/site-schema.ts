@@ -207,6 +207,10 @@ export const HeroSearchSchema = z.object({
     // Id de la section vers laquelle scroller au lancement d'une recherche
     // (ex. la liste `searchProStatic` de la page). Pas de scroll si absent.
     scrollTarget: z.string().optional(),
+    // Page de recherche complète (ex. `/lieux`) : renseignée, « Rechercher » / Entrée y mènent avec le
+    // texte saisi (`?search=`) et les filtres actifs de la page, au lieu de filtrer la liste de la page
+    // (souvent un aperçu de quelques résultats) — même champ vide. Absent : comportement historique.
+    searchHref: z.string().optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
     // Scope de l'autocomplétion du hero — aligner sur le `searchProStatic` de la page
