@@ -3581,20 +3581,12 @@
       },
       "chrome": {
         "title": {
-          "add": {
-            "fr": "Créer un profil",
-            "en": "Create a profile"
-          },
           "edit": {
             "fr": "Modifier mon profil",
             "en": "Edit my profile"
           }
         },
         "submitLabel": {
-          "add": {
-            "fr": "Créer",
-            "en": "Create"
-          },
           "edit": {
             "fr": "Enregistrer",
             "en": "Save"

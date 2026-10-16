@@ -12,7 +12,10 @@
  *  6. réseaux sociaux : même codec que le profil générique (objet serveur `socialNetwork` lu à plat, 9 clés
  *     émises À PLAT — c'est la forme du bloc UPDATE_BLOCK_SOCIAL que `User.save()` envoie) ; le widget
  *     `_social` n'est jamais émis. Sans cet onglet, le formulaire costum (qui REMPLACE le générique pour le
- *     propriétaire sur ces deux sites) aurait retiré l'édition des réseaux sociaux.
+ *     propriétaire sur ces deux sites) aurait retiré l'édition des réseaux sociaux ;
+ *  7. les valeurs de `typepro` proposées à l'INSCRIPTION (`auth.register.fields`) sont exactement celles du
+ *     `<select>` du profil (`costumForms.<id>.fields.typepro.enum`) : une valeur écrite par l'une et inconnue
+ *     de l'autre s'affiche vide et la première sauvegarde du profil l'écrase par `""`.
  */
 import { describe, it, expect } from "vitest";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
@@ -21,7 +24,9 @@ import { JsonFormConfigSchema } from "@/modules/formEngine/config/schema";
 import { formDescriptorToConfig } from "@/modules/formEngine/config/formDescriptorToConfig";
 import { configToDescriptor } from "@/modules/formEngine/config/configToDescriptor";
 import { check } from "@/modules/formEngine";
-import { loadCostumForm } from "./costum/__fixtures__/configCostum";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { costumDoc, loadCostumForm } from "./costum/__fixtures__/configCostum";
 import { specToConfig } from "./resolveModalSpec";
 import type { EntityModalCtx } from "./entityModalSpec";
 import { runEntityMutation, CITOYEN_CREATE_UNSUPPORTED } from "../hooks/useEntityMutation";
@@ -43,9 +48,9 @@ const userLike = (serverData: Record<string, unknown>) =>
   ({ serverData, slug: serverData.slug, getEntityType: () => "citoyens" }) as unknown as User;
 
 describe.each([
-  ["sport-sante-bienetre-citoyen", "sportSanteBienetre"],
-  ["ekilibre-citoyen", "associationEkilibre"],
-])("costum citoyen %s", (id, slug) => {
+  ["sport-sante-bienetre-citoyen", "sportSanteBienetre", "config.prod.sport-sante-bien-etre.json"],
+  ["ekilibre-citoyen", "associationEkilibre", "config.prod.maison-sport-sante-la-tampon.json"],
+])("costum citoyen %s", (id, slug, configFile) => {
   const { descriptor, spec } = loadCostumForm(id);
   const formSpec: FormSpec = { descriptor };
 
@@ -128,5 +133,16 @@ describe.each([
     expect(payload).not.toHaveProperty("socialNetwork");
     expect(payload).not.toHaveProperty("_social");
     expect(descriptor.fields._social).toMatchObject({ widget: "editSocial", renderOnly: true });
+  });
+
+  it("7. parité typepro : les options de l'inscription sont exactement l'enum du formulaire du profil", () => {
+    const site = JSON.parse(readFileSync(fileURLToPath(new URL(`../../../../${configFile}`, import.meta.url)), "utf8")) as {
+      auth?: { register?: { fields?: Array<{ name: string; options?: Array<{ value: string }> }> } };
+    };
+    const inscription = site.auth?.register?.fields?.find((f) => f.name === "typepro")?.options?.map((o) => o.value);
+    const profil = (costumDoc(id).fields.typepro as { enum?: Array<{ value: string }> }).enum?.map((o) => o.value);
+    expect(inscription, "auth.register.fields[typepro].options").toBeDefined();
+    expect(profil, "costumForms.<id>.fields.typepro.enum").toBeDefined();
+    expect(inscription).toEqual(profil);
   });
 });
