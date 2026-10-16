@@ -66,7 +66,8 @@ export function titrePage(evt) {
 }
 
 function urlPage(c, titre) {
-  return `${c.base}${encodeURIComponent(titre.replace(/ /g, "_"))}`;
+  // Parenthèses encodées : elles fermeraient prématurément un lien Markdown `[texte](url)`.
+  return `${c.base}${encodeURIComponent(titre.replace(/ /g, "_")).replace(/\(/g, "%28").replace(/\)/g, "%29")}`;
 }
 
 /** Texte brut sûr pour un paramètre de modèle : un `|` ou `}}` casserait l'appel. */
@@ -82,7 +83,7 @@ function corps(v) {
 function sansLien(description, url) {
   return String(description || "")
     .split("\n")
-    .filter((l) => !l.includes(url))
+    .filter((l) => !l.includes(url) && !l.startsWith("Documentation de la rencontre"))
     .join("\n")
     .trim();
 }

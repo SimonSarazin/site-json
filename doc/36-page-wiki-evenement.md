@@ -18,7 +18,7 @@ Le bot password se crée sur le wiki (Spécial:BotPasswords) avec les droits « 
 ## Fonctionnement
 
 1. `GET /api/wiki/event/:id/plan` : titre (`Nom (AAAA-MM-JJ)`) et URL de la page, sans authentification (données publiques).
-2. Le client ajoute `Documentation de la rencontre : <url>` à la description (`updateDescription`). Le backend refuse si l'utilisateur n'a pas le droit d'éditer.
+2. Le client ajoute un lien Markdown « Voir le compte rendu de l'événement sur le wiki » (l'ancienne ligne `Documentation de la rencontre : <url>` est remplacée) à la description (`updateDescription`). Le backend refuse si l'utilisateur n'a pas le droit d'éditer.
 3. `POST /api/wiki/event/:id` (en-tête `Authorization`) : le serveur relit l'événement dans le backend, **vérifie que la description contient l'URL**, puis crée la page avec le compte robot (`createonly` : une page existante n'est jamais écrasée).
 
 ## Mise à jour

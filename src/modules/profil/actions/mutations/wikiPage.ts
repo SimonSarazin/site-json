@@ -11,6 +11,8 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { PROFIL_QUERY_KEYS } from "../../constants/queryKeys";
 
+const WIKI_LINK_LABEL = "Voir le compte rendu de l'événement sur le wiki";
+
 interface WikiPlan {
   title: string;
   url: string;
@@ -47,9 +49,15 @@ export function useCreateEventWikiPage(event: Event | null, plan: WikiPlan | und
       if (!token) throw new Error("not authenticated");
 
       const description = typeof event.serverData?.description === "string" ? event.serverData.description : "";
-      if (!description.includes(plan.url)) {
-        const suffixe = `Documentation de la rencontre : ${plan.url}`;
-        await event.updateDescription({ description: description ? `${description}\n\n${suffixe}` : suffixe });
+      const lien = `[${WIKI_LINK_LABEL}](${plan.url})`;
+      if (!description.includes(lien)) {
+        // Retire l'ancienne ligne « Documentation de la rencontre : <url brute> » d'une version précédente.
+        const reste = description
+          .split("\n")
+          .filter((l) => !l.startsWith("Documentation de la rencontre"))
+          .join("\n")
+          .trim();
+        await event.updateDescription({ description: reste ? `${reste}\n\n${lien}` : lien });
       }
 
       const r = await fetch(`/api/wiki/event/${event.id}`, {
