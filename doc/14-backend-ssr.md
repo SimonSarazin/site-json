@@ -190,9 +190,10 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
      res.write(envScript);
 
      const { render } = await vite.ssrLoadModule("/src/entry-server.tsx");
-     await render(req, res, config, (helmetHead, dehydratedState) => {
+     // `stateJson` arrive sérialisé ET échappé (`serializeSsrState`) : injecté tel quel.
+     await render(req, res, config, (helmetHead, stateJson) => {
        res.write(helmetHead);
-       res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(dehydratedState, { isJSON: true })}</script>`);
+       res.write(`<script>window.__REACT_QUERY_STATE__=${stateJson}</script>`);
        res.write(beforeBody);
      }, tail);  // 5e argument : closing tags issus du template
 
@@ -332,9 +333,9 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
      res.write(injectEnvScript); // window.__ENV__ (conditionnel)
 
      const { render } = await import("../dist/server/entry-server.js");
-     await render(req, res, cachedConfig, (helmetHead, dehydratedState) => {
+     await render(req, res, cachedConfig, (helmetHead, stateJson) => {
        res.write(helmetHead);
-       res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(dehydratedState, { isJSON: true })}</script>`);
+       res.write(`<script>window.__REACT_QUERY_STATE__=${stateJson}</script>`);
        res.write(beforeRoot);
      }, tail);  // 5e argument : closing tags du template
 
@@ -380,12 +381,13 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
      req: Request,
      res: Response,
      cfg: SiteConfig,
-     onHead: (headHtml: string, dehydratedState: DehydratedState) => Promise<void>,
+     onHead: (headHtml: string, stateJson: string) => Promise<void>,
      closingTags = '</div></body></html>',
    ): Promise<void>
    ```
 
-   La callback `onHead` reçoit `headHtml` (balises fonts/images/preload/title/meta) et `dehydratedState`.
+   La callback `onHead` reçoit `headHtml` (balises fonts/images/preload/title/meta) et `stateJson`, le
+   texte de `window.__REACT_QUERY_STATE__` déjà sérialisé et échappé (`serializeSsrState`, cf. plus bas).
    Le 5e argument `closingTags` contient le HTML de fermeture issu du template (par défaut `</div></body></html>`).
 
 3. **Reset de l'état API entre requêtes**
@@ -450,13 +452,28 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    **Parents factorisés au transport** (`src/lib/ssrStatePacking.ts`). Chaque entité du SDK se
    sérialise avec la méta de son parent (`BaseEntity.toJSON` → `parent`, `links` compris pour
    `isAdmin()`), recopiée dans chaque carte d'une liste — sur /communaute d'Open Atlas, 42 copies de
-   44 Ko (1,8 Mo d'un état de 3,3 Mo). `entry-server` passe donc l'état à `packSsrState` avant
-   `onHead` : chaque parent distinct est rangé une fois dans `__ssrParents`, une référence
-   `{ __ssrParentRef: n }` reste à sa place. Côté client, `src/lib/ssrStateBootstrap.ts`, importé EN
-   PREMIER par `entry-client`, restitue une copie par entité avant toute lecture
-   (`HydrationBoundary`, `getHydratedCocolightData`). React Query et le SDK reçoivent le même JSON
-   qu'avant (vérifié à l'identique sur /communaute, horodatages mis à part) ; l'état emballé reste un
-   `DehydratedState` lisible (`queries`, `mutations`).
+   44 Ko (1,8 Mo d'un état de 3,3 Mo). `entry-server` sérialise donc l'état par `serializeSsrState`
+   et passe à `onHead` le TEXTE prêt à injecter : chaque parent distinct est rangé une fois dans
+   `__ssrParents`, une référence `{ __ssrParentRef: n }` reste à sa place. Côté client,
+   `src/lib/ssrStateBootstrap.ts`, importé EN PREMIER par `entry-client`, restitue une copie par
+   entité avant toute lecture (`HydrationBoundary`, `getHydratedCocolightData`). React Query et le SDK
+   reçoivent le même JSON qu'avant (vérifié à l'identique sur /communaute, horodatages mis à part) ;
+   l'état emballé reste un `DehydratedState` lisible (`queries`, `mutations`).
+
+   **Un seul passage JSON.** `serializeSsrState` fait UN `JSON.stringify` (le replacer voit chaque
+   entité après son `toJSON`), ajoute la table au texte sans reparse et l'échappe comme
+   `serialize-javascript` (`isJSON`) — les deux serveurs l'injectent TEL QUEL, sans `serialize`
+   derrière (verrouillé par `tests/preflight/ssr-state-packing.test.ts` : l'échappement est la seule
+   barrière XSS de ce `<script>`). Un parent n'est sérialisé qu'une fois par instance du SDK. Mesuré
+   sur /communaute (15/10, dev, à chaud) : 72 ms, contre 158 ms pour l'état non emballé et 170 ms pour
+   la première version (emballage + reparse + `serialize`), sortie identique à l'octet près. Le
+   temps est loggué en dev (`[PERF entry-server] serializeState`).
+
+   **Restitution ratée** : `ssrStateBootstrap` l'avale (`console.error("[ssr] …")`) pour ne jamais
+   bloquer l'hydratation — la page vit, mais `isAdmin()` et la méta de parent sont faux jusqu'au
+   prochain refetch. `e2e/hydration.spec.ts` (« parents d'entités factorisés ») le voit : aucune
+   `__ssrParentRef` ni `__ssrParents` dans l'état après hydratation, aucune erreur `[ssr]`. Page
+   lourde : `E2E_PACKED_PATH=/communaute VITE_SLUG=openAtlas npx playwright test e2e/hydration.spec.ts`.
 
 ### Intégration vite-preload
 
@@ -511,7 +528,7 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
         ${helmetCtx.helmet?.title ?? ''}
         ${helmetCtx.helmet?.meta  ?? ''}
         ${helmetCtx.helmet?.link  ?? ''}`,
-       dehydratedState
+       serializeSsrState(dehydratedState)   // parents factorisés, échappé pour un <script>
      );
 
      pipe(res as unknown as Writable);
@@ -1044,8 +1061,8 @@ const dehydratedState = dehydrate(queryClient, {
   shouldDehydrateQuery: (q) => q.queryKey[0] !== "cocolight-init"
 });
 
-// 2. Injecter dans le HTML (via la callback onHead)
-res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(dehydratedState, { isJSON: true })}</script>`);
+// 2. Sérialiser (parents factorisés, échappé) et injecter tel quel (via la callback onHead)
+res.write(`<script>window.__REACT_QUERY_STATE__=${serializeSsrState(dehydratedState)}</script>`);
 ```
 
 Côté client (`entry-client.tsx`):

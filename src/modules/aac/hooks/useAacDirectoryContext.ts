@@ -89,6 +89,17 @@ export interface AacDirectoryContext {
   configError: Error | null;
   /** Rejoue la résolution — la reprise à offrir avec `configError`. */
   refetchConfig: () => void;
+  /** Interfaces choisies par le site (clés de registres de variantes) ; absente ou inconnue ⇒ `default`. */
+  variants: AacInterfaceVariants;
+}
+
+export interface AacInterfaceVariants {
+  /** `config.aac.detail.pageVariant` — la fiche d'un commun. */
+  detail?: string;
+  /** `config.aac.directory.defaultCardVariant` — cartes, lignes et squelettes de l'annuaire. */
+  directoryCard?: string;
+  /** `config.aac.directory.defaultShellVariant` — la disposition de l'annuaire (en-tête, filtres, compteur). */
+  directoryShell?: string;
 }
 
 /** Un avertissement par formulaire et par constat : le contexte est lu par chaque surface AAC. */
@@ -164,5 +175,10 @@ export function useAacDirectoryContext(): AacDirectoryContext {
     isFormLoading,
     configError,
     refetchConfig,
+    variants: {
+      detail: siteConfig.aac?.detail?.pageVariant,
+      directoryCard: siteConfig.aac?.directory?.defaultCardVariant,
+      directoryShell: siteConfig.aac?.directory?.defaultShellVariant,
+    },
   };
 }

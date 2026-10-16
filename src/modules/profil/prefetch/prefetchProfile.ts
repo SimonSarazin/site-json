@@ -1,7 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
-import { getBaseUrl } from "@/lib/constant/common";
-import { initApi } from "@/lib/apiClient";
+import { ensureInitApi } from "@/lib/cocolightInitQuery";
 import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 /**
@@ -29,9 +28,7 @@ export async function prefetchProfileQuery(
   return queryClient.ensureQueryData({
     queryKey: PROFIL_QUERY_KEYS.ELEMENT_ABOUT(slug),
     queryFn: async () => {
-      const { entity } = await initApi({
-        baseURL: getBaseUrl()
-      });
+      const { entity } = await ensureInitApi(queryClient);
       if (!entity) {
         throw new Error("API non initialisée");
       }

@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { publicSurfaceKeys } from "./queryKeys";
 import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
 import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
+import { SEARCH_QUERY_KEYS, SEARCH_STAT_COUNT_PREFIX } from "@/modules/search/constants/queryKeys";
 
 /**
  * Les surfaces publiques d'un site vivent dans des espaces de clés DISJOINTS de `admin-*`. Les trois
@@ -18,7 +18,7 @@ describe("publicSurfaceKeys", () => {
     const clefs = plat("monSite");
     // Les préfixes sont ceux que POSENT réellement les composants — on les compare aux constantes
     // des modules, jamais à des chaînes recopiées (c'est la recopie qui a produit le défaut).
-    for (const p of ["searchCostumStatic", "searchCostumStaticMapAll", "searchCostum", "searchCostumMapAll", "cardCountCT"]) {
+    for (const p of ["searchCostumStatic", "searchCostumStaticMapAll", "searchCostum", "searchCostumMapAll", "cardCountCT", SEARCH_STAT_COUNT_PREFIX]) {
       expect(clefs).toContain(JSON.stringify(SEARCH_QUERY_KEYS.RESULTS_PREFIX(p)));
     }
     expect(clefs).toContain(JSON.stringify(AGENDA_QUERY_KEYS.CALENDAR_PREFIX()));

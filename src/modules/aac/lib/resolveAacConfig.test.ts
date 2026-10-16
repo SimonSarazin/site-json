@@ -100,6 +100,29 @@ describe("resolveAacConfig", () => {
     expect(cfg.roles.evalStepKeyFound).toBe("aapStep3");
   });
 
+  it("une grille de critères sur l'étape de DÉPÔT ne la désigne jamais comme étape d'évaluation", () => {
+    // Masquer l'étape trouvée à l'auteur lui ferait perdre sa propre proposition à l'édition.
+    const form = {
+      subForms: ["aapStep1", "aapStep2", "aapStep3"],
+      inputs: {
+        aapStep1: step({ titre: "text", depense: "tpls.forms.ocecoform.newDepenseList", grille: "tpls.forms.aap.evaluation" }),
+        aapStep2: step({ description: "textarea" }),
+        aapStep3: step({ choose: "chooseProposal" }),
+      },
+    };
+    const cfg = resolveAacConfig("f1", form);
+    expect(cfg.roles.depenseStepKey).toBe("aapStep1");
+    expect(cfg.roles.evalStepKeyFound).toBe("aapStep3");
+
+    // Sans `depense` : la 1ʳᵉ étape reste l'étape de dépôt, et l'est tout autant pour ce scan.
+    const sansDepense = resolveAacConfig("f1", {
+      subForms: ["aapStep1", "aapStep2"],
+      inputs: { aapStep1: step({ titre: "text", grille: "tpls.forms.aap.evaluation" }), aapStep2: step({ q: "text" }) },
+    });
+    expect(sansDepense.roles.depenseStepKey).toBe("aapStep1");
+    expect(sansDepense.roles.evalStepKeyFound).toBeNull();
+  });
+
   it("subForms OBJET (fallback config) quand form.subForms est absent", () => {
     const form = { inputs: { aapStep1: step({ titre: "text" }) } };
     const config = {

@@ -63,6 +63,11 @@ export const AacDirectoryFieldsSchema = z.object({
     })
     .optional(),
   /**
+   * L'ADRESSE du commun : question `tpls.forms.cplx.address` (ou texte, lu sans commune).
+   * Strictement opt-in (ni scan, ni défaut) : non renseigné ⇒ filtre « Commune » masqué.
+   */
+  adresse: z.string().optional(),
+  /**
    * Où compter les MEMBRES du commun — un chemin racine, presque toujours hors
    * de `answers`.
    *
@@ -75,6 +80,11 @@ export const AacDirectoryFieldsSchema = z.object({
    * `links.contributors` : un tout autre ensemble.
    */
   users: z.string().optional(),
+  /**
+   * Les MOTS-CLÉS du commun, en badges sur la carte « editorial » ; distincts de `tags`
+   * (filtre « Thème »). Strictement opt-in.
+   */
+  keywords: z.string().optional(),
 });
 
 /**
@@ -136,6 +146,13 @@ export const AacDetailSchema = z.object({
    * Ex. `["franceTierslieux", "tierslieuxbelgique"]`.
    */
   placeSourceKeys: z.array(z.string().min(1)).min(1).optional(),
+  /**
+   * Interface de la fiche : clé de `AAC_DETAIL_VARIANTS`, nommée d'après un design.
+   * Inconnue ou omise ⇒ `default`. (`variant` désigne déjà un mode sur `aac-directory`.)
+   */
+  pageVariant: z.string().optional(),
+  /** Contenu de démonstration de l'interface `editorial` (blocs marqués « Exemple »). Omis ⇒ masqué. */
+  demoBlocks: z.boolean().optional(),
 });
 
 export const AacConfigSchema = z.object({
@@ -145,6 +162,10 @@ export const AacConfigSchema = z.object({
   directory: z
     .object({
       fields: AacDirectoryFieldsSchema.optional(),
+      /** Interface des communs de toutes les sections `aac-directory`, sauf `cardVariant` de section. */
+      defaultCardVariant: z.string().optional(),
+      /** Idem pour la disposition de l'annuaire, sauf `shellVariant` de section. */
+      defaultShellVariant: z.string().optional(),
     })
     .optional(),
   /** Réglages de la fiche d'un commun. */
@@ -207,10 +228,12 @@ export const AacDirectorySectionSchema = z.object({
         tags: z.boolean().default(true),
         /** La question « Utilisable » du formulaire. */
         maturity: z.boolean().default(true),
+        /** Les communes, dérivées de `directory.fields.adresse` ; sans ce rôle, aucun contrôle. */
+        commune: z.boolean().default(true),
         /** « Trier par ». */
         sort: z.boolean().default(true),
       })
-      .default({ search: true, usage: true, tags: true, maturity: true, sort: true }),
+      .default({ search: true, usage: true, tags: true, maturity: true, commune: true, sort: true }),
     /** Message quand aucun commun ne correspond. Défaut : i18n `directory.empty`. */
     emptyText: LocalizedString.optional(),
     /**
@@ -246,6 +269,10 @@ export const AacDirectorySectionSchema = z.object({
         label: LocalizedString.optional(),
       })
       .optional(),
+    /** Interface des communs (carte, ligne, squelette) ; omise ⇒ `directory.defaultCardVariant`, puis `default`. */
+    cardVariant: z.string().optional(),
+    /** Disposition (en-tête, filtres, compteur) ; omise ⇒ `directory.defaultShellVariant`, puis `default`. Se combine avec `variant`. */
+    shellVariant: z.string().optional(),
   }),
 });
 

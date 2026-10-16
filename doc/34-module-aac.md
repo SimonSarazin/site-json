@@ -145,7 +145,7 @@ déclaré dans [`src/types/site-schema.ts`](../src/types/site-schema.ts) juste a
 
 | `type` | rôle | props |
 |---|---|---|
-| `aac-directory` | **l'annuaire des communs** : filtres (recherche, usages, tags, maturité, tri), grille ou liste, défilement infini, bouton « Je dépose un commun » | `title`, `description`, `className`, `display` (`grid` \| `list`, mode initial), `columns` (1-4), `pageSize` (1-100), `filters{search,usage,tags,maturity,sort}`, `emptyText`, `showDepositButton`, `depositButtonLabel`, `variant` (`full` \| `preview`), `moreLink{href,label}` |
+| `aac-directory` | **l'annuaire des communs** : filtres (recherche, usages, tags, maturité, commune, tri), grille ou liste, défilement infini, bouton « Je dépose un commun » | `title`, `description`, `className`, `display` (`grid` \| `list`, mode initial), `columns` (1-4), `pageSize` (1-100), `filters{search,usage,tags,maturity,commune,sort}`, `emptyText`, `showDepositButton`, `depositButtonLabel`, `variant` (`full` \| `preview`), `moreLink{href,label}` |
 | `aac-highlight` | bande d'appel à l'action avec médaillon chiffré — le nombre de communs est **compté** (mode `countonly`), jamais saisi | `title` (requis), `description`, `className`, `tone` (`primary` \| `muted`), `cta{label,href}`, `count{source:"communs",label}` |
 
 `variant: "preview"` rend les mêmes cartes, bornées à `pageSize`, sans filtre ni compteur ni
@@ -212,6 +212,8 @@ champs (§ chaîne ci-dessous). Le bloc sert d'échappatoire déterministe.
       // une RÉPONSE : chemin complet, l'étape en fait partie
       "description": "answers.aapStep1.aapStep1lzi62x3etw49gyc424d",
       "maturity":    "answers.aapStep1.aapStep1m2ucu54mopm33osqxpd",
+      // question adresse (`tpls.forms.cplx.address`) : allume le filtre « Commune »
+      "adresse":     "answers.aapStep1.aapStep1mud6k0tblptwdgxwd5a",
       // un chemin à la RACINE du document : pas d'étape, profondeur libre
       "title":       "name",
       "users":       "links.cae"
@@ -245,7 +247,7 @@ Le schéma ([`modules/aac/schema.ts`](../src/modules/aac/schema.ts)) ne contrain
 la forme de la valeur : une regex assez étroite pour les questions refuserait les champs
 racine.
 
-Les 8 rôles, et ce que chacun pilote **au-delà de la carte** :
+Les 10 rôles, et ce que chacun pilote **au-delà de la carte** :
 
 | rôle | carte | ailleurs |
 |---|---|---|
@@ -256,7 +258,9 @@ Les 8 rôles, et ce que chacun pilote **au-delà de la carte** :
 | `image` | visuel | **c'est lui qui pilote la vignette** — cf. l'ordre de lecture ci-dessous |
 | `depense` | jauge de financement | repli quand `funds` n'est pas pré-calculé, **avec le même filtre `include !== false`** que le backend (§13.3) |
 | `choose` | badge « en attente » / « sélectionné » | **résolu par la config SEULEMENT, jamais deviné** : un AAC a une étape de sélection, un AAP non (le form OCECO d'Open Atlas n'a qu'un `decide`). Déclaré ⇒ badge, bouton « Ajouter à l'annuaire » et **annuaire public restreint aux sélectionnés** ; absent ⇒ ni statut, ni bouton, ni restriction : toute proposition titrée est publique. L'étape masquée au non-admin à l'édition suit l'étape d'**évaluation** (`choose` déclaré, sinon `roles.evalStepKeyFound`) : un AAP garde ses votes hors de portée de l'auteur. Seule une étape **trouvée** par scan (question `choose`/`decide`/de vote) est masquée — `roles.evalStepKey`, qui retombe sur une POSITION (2ᵉ ou 3ᵉ étape), désignerait sur un AAP sans vote une étape ordinaire de l'auteur. Un chemin sans préfixe `answers.` est refusé par `config:validate` (le runtime l'ignore). La clé de contexte est la **1ʳᵉ entrée de `form.parent`** (`firstParent`), pas l'entité du slug du site |
+| `adresse` | la COMMUNE (interface `editorial` seulement) | filtre « Commune » ; **strictement opt-in** — cf. ci-dessous |
 | `users` | nombre de membres | **le seul rôle qui ne parle pas du formulaire** — cf. ci-dessous |
+| `keywords` | mots-clés en badges (interface `editorial` seulement) | — ; distinct de `tags` (filtre « Thème »), **strictement opt-in** : ni scan ni défaut, non renseigné ⇒ aucun mot-clé (projets.re : `answers.aapStep1.tags`) |
 
 **`image` : la QUESTION d'abord, la vignette backend en repli.** L'ordre est
 `question résolue` (override de config → scan du premier `uploader` → défaut canonique `image`)
@@ -279,6 +283,26 @@ cofinancement en cours ». Le collecté entre aussi dans la condition parce que 
 portent un `price` booléen ou `null` (⇒ 0) : masquer ce qu'elles ont déjà collecté serait une
 régression.
 
+**`adresse` : une valeur COMPOSITE, et aucune devinette.** La question visée est presque
+toujours un `tpls.forms.cplx.address`, dont la valeur stockée est
+`{formLocality[], address, geo, geoPosition}` — pas une chaîne. `lib/communAddress.ts` la lit
+en réutilisant `parseStoredToEntries` (`coform/utils/coformLocality`), qui absorbe déjà les
+quatre formes coexistant en base, retient l'adresse marquée `center` et rend
+`{locality, postalCode, streetAddress, country, localityId, label}`. Une question **texte**
+est tolérée : elle devient le `label`, sans commune.
+
+Ce rôle est le seul à n'avoir **ni scan, ni défaut canonique, ni repli backend** — pas même le
+scan facile qu'il pourrait avoir (une question adresse se reconnaît à son `componentType`
+`location`, comme l'uploader de `image`). La raison : il pilote le **filtre « Commune »**. Le
+deviner ferait surgir ce filtre sur tout site dont le formulaire porte une adresse, alors que
+personne ne l'a demandé. Non renseigné ⇒ pas d'adresse sur les communs, aucune option de
+facette, donc filtre masqué. Un test le verrouille (`resolveAacCardFields.test.ts`).
+
+⚠️ La facette groupe les communes par leur **nom**, pas par `localityId` : deux communes
+homonymes de départements différents comptent pour une seule option. Et le filtre reste
+**client** (créneau `$or` unique, regex non ancrées côté serveur — cf. `aacQueryParams`) :
+il impose donc le balayage borné à `AAC_SCAN_SIZE`, comme `usage` et `maturity`.
+
 **`users` : le vivier dépend de la PLATEFORME, pas du form.** Un même commun peut être porté
 par deux AAC, avec des membres différents de part et d'autre : `links.cae` sur la fédération
 des CAE, `links.tls` sur les communs des tiers-lieux. Le chemin est donc libre — rien n'oblige
@@ -294,7 +318,7 @@ ensemble.
 ([`lib/resolveAacCardFields.ts`](../src/modules/aac/lib/resolveAacCardFields.ts)) :
 
 `config` → `form.mapping` → scan (type/libellé) → défaut canonique
-(`titre`/`description`/`tags`/`image`/`depense` ; ni `maturity` ni `users` n'en ont
+(`titre`/`description`/`tags`/`image`/`depense` ; ni `maturity`, ni `adresse`, ni `users`, ni `keywords` n'en ont
 un) → `null`. **Sauf `choose`** : `config` → `null`, rien d'autre — le deviner fabriquait
 `aapStep2.choose` sur tout formulaire, et un AAP voyait chaque proposition « en attente » et son
 annuaire public vide. Un site AAC **doit** donc déclarer `"choose": "answers.<étape>.choose"`.
@@ -350,9 +374,9 @@ ne peut dire quelles questions d'un appel font une section, ni dans quel ordre
   "detail": {
     "gallery": "aapStep1.image",                        // subKey des documents de la galerie
     "sections": [
-      { "id": "modele",      "title": { "fr": "Modèle économique" },  "icon": "Layers",
+      { "id": "modele",      "title": { "fr": "Modèle économique" },  "icon": "layers",
         "field": "answers.aapStep1.aapStep1lpvinn7ld70wbk7w339" },
-      { "id": "gouvernance", "title": { "fr": "Mode de gouvernance" }, "icon": "UsersRound",
+      { "id": "gouvernance", "title": { "fr": "Mode de gouvernance" }, "icon": "users-round",
         "field": "answers.aapStep1.aapStep1lpvioouzejcnjy7ffw" }
     ]
   }
@@ -373,6 +397,9 @@ dès que `detail.sections` est absent ou vide, et `useAacGallerySubKey()` rend `
 `detail.gallery`. Une fiche sans prose ni galerie sur un nouveau site n'est pas un bug : c'est le
 bloc `detail` qui manque — et rien ne le signale à `config:validate` (tout y est optionnel).
 
+> Les icônes s'écrivent en **kebab-case** (`users-round`, jamais `UsersRound`) : `DynamicIcon`
+> indexe son catalogue ainsi, et le préflight `aac-detail-icons` refuse toute autre forme.
+
 **La barre d'actions de la fiche** ([`CommunActionBar`](../src/modules/aac/components/pageDetail/CommunActionBar.tsx),
 arbitrage du 01/10) suit quatre règles :
 
@@ -392,6 +419,9 @@ le menu est **non modal** — modal, il laissait `pointer-events: none` sur `<bo
 la recherche de projets montée depuis une de ses entrées (page figée). Le passage en projet n'existe
 que si le commun peut encore en recevoir un (`canLink`) : un dialogue ouvert disparaît si un projet
 arrive entre-temps, sinon « Associer » écraserait le lien existant.
+
+Toutes les interfaces de la fiche (§3.4 Variantes d'interface) rendent cette barre telle quelle, avec
+les props du contrôleur : `<CommunActionBar {...vm.actions} />`.
 
 ### 3.3 La fiche — financement, paliers, cofinanceurs, SEO
 
@@ -440,6 +470,94 @@ borné à 160 caractères ; l'image est absolutisée ; le `canonical` est bâti 
 **Invalidations.** Après un paiement (`onFunded`) **et** après la création d'un palier, la fiche
 invalide `[aac-milestone-list-depenses, answerId]` (cf. §7) et relit la réponse : sans quoi la
 carte et la modale de dépôt affichaient encore l'état d'avant.
+
+### 3.4 Variantes d'interface — mêmes fonctionnalités, autre interface
+
+Un site peut habiller l'annuaire et la fiche autrement **sans toucher à une seule règle métier**.
+Toute la logique vit dans deux **contrôleurs** — `useAacDirectoryController`,
+`useCommunDetailController` — qui rendent un **view-model** ; une interface n'en est qu'une
+**vue** : ni requête, ni mutation, ni navigation. C'est la seule garantie *structurelle* de
+« mêmes fonctionnalités » : une vue ne peut pas régresser une commande qu'elle n'a pas le droit
+d'implémenter. RFC : [doc/36](36-rfc-variantes-interface-aac.md).
+
+```jsonc
+"aac": {
+  "directory": {
+    "defaultCardVariant": "editorial",   // cartes, lignes ET squelettes de toutes les sections aac-directory
+    "defaultShellVariant": "editorial"   // la disposition : en-tête, filtres, compteur, bascule
+  },
+  "detail": { "pageVariant": "editorial" } // la fiche /aac/commun/:answerId
+}
+// par section : aac-directory.props.cardVariant / shellVariant, qui priment sur les défauts
+```
+
+| Clé | Registre | Résolution |
+|---|---|---|
+| `detail.pageVariant` | `AAC_DETAIL_VARIANTS` — `components/pageDetail/variants/registry.ts` | config → `default` (une route : aucune surcharge possible) |
+| `props.cardVariant` ?? `directory.defaultCardVariant` | `AAC_DIRECTORY_CARD/ROW/SKELETON_VARIANTS` — `components/directory/variants/items.ts` | prop → config → `default` |
+| `props.shellVariant` ?? `directory.defaultShellVariant` | `AAC_DIRECTORY_SHELL_VARIANTS` — `components/directory/variants/shells.ts` | prop → config → `default` |
+
+Interfaces : **`default`** (celle d'origine) et **`editorial`** (maquette projets.re : fiche à
+onglets, barre de filtres au-dessus des résultats, titres en police d'affichage — slot `serif`
+de `config.theme`). La clé voyage par `useAacDirectoryContext().variants`, avec le reste de
+`config.aac` ; une clé inconnue retombe sur `default`, **en silence** — d'où le préflight.
+
+**Règles** — chacune tient à un piège rencontré :
+
+- **Nommer par DESIGN, jamais par site** (`editorial`, pas `projetsre`) : le deuxième site qui
+  voudrait l'interface hériterait d'un nom qui n'est pas le sien. Préflight `aac-variants` : toute
+  clé posée existe dans son registre, aucune ne porte un slug de `sites.json`.
+- **`variant` n'est PAS une interface.** Sur `aac-directory`, `variant: "full" | "preview"` choisit
+  un MODE fonctionnel (annuaire complet ou vitrine) ; il se combine avec `shellVariant`. D'où
+  `pageVariant` et non `detail.variant`.
+- **Le `default` est embarqué** (`staticVariant`, `@/lib/variants`) : ni chunk ni frontière
+  `Suspense` de plus — un site sans interface choisie rend le même HTML qu'avant (mesuré : diff SSR
+  de federationDesCae vide, hors ordre des `modulepreload` et ids `useId`).
+- **Une interface code-splittée se déclare dans `variants/lazyVariants.ts`, jamais dans son
+  registre.** Ce module est chargé par `routes.tsx`, donc par le chunk d'entrée. Écrit dans le
+  registre — qui vit dans le chunk de la page —, l'`import()` laisse Rollup présumer la page chargée
+  avant la variante : il remonte leurs dépendances communes dans le chunk de la page, qui perd sa
+  façade, donc sa clé de manifest, donc ses `modulepreload` SSR — pour tous les sites (mesuré :
+  75 → 48 préchargements sur la fiche). Préflight `lazy-entry-facades` (build requis).
+- **Ce qu'une vue ne porte pas** : les overlays sans position — dialogues des paliers, modale
+  d'édition (coquille de la page), dialogue de suppression (section). Une vue ne peut pas les perdre.
+- **Carte et ligne vont par paire** (la bascule grille/liste est un choix du visiteur) ; le
+  **squelette** est obligatoire dès qu'une interface change les dimensions d'un commun : c'est lui
+  que rend le SSR, et le repli `Suspense` tant que la carte se charge.
+- **Le sommaire est opt-in** (`useCommunToc`, appelé par la vue) : une vue à onglets n'en a pas, et
+  un `IntersectionObserver` y suivrait des ancres que Radix ne rend pas.
+- **Les gestes de filtrage sont partagés** (`lib/directoryFilterActions.ts`) : une disposition choisit
+  comment PRÉSENTER un filtre, pas ce que produit un clic — en particulier la règle des
+  sous-catégories d'usage.
+
+**Ajouter une interface** : une vue `export default` recevant `{ vm }` (et `{ id, vm }` pour une
+coquille) ; sa déclaration `lazy(() => import("…"))` dans `variants/lazyVariants.ts` ; une entrée
+par registre concerné. Les tests de conformité la prennent **d'office** (paramétrés sur `keys()`) :
+`detail.conformance.test.tsx` — les quatre commandes reçoivent les props du contrôleur, financement
+ssi `funding !== null`, paliers et contributeurs ssi phase `project` (actualités et agenda aussi,
+pour une interface qui les rend), chaque bloc atteignable (ancre ou onglet), aucun contenu de
+démonstration sans `demoBlocks` ; `directory.conformance.test.tsx` — lien vers la fiche, badge « en attente »,
+suppression par item, et **un contrôle marqué `data-aac-filter="<nom>"` par filtre activé**.
+
+**Contenu de démonstration** (`variants/editorial/demo/`). Ce que la maquette montre et que l'AAC
+ne sait pas faire (maturation, coopérations, avis, soutiens, indicateurs d'impact, appels à
+projets) est rendu avec des données **figées, identiques sur tous les communs**, chaque bloc
+portant le bandeau « Exemple » et ses commandes désactivées. Quand une fonctionnalité arrive, son
+bloc lit le view-model et `demoContent.ts` rétrécit — il disparaît quand il est vide. Ces blocs ne
+sont rendus que si **`config.aac.detail.demoBlocks: true`** (faux par défaut, `vm.demoBlocks`) ;
+coupés, les onglets Maturation et Coopérations disparaissent aussi. **À couper avant la mise en
+ligne d'un site réel** : un visiteur y lirait des dons et des chiffres qui n'existent pas.
+
+**Actualités et agenda** (onglet « Actus et agenda » de l'interface `editorial`). Ils sont ceux du
+**projet lié** au commun, donc rendus en phase `project` seulement (`vm.objectives.news` /
+`.agenda`, `{ projectId }`) :
+- `CommunNewsSection` monte le fil du module news (`NewsFeed`) sur l'entité projet
+  (`useCommunProjectEntityQuery`) — publication, réactions et commentaires selon les droits du
+  visiteur sur le projet ;
+- `CommunAgendaSection` liste les événements dont le projet est organisateur ou participant
+  (`project.getEvents`, `useCommunProjectEvents`), en deux flux bornés côté serveur : à venir
+  (`from` = maintenant, `asc`) et passés (`to` = maintenant, `desc`, sans récurrents), paginés par
+  « Voir plus ».
 
 ---
 
@@ -555,7 +673,9 @@ Sortie (`AacResolvedConfig`) : `steps[]`, `roles{depenseStepKey, evalStepKey, ev
 financementStepKey, suiviStepKey}`, `criteria[]`, `criteriaSource`, `gates`, `campaigns[]`,
 `typeCoFinancer`. `evalStepKeyFound` = l'étape d'évaluation TROUVÉE par scan (`choose`, `decide`,
 sélection, vote ou grille `tpls.forms.aap.evaluation`), `null` quand `evalStepKey` n'est qu'une
-position (dispatch 4 vs 5) — seule elle est masquée à l'auteur.
+position (dispatch 4 vs 5) — seule elle est masquée à l'auteur. Le scan ÉCARTE l'étape de dépôt
+(`depenseStepKey`) : une grille de critères posée à côté de la proposition la désignerait, et
+l'auteur perdrait sa propre étape à l'édition.
 
 > **Nommage — ne pas confondre :**
 > - **`AacConfig`** (`schema.ts`) = le bloc **DÉCLARÉ** dans `config.aac` (juste `{ formId }`).
@@ -590,10 +710,21 @@ src/modules/aac/
   hooks/useDeleteCommun.ts  # cascade EXPLICITE commun → actions → projet : le backend n'en fait
                             #   AUCUNE (`Element::deleteSimple` laisse les actions orphelines)
   hooks/useAacPermissions.ts
+  hooks/useCommunDetailController.ts # TOUTE la logique de la fiche → view-model (§3.4)
+  hooks/useAacDirectoryController.ts # idem pour l'annuaire
+  hooks/useCommunToc.ts     # sommaire à ancres + section active — OPT-IN, appelé par la vue
+  lib/communDetailContent.tsx    # iconFor / proseOf / extractGalleryImages (purs)
+  lib/directoryFilterActions.ts  # gestes de filtrage, partagés par toutes les dispositions
+  lib/communPath.ts         # LE chemin de la fiche d'un commun
+  components/pageDetail/variants/  # registry.ts (AAC_DETAIL_VARIANTS), CommunDetailDefault, conformité
+  components/directory/variants/   # items.ts (cartes/lignes/squelettes), shells.ts, coquille par défaut, conformité
+  variants/lazyVariants.ts  # les interfaces CODE-SPLITTÉES — chargé par routes.tsx (chunk d'entrée, §3.4)
+  variants/editorial/       # interface « editorial » (maquette projets.re) ; demo/ = contenu de démonstration
   permissions/              # types, defaults, calculators/aac.ts, register, index
   constants/queryKeys.ts    # AAC_QUERY_KEYS
   sections/AacDirectorySection.tsx, AacHighlightSection.tsx  # sections (export default, `import "../i18n"` en 1re ligne)
-  pages/AacPage.tsx, AacCommunDetailPage.tsx  # pages des routes
+  pages/AacPage.tsx, AacCommunDetailPage.tsx  # pages des routes (la fiche n'est qu'une COQUILLE :
+                                              #   gardes, chrome, SEO, overlays — §3.4)
   i18n.ts + i18n/{fr,en}.json
 ```
 
@@ -723,7 +854,7 @@ convention du repo, **plus une spécificité AAC** :
   est contributeur à l'édition (§3.4, §13.5).
 
 **Le balayage de l'annuaire est MÉMORISÉ.** Le chemin « filtre client » (`usage`, `usageSub`,
-`maturity`, et `q`/`tags` tant que la question n'est pas résolue — cf. §3.1) balaie jusqu'à
+`maturity`, `commune`, et `q`/`tags` tant que la question n'est pas résolue — cf. §3.1) balaie jusqu'à
 `AAC_SCAN_SIZE = 300` documents. Ce balayage vit désormais dans le cache sous sa propre clé :
 
 ```ts
@@ -873,6 +1004,17 @@ mentionne pour ces deux surfaces est périmée.
     filtre ne consulte plus du tout. Une clé **nue** reste tolérée (l'état historique) et se lit sous
     les catégories retenues, toutes si aucune ne l'est : l'union qui en résulte est la limite de
     cette forme, pas un choix.
+13. **Le projet d'un commun se lit sur `answer.project.id`, jamais sur `project.answer`.** C'est le
+    lien qu'écrivent Oceco, `generateproject` et l'association, et celui que lit le legacy (qui
+    retrouve la réponse d'un projet en interrogeant `answers` sur `project.id`). Le renvoi
+    `project.answer` n'est posé par `generateproject` que depuis septembre 2026 : il manque sur les
+    liens anciens. Les deux lectures doivent donc RECEVOIR `project` :
+    - **fiche** : `findanswered` (`api.answer`) le projette par défaut (`FindAnsweredByIdAction`).
+      Sans lui, le repli `buildResourceFromAnswer` est aveugle, et un commun absent de l'enveloppe
+      (visiteur anonyme, ou enveloppe lue sur un autre formulaire de l'hôte) n'a plus de projet ;
+    - **annuaire** : chaque ligne porte `project`, et le bloc `projects` (§13.3) donne nom et slug.
+      `parseAacAnswer` en fait `card.project`, affiché par `AacCommunProjectLink` : « Projet : nom »
+      vers `/profil/<slug>`, ou « En projet » sans lien quand le projet n'est pas résolu.
 
 ---
 
@@ -942,6 +1084,13 @@ npx tsc -b --noEmit
 **Filets automatiques** : le typage `SectionPropsMap ↔ LazySections` **casse le build** si l'union
 et le renderer désynchronisent ; `i18n-files.test.ts` casse sur toute divergence de clés fr↔en ;
 `skill-integrity.test.ts` casse si la table Modules du SKILL config-assistant dérive.
+
+**Interfaces (§3.4)** : `detail.conformance.test.tsx` et `directory.conformance.test.tsx`
+(paramétrés sur les registres) ; `useCommunDetailController.test.tsx` grave l'ORDRE des cinq gardes ;
+préflights `aac-variants` (clés posées ⇔ registres, jamais un slug) et `lazy-entry-facades`
+(chaque module `lazy` garde sa façade dans le manifest — **build requis** : relancer
+`npm run test:preflight` après `npm run build`). Non-régression d'un site existant : diff du HTML
+SSR avant/après, normalisé (état React Query déshydraté, hashes, ids `useId`, ordre des préchargements).
 
 ---
 
@@ -1047,7 +1196,7 @@ appelé). Vaut `0` si l'utilisateur n'est pas connecté.
 **Mode `countonly`** — `{ "count": { "<searchType[0]>": int } }`, sans `results`. ⚠️ Les blocs latéraux
 ci-dessous sont **tout de même présents** (vides) : `parsePropositionData` est appelé dans ce mode aussi.
 
-**Mode normal** — `results`, `count` optionnel, et dix blocs latéraux batch-résolus :
+**Mode normal** — `results`, `count` optionnel, et onze blocs latéraux batch-résolus :
 
 | Clé | Forme | Contenu |
 |---|---|---|
@@ -1061,6 +1210,7 @@ ci-dessous sont **tout de même présents** (vides) : `parsePropositionData` est
 | `allImages` | map | documents `subKey = aapStep1.image`, extensions image |
 | `allDocuments` | map | documents hors image, `doctype`\|`docType` = `file` |
 | `elements` | map | entités de contexte — `name`, `slug`, `collection` |
+| `projects` | map | projets liés aux réponses (par `project.id`) — `name`, `slug`, `profilThumbImageUrl` ; un projet supprimé en est absent |
 | `inputs` | map | `forms.inputs` des formulaires concernés — `step`, `inputs` |
 | `allNotSeenComments` | map `contextId → int` | nombre de commentaires non vus |
 

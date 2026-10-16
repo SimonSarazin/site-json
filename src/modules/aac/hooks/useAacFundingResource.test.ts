@@ -117,3 +117,22 @@ describe("useAacFundingResource — monte la réparation des orphelines, gardée
     expect(mocks.useCagnottePermissions).toHaveBeenCalledWith(null, { ownerIds: [] });
   });
 });
+
+describe("useAacFundingResource — projet lié d'un commun absent de l'enveloppe", () => {
+  const REPONSE = { id: "answer-1", project: { id: "proj-1" }, answers: { aapStep1: { titre: "Mon commun" } } };
+
+  it("le projet vient du document réponse (`project.id`)", () => {
+    const { result } = renderHook(() => useAacFundingResource("answer-1", { answer: REPONSE }));
+
+    expect(result.current.targetResource?.projectId).toBe("proj-1");
+    expect(mocks.useCommunProjectEntity).toHaveBeenCalledWith("proj-1");
+  });
+
+  it("le slug vient de l'entité projet quand l'enveloppe ne le porte pas", () => {
+    mocks.projectEntity = { id: "proj-1", serverData: { slug: "sportsPei" } };
+
+    const { result } = renderHook(() => useAacFundingResource("answer-1", { answer: REPONSE }));
+
+    expect(result.current.projectSlug).toBe("sportsPei");
+  });
+});
