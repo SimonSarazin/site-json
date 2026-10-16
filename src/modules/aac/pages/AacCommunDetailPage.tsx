@@ -394,7 +394,9 @@ export default function AacCommunDetailPage() {
 
     // La config compte aussi : tant qu'elle charge, la page rend le squelette et
     // aucune ancre n'existe encore — observer à ce moment n'observerait rien.
-    const isDataLoaded = answerQuery.isSuccess && formQuery.isSuccess && !isConfigLoading;
+    // Les DONNÉES, pas le succès de la dernière lecture : une relecture ratée garde la fiche
+    // affichée (plus bas), et le sommaire cessait alors de suivre la lecture (revue du 16/10).
+    const isDataLoaded = !!answerQuery.data && !!formQuery.data && !isConfigLoading;
 
     useEffect(() => {
         if (!isDataLoaded) return;
@@ -434,7 +436,10 @@ export default function AacCommunDetailPage() {
     // fiche se rendrait vidée de son financement et de sa prose, sans un mot.
     // Une erreur EXPLICITE plutôt qu'un « fail closed » silencieux — même
     // traitement que `formQuery.error`, avec un message qui nomme la cause.
-    if (configError) return <PageShell seo={seo}><ErrorCard title={String(t("page.error"))} description={String(t("page.configErrorMessage"))} /></PageShell>;
+    // Seulement SANS config, elle aussi : `useAacConfig` rend `config` ET `error` quand une
+    // relecture échoue, et la carte remplaçait la fiche — modale de discussion et message en
+    // cours compris (revue du 16/10).
+    if (configError && !config) return <PageShell seo={seo}><ErrorCard title={String(t("page.error"))} description={String(t("page.configErrorMessage"))} /></PageShell>;
     if (!answerQuery.data || !formQuery.data) return <PageShell seo={seo}><ErrorCard title={String(t("page.notFound"))} description={String(t("page.notFoundMessage"))} /></PageShell>;
 
     const answer = answerQuery.data;

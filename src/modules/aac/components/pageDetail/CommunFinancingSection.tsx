@@ -300,27 +300,29 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, renderMilesto
                 </div>
             ) : null}
             {isLoading ? <MilestoneCardsSkeleton /> : null}
-            {items.map((o: CagnotteFundableItem, i: number) => (
-                <FinancingMilestoneCard
-                    // Clé sur l'identité du palier : sur l'index, l'état déplié d'une
-                    // carte passait à sa voisine après une suppression.
-                    key={o.itemId}
-                    index={i}
-                    item={o}
-                    openEditMilestoneModal={ctrl.openEditMilestoneModal}
-                    onMilestoneClose={ctrl.handleCloseMilestone}
-                    onMilestoneRestore={ctrl.handleRestoreMilestone}
-                    onMilestoneDelete={ctrl.handleDeleteMilestone}
-                    permissions={ctrl.cagnottePerms}
-                    loadingIds={ctrl.loadingIds}
-                    discussion={milestoneThreads && renderMilestoneDiscussion?.({
-                        // La clé se lit dans le document : la liste affichée l'a perdue, et une
-                        // position ne la vaut que si les dépenses sont un vrai tableau.
-                        lineKey: resolveDepenseKey(ctrl.depensesDocument, o.depenseIndex) ?? String(o.depenseIndex),
-                        name: o.name,
-                    })}
-                />
-            ))}
+            {items.map((o: CagnotteFundableItem, i: number) => {
+                // La clé se lit dans le document : la liste affichée l'a perdue, et une position ne
+                // la vaut que si les dépenses sont un vrai tableau. Introuvable, pas de bouton :
+                // retomber sur la position inventait la clé que `depenseKey.ts` interdit, et un
+                // palier pouvait ouvrir le fil d'une AUTRE dépense (revue du 16/10).
+                const lineKey = milestoneThreads ? resolveDepenseKey(ctrl.depensesDocument, o.depenseIndex) : null;
+                return (
+                    <FinancingMilestoneCard
+                        // Clé sur l'identité du palier : sur l'index, l'état déplié d'une
+                        // carte passait à sa voisine après une suppression.
+                        key={o.itemId}
+                        index={i}
+                        item={o}
+                        openEditMilestoneModal={ctrl.openEditMilestoneModal}
+                        onMilestoneClose={ctrl.handleCloseMilestone}
+                        onMilestoneRestore={ctrl.handleRestoreMilestone}
+                        onMilestoneDelete={ctrl.handleDeleteMilestone}
+                        permissions={ctrl.cagnottePerms}
+                        loadingIds={ctrl.loadingIds}
+                        discussion={lineKey !== null && renderMilestoneDiscussion?.({ lineKey, name: o.name })}
+                    />
+                );
+            })}
         </div>
     );
 }

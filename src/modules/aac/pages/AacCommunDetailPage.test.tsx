@@ -334,9 +334,11 @@ vi.mock("../components/pageDetail/CommunCofinancersTable.tsx", () => ({
 vi.mock("../components/pageDetail/CommunProse.tsx", () => ({ CommunProse: () => null }));
 vi.mock("../components/pageDetail/CommunContentSections.tsx", () => ({ GallerySection: () => null }));
 
-// jsdom n'a pas d'IntersectionObserver ; la page en crée un pour le sommaire.
+// jsdom n'a pas d'IntersectionObserver ; la page en crée un pour le sommaire. On compte ce qu'il
+// observe : c'est ce qui dit que le sommaire suit la lecture.
+const sommaire = vi.hoisted(() => ({ observes: 0 }));
 class FakeIntersectionObserver {
-  observe() {}
+  observe() { sommaire.observes += 1; }
   unobserve() {}
   disconnect() {}
 }
@@ -364,6 +366,7 @@ beforeEach(() => {
   detailSections = [];
   lectureReponse = { error: null, sansDonnees: false };
   lectureAppel = { error: null, sansDonnees: false };
+  sommaire.observes = 0;
   refetchAnswer.mockClear();
   invalidateQueries.mockClear();
 });
@@ -495,6 +498,30 @@ describe("AacCommunDetailPage — une lecture en erreur", () => {
     expect(discussionControlMounts).toBeGreaterThan(avant);
     expect(screen.queryByText("page.error")).toBeNull();
     expect(screen.queryByText("page.errorMessage")).toBeNull();
+  });
+
+  /**
+   * La CONFIG de l'appel aussi (revue du 16/10) : `useAacConfig` rend `config` ET `error` quand une
+   * relecture échoue, et `if (configError)` remplaçait encore toute la fiche — modale de discussion
+   * démontée, message en cours perdu.
+   */
+  it("relecture de la config ratée, config déjà là : la fiche RESTE, bouton de discussion compris", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    configError = new Error("réseau");
+    const avant = discussionControlMounts;
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("hero")).toBeTruthy();
+    expect(discussionControlMounts).toBeGreaterThan(avant);
+    expect(screen.queryByText("page.configErrorMessage")).toBeNull();
+    consoleError.mockRestore();
+  });
+
+  it("une relecture ratée ne coupe pas le suivi du sommaire : la fiche est là, ses sections sont observées", () => {
+    detailSections = [CONTEXTE_SECTION];
+    lectureReponse = { error: new Error("réseau"), sansDonnees: false };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("hero")).toBeTruthy();
+    expect(sommaire.observes).toBeGreaterThan(0);
   });
 
   it.each([

@@ -198,9 +198,20 @@ describe("CommunFinancingSection — le bouton de discussion d'un palier", () =>
     expect(demandes()).toEqual([{ lineKey: "0", name: "Local" }, { lineKey: "1", name: "Matériel" }]);
   });
 
-  it("document pas encore là : la position sert de clé, faute de mieux", () => {
+  /**
+   * Une position n'est pas une clé (revue du 16/10) : retomber sur elle inventait la clé que
+   * `depenseKey.ts` interdit — et un palier pouvait ouvrir le fil d'une AUTRE dépense. Sans clé
+   * lisible au document, pas de bouton.
+   */
+  it("document pas encore là : aucun bouton — la position ne vaut pas clé", () => {
     monter({ ctrl: makeCtrl() });
-    expect(demandes().map(palier => palier.lineKey)).toEqual(["0", "1"]);
+    expect(demandes()).toEqual([]);
+  });
+
+  it("un palier dont la position manque au document n'a pas de bouton ; les autres, si", () => {
+    depenses = [{ poste: "Local", priceInt: 100 }, { poste: "Matériel", priceInt: 200 }, { poste: "Transport", priceInt: 50 }];
+    monter({ ctrl: avecDocument([{ poste: "Local" }, { poste: "Matériel" }]) });
+    expect(demandes()).toEqual([{ lineKey: "0", name: "Local" }, { lineKey: "1", name: "Matériel" }]);
   });
 
   it("la clé se lit dans le DOCUMENT : des dépenses en objet à clés creuses ne se numérotent pas par position", () => {
