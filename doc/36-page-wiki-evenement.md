@@ -10,7 +10,7 @@ Visible pour qui peut éditer l'événement (`canEditProfile`). Absent si le ser
 |---|---|
 | `WIKI_API_URL` | API du wiki, ex. `https://movilab.org/api.php`. Sans elle, la fonction est désactivée (503, bouton masqué). |
 | `WIKI_PAGE_BASE_URL` | Préfixe des URL de page. Défaut : `<origine de WIKI_API_URL>/index.php?title=` |
-| `WIKI_TEMPLATE` | Modèle à utiliser en priorité. Sans elle, `Evenement` est utilisé s'il existe sur le wiki, sinon `Event`. |
+| `WIKI_TEMPLATE` | Nom du modèle, imposé tel quel (ex. `Event`). Sans elle, `Evenement` est utilisé s'il existe sur le wiki, sinon `Event`. |
 | `WIKI_BOT_USER` | Identifiant du bot password (`Compte@NomDuBot`) |
 | `WIKI_BOT_PASSWORD` | Mot de passe du bot password |
 

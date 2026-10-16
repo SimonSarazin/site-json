@@ -14,7 +14,7 @@
  * ── CONFIGURATION (serveur uniquement, jamais dans le dépôt) ─────────────────
  *   WIKI_API_URL        ex. https://movilab.org/api.php
  *   WIKI_PAGE_BASE_URL  ex. https://movilab.org/index.php?title=   (défaut : dérivé de WIKI_API_URL)
- *   WIKI_TEMPLATE       modèle à utiliser en priorité (défaut : `Evenement`, puis `Event` s'il n'existe pas)
+ *   WIKI_TEMPLATE       nom du modèle, imposé (défaut : `Evenement`, puis `Event` s'il n'existe pas)
  *   WIKI_BOT_USER       identifiant du bot password (Nom@NomDuBot)
  *   WIKI_BOT_PASSWORD   mot de passe du bot password
  * Sans `WIKI_API_URL`, la fonction est absente : 503.
@@ -209,7 +209,9 @@ async function sessionWiki(c) {
     },
     // Premier modèle qui existe sur CE wiki : les configurations diffèrent d'un wiki à l'autre.
     choisirModele: async () => {
-      const candidats = [process.env.WIKI_TEMPLATE, "Evenement", "Event"].filter(Boolean);
+      // Imposé par la configuration : aucun repli, le wiki cible est connu.
+      if (process.env.WIKI_TEMPLATE) return process.env.WIKI_TEMPLATE.replace(/^(Modèle|Template):/i, "").trim();
+      const candidats = ["Evenement", "Event"];
       const r = await appel({ action: "query", titles: candidats.map((m) => `Modèle:${m}`).join("|") });
       const existants = new Set((r.query?.pages || []).filter((p) => !p.missing && !p.invalid).map((p) => p.title));
       return candidats.find((m) => existants.has(`Modèle:${m}`)) || candidats[0];
