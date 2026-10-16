@@ -87,6 +87,20 @@ function sansLien(description, url) {
     .trim();
 }
 
+/**
+ * Met à jour une page existante : seuls l'appel du modèle et la section « Description » sont
+ * régénérés. Le compte-rendu et tout ce que les participants ont écrit sur le wiki sont conservés.
+ */
+export function fusionner(existant, neuf) {
+  const modele = /^\{\{Evenement[\s\S]*?\n\}\}/;
+  const description = /== Description ==\n[\s\S]*?(?=\n== |$)/;
+  let texte = existant.replace(modele, () => neuf.match(modele)[0]);
+  const section = neuf.match(description)?.[0];
+  if (description.test(texte)) texte = texte.replace(description, () => section ?? "");
+  else if (section) texte = texte.replace(/\n== Compte-rendu ==/, () => `\n${section}\n\n== Compte-rendu ==`);
+  return texte;
+}
+
 export function wikitexte(evt, { url, fiche, image }) {
   const organisateurs = Object.values(evt.organizer || {}).map((o) => o?.name).filter(Boolean).join(",");
   const tags = Array.isArray(evt.tags) ? evt.tags.join(",") : "";
@@ -98,7 +112,7 @@ export function wikitexte(evt, { url, fiche, image }) {
   const resume = String(evt.shortDescription || "").trim() || complete.replace(/\s+/g, " ");
 
   return [
-    "{{Evenement et CR",
+    "{{Evenement",
     `|Main_Picture=${param(image)}`,
     `|name=${param(evt.name)}`,
     `|type=${param(TYPES[evt.type] || TYPES.others)}`,
@@ -168,6 +182,12 @@ async function sessionWiki(c) {
       const r = await appel({ action: "upload", filename: nom, file: blob, ignorewarnings: "1", comment: "Image de l'événement, depuis tiers-lieux.org", token: csrf }, "multipart");
       return r.upload?.result === "Success" || r.error?.code === "fileexists-no-change" ? r.upload?.filename || nom : null;
     },
+    lire: async (title) => {
+      const r = await appel({ action: "query", prop: "revisions", rvprop: "content", rvslots: "main", titles: title });
+      const page = r.query?.pages?.[0];
+      return page?.missing ? null : page?.revisions?.[0]?.slots?.main?.content ?? null;
+    },
+    modifier: (title, text) => appel({ action: "edit", title, text, nocreate: "1", summary: "Mise à jour depuis tiers-lieux.org", token: csrf }, true),
     creer: (title, text) => appel({ action: "edit", title, text, createonly: "1", summary: "Création depuis tiers-lieux.org", token: csrf }, true),
   };
 }
@@ -247,11 +267,13 @@ export async function wikiEventCreateHandler(req, res) {
         // La page se crée sans image plutôt que de ne pas se créer.
       }
     }
-    const r = await wiki.creer(titre, wikitexte(evt, { url, fiche: fiche(req, evt), image }));
-    if (r.error && r.error.code !== "articleexists") {
-      return res.status(502).json({ msg: "creation refusee par le wiki", code: r.error.code });
+    const neuf = wikitexte(evt, { url, fiche: fiche(req, evt), image });
+    const existant = await wiki.lire(titre);
+    const r = existant === null ? await wiki.creer(titre, neuf) : await wiki.modifier(titre, fusionner(existant, neuf));
+    if (r.error) {
+      return res.status(502).json({ msg: "ecriture refusee par le wiki", code: r.error.code });
     }
-    return res.json({ title: titre, url, existed: r.error?.code === "articleexists" });
+    return res.json({ title: titre, url, updated: existant !== null });
   } catch {
     return res.status(502).json({ msg: "wiki injoignable ou connexion refusee" });
   }

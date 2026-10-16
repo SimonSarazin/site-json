@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 // @ts-expect-error — module JS sans types, c'est le patron du dossier `server/`
-import { titrePage, wikitexte, wikiEventCreateHandler } from "../api/wiki-event.js";
+import { titrePage, wikitexte, fusionner, wikiEventCreateHandler } from "../api/wiki-event.js";
 
 const evt = {
   name: "Chantier participatif",
@@ -24,6 +24,19 @@ describe("page wiki d'un événement", () => {
     expect(texte).not.toContain("Documentation de la rencontre");
     expect(texte).toContain("== Description ==\n\nTexte &#124; piège &#123;&#123;x&#125;&#125;");
     expect(texte).toContain("|from=La Plume à Loup");
+  });
+});
+
+describe("mise à jour", () => {
+  it("régénère le modèle et la description, garde le compte-rendu écrit sur le wiki", () => {
+    const ancien = wikitexte(evt, { url: "U", fiche: "F", image: "" }).replace("== Compte-rendu ==\n", "== Compte-rendu ==\nNotes des participants\n");
+    const modifie = { ...evt, name: "Nouveau nom", description: "Nouvelle description\n\nDocumentation de la rencontre : U" };
+    const texte = fusionner(ancien, wikitexte(modifie, { url: "U", fiche: "F", image: "Evenement_x.jpg" }));
+    expect(texte).toContain("|Main_Picture=Evenement_x.jpg");
+    expect(texte).toContain("|name=Nouveau nom");
+    expect(texte).toContain("== Description ==\n\nNouvelle description");
+    expect(texte).toContain("Notes des participants");
+    expect(texte.match(/== Description ==/g)).toHaveLength(1);
   });
 });
 

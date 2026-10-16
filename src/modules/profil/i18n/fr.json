@@ -143,7 +143,7 @@
       "confirm": "Ne plus participer"
     },
     "createWikiPage": "Page wiki",
-    "openWikiPage": "Ouvrir la page wiki",
+    "openWikiPage": "Mettre à jour la page wiki",
     "deleteEvent": "Supprimer",
     "deleteEventDialog": {
       "title": "Supprimer cet événement ?",
