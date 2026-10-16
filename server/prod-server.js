@@ -9,6 +9,7 @@ import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
 import { findSiteBySlug, knownSlugs } from "./utils/sites.js";
 import { registerSeoRoutes } from "./lib/sitemap.js";
 import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
+import { wikiEventPlanHandler, wikiEventCreateHandler } from "./api/wiki-event.js";
 import { helloassoCallbackRedirect } from "./api/helloasso-callback.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -145,6 +146,9 @@ app.use(express.json());
 app.all("/api/realtime/push/*splat", realtimePushHandler);
 // Retour HelloAsso de l'ancienne route : redirigé vers le backend (temporaire).
 app.get("/api/helloasso/callback", helloassoCallbackRedirect);
+// Page wiki d'un événement (compte robot MediaWiki, voir api/wiki-event.js).
+app.get("/api/wiki/event/:id/plan", wikiEventPlanHandler);
+app.post("/api/wiki/event/:id", wikiEventCreateHandler);
 
 // Flux RSS des articles blog (SEO/distribution). costumSlug : ?costum= > config.blog.feedCostumSlug > env.
 app.get("/blog/feed.xml", async (req, res) => {

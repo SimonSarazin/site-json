@@ -14,6 +14,7 @@ import { ProfileImageUpload } from "../../profile-edit/ProfileImageUpload";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
 import { DeleteEntityButton } from "../../action-buttons/DeleteEntityButton";
+import { WikiPageButton } from "../../action-buttons/WikiPageButton";
 import { isUser } from "@/lib/getTypedEntity";
 import type { ProfileHeaderSection } from "../../../schema";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -190,6 +191,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
 
                 {/* Suppression définitive (événements) — même droit que l'édition, confirmation obligatoire. */}
                 <DeleteEntityButton entity={entity} compactLabel />
+                <WikiPageButton entity={entity} compactLabel />
 
 
                 {/* Dropdown pour créer des entités */}

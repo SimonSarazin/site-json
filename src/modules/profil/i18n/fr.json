@@ -142,6 +142,8 @@
       "cancel": "Annuler",
       "confirm": "Ne plus participer"
     },
+    "createWikiPage": "Page wiki",
+    "openWikiPage": "Ouvrir la page wiki",
     "deleteEvent": "Supprimer",
     "deleteEventDialog": {
       "title": "Supprimer cet événement ?",
@@ -819,7 +821,9 @@
     },
     "element": {
       "deleteEventSuccess": "Événement supprimé",
-      "deleteEventError": "Impossible de supprimer l'événement"
+      "deleteEventError": "Impossible de supprimer l'événement",
+      "wikiPageSuccess": "Page wiki créée",
+      "wikiPageError": "Impossible de créer la page wiki"
     },
     "gallery": {
       "addSuccess": "Image ajoutée à la galerie",
