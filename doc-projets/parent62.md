@@ -4588,6 +4588,24 @@ pas un oubli.
 | `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
 | `tests/preflight/` (hors `bundle-size.test.ts`) | ✅ 855/856 |
 
+### 9octoquadragies.3 Couleur dédiée du bouton « En savoir plus » de « Zoom sur le réseau »
+
+Le bouton par carte (« En savoir plus », `TeaserCard`) partageait `accentColor` avec le badge de titre
+du bandeau — même couleur forcément. Nouvelles props `itemAccentColor`/`itemAccentTextColor`
+(`ArticleTeaserSectionSchema`, `src/modules/blog/schema.ts`), repli sur `accentColor`/`accentTextColor`
+si absentes (comportement historique inchangé partout où elles ne sont pas posées).
+`itemAccentColor:"#f1887b"` (corail) sur `zoom-reseau` — le badge de titre reste turquoise.
+
+⚠️ **Contraste non vérifié par défaut** : `itemAccentTextColor` n'a pas été fourni, l'encre retombe donc
+sur le blanc par défaut (`accentStyle`) — **1,93:1 sur `#f1887b`**, sous le seuil AA (4,5:1 texte normal).
+Le marine (`--p62-marine`) y tiendrait 4,47:1 — toujours sous le seuil mais plus proche. À trancher si
+ce point compte pour cette page.
+
+| Gate | Résultat |
+|---|---|
+| `typecheck` / `lint` | ✅ |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)

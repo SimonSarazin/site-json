@@ -723,6 +723,7 @@
             "background": "var(--p62-marine)",
             "accentColor": "var(--p62-turquoise)",
             "accentTextColor": "#ffffff",
+            "itemAccentColor": "#f1887b",
             "headlineStyle": "badge"
           }
         }

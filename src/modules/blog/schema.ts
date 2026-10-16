@@ -149,6 +149,13 @@ export const ArticleTeaserSectionSchema = z.object({
     /** Encre posée SUR `accentColor` (pastille de titre, boutons). Défaut blanc — à fournir dès que l'accent
      *  est clair : blanc sur la turquoise de parent62 ne tient que 1,93:1, contre 5,68:1 pour son marine. */
     accentTextColor: z.string().optional(),
+    /** Couleur de fond du bouton « En savoir plus » de CHAQUE carte — sans valeur, repli sur `accentColor`
+     *  (comportement historique, même couleur que le badge de titre). Permet de différencier le repère de
+     *  carte du repère de bandeau sans toucher à `accentColor`. */
+    itemAccentColor: z.string().optional(),
+    /** Encre du bouton « En savoir plus », posée sur `itemAccentColor` (ou `accentColor` en repli). Même
+     *  règle de contraste que `accentTextColor`. */
+    itemAccentTextColor: z.string().optional(),
     /** Pastille de titre : `badge` (défaut, étiquette inclinée) ou `pill` — la même en arrondi droit, pour
      *  une page dont toutes les bandes portent le même repère. */
     headlineStyle: z.enum(["badge", "pill"]).optional(),

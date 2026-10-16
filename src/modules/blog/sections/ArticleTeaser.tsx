@@ -117,8 +117,8 @@ function Teaser({ props }: { props: ArticleTeaserSectionProps }) {
           article={a}
           href={articleHref(a, BASE)}
           ctaLabel={ctaLabel}
-          accentColor={props.accentColor}
-          accentTextColor={props.accentTextColor}
+          accentColor={props.itemAccentColor ?? props.accentColor}
+          accentTextColor={props.itemAccentTextColor ?? props.accentTextColor}
         />
       ))}
     </div>
