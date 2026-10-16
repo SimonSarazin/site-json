@@ -114,18 +114,37 @@ export function wikitexte(evt, { url, fiche, image, modele = "Evenement" }) {
   const complete = sansLien(evt.description, url);
   const resume = String(evt.shortDescription || "").trim() || complete.replace(/\s+/g, " ");
 
+  // Les wikis n'ont pas les mêmes paramètres : `Event` (La Fabrique des Mobilités) a `Location`,
+  // `endDate` et `contact`, mais ni `from`, `urlpad` ni `complement`.
+  const parametres = /^event$/i.test(modele)
+    ? [
+        ["Main_Picture", image],
+        ["Lang", "Français"],
+        ["name", evt.name],
+        ["type", TYPES[evt.type] || TYPES.others],
+        ["description", resume],
+        ["Tags", tags],
+        ["Location", lieu],
+        ["startDate", debut],
+        ["endDate", fin],
+        ["contact", organisateurs],
+      ]
+    : [
+        ["Main_Picture", image],
+        ["name", evt.name],
+        ["type", TYPES[evt.type] || TYPES.others],
+        ["description", resume],
+        ["Tags", tags],
+        ["location", lieu],
+        ["from", organisateurs],
+        ["startDate", debut],
+        ["urlpad", ""],
+        ["complement", complement],
+      ];
+
   return [
     `{{${modele}`,
-    `|Main_Picture=${param(image)}`,
-    `|name=${param(evt.name)}`,
-    `|type=${param(TYPES[evt.type] || TYPES.others)}`,
-    `|description=${param(resume)}`,
-    `|Tags=${param(tags)}`,
-    `|location=${param(lieu)}`,
-    `|from=${param(organisateurs)}`,
-    `|startDate=${param(debut)}`,
-    `|urlpad=`,
-    `|complement=${param(complement)}`,
+    ...parametres.map(([cle, valeur]) => `|${cle}=${param(valeur)}`),
     "}}",
     "",
     ...(complete ? ["== Description ==", "", corps(complete).replace(/\n{2,}/g, "\n\n"), ""] : []),

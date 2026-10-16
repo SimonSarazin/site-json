@@ -61,6 +61,17 @@ describe("nom de modèle variable", () => {
   });
 });
 
+describe("paramètres selon le modèle", () => {
+  it("Event : Location, endDate et contact, sans from ni urlpad", () => {
+    const t = wikitexte(evt, { url: "U", fiche: "F", image: "i.jpg", modele: "Event" });
+    expect(t).toContain("|Lang=Français");
+    expect(t).toContain("|endDate=2026-11-21");
+    expect(t).toContain("|contact=La Plume à Loup");
+    expect(t).toContain("|Location=");
+    expect(t).not.toMatch(/\|(from|urlpad|complement)=/);
+  });
+});
+
 describe("création : garde-fous", () => {
   const env = { ...process.env };
   afterEach(() => {

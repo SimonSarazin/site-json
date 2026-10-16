@@ -34,3 +34,16 @@ C'est l'étape 2 qui sert de preuve de droit : le compte robot n'écrit jamais s
 Si l'étape 3 échoue, le lien reste dans la description. Un nouvel essai ne le duplique pas.
 
 Code : `server/api/wiki-event.js`, `src/modules/profil/actions/mutations/wikiPage.ts`, `src/modules/profil/components/action-buttons/WikiPageButton.tsx`.
+
+## Modèles supportés
+
+Les paramètres suivent le modèle choisi :
+
+- `Evenement` (movilab.org) : `Main_Picture, name, type, description, Tags, location, from, startDate, urlpad, complement`.
+- `Event` (ex. wiki.lafabriquedesmobilites.fr) : `Main_Picture, Lang, name, type, description, Tags, Location, startDate, endDate, contact` (`contact` reçoit l'organisateur).
+
+Un autre modèle est traité comme `Evenement`. Pour un nouveau wiki, ajouter son profil de paramètres dans `wikitexte`.
+
+## Protection anti-bot
+
+Certains wikis (La Fabrique des Mobilités) placent leur API derrière une protection anti-robot qui répond `402`. Le serveur de tiers-lieux.org peut alors être refusé : il faut demander à l'administrateur du wiki d'autoriser l'IP du serveur ou le compte du bot.
