@@ -74,6 +74,11 @@ function param(v) {
   return String(v ?? "").replace(/\|/g, "&#124;").replace(/\{\{/g, "&#123;&#123;").replace(/\}\}/g, "&#125;&#125;").trim();
 }
 
+/** Corps de page : le texte vient d'utilisateurs, il ne doit pas pouvoir appeler un modèle ni du HTML. */
+function corps(v) {
+  return String(v).replace(/[<>{}[\]|]/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 function sansLien(description, url) {
   return String(description || "")
     .split("\n")
@@ -89,14 +94,15 @@ export function wikitexte(evt, { url, fiche, image }) {
   const fin = jour(evt.endDate, evt.timeZone);
   const complement = fin && fin !== debut ? `Du ${debut} au ${fin}` : "";
   const lieu = evt.address?.name || evt.address?.addressLocality || "";
-  const description = sansLien(evt.description || evt.shortDescription, url).replace(/\n+/g, " ");
+  const complete = sansLien(evt.description, url);
+  const resume = String(evt.shortDescription || "").trim() || complete.replace(/\s+/g, " ");
 
   return [
     "{{Evenement et CR",
     `|Main_Picture=${param(image)}`,
     `|name=${param(evt.name)}`,
     `|type=${param(TYPES[evt.type] || TYPES.others)}`,
-    `|description=${param(description)}`,
+    `|description=${param(resume)}`,
     `|Tags=${param(tags)}`,
     `|location=${param(lieu)}`,
     `|from=${param(organisateurs)}`,
@@ -105,6 +111,7 @@ export function wikitexte(evt, { url, fiche, image }) {
     `|complement=${param(complement)}`,
     "}}",
     "",
+    ...(complete ? ["== Description ==", "", corps(complete).replace(/\n{2,}/g, "\n\n"), ""] : []),
     "== Compte-rendu ==",
     "",
     "== Décisions et actions ==",
@@ -169,12 +176,13 @@ const IMAGE_MAX = 9 * 1024 * 1024;
 const EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp" };
 
 /** Image de l'événement, téléchargée depuis le backend ; null si absente ou inutilisable. */
-async function lireImage(evt, id) {
+async function lireImage(evt, id, hotes = []) {
   const chemin = evt.profilImageUrl || evt.profilMediumImageUrl;
   if (!chemin) return null;
   try {
     const url = new URL(chemin, `${backend()}/`);
-    if (url.origin !== new URL(backend()).origin) return null;
+    const autorises = [new URL(backend()).origin, ...hotes];
+    if (!autorises.includes(url.origin)) return null;
     const r = await fetch(url, { signal: AbortSignal.timeout(DELAI_MS) });
     const type = (r.headers.get("content-type") || "").split(";")[0].trim();
     const ext = EXTENSIONS[type];
@@ -231,7 +239,7 @@ export async function wikiEventCreateHandler(req, res) {
   try {
     const wiki = await sessionWiki(c);
     let image = "";
-    const img = await lireImage(evt, req.params.id);
+    const img = await lireImage(evt, req.params.id, [`${req.protocol}://${req.get("host")}`]);
     if (img) {
       try {
         image = (await wiki.televerser(img.nom, img.blob)) || "";

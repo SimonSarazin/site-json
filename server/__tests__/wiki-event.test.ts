@@ -22,6 +22,7 @@ describe("page wiki d'un événement", () => {
     const texte = wikitexte(evt, { url: "U", fiche: "F" });
     expect(texte).toContain("|description=Texte &#124; piège &#123;&#123;x&#125;&#125;\n");
     expect(texte).not.toContain("Documentation de la rencontre");
+    expect(texte).toContain("== Description ==\n\nTexte &#124; piège &#123;&#123;x&#125;&#125;");
     expect(texte).toContain("|from=La Plume à Loup");
   });
 });
