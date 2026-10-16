@@ -123,6 +123,53 @@ describe("CommunFinancingSection — un palier clos est marqué comme tel (M17)"
   });
 });
 
+describe("CommunFinancingSection — rendu `list` (interface editorial)", () => {
+  const PAYE = { logs: [{ amount: 300, confirmation: "validated" }] };
+
+  it("une ligne par dépense ; le clic révèle l'historique de ses financements", () => {
+    depenses = [
+      { poste: "Local", priceInt: 1000, financer: [{ id: "r1", name: "Région", amount: 300, payment: PAYE }] },
+      { poste: "Site web", priceInt: 250 },
+    ];
+    renderSection({ layout: "list" });
+
+    const local = screen.getByRole("button", { name: /Local/ });
+    expect(local.textContent).toMatch(/1\D?000/);
+    expect(local.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByText("Région")).toBeNull();
+
+    fireEvent.click(local);
+
+    expect(local.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByText("Région")).toBeTruthy();
+    expect(screen.getByText("detail.objectives.paid")).toBeTruthy();
+  });
+
+  it("sans financement, le panneau le dit", () => {
+    depenses = [{ poste: "Site web", priceInt: 250 }];
+    renderSection({ layout: "list" });
+
+    fireEvent.click(screen.getByRole("button", { name: /Site web/ }));
+
+    expect(screen.getByText("detail.objectives.noFundingYet")).toBeTruthy();
+  });
+
+  it("badge « clos » sur la seule dépense close, exclue du total", () => {
+    depenses = [
+      { poste: "Ouvert", priceInt: 100 },
+      { poste: "Autre", priceInt: 250 },
+      { poste: "Clos", priceInt: 900, include: false },
+    ];
+    renderSection({ layout: "list" });
+
+    const badges = screen.getAllByText("detail.objectives.closedBadge");
+    expect(badges).toHaveLength(1);
+    expect(badges[0].closest("button")?.textContent).toContain("Clos");
+    const total = screen.getByText("detail.financing.expensesTotal").closest("p");
+    expect(total?.textContent).toMatch(/350/);
+  });
+});
+
 describe("CommunFinancingSection — description du palier", () => {
   const toggleOf = (title: string) => screen.getByText(title).closest("button") as HTMLButtonElement;
   const panelOf = (title: string) =>

@@ -473,7 +473,7 @@ Les schémas de filtres (`FilterGroupSchema`, `FilterGroupsSchema`, `FiltersByAn
 
 Les filtres `scopeList` chargent les zones géographiques via `useSearchZoneQuery`. Les `filtersByAnswers` chargent les options depuis les réponses CoForm via `useFiltersByAnswersQuery`. Les `filtersByPath` chargent les options via `useFiltersByPathQuery` (`coformFilterByPath`). Les `entityList` peuplent leurs options dynamiquement via `useFilterEntitiesQuery`.
 
-**`filterTarget` — sur quel document porte la sélection** (clé des groupes `filtersByAnswers` **et** `filtersByPath`, `schema.ts:125` / `schema.ts:158`) : `"linkedElements"` (défaut historique) filtre les éléments **LIÉS** aux réponses — `_id: {$in: orgaNameArray}`, le cas `/lieux` de l'exemple ci-dessus ; `"answers"` filtre les **RÉPONSES elles-mêmes**, par un prédicat sur le chemin déclaré (`path` / `thematicPath`), pour une liste sœur en `baseParams.defaultTypes: ["answers"]` (`/creneaux` de `maison-sport-sante-la-tampon`) :
+**`filterTarget` — sur quel document porte la sélection** (clé des groupes `filtersByAnswers` **et** `filtersByPath`, `schema.ts:125` / `schema.ts:158`) : `"linkedElements"` (défaut historique) filtre les éléments **LIÉS** aux réponses — `_id: {$in: orgaNameArray}`, le cas `/lieux` de l'exemple ci-dessus ; `"answers"` filtre les **RÉPONSES elles-mêmes**, par un prédicat sur le chemin déclaré (`path` / `thematicPath`), pour une liste sœur en `baseParams.defaultTypes: ["answers"]` (`/creneaux` de `maison-sport-sante-la-tampon`) ; `"parentId"` filtre des documents **RATTACHÉS** aux éléments liés — `parentId: {$in: orgaNameArray}` (facette thématique de `coform-resource-directory`, ressources rattachées à leur lieu porteur) :
 
 ```json
 "filtersByAnswers": {
@@ -602,11 +602,11 @@ tient l'état `activeParent` et le distribue aux cartes via
 au-dessus de la grille le retire. La facette « type » (client) s'applique par-dessus.
 
 **Facettes optionnelles** (ordre d'affichage : type, thématique, capacité, zone, prix) :
-- **`thematicFilter`** — `filtersByPath` du panneau : chaque réseau thématique porte la liste de ses
-  lieux membres ; la sélection (`filters._id.$in`) n'a pas de sens sur une réponse, la section la
-  renvoie en **`filters.parentId`** → filtre **CÔTÉ SERVEUR** ; croisée avec le lieu cliqué sur une
-  carte (`parentIdsFilter`). Réseaux cochés lus dans `searchByFields` (`thematicParentIds`) : un
-  réseau sans lieu membre y garde son entrée `_id: []`, que `searchByFieldsToQuery` sauterait. Lieu
+- **`thematicFilter`** — `filtersByPath` du panneau en `filterTarget: "parentId"` : chaque réseau
+  thématique porte la liste de ses lieux membres, posée en **`parentId`** → filtre **CÔTÉ SERVEUR** ;
+  croisée avec le lieu cliqué sur une carte (`parentIdsFilter`). Réseaux cochés lus dans
+  `searchByFields` (`thematicParentIds`, entrées `parentId` — champ propre à cette cible) : un
+  réseau sans lieu membre y garde son entrée `parentId: []`, que `searchByFieldsToQuery` sauterait. Lieu
   cliqué hors des réseaux cochés, ou réseau sans membre → **aucune requête** et liste vide : un
   `parentId.$in` vide est IGNORÉ par le backend (`$parentToFind != null`, et `[] != null` est faux
   en PHP), qui rendrait tout l'annuaire ;
@@ -617,7 +617,10 @@ au-dessus de la grille le retire. La facette « type » (client) s'applique par-
   exclue dès qu'une tranche est cochée ;
 - **`regionFilter`** — groupe `scopeList` (zones chargées par `FiltersSection`) ; la sélection
   (`locality`) n'est PAS envoyée (une réponse n'a pas d'adresse) : filtre **CÔTÉ CLIENT** sur
-  `address.level*` du lieu porteur. Les lieux porteurs sont donc lus pour TOUTES les ressources
+  `address.level*` du lieu porteur — l'id coché est cherché parmi TOUTES les zones de l'adresse,
+  quel qu'en soit le niveau (dans les DOM, une même zone sert de pays, de région et de département).
+  Si les lieux porteurs n'ont pas pu être lus, la liste affiche une erreur plutôt qu'un « Aucun
+  résultat » faux. Les lieux porteurs sont donc lus pour TOUTES les ressources
   chargées, pas seulement celles affichées.
 
 Groupes ouverts à l'arrivée : les deux premiers groupes RÉELLEMENT déclarés, dans cet ordre
@@ -892,6 +895,8 @@ Logique de mapping des query params :
   (`lib/answerFilterClause.ts:89`), **source unique partagée avec le clic** de `FiltersSection` :
   - groupe sans `filterTarget` ou `filterTarget: "linkedElements"` → `{ field: "_id", value: orgaNameArray }`
     (comportement historique, listes d'éléments liés type `/lieux`) ;
+  - groupe `filterTarget: "parentId"` → `{ field: "parentId", value: orgaNameArray }` (documents
+    rattachés aux éléments liés — annuaire des ressources) ;
   - groupe `filterTarget: "answers"` avec un `path`/`thematicPath` → `{ field: "answers.<path>",
     type: "answerPath", value: [libellé] }` (cf. [§answerFilterClause](#answerfilterclause--filtrer-une-liste-danswers-filtertarget)).
 

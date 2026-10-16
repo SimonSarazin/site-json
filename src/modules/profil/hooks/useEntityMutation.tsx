@@ -22,6 +22,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { isCostumHostAdmin } from "@/lib/permissions";
 import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
 import { costumSlugOf } from "@/lib/costumLists";
+import { getCostumForceLive } from "@/lib/constant/common";
 import { useNavigate } from "react-router";
 import { buildParentReference, buildOrganizerReference, logCocolightError } from "./mutationUtils";
 import { submitEntityEdit, type EditableEntity } from "./submitEntityEdit";
@@ -134,13 +135,17 @@ export interface EntityMutationSpec {
  * d'ADMINISTRATION et la provenance (`source.key`) continue de gouverner le schéma — comportement
  * voulu pour `ensureCostumScope` (import/export/validation), PAS ici.
  *
- * `setCostumScope` est SYNCHRONE : il ne lit que le cache live de la lib (TTL 5 min) ou, hors
- * FORCE_LIVE, le bundle. Rien ne garantit ce cache au moment d'éditer — `api.me()` ne charge pas le
- * costum de sa provenance (contrairement à `get()`), et un profil ouvert depuis plus de 5 min l'a laissé
- * expirer. La lib retombe alors sur un contexte NU et l'épingle FERME les champs costum (`[DraftProxy]
- * Le champ "typepro" n'est pas autorisé.` sur le formulaire citoyen SSBE). D'où `loadCostumScope`
- * d'abord (chargement live, dédupliqué par la lib dans le TTL), puis `setCostumScope` qui épingle depuis
- * ce cache frais en gardant la variante du sous-type de l'entité.
+ * Costum LIVE (`VITE_COSTUM_FORCE_LIVE`) : la lib ignore ses schémas bundlés et ne résout un costum
+ * que depuis son cache live (TTL 5 min). Rien ne garantit ce cache au moment d'éditer : `get()` ne
+ * précharge que le costum de la PROVENANCE de l'entité (`source.key` — sur un annuaire, la fiche vient
+ * d'ailleurs : un lieu de tiers-lieux.org a `source.key: "laRosee"`, `"franceTierslieux"`…), `api.me()`
+ * ne charge rien, et un profil ouvert depuis plus de 5 min l'a laissé expirer. `setCostumScope` épingle
+ * alors un contexte NU, sans aucun champ, et tout champ costum est refusé (`[DraftProxy] Le champ
+ * "typepro" n'est pas autorisé.` sur le formulaire citoyen SSBE, `holderOrganization` sur l'annuaire
+ * tiers-lieux). D'où, en mode live seulement, `loadCostumScope` d'abord (chargement live du costum du
+ * FORMULAIRE, dédupliqué par la lib dans le TTL), PUIS `setCostumScope` dans tous les cas : lui seul
+ * passe `serverData.type` et garde la variante du sous-type de l'entité, là où `loadCostumScope`
+ * résout par (slug, collection). Hors mode live : inchangé (registre bundlé, aucun appel réseau).
  *
  * Échec NON bloquant : un costum hors registre lève (« fournissez costumId/costumType ») ; on laisse
  * alors le save échouer avec l'erreur de champ, plus parlante qu'une erreur d'identité costum.
@@ -152,13 +157,15 @@ async function pinSchemaCostumScope(target: unknown, slug: string | undefined): 
     loadCostumScope?: (slug: string) => Promise<boolean>;
   };
   if (typeof holder.setCostumScope !== "function") return;
-  if (typeof holder.loadCostumScope === "function") {
+  // Mode live : le cache live est la seule source, on y charge le costum du formulaire avant d'épingler.
+  if (getCostumForceLive() && typeof holder.loadCostumScope === "function") {
     try {
       await holder.loadCostumScope(slug);
     } catch (err) {
-      console.warn(`[costum] chargement live de « ${slug} » impossible (non bloquant)`, err);
+      console.warn(`[costum] chargement live du schéma « ${slug} » impossible (non bloquant)`, err);
     }
   }
+  // Toujours : épingle depuis le cache (live frais ou bundle), en gardant la variante du sous-type.
   try {
     holder.setCostumScope(slug, { pinSchema: true });
   } catch (err) {

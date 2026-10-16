@@ -25,7 +25,7 @@ const ARBRE: AacUsageOption[] = [
   },
 ];
 
-const TOUS_ACTIFS = { search: true, usage: true, tags: true, maturity: true, sort: true };
+const TOUS_ACTIFS = { search: true, usage: true, tags: true, maturity: true, commune: true, sort: true };
 
 function poser(filters: Partial<AacDirectoryFiltersState>) {
   const onChange = vi.fn();
@@ -36,6 +36,7 @@ function poser(filters: Partial<AacDirectoryFiltersState>) {
         onChange={onChange}
         usageTree={ARBRE}
         tagOptions={[]}
+        communeOptions={[]}
         maturityField={null}
         enabled={TOUS_ACTIFS}
       />
@@ -90,6 +91,64 @@ describe("AacDirectoryFilters — sous-catégories à la décoche d'une catégor
     expect(onChange.mock.calls[0][0]).toMatchObject({
       usage: ["communication"],
       usageSub: ["video"],
+    });
+  });
+});
+
+/** Facette « Commune » (rôle `directory.fields.adresse`) : activée mais sans option, elle n'est pas rendue. */
+describe("AacDirectoryFilters — facette « Commune »", () => {
+  const poserCommunes = (
+    communeOptions: { id: string; label: string; count?: number }[],
+    filters: Partial<AacDirectoryFiltersState> = {}
+  ) => {
+    const onChange = vi.fn();
+    render(
+      <LocalizationProvider>
+        <AacDirectoryFilters
+          filters={{ ...EMPTY_AAC_FILTERS, ...filters }}
+          onChange={onChange}
+          usageTree={ARBRE}
+          tagOptions={[]}
+          communeOptions={communeOptions}
+          maturityField={null}
+          enabled={TOUS_ACTIFS}
+        />
+      </LocalizationProvider>
+    );
+    return onChange;
+  };
+
+  it("aucune commune (rôle `adresse` non déclaré) ⇒ la facette n'existe pas", () => {
+    poserCommunes([]);
+
+    expect(screen.queryByRole("button", { name: /Commune/ })).toBeNull();
+  });
+
+  it("des communes ⇒ la facette, ses options et leur décompte", () => {
+    poserCommunes([
+      { id: "Saint-Denis", label: "Saint-Denis", count: 2 },
+      { id: "Le Tampon", label: "Le Tampon", count: 1 },
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Commune/ }));
+
+    expect(screen.getByLabelText(/Saint-Denis/)).toBeTruthy();
+    expect(screen.getByLabelText(/Le Tampon/)).toBeTruthy();
+  });
+
+  it("cocher une commune l'ajoute à l'état, sans toucher aux autres facettes", () => {
+    const onChange = poserCommunes(
+      [{ id: "Saint-Denis", label: "Saint-Denis", count: 2 }],
+      { tags: ["Numérique"] }
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Commune/ }));
+    fireEvent.click(screen.getByLabelText(/Saint-Denis/));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls[0][0]).toMatchObject({
+      commune: ["Saint-Denis"],
+      tags: ["Numérique"],
     });
   });
 });

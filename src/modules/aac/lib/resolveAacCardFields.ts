@@ -49,7 +49,9 @@ export type AacCardFieldRole =
   | "image"
   | "depense"
   | "choose"
-  | "users";
+  | "adresse"
+  | "users"
+  | "keywords";
 
 /** Un champ résolu, avec son chemin de lecture déjà construit. */
 export interface AacCardFieldRef {
@@ -84,7 +86,9 @@ export const AAC_CARD_FIELD_ROLES: AacCardFieldRole[] = [
   "image",
   "depense",
   "choose",
+  "adresse",
   "users",
+  "keywords",
 ];
 
 /**
@@ -109,10 +113,14 @@ const DEFAULT_IDS: Record<AacCardFieldRole, string | null> = {
   image: "image",
   depense: "depense",
   choose: null, // jamais deviné : cf. CONFIG_ONLY_ROLES
+  // Ni défaut ni scan : opt-in par config.
+  adresse: null,
   // Aucun défaut : le vivier de membres est propre à la PLATEFORME, pas au
   // formulaire (`links.cae`, `links.tls`…). Non résolu ⇒ `parseAacAnswer`
   // retombe sur le `user_count` du backend.
   users: null,
+  // Ni défaut ni scan (distinct de `tags`) : opt-in par config.
+  keywords: null,
 };
 
 /**
@@ -234,6 +242,7 @@ function scan(
             ["radio", "select", "multiRadio"].includes(c.componentType)
         ) ?? null
       );
+    // Pas de cas `adresse` : le rôle allume le filtre « Commune », il reste opt-in.
     default:
       return null;
   }

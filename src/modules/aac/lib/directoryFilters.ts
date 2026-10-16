@@ -23,6 +23,8 @@ export interface AacDirectoryEnabledFilters {
   tags: boolean;
   /** La question « Utilisable » du formulaire. */
   maturity: boolean;
+  /** Les communes (rôle `directory.fields.adresse`) ; sans ce rôle, aucune option donc aucun contrôle. */
+  commune: boolean;
   /** « Trier par ». */
   sort: boolean;
 }
@@ -39,6 +41,7 @@ export const DEFAULT_AAC_DIRECTORY_FILTERS: AacDirectoryEnabledFilters = {
   usage: true,
   tags: true,
   maturity: true,
+  commune: true,
   sort: true,
 };
 

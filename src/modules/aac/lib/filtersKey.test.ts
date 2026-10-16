@@ -19,6 +19,9 @@ describe("aacFiltersKey", () => {
     expect(key(f({ maturity: ["z", "a", "m"] }))).toBe(
       key(f({ maturity: ["a", "m", "z"] }))
     );
+    expect(key(f({ commune: ["Le Tampon", "Saint-Denis"] }))).toBe(
+      key(f({ commune: ["Saint-Denis", "Le Tampon"] }))
+    );
   });
 
   it("dédoublonne et ignore les entrées vides", () => {
@@ -34,12 +37,16 @@ describe("aacFiltersKey", () => {
     expect(key(f({ q: "coop" }))).not.toBe(base);
     expect(key(f({ tags: ["a"] }))).not.toBe(base);
     expect(key(f({ maturity: ["a"] }))).not.toBe(base);
+    expect(key(f({ commune: ["a"] }))).not.toBe(base);
     expect(key(f({ tags: ["a"] }))).not.toBe(key(f({ maturity: ["a"] })));
   });
 
-  it("ne confond pas une valeur de tags avec une valeur de maturité", () => {
+  it("ne confond pas une valeur de tags avec une valeur de maturité ou de commune", () => {
     expect(key(f({ tags: ["x"], maturity: [] }))).not.toBe(
       key(f({ tags: [], maturity: ["x"] }))
+    );
+    expect(key(f({ tags: ["x"], commune: [] }))).not.toBe(
+      key(f({ tags: [], commune: ["x"] }))
     );
   });
 
@@ -65,5 +72,6 @@ describe("hasActiveFilters", () => {
     expect(hasActiveFilters(f({ q: "a" }))).toBe(true);
     expect(hasActiveFilters(f({ tags: ["a"] }))).toBe(true);
     expect(hasActiveFilters(f({ maturity: ["a"] }))).toBe(true);
+    expect(hasActiveFilters(f({ commune: ["Saint-Denis"] }))).toBe(true);
   });
 });

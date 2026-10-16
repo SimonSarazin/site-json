@@ -6,6 +6,8 @@ import type { SiteConfig } from "@/types/site-schema";
 import type { ModuleRouteFactory } from "@/lib/modules";
 import { prefetchCommunDetail } from "./prefetch/prefetchCommun";
 import { AacRouteFallback } from "./components/AacRouteFallback";
+// Interfaces code-splittées, déclarées depuis le chunk d'entrée (cf. le module).
+import "./variants/lazyVariants";
 
 /**
  * Routes du module AAC (injectées dans le router principal via `discoverModules`).

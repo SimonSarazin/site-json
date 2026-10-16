@@ -6,7 +6,7 @@ import {
 } from "./directoryFilters";
 import { AacDirectorySectionSchema } from "../schema";
 
-const ALL_ON = { search: true, usage: true, tags: true, maturity: true, sort: true };
+const ALL_ON = { search: true, usage: true, tags: true, maturity: true, commune: true, sort: true };
 
 describe("resolveDirectoryFilters", () => {
   it("un bloc PARTIEL n'éteint que les filtres cités — les autres restent au défaut (M4/M22/M24)", () => {
@@ -29,7 +29,7 @@ describe("resolveDirectoryFilters", () => {
   });
 
   it("un bloc COMPLET est honoré tel quel", () => {
-    const allOff = { search: false, usage: false, tags: false, maturity: false, sort: false };
+    const allOff = { search: false, usage: false, tags: false, maturity: false, commune: false, sort: false };
     expect(resolveDirectoryFilters(allOff)).toEqual(allOff);
     expect(resolveDirectoryFilters(ALL_ON)).toEqual(ALL_ON);
   });

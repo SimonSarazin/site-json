@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { AacDisplayMode } from "../../schema";
+import { directoryGridCols } from "../../lib/directoryGrid";
 
 /**
  * Squelette des résultats, dans le mode demandé.
@@ -8,13 +9,6 @@ import type { AacDisplayMode } from "../../schema";
  * client doit lui être identique — sans quoi React remonte une erreur
  * d'hydratation. Aucun aléa, aucune lecture de `window`.
  */
-const GRID_COLS: Record<number, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-1 sm:grid-cols-2",
-  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-};
-
 export function AacDirectorySkeleton({
   columns = 3,
   count = 6,
@@ -59,7 +53,7 @@ export function AacDirectorySkeleton({
 
   return (
     <div
-      className={cn("grid gap-6", GRID_COLS[columns] ?? GRID_COLS[3])}
+      className={cn("grid gap-6", directoryGridCols(columns))}
       aria-busy="true"
     >
       {Array.from({ length: count }, (_, i) => (

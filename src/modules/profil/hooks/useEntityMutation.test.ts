@@ -7,6 +7,13 @@
 import { describe, it, expect, vi } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { runEntityMutation, CITOYEN_CREATE_UNSUPPORTED, type EntityMutationSpec } from "./useEntityMutation";
+
+// Mode costum LIVE (`VITE_COSTUM_FORCE_LIVE`) piloté par test ; désactivé par défaut.
+const costumLive = vi.hoisted(() => ({ actif: false }));
+vi.mock("@/lib/constant/common", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/constant/common")>()),
+  getCostumForceLive: () => costumLive.actif,
+}));
 import type { SpecStamp } from "../forms/entityModalSpec";
 import { buildParentReference, buildOrganizerReference } from "./mutationUtils";
 // side-effect : enregistre pf:* / poi:* / tl:* + fournit les builders de référence.
@@ -378,28 +385,101 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
      * la lib 1.0.198 contre le legacy). Le chargement live doit précéder l'épingle.
      */
     it("cache live froid : loadCostumScope AVANT l'épingle → le champ costum passe", async () => {
-      const editable = makeEditableAvecListeBlanche(["name"], { sportSanteBienetre: ["typepro", "othersTypepro"] }, { froid: true });
-      await runEntityMutation(
-        { ...specEdit(editable, "sportSanteBienetre"), entityType: "citoyens" },
-        { name: "Moi", typepro: "Éducateur(ice) Sportif(ive)" },
-        { me: null },
-      );
-      expect(editable.ordre).toEqual(["load:sportSanteBienetre", "pin:sportSanteBienetre"]);
-      expect(editable.data).toMatchObject({ typepro: "Éducateur(ice) Sportif(ive)" });
-      expect(editable.saves).toBe(1);
+      costumLive.actif = true;
+      try {
+        const editable = makeEditableAvecListeBlanche(["name"], { sportSanteBienetre: ["typepro", "othersTypepro"] }, { froid: true });
+        await runEntityMutation(
+          { ...specEdit(editable, "sportSanteBienetre"), entityType: "citoyens" },
+          { name: "Moi", typepro: "Éducateur(ice) Sportif(ive)" },
+          { me: null },
+        );
+        expect(editable.ordre).toEqual(["load:sportSanteBienetre", "pin:sportSanteBienetre"]);
+        expect(editable.data).toMatchObject({ typepro: "Éducateur(ice) Sportif(ive)" });
+        expect(editable.saves).toBe(1);
+      } finally {
+        costumLive.actif = false;
+      }
     });
 
     it("chargement live en échec : non bloquant, l'épingle est quand même posée (erreur de champ si cache froid)", async () => {
+      costumLive.actif = true;
       const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const chaud = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { loadEchoue: true });
-      await runEntityMutation(specEdit(chaud, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null });
-      expect(chaud.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
-      expect(chaud.saves).toBe(1);
-      const froid = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { froid: true, loadEchoue: true });
-      await expect(
-        runEntityMutation(specEdit(froid, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null }),
-      ).rejects.toThrow(/n'est pas autorisé/);
-      warn.mockRestore();
+      try {
+        const chaud = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { loadEchoue: true });
+        await runEntityMutation(specEdit(chaud, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null });
+        expect(chaud.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+        expect(chaud.saves).toBe(1);
+        const froid = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { froid: true, loadEchoue: true });
+        await expect(
+          runEntityMutation(specEdit(froid, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null }),
+        ).rejects.toThrow(/n'est pas autorisé/);
+        warn.mockRestore();
+      } finally {
+        costumLive.actif = false;
+      }
+    });
+
+    /**
+     * Costum LIVE : `get()` ne précharge que le costum de la PROVENANCE ; celui du formulaire reste
+     * froid et `setCostumScope` épinglait un contexte NU (aucun champ). Le formulaire charge alors le
+     * costum en live (`loadCostumScope`).
+     */
+    describe("costum LIVE (VITE_COSTUM_FORCE_LIVE)", () => {
+      const avecChargementLive = (resultat: "ok" | "rien" | "erreur") => {
+        const editable = makeEditableAvecListeBlanche(["name"], {}, { froid: true });
+        const charges: string[] = [];
+        Object.assign(editable, {
+          loadCostumScope: async (slug: string) => {
+            charges.push(slug);
+            if (resultat === "erreur") throw new Error("réseau");
+            if (resultat === "rien") return false;
+            // Le costum live ouvre ses champs (ce que fait la lib après digestion du typeObj).
+            const ouvert = makeEditableAvecListeBlanche(["name", ...CHAMPS_COSTUM.navigatorDesTierslieux], {});
+            Object.defineProperty(editable, "data", { value: ouvert.data });
+            return true;
+          },
+        });
+        return { editable, charges };
+      };
+
+      it("charge le costum en live avant l'écriture, puis épingle : le champ costum passe", async () => {
+        costumLive.actif = true;
+        try {
+          const { editable, charges } = avecChargementLive("ok");
+          await runEntityMutation(
+            specEdit(editable, "navigatorDesTierslieux"),
+            { name: "Le lieu", holderOrganization: "SCIC Machin" },
+            { me: null },
+          );
+          expect(charges).toEqual(["navigatorDesTierslieux"]);
+          expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+          expect(editable.data).toMatchObject({ holderOrganization: "SCIC Machin" });
+        } finally {
+          costumLive.actif = false;
+        }
+      });
+
+      it("chargement live sans résultat ou en échec : non bloquant, l'épingle est posée quand même", async () => {
+        costumLive.actif = true;
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+        try {
+          for (const cas of ["rien", "erreur"] as const) {
+            const { editable } = avecChargementLive(cas);
+            await runEntityMutation(specEdit(editable, "navigatorDesTierslieux"), { name: "Le lieu" }, { me: null });
+            expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+          }
+        } finally {
+          costumLive.actif = false;
+          warn.mockRestore();
+        }
+      });
+
+      it("hors mode live : aucun chargement live (registre bundlé, comportement inchangé)", async () => {
+        const { editable, charges } = avecChargementLive("ok");
+        await runEntityMutation(specEdit(editable, "navigatorDesTierslieux"), { name: "Le lieu" }, { me: null });
+        expect(charges).toEqual([]);
+        expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+      });
     });
 
     it("entité sans setCostumScope (ancienne instance / faux SDK) : pas d'appel, pas de crash", async () => {
