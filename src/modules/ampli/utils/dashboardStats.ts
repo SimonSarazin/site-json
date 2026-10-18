@@ -80,10 +80,24 @@ function authorOf(item: AmpliDataResponse): string {
   return typeof user?.serverData?.name === "string" ? user.serverData.name : "";
 }
 
-/** Identifiant sérialisable d'une réponse (`_id` peut être un objet Mongo). */
+/**
+ * Identifiant sérialisable d'une réponse.
+ *
+ * `id` d'abord : au runtime `_id` arrive en OBJET Mongo (`{$id}` / `{_str}`),
+ * et ne lire qu'une chaîne rendait `""` pour TOUTES les réponses — les
+ * classements du tableau de bord retombaient alors sur l'index comme clé React.
+ * Mêmes trois formes que `contributorId` (`utils/ampliUsersGeo.ts`).
+ */
 function idOf(serverData: Record<string, unknown>): string {
-  const raw = serverData._id ?? serverData.id;
-  return typeof raw === "string" ? raw : "";
+  if (typeof serverData.id === "string" && serverData.id !== "") return serverData.id;
+  const raw = serverData._id;
+  if (typeof raw === "string") return raw;
+  if (raw && typeof raw === "object") {
+    const wrapped = raw as { _str?: unknown; $id?: unknown };
+    if (typeof wrapped._str === "string") return wrapped._str;
+    if (typeof wrapped.$id === "string") return wrapped.$id;
+  }
+  return "";
 }
 
 /** Classement décroissant, réponses à zéro exclues (rien à « classer »). */

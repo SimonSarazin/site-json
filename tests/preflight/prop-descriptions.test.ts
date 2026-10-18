@@ -100,13 +100,7 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     // sur les blocs les plus courants. Le plafond n'attrape que CETTE
     // régression-là, pas la croissance ordinaire du schéma.
     //
-    // Relevé de 60 à 80 Ko à la fusion `main` → `fdev` (sept. 2026) : les deux
-    // branches ont ajouté des sections chacune de leur côté (76 et 77 → 78), et
-    // les blocs qui embarquent l'union Section — `page`, `section:tabs`,
-    // `section:gridLayout` — ont franchi l'ancien plafond par leur SOMME, à
-    // 61-62 Ko. Chaque branche prise seule passait. 80 Ko ≈ 20k tokens : encore
-    // un ordre de grandeur sous les 500 Ko qui rendaient le dump inutilisable.
-    const CEILING = 80_000;
+    const CEILING = 70_000;
     const selectors = [...ROOT_BLOCK_SELECTORS, ...[...sectionOptions().keys()].map((t) => `section:${t}`)];
     const oversized = selectors
       .map((s) => {

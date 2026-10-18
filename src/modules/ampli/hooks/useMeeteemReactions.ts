@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -63,6 +63,35 @@ export function useMeeteemReactions() {
   const userId = hydrated ? me?.serverData?.id ?? null : null;
 
   const [overrides, setOverrides] = useState<Record<string, ReactionOverride>>({});
+  /** Dernier état serveur VU par `getReaction`, par réponse. */
+  const serveurVu = useRef<Map<string, boolean>>(new Map());
+
+  /**
+   * Une bascule optimiste ne sert qu'à tenir l'affichage jusqu'à ce que la
+   * donnée serveur rattrape l'écriture. Dès qu'elle l'a rattrapée, on l'ABANDONNE :
+   * sans ça elle survivait à tous les refetchs, et une réaction retirée depuis un
+   * autre onglet laissait un cœur plein que plus rien ne vidait (le clic suivant
+   * partait alors à l'envers).
+   */
+  // Pas de liste de dépendances À DESSEIN : la réconciliation doit être tentée
+  // après CHAQUE rendu, puisque la donnée serveur arrive par les cartes et non
+  // par le hook. L'updater rend `prev` tel quel quand il n'y a rien à retirer —
+  // pas de nouvel état, donc pas de boucle.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setOverrides((prev) => {
+      let change = false;
+      const next: Record<string, ReactionOverride> = {};
+      for (const [id, override] of Object.entries(prev)) {
+        if (!override.pending && serveurVu.current.get(id) === override.reacted) {
+          change = true;
+          continue;
+        }
+        next[id] = override;
+      }
+      return change ? next : prev;
+    });
+  });
 
   const mutation = useMutation({
     mutationFn: ({ answer }: { answerId: string; answer: VotableAnswer }) =>
@@ -101,6 +130,10 @@ export function useMeeteemReactions() {
       const vote = card.answer.serverData.vote;
       const serverCount = vote ? Object.keys(vote).length : 0;
       const serverReacted = Boolean(userId && vote && userId in vote);
+
+      // Ce que le serveur dit de cette carte MAINTENANT : l'effet de
+      // réconciliation s'en sert pour abandonner les bascules rattrapées.
+      serveurVu.current.set(answerId, serverReacted);
 
       const override = overrides[answerId];
       const reacted = override?.reacted ?? serverReacted;

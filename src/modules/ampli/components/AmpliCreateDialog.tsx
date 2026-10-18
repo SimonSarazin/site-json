@@ -16,11 +16,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useT } from "@/hooks/useT";
 import { useCreateAmpli } from "../hooks/useAmpliAdmin";
-import type { AmpliModel } from "../types";
 
 interface AmpliCreateDialogProps {
-    /** Les amplis déjà déclarés — sert UNIQUEMENT à détecter la collision de slug. */
-    amplis: AmpliModel[];
+    /**
+     * Identifiants DÉJÀ PRIS dans `costum.ampli` — clés ET slugs déclarés, pas
+     * seulement ceux des amplis affichables : une entrée incomplète occupe sa
+     * place en base, et le serveur l'écraserait sans prévenir.
+     */
+    takenSlugs: string[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
     /** Appelé avec le slug renvoyé par le serveur, une fois l'ampli créé. */
@@ -46,7 +49,7 @@ function parseTags(input: string): string[] {
  * (`ampliSlug`, SDK) : il est montré, et une collision BLOQUE l'envoi — le
  * legacy, lui, écraserait l'ampli existant sans prévenir.
  */
-export function AmpliCreateDialog({ amplis, open, onOpenChange, onCreated }: AmpliCreateDialogProps) {
+export function AmpliCreateDialog({ takenSlugs, open, onOpenChange, onCreated }: AmpliCreateDialogProps) {
     const t = useT("modules/ampli");
     const create = useCreateAmpli();
 
@@ -57,7 +60,7 @@ export function AmpliCreateDialog({ amplis, open, onOpenChange, onCreated }: Amp
     const trimmed = name.trim();
     const slug = ampliSlug(name);
     const unusable = trimmed !== "" && isUnusableAmpliName(name);
-    const duplicate = trimmed !== "" && !unusable && amplis.some((ampli) => ampli.slug === slug);
+    const duplicate = trimmed !== "" && !unusable && takenSlugs.includes(slug);
     const error = unusable
         ? String(t("AmpliList.create.invalidName"))
         : duplicate

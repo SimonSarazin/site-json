@@ -75,26 +75,16 @@ export function MeeteemCard({
   };
 
   return (
+    // PAS de `role="button"` sur la racine : ARIA rendrait présentationnels tous
+    // ses enfants et son `aria-label` remplacerait le contenu lu — tags, auteur
+    // et réaction disparaîtraient du lecteur d'écran et du clavier. Le clic sur
+    // toute la carte reste un confort souris ; l'accès au détail passe par le
+    // TITRE, un vrai bouton étiré (même patron que la carte de `/ampli`).
     <div
       onClick={onOpenDetails ? openFromCard : undefined}
-      onKeyDown={
-        onOpenDetails
-          ? (event) => {
-              // Racine en <div> et non <button> : elle contient déjà des
-              // boutons (imbrication interdite). D'où le clavier posé à la main.
-              if (event.target !== event.currentTarget) return;
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onOpenDetails();
-              }
-            }
-          : undefined
-      }
-      role={onOpenDetails ? "button" : undefined}
-      tabIndex={onOpenDetails ? 0 : undefined}
-      aria-label={onOpenDetails ? String(t("MeeteemSection.card.open", undefined, { name: data.name ?? "" })) : undefined}
       className={cn(
-        "rounded-xl border border-border shadow-md overflow-hidden hover:shadow-lg",
+        "relative rounded-xl border border-border shadow-md overflow-hidden hover:shadow-lg",
+        onOpenDetails && "focus-within:ring-2 focus-within:ring-ring",
         onOpenDetails && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         "border-l-4 border-l-primary/75",
         isCompact ? "flex items-center p-4" : "flex flex-col items-start p-4 opacity-0",
@@ -120,7 +110,8 @@ export function MeeteemCard({
                 aria-pressed={active}
                 aria-label={String(t("a11y.toggleTag", undefined, { tag }))}
                 className={cn(
-                  "h-auto rounded-full text-xs font-medium border transition-colors",
+                  // `relative z-10` : au-dessus du bouton étiré du titre.
+                  "relative z-10 h-auto rounded-full text-xs font-medium border transition-colors",
                   isCompact ? "px-2 py-1" : "px-3 py-1",
                   active
                     ? "bg-primary text-primary-foreground border-primary hover:bg-primary"
@@ -133,16 +124,28 @@ export function MeeteemCard({
           })}
         </div>
 
-        {/* Titre */}
-        {isCompact ? (
-          <h4 className="text-sm font-semibold text-foreground m-0 mb-1 wrap-break-word cursor-pointer hover:text-primary">
-            {data.name}
-          </h4>
-        ) : (
-          <h3 className="text-base font-semibold text-foreground m-0 mb-1 leading-snug wrap-break-word cursor-pointer hover:text-primary transition-colors border-b border-border pb-2">
-            {data.name}
-          </h3>
-        )}
+        {/* Titre — porte l'ouverture du détail (bouton étiré sur la carte) */}
+        {(() => {
+          const titre = onOpenDetails ? (
+            <button
+              type="button"
+              onClick={onOpenDetails}
+              aria-label={String(t("MeeteemSection.card.open", undefined, { name: data.name ?? "" }))}
+              className="text-left outline-none after:absolute after:inset-0 after:content-[''] hover:text-primary"
+            >
+              {data.name}
+            </button>
+          ) : (
+            data.name
+          );
+          return isCompact ? (
+            <h4 className="text-sm font-semibold text-foreground m-0 mb-1 wrap-break-word">{titre}</h4>
+          ) : (
+            <h3 className="text-base font-semibold text-foreground m-0 mb-1 leading-snug wrap-break-word transition-colors border-b border-border pb-2">
+              {titre}
+            </h3>
+          );
+        })()}
 
         {/* Description */}
         <p className={cn(
@@ -163,7 +166,7 @@ export function MeeteemCard({
             variant="ghost"
             onClick={() => onSelectUser(user?.name || "")}
             aria-label={String(t("a11y.selectUser", undefined, { name: user?.name || fallbackUser }))}
-            className="h-auto min-w-0 max-w-full justify-start gap-2 rounded-lg p-1 hover:bg-primary/10 text-left"
+            className="relative z-10 h-auto min-w-0 max-w-full justify-start gap-2 rounded-lg p-1 hover:bg-primary/10 text-left"
           >
             <div className={cn(
               "rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold",
@@ -193,7 +196,7 @@ export function MeeteemCard({
                 onClick={onLocate}
                 aria-label={String(t("MeeteemSection.card.locate"))}
                 title={String(t("MeeteemSection.card.locate"))}
-                className="h-auto rounded-xl border border-primary px-2 py-1 text-primary hover:bg-primary/10 hover:text-primary"
+                className="relative z-10 h-auto rounded-xl border border-primary px-2 py-1 text-primary hover:bg-primary/10 hover:text-primary"
               >
                 <MapPin className="w-3.5 h-3.5" />
               </Button>
@@ -221,7 +224,8 @@ export function MeeteemCard({
                 aria-label={reactionLabel}
                 title={reactionLabel}
                 className={cn(
-                  "h-auto flex items-center gap-1 rounded-xl px-2 py-1 border border-destructive text-destructive",
+                  // `relative z-10` : au-dessus du bouton étiré du titre.
+                  "relative z-10 h-auto flex items-center gap-1 rounded-xl px-2 py-1 border border-destructive text-destructive",
                   "hover:-translate-y-0.5 hover:shadow-sm hover:bg-destructive/10 hover:text-destructive transition-all",
                   // `disabled` ne doit pas faire disparaître la carte du regard :
                   // on garde le contraste, on retire juste l'interactivité.

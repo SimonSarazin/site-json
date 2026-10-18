@@ -82,8 +82,10 @@ export function useRemoveAmpli() {
   return useMutationWithToast<void, AmpliModel>({
     mutationFn: async (ampli) => {
       if (!entity) throw new Error("Entité porteuse du costum indisponible");
-      // La clé de l'entrée, pas un ObjectId : c'est ce que le legacy attend.
-      await entity.removeAmpli(ampli.slug);
+      // La CLÉ de l'entrée, pas son slug ni un ObjectId : le backend indexe
+      // `costum.ampli` par clé, et les deux diffèrent dès qu'une entrée porte un
+      // champ `slug` (entrées anciennes, slug réédité dans Co).
+      await entity.removeAmpli(ampli.key);
       await refreshEntity();
     },
     successKey: "AmpliList.delete.success",

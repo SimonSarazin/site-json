@@ -109,7 +109,7 @@ export default function AmpliListPage() {
     const { currentLocale } = useLocalization();
     const navigate = useNavigate();
 
-    const { amplis } = useAmplis();
+    const { amplis, takenSlugs } = useAmplis();
     const canManage = useCanManageAmplis();
     const [createOpen, setCreateOpen] = useState(false);
     // Sur TOUS les amplis, pas la sélection filtrée : filtrer ne doit pas
@@ -219,7 +219,7 @@ export default function AmpliListPage() {
                                         {String(t("AmpliList.create.open"))}
                                     </Button>
                                     <AmpliCreateDialog
-                                        amplis={amplis}
+                                        takenSlugs={takenSlugs}
                                         open={createOpen}
                                         onOpenChange={setCreateOpen}
                                         // L'entité porteuse est rechargée AVANT ce retour

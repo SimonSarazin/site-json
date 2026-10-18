@@ -33,9 +33,13 @@ export const AMPLI_QUERY_KEYS = {
    * Sous le préfixe `FETCH_ANSWERS_PREFIX` À DESSEIN : l'invalidation que pose
    * `AmpliIdeaForm` après une soumission rafraîchit aussi ce compteur. Le segment
    * `"count"` ne peut pas entrer en collision avec une vue (`answers`/`map`/`split`).
+   *
+   * La clé porte le jeu de filtres ENTIER, comme `FETCH_ANSWERS` porte ses
+   * `baseParams` : deux amplis branchés sur le même formulaire ne diffèrent que
+   * par leur `finderPath`, et se partageraient sinon un compteur.
    */
-  ANSWERS_COUNT: (coformId: string, namePath: string) =>
-    ["ampli-meeteem", coformId, "count", namePath] as const,
+  ANSWERS_COUNT: (coformId: string, filters: unknown) =>
+    ["ampli-meeteem", coformId, "count", JSON.stringify(filters ?? {})] as const,
   /**
    * Coordonnées d'une commune (`cityAutocompleteByCountry`), pour placer les
    * contributeurs dont le profil n'a qu'une adresse.

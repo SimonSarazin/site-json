@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useFetchAnswerQuery } from "../../hooks/useFetchAnswerQuery";
 import { useAmpliAllAnswers } from "../../hooks/useAmpliAllAnswers";
 import { useMeeteemReactions } from "../../hooks/useMeeteemReactions";
+import { ampliAnswerFields, ampliAnswerFilters } from "../../lib/answersQuery";
 import type { MeeteemCard, MeeteemViewMode } from "../../types";
 import { collectAvailableTags, filterCards } from "../../utils/cardFilters";
 import { buildMeeteemMapModel, isAnswerId, meeteemCardId } from "../../utils/meeteemGeo";
@@ -71,17 +72,12 @@ export default function MeeteemSection({ id, props }: { id?: string; props: Meet
     () => ({
       indexStepList: LIST_PAGE_SIZE,
       indexStepMap: MAP_PAGE_SIZE,
-      defaultFilters: {
-        form: coform,
-        finderPath: dataPath.finder || "",
-        ...(dataPath.name !== "" ? { [`answers.${dataPath.name}`]: { $exists: true } } : {}),
-      },
-      defaultFields: [
-        ...Object.values(dataPath).map((value) => `answers.${value}`),
-        "user",
-        "vote",
-        "voteCount",
-      ],
+      // Les MÊMES filtres et la MÊME projection que la page ampli et que les
+      // compteurs de `/ampli` : recopiés ici, ils divergeaient au premier
+      // changement (et `Object.values` projetait `answers.` pour un finder vide,
+      // `answers.undefined` pour un rôle optionnel absent).
+      defaultFilters: ampliAnswerFilters(coform, dataPath),
+      defaultFields: ampliAnswerFields(dataPath),
       defaultSortBy: { created: -1 as const },
     }),
     [coform, dataPath],

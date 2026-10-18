@@ -21,7 +21,7 @@ import { CoFormProvider } from "../contexts/CoFormProvider";
 import { useCoForm } from "../hooks/useCoForm";
 import { useCoFormStep } from "../hooks/useCoFormStep";
 import { useCoFormNavigation, useCoFormSubmit } from "../hooks/useCoFormNavigation";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, PROSE_CESURE, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
 import { TagsField } from "./TagsField";
 import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
@@ -504,7 +504,7 @@ function MultiStepCoFormContent({
               <ProseContent
                 text={coform.formData.inputs[fields.subFormId].info as string}
                 source="formDefinition"
-                className="prose prose-sm dark:prose-invert max-w-none"
+                className={`${PROSE_CESURE} prose prose-sm dark:prose-invert max-w-none`}
               />
             </CardDescription>
           )}

@@ -3,6 +3,7 @@ import {
   ampliSourceMode,
   ampliTitle,
   collectAmpliTags,
+  costumAmpliSlugs,
   filterAmplis,
   findAmpli,
   listAmplis,
@@ -37,6 +38,7 @@ const SINISTRE_ENTRY = {
 };
 
 const model = (overrides: Partial<AmpliModel> = {}): AmpliModel => ({
+  key: "sinistre",
   slug: "sinistre",
   name: "Sinistre",
   description: "Sinistre config",
@@ -77,19 +79,30 @@ describe("listCostumAmplis", () => {
     expect(ampli.slug).toBe("sinistre-bis");
   });
 
-  // Le champ `slug` fait foi : c'est lui que Co affiche et édite.
-  it("préfère le champ `slug` à la clé", () => {
+  // Le champ `slug` fait foi pour l'URL ; la CLÉ, elle, est ce que le backend
+  // attend pour supprimer l'entrée — les deux doivent rester distincts.
+  it("préfère le champ `slug` à la clé, et garde la clé à part", () => {
     const [ampli] = listCostumAmplis({ ampli: { autreCle: SINISTRE_ENTRY } });
     expect(ampli.slug).toBe("sinistre");
+    expect(ampli.key).toBe("autreCle");
   });
 
-  it("ignore une entrée sans mapping exploitable, garde les autres", () => {
+  // Écarter une entrée incomplète la rendrait invisible pour la garde
+  // anti-collision de la création, et le serveur l'écraserait sans prévenir.
+  it("liste une entrée ancienne sans mapping ni formulaire, en non configurée", () => {
     const amplis = listCostumAmplis({
       ampli: {
-        casse: { name: "Sans path" },
+        amplifiions: { name: "AMPLIFIIONS", description: "Amplifions le sens communs", tags: ["communs"] },
         sinistre: SINISTRE_ENTRY,
       },
     });
+
+    expect(amplis.map((ampli) => ampli.slug)).toEqual(["amplifiions", "sinistre"]);
+    expect(amplis[0]).toMatchObject({ key: "amplifiions", name: "AMPLIFIIONS", path: undefined, coform: null });
+  });
+
+  it("ignore une entrée qui n'est pas un objet", () => {
+    const amplis = listCostumAmplis({ ampli: { casse: "pas un objet", sinistre: SINISTRE_ENTRY } });
     expect(amplis.map((ampli) => ampli.slug)).toEqual(["sinistre"]);
   });
 
@@ -153,6 +166,27 @@ describe("listAmplis", () => {
     expect(listAmplis(true, costum).map((ampli) => ampli.slug)).toEqual(["sinistre"]);
     expect(listAmplis(undefined, costum)).toEqual([]);
     expect(listAmplis([{ slug: "amplifions" }], costum)).toEqual([]);
+  });
+});
+
+describe("costumAmpliSlugs", () => {
+  // Lu sur la donnée BRUTE : une entrée illisible occupe quand même sa place en
+  // base, et `createAmpli` l'écraserait sans prévenir.
+  it("rend les clés ET les slugs déclarés, y compris ceux des entrées illisibles", () => {
+    const pris = costumAmpliSlugs({
+      ampli: {
+        amplifiions: { slug: "amplifions", name: "AMPLIFIIONS" },
+        sinistre: SINISTRE_ENTRY,
+        casse: "pas un objet",
+      },
+    });
+
+    expect(pris.sort()).toEqual(["amplifiions", "amplifions", "casse", "sinistre"]);
+  });
+
+  it("rend une liste vide sans costum", () => {
+    expect(costumAmpliSlugs(undefined)).toEqual([]);
+    expect(costumAmpliSlugs({ ampli: [] })).toEqual([]);
   });
 });
 

@@ -20,15 +20,20 @@ export interface AmpliAnswerCount {
  * même chiffre. Le SDK retire `spam` du `count` et en fait la somme dans `total`.
  *
  * Non préchargé au SSR : les compteurs arrivent après l'hydratation, en squelette
- * d'ici là. Un ampli sans formulaire n'interroge rien.
+ * d'ici là. Un ampli sans formulaire ou sans mapping n'interroge rien.
  */
 export function useAmpliAnswerCounts(amplis: AmpliModel[]): Record<string, AmpliAnswerCount> {
   const { entity } = useCocolight();
 
   const results = useQueries({
-    queries: amplis.map((ampli) => ({
-      queryKey: AMPLI_QUERY_KEYS.ANSWERS_COUNT(ampli.coform ?? "", ampli.path.name),
-      enabled: !!entity && ampli.coform !== null,
+    queries: amplis.map((ampli) => {
+      // `isConfiguredAmpli` en une ligne : un ampli sans formulaire NI mapping
+      // n'interroge rien, et ses filtres n'existent pas.
+      const filters =
+        ampli.coform && ampli.path ? ampliAnswerFilters(ampli.coform, ampli.path) : null;
+      return {
+      queryKey: AMPLI_QUERY_KEYS.ANSWERS_COUNT(ampli.coform ?? "", filters),
+      enabled: !!entity && filters !== null,
       staleTime: 60 * 1000,
       queryFn: async () => {
         const params: Partial<CoformAnswersSearchData> = {
@@ -38,13 +43,14 @@ export function useAmpliAnswerCounts(amplis: AmpliModel[]): Record<string, Ampli
           count: true,
           searchType: ["answers"],
           countType: ["answers"],
-          filters: ampliAnswerFilters(ampli.coform!, ampli.path),
+          filters: filters!,
           fields: ["_id"],
         };
         const page = await entity!.coformAnswersSearch(params);
         return typeof page?.count?.total === "number" ? page.count.total : 0;
       },
-    })),
+      };
+    }),
   });
 
   return Object.fromEntries(
@@ -60,7 +66,8 @@ export function useAmpliAnswerCounts(amplis: AmpliModel[]): Record<string, Ampli
           // serveur n'aurait rien, puis le client un squelette, puis le chiffre.
           // Ici serveur et 1er rendu client montrent le MÊME squelette. Un échec
           // retire le squelette : la carte n'affiche simplement pas de compteur.
-          isLoading: ampli.coform !== null && count === null && !result?.isError,
+          isLoading:
+            ampli.coform !== null && ampli.path !== undefined && count === null && !result?.isError,
         },
       ];
     }),

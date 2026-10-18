@@ -27,7 +27,9 @@ vi.mock("@/lib/toastUtils", () => ({ showSuccessToast: vi.fn(), showErrorToast: 
 const { useCanManageAmplis, useCreateAmpli, useRemoveAmpli } = await import("./useAmpliAdmin");
 
 const PATH = { name: "step.name", address: "step.address" };
+/** Clé ≠ slug, comme l'entrée de prod (`amplifiions` en base, `amplifions` en URL). */
 const AMPLI = {
+  key: "sinistre-2025",
   slug: "sinistre",
   name: "Sinistre",
   tags: [],
@@ -137,7 +139,7 @@ describe("useRemoveAmpli", () => {
     refreshEntity.mockClear();
   });
 
-  it("supprime par le SLUG puis recharge l'entité porteuse", async () => {
+  it("supprime par la CLÉ de l'entrée, pas par le slug d'URL", async () => {
     const removeAmpli = vi.fn().mockResolvedValue({ result: true, msg: "Ampli removed" });
     entity = { removeAmpli };
 
@@ -145,7 +147,9 @@ describe("useRemoveAmpli", () => {
     result.current.mutate(AMPLI);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(removeAmpli).toHaveBeenCalledWith("sinistre");
+    // Le backend indexe `costum.ampli` par clé : lui passer le slug répondrait
+    // « Ampli not found » dès que les deux diffèrent.
+    expect(removeAmpli).toHaveBeenCalledWith("sinistre-2025");
     expect(refreshEntity).toHaveBeenCalledTimes(1);
   });
 });

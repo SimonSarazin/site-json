@@ -15,7 +15,7 @@ import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, PROSE_CESURE, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
 import { TagsField } from "./TagsField";
 import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
@@ -1026,7 +1026,7 @@ export function DynamicCoForm({
                     <ProseContent
                       text={formData.inputs[subForm.subFormId].info as string}
                       source="formDefinition"
-                      className="prose prose-sm dark:prose-invert max-w-none"
+                      className={`${PROSE_CESURE} prose prose-sm dark:prose-invert max-w-none`}
                     />
                   </CardDescription>
                 )}

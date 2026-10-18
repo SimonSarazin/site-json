@@ -4,7 +4,6 @@ import { describe, expect, it, vi, beforeAll, beforeEach } from "vitest";
 import "@/modules/ampli/i18n";
 import i18n from "@/i18n";
 import { renderWithProviders, screen, userEvent } from "../../../../tests/test-utils-ui";
-import type { AmpliModel } from "../types";
 
 /**
  * Création d'un ampli — la garde CLIENT contre la collision de slug est l'enjeu :
@@ -19,15 +18,12 @@ vi.mock("../hooks/useAmpliAdmin", () => ({
 
 const { AmpliCreateDialog } = await import("./AmpliCreateDialog");
 
-const AMPLIS: AmpliModel[] = [
-  {
-    slug: "idees-d-ete",
-    name: "Idées d'été",
-    tags: [],
-    path: { name: "step.name", address: "step.address" },
-    coform: "6927e9f0db22da724360303c",
-  },
-];
+/**
+ * Les identifiants PRIS, tels que `costumAmpliSlugs` les lit : la clé de chaque
+ * entrée et son champ `slug`. `vieil-ampli` est la clé d'une entrée incomplète,
+ * que la liste affichable ne contient pas — c'est tout l'enjeu de la garde.
+ */
+const PRIS = ["idees-d-ete", "vieil-ampli"];
 
 const onCreated = vi.fn();
 
@@ -39,7 +35,7 @@ function Harness() {
       <button type="button" onClick={() => setOpen(true)}>
         rouvrir
       </button>
-      <AmpliCreateDialog amplis={AMPLIS} open={open} onOpenChange={setOpen} onCreated={onCreated} />
+      <AmpliCreateDialog takenSlugs={PRIS} open={open} onOpenChange={setOpen} onCreated={onCreated} />
     </>
   );
 }
@@ -78,6 +74,20 @@ describe("AmpliCreateDialog", () => {
 
     await userEvent.click(submit());
     expect(mutate).not.toHaveBeenCalled();
+  });
+
+  // Le serveur écrase une entrée de même clé SANS PRÉVENIR, y compris une entrée
+  // que le site ne sait pas afficher (ni `coform` ni `path`) : la garde porte sur
+  // les identifiants en base, pas sur la liste affichée.
+  it("refuse aussi l'identifiant d'une entrée que la liste n'affiche pas", async () => {
+    render();
+
+    await userEvent.type(nameInput(), "Vieil Ampli");
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Un ampli porte déjà l'identifiant « vieil-ampli »",
+    );
+    expect(submit()).toBeDisabled();
   });
 
   it("refuse un nom qui ne donne aucun identifiant", async () => {

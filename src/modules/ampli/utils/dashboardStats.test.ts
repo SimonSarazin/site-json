@@ -8,6 +8,8 @@ import type { AmpliDataResponse } from "../types";
  * `helpers/summary.test.ts`).
  */
 type ServerDataLike = {
+  /** Présent sur la donnée revivifiée par le SDK ; prioritaire sur `_id`. */
+  id?: string;
   _id?: unknown;
   user?: { serverData: { _id: string; name?: string } };
   vote?: Record<string, unknown>;
@@ -114,8 +116,18 @@ describe("getDashboardStats", () => {
     expect(stats.topLiked[0].author).toBe("Alice");
   });
 
-  it("tolère un `_id` non exploitable (objet Mongo) et un nom manquant", () => {
-    const stats = getDashboardStats([makeItem({ _id: { $id: "x" }, voteCount: { like: 1 } })]);
+  // Au runtime `_id` arrive en OBJET Mongo : ne lire qu'une chaîne rendait `""`
+  // pour TOUTES les réponses, et les classements retombaient sur l'index comme
+  // clé React. Mêmes trois formes que `contributorId`.
+  it("déplie un `_id` objet Mongo, dans ses trois formes", () => {
+    const like = { voteCount: { like: 1 } };
+    expect(getDashboardStats([makeItem({ _id: { $id: "x1" }, ...like })]).topLiked[0].id).toBe("x1");
+    expect(getDashboardStats([makeItem({ _id: { _str: "x2" }, ...like })]).topLiked[0].id).toBe("x2");
+    expect(getDashboardStats([makeItem({ id: "x3", _id: { $id: "autre" }, ...like })]).topLiked[0].id).toBe("x3");
+  });
+
+  it("tolère un `_id` vraiment illisible et un nom manquant", () => {
+    const stats = getDashboardStats([makeItem({ _id: { nope: 1 }, voteCount: { like: 1 } })]);
     expect(stats.topLiked[0]).toEqual({ id: "", name: "", author: "", count: 1 });
   });
 });

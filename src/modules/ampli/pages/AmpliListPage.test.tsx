@@ -19,7 +19,9 @@ vi.mock("@dr.pogodin/react-helmet", () => ({ Helmet: () => null }));
 
 let amplis: AmpliModel[];
 let counts: Record<string, AmpliAnswerCount>;
-vi.mock("../hooks/useAmplis", () => ({ useAmplis: () => ({ mode: "costum", amplis }) }));
+vi.mock("../hooks/useAmplis", () => ({
+  useAmplis: () => ({ mode: "costum", amplis, takenSlugs: amplis.map((ampli) => ampli.key) }),
+}));
 vi.mock("../hooks/useAmpliAnswerCounts", () => ({ useAmpliAnswerCounts: () => counts }));
 
 /** Gestion des amplis (admin du costum) — le gate et les appels SDK ont leurs
@@ -37,6 +39,7 @@ const { default: AmpliListPage } = await import("./AmpliListPage");
 
 const PATH = { name: "step.name", address: "step.address" };
 const SINISTRE: AmpliModel = {
+  key: "sinistre",
   slug: "sinistre",
   name: "Sinistre",
   description: "Sinistre config",
@@ -45,6 +48,7 @@ const SINISTRE: AmpliModel = {
   coform: "6927e9f0db22da724360303c",
 };
 const VILLE: AmpliModel = {
+  key: "ville",
   slug: "ville",
   name: "Idées pour la ville",
   description: "Urbanisme participatif",

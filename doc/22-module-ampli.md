@@ -184,16 +184,19 @@ Lecture par `CostumAmpliEntrySchema` (`safeParse`, donnée backend) puis `listCo
 
 | Champ | Rôle | Si absent ou invalide |
 |---|---|---|
+| clé de l'entrée | ce que le backend attend pour SUPPRIMER (`removeAmpli`) — portée par `AmpliModel.key` | — |
 | `slug` | segment d'URL (`/ampli/<slug>`) — **fait foi** | la clé de l'entrée |
 | `name` | titre du hero, carte de la liste, titre SEO | titre générique (`AmpliHero.headline`) ; la liste montre le slug |
 | `description`, `tags` | carte de la liste, recherche, puces de filtre | ignorés (des tags sérialisés en objet PHP à trous sont acceptés) |
 | **`coform`** | formulaire des propositions (ObjectId) | ampli **listé** mais « non configuré » : sa page le dit, aucune section n'est rendue |
-| `path.name` + `path.address` | mapping des réponses (requis) | entrée **ignorée** (avertissement en DEV) |
+| `path.name` + `path.address` | mapping des réponses | ampli **listé** mais « en préparation », comme sans `coform` |
 | `pages`, `home` | hashes des pages legacy | non lus : les onglets sont ceux de `constants/tabs.ts` |
 
 ⚠ **`coform` n'est pas écrit par l'outil legacy de Co** : il ne connaît le formulaire qu'à travers les blocs CMS des pages de l'ampli (`costum.app[<page>].cms…` → `tpls.blockCms.coform.*`). Choix délibéré : **aucun repli** sur ces blocs — le champ est posé dans la config de l'ampli en base. Un ampli créé par l'outil legacy reste « non configuré » tant qu'on ne l'a pas ajouté. Un ampli créé **depuis `/ampli`**, lui, a toujours son `coform` : le serveur fabrique le formulaire et l'écrit dans l'entrée (cf. [Créer et supprimer un ampli](#créer-et-supprimer-un-ampli)).
 
 Doublon de slug : la première entrée gagne (avertissement en DEV).
+
+**Aucune entrée n'est écartée** (seule une valeur qui n'est pas un objet l'est) : l'outil legacy de Co écrit `{ name, description, tags, pages, home }`, sans `coform` ni `path`. Écarter ces entrées ne masquerait pas qu'un affichage — elles disparaîtraient aussi de la garde anti-collision de la création, et `createAmpli` les écraserait sans prévenir. D'où `costumAmpliSlugs()`, qui lit les identifiants PRIS (clés **et** slugs déclarés) sur la donnée brute.
 
 ### Ce qui a disparu de la config
 
@@ -248,7 +251,7 @@ Bearer + gate serveur `isInterfaceAdmin`). Elles écrivent dans `costum.ampli` *
 | | Création | Suppression |
 |---|---|---|
 | Déclencheur | bouton « Créer un ampli » du panneau de droite (`AmpliCreateDialog`) | icône corbeille sur la carte (`AmpliDeleteButton`), avec confirmation |
-| Envoi | `name`, `description`, `tags` | le **slug** (la clé de l'entrée), pas un ObjectId |
+| Envoi | `name`, `description`, `tags` | la **CLÉ** de l'entrée (`ampli.key`), ni son slug d'URL ni un ObjectId |
 | Effet serveur | entrée `costum.ampli.<slug>` **et** le formulaire de dépôt avec ses 5 questions (titre, description, adresse, mots-clés, image) — l'ampli est utilisable tout de suite | retire l'entrée, ses pages CMS et son bouton de menu |
 | Retour | `slug` + l'entrée complète → redirection vers `/ampli/<slug>` | — |
 
@@ -259,7 +262,12 @@ liens de l'entité sont vides au SSR). Le serveur revérifie le droit : ce gate 
 **Collision de slug — garde CLIENT obligatoire.** Le serveur dérive la clé du `name` et **écrase sans
 prévenir** une entrée de même clé ; aucune garde n'existe côté legacy. Le dialogue calcule donc le slug à la
 saisie avec `ampliSlug` (SDK, miroir exact du calcul serveur), l'affiche, et bloque l'envoi quand il est déjà
-pris — la liste est déjà en mémoire, la vérification ne coûte rien.
+pris. La comparaison porte sur `costumAmpliSlugs()` — les identifiants en BASE, clés comprises — et non sur
+la liste affichée : une entrée ancienne, que le site montre « en préparation », occupe quand même sa place.
+
+**Suppression : la CLÉ, pas le slug.** `removeAmpli` indexe `costum.ampli` par clé. Les deux diffèrent dès
+qu'une entrée porte un champ `slug` (entrées anciennes, slug réédité dans Co) ; lui passer le slug répondrait
+« Ampli not found ». D'où `AmpliModel.key`, conservé à côté du slug d'URL.
 
 **Rafraîchissement.** `costum` arrive AVEC l'entité porteuse (`element/about`), et cette entité est du *state*
 dans `CocolightProvider` : aucune invalidation React Query ne la remettrait à jour. Les deux mutations
@@ -818,7 +826,7 @@ Groupes de clés dans `fr.json` / `en.json` :
 |---------|-----------------|
 | `helpers/summary.test.ts` | `getSummaryData` — totalAnswers, totalUsers, totalLikes (voteCount.like), totalComments (Object.keys), agrégation par user (_id), items sans user groupés ensemble |
 | `utils/cardFilters.test.ts` | `collectAvailableTags` (déduplication, ordre), `filterCards` — OR tags, filtre user, combinaison AND tags+user |
-| `hooks/useMeeteemReactions.test.tsx` | Réactions — compte et « j'ai réagi » dérivés du serveur, ajout et retrait optimistes, arbitrage par `removedVoteStatus` (y compris quand le serveur bascule à l'inverse de la prévision), rollback + toast sur échec, `openLogin` sans appel réseau si déconnecté, second clic ignoré pendant l'aller-retour |
+| `hooks/useMeeteemReactions.test.tsx` | Réactions — bascule abandonnée dès que le serveur l'a rattrapée (sinon le cœur ne se vidait plus après un retrait fait ailleurs), compte et « j'ai réagi » dérivés du serveur, ajout et retrait optimistes, arbitrage par `removedVoteStatus` (y compris quand le serveur bascule à l'inverse de la prévision), rollback + toast sur échec, `openLogin` sans appel réseau si déconnecté, second clic ignoré pendant l'aller-retour |
 | `components/sections/parts/MeeteemCard.test.tsx` | Rendu variants large/compact, tags cliquables (toggle + aria-pressed), stats vote/comments via Object.keys, clic auteur → onSelectUser, fallbacks Anonyme/N/A, réaction (bouton vs compteur figé, `aria-pressed`, libellé bascule, désactivation pendant l'appel, clic qui n'ouvre pas le détail) |
 | `components/sections/parts/MeeteemFilters.test.tsx` | Affichage filtres, toggle actif/inactif |
 | `utils/ampliUsersGeo.test.ts` | Conversion contributeurs → entités carto : id hexadécimal (rejet de la forme `ObjectID("…")`), coordonnées en string, préférence geoPosition/geo, garde Null Island, auteur non résolu, `name` vide OMIS, libellé de contributions, déduplication, compteurs localisés/total |
@@ -826,13 +834,13 @@ Groupes de clés dans `fr.json` / `en.json` :
 | `components/sections/AmpliFeatures.test.tsx` | Formulaire rendu dans la colonne gauche avec le bon coform et le libellé d'envoi ; section qui reste montée pendant le chargement (régression du `return null`) ; compteurs en squelette puis chiffrés |
 | `utils/scrollToSection.test.ts` | Défilement vers une ancre : cible absente (pas de throw), `prefers-reduced-motion`, focus sur le premier élément interactif, section réduite à un squelette |
 | `components/sections/AmpliHeader.test.tsx` | Les 3 CTA du hero, nom de l'ampli en titre (repli sur le titre générique), et les ancres visées par « Proposer une idée » (avec focus) et « Voir les propositions » |
-| `lib/costumAmpli.test.ts` | Fixture RÉELLE (`costum.ampli.sinistre`) : `ampliSourceMode` (`"true"` en chaîne et forme tableau → désactivé), slug du champ ou de la clé, entrée sans `path` ignorée, doublon de slug, `coform` absent ou mal formé → ampli listé non configuré, tags en objet PHP, nom vide ; `resolveAmpliInput` ; `filterAmplis` (casse, accents, OU des tags, slug comme titre) ; `collectAmpliTags` |
+| `lib/costumAmpli.test.ts` | Fixture RÉELLE (`costum.ampli.sinistre`) : `ampliSourceMode` (`"true"` en chaîne et forme tableau → désactivé), slug du champ ou de la clé, entrée ancienne sans `path` ni `coform` LISTÉE en « en préparation », clé gardée à part du slug, valeur non-objet ignorée, doublon de slug, `coform` absent ou mal formé → ampli listé non configuré, tags en objet PHP, nom vide ; `resolveAmpliInput` ; `filterAmplis` (casse, accents, OU des tags, slug comme titre) ; `collectAmpliTags` |
 | `lib/answersQuery.test.ts` | Filtres partagés (formulaire, existence du nom, finder) et champs projetés sans `answers.undefined` |
 | `hooks/useAmplis.test.tsx` | Lecture du costum, config absente ou restée en forme tableau → aucun ampli, liste stable d'un rendu à l'autre, `useAmpli` par slug |
 | `routes.test.tsx` | Gate : aucune route sans `config.ampli` ni avec une config restée en forme tableau ; `true` → `/ampli` + `/ampli/:slug` et ses onglets |
 | `pages/AmpliListPage.test.tsx` | Cartes (lien, description, 3 tags + « +N », « N propositions » au singulier/pluriel, squelette, rien sans formulaire), navigation au clic, recherche, puces `aria-pressed`, « Effacer les filtres », accès direct (slug connu → page ; inconnu → alerte en ligne, effacée à la saisie), état vide ; gestion : rien pour un visiteur, création → page du nouvel ampli, suppression après confirmation |
-| `hooks/useAmpliAdmin.test.tsx` | Gate de gestion (admin du porteur, super-admin, anonyme, amplis non activés, avant hydratation) ; création puis rechargement de l'entité DANS CET ORDRE, échec sans entité porteuse ; suppression par le slug |
-| `components/AmpliCreateDialog.test.tsx` | Identifiant dérivé du nom, refus d'un slug déjà pris et d'un nom sans identifiant, envoi vide bloqué, brouillon envoyé (mots-clés découpés) + redirection, saisie oubliée à la fermeture |
+| `hooks/useAmpliAdmin.test.tsx` | Gate de gestion (admin du porteur, super-admin, anonyme, amplis non activés, avant hydratation) ; création puis rechargement de l'entité DANS CET ORDRE, échec sans entité porteuse ; suppression par la CLÉ quand elle diffère du slug |
+| `components/AmpliCreateDialog.test.tsx` | Identifiant dérivé du nom, refus d'un slug déjà pris — **y compris celui d'une entrée que la liste n'affiche pas** — et d'un nom sans identifiant, envoi vide bloqué, brouillon envoyé (mots-clés découpés) + redirection, saisie oubliée à la fermeture |
 | `components/AmpliDeleteButton.test.tsx` | Rien sans confirmation, ce qui survit annoncé, renoncement, suppression de CET ampli, confirmation verrouillée pendant l'appel |
 | `pages/AmpliPage.test.tsx` | Rendu normal (onglets, sections, SEO au nom), slug inconnu avec lien vers la liste (pas en forme historique), ampli sans formulaire → « en préparation » sans sections |
 | `utils/dashboardStats.test.ts` | `getDashboardStats` — participants uniques, TOTAUX likes/commentaires (vs réponses concernées de `getSummaryData`), repli `vote` sans `voteCount.like`, agrégation/tri des tags (valeur unique, espaces), classements bornés et zéros exclus, auteur depuis l'entité User, `_id` non exploitable |
@@ -913,7 +921,7 @@ Le mapping `costum.ampli.<slug>.path.*` doit correspondre exactement aux noms de
 
 ### 4 bis. `coform` absent de `costum.ampli` = ampli « en préparation »
 
-L'outil legacy de Co n'écrit pas `coform` dans l'entrée (il le range dans les blocs CMS des pages de l'ampli). Sans repli volontaire, un ampli créé par cet outil apparaît dans la liste mais sa page affiche « Ampli en préparation » tant que le champ n'est pas posé en base.
+L'outil legacy de Co n'écrit ni `coform` (il le range dans les blocs CMS des pages de l'ampli) ni `path`. Sans repli volontaire, un ampli créé par cet outil apparaît dans la liste mais sa page affiche « Ampli en préparation » tant que les deux champs ne sont pas posés en base. Il est LISTÉ malgré tout : c'est ce qui le rend visible à la garde anti-collision de la création.
 
 ### 4 ter. Le costum de prod doit porter `slug`, `coform` et `path`
 

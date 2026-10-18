@@ -182,4 +182,32 @@ describe("useMeeteemReactions", () => {
       expect(addVote).toHaveBeenCalledTimes(1);
     });
   });
+
+  // Sans réconciliation, la bascule survivait à tous les refetchs : une réaction
+  // retirée depuis un autre onglet laissait un cœur plein que plus rien ne vidait,
+  // et le clic suivant partait à l'envers.
+  describe("réconciliation avec le serveur", () => {
+    it("tient jusqu'au refetch, puis rend la main au serveur", async () => {
+      const { result, rerender } = render();
+      const addVote = vi.fn().mockResolvedValue(added);
+      const sansVote = () => makeCard(undefined, addVote);
+      const avecVote = () => makeCard({ "user-1": { status: "like" } }, addVote);
+
+      act(() => {
+        result.current.getReaction(sansVote(), "answer-1").toggle!();
+      });
+      await waitFor(() => expect(result.current.getReaction(sansVote(), "answer-1").pending).toBe(false));
+
+      // La donnée serveur n'a pas encore bougé : la bascule tient l'affichage.
+      expect(result.current.getReaction(sansVote(), "answer-1")).toMatchObject({ reacted: true, count: 1 });
+
+      // Le périmètre est refetché, le serveur porte notre réaction : la bascule
+      // est rattrapée, donc abandonnée.
+      expect(result.current.getReaction(avecVote(), "answer-1")).toMatchObject({ reacted: true, count: 1 });
+      rerender();
+
+      // Quelqu'un la retire depuis un autre onglet : le cœur se vide.
+      expect(result.current.getReaction(sansVote(), "answer-1")).toMatchObject({ reacted: false, count: 0 });
+    });
+  });
 });

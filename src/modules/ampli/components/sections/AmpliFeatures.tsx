@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { lazy } from "vite-preload";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -24,7 +24,10 @@ export default function AmpliFeatures({ coform, isLoading, data }: AmpliFeatures
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
 
-    const summaryData = getSummaryData(data ?? []);
+    // Agrégation de TOUT le périmètre (jusqu'à 5000 réponses) : mémoïsée comme
+    // dans AmpliCommunity et AmpliDashboard, sinon elle est refaite à chaque
+    // rendu de la section (chaque frappe du formulaire en ligne, notamment).
+    const summaryData = useMemo(() => getSummaryData(data ?? []), [data]);
 
     // Les compteurs attendent le périmètre complet des réponses ; le formulaire,
     // lui, n'en dépend pas. On ne masque donc plus TOUTE la section pendant le

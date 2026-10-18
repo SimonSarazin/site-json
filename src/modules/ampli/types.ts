@@ -15,24 +15,32 @@ import type { AmpliPath } from "./schema";
  * historique de la config). Construit par `lib/costumAmpli.ts`.
  */
 export interface AmpliModel {
-  /** Segment d'URL : `/ampli/<slug>`. */
+  /**
+   * CLÉ de l'entrée dans `costum.ampli` — ce que le backend attend pour la
+   * supprimer (`BaseEntity.removeAmpli`). Elle peut différer du `slug` : les
+   * entrées anciennes de Co ont une clé d'une autre forme, et Co laisse éditer
+   * le `slug` sans renommer la clé.
+   */
+  key: string;
+  /** Segment d'URL : `/ampli/<slug>`. Le champ `slug` de l'entrée, sinon sa clé. */
   slug: string;
-  /** Nom affiché (titre du hero, carte de la liste). Absent en forme historique. */
+  /** Nom affiché (titre du hero, carte de la liste). Absent de certaines entrées. */
   name?: string;
   description?: string;
   tags: string[];
-  path: AmpliPath;
+  /** Mapping des rôles de carte. Absent des entrées anciennes de Co. */
+  path?: AmpliPath;
   /** Formulaire des propositions. `null` = non configuré : la page le DIT au
    *  lieu d'interroger le backend avec un id vide. */
   coform: string | null;
 }
 
-/** Un ampli dont le formulaire est connu — seul type que reçoivent le contexte
- *  et les sections : aucune d'elles n'a à se demander si `coform` existe. */
-export type ConfiguredAmpli = AmpliModel & { coform: string };
+/** Un ampli exploitable — formulaire ET mapping connus. Seul type que reçoivent
+ *  le contexte et les sections : aucune n'a à se demander si l'un des deux manque. */
+export type ConfiguredAmpli = AmpliModel & { coform: string; path: AmpliPath };
 
 export function isConfiguredAmpli(ampli: AmpliModel): ampli is ConfiguredAmpli {
-  return ampli.coform !== null;
+  return ampli.coform !== null && ampli.path !== undefined;
 }
 
 /** Modes d'affichage du composant MeeteemSection. */

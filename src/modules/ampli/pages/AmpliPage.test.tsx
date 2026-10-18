@@ -28,6 +28,7 @@ vi.mock("../hooks/useAmplis", () => ({
 const { default: AmpliPage } = await import("./AmpliPage");
 
 const SINISTRE: AmpliModel = {
+  key: "sinistre",
   slug: "sinistre",
   name: "Sinistre",
   tags: [],
@@ -79,5 +80,16 @@ describe("AmpliPage", () => {
     expect(screen.queryByTestId("renderer")).toBeNull();
     // Les onglets restent : on est bien sur la page de l'ampli.
     expect(screen.getByTestId("tabs")).toBeInTheDocument();
+  });
+
+  // Les entrées anciennes de Co n'ont pas de `path` : elles sont LISTÉES (sans
+  // quoi la garde anti-collision de la création ne les verrait pas), et leur
+  // page le dit, au lieu de lancer les sections sans savoir où lire les champs.
+  it("dit la même chose d'un ampli sans mapping", async () => {
+    amplis = [{ ...SINISTRE, path: undefined }];
+    render("sinistre");
+
+    expect(await screen.findByText("Ampli en préparation")).toBeInTheDocument();
+    expect(screen.queryByTestId("renderer")).toBeNull();
   });
 });

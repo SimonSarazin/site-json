@@ -22,7 +22,13 @@ export type AmpliSourceMode = "costum" | "off";
  * la chaîne `"true"`) est traitée comme désactivée, pas comme une source.
  */
 export function ampliSourceMode(ampli: unknown): AmpliSourceMode {
-  return ampli === true ? "costum" : "off";
+  if (ampli === true) return "costum";
+  // Une config restée sur la forme tableau historique perdrait ses routes en
+  // silence : on le DIT en dev, c'est le seul signal que le site aura.
+  if (ampli !== undefined && ampli !== false) {
+    warnDev("`config.ampli` n'est pas `true` — les amplis sont désactivés", ampli);
+  }
+  return "off";
 }
 
 function warnDev(message: string, detail?: unknown): void {
@@ -49,8 +55,13 @@ function keepFirstBySlug(amplis: AmpliModel[], source: string): AmpliModel[] {
  * Les amplis déclarés dans `costum.ampli`, dans l'ordre du document.
  *
  * Slug d'URL = le champ `slug` de l'entrée, sinon sa clé : c'est le champ que Co
- * affiche et édite. Une entrée sans `path` exploitable est ignorée — aucune
- * section ne saurait quoi afficher.
+ * affiche et édite. La CLÉ est conservée à part — c'est elle que le backend
+ * attend pour supprimer l'entrée.
+ *
+ * Une entrée incomplète (ni `coform` ni `path` : la forme qu'écrit l'outil
+ * legacy de Co) est LISTÉE et marquée « en préparation » ; l'écarter la rendrait
+ * invisible pour la garde anti-collision de la création, alors que le serveur
+ * écrase une entrée de même clé sans prévenir.
  */
 export function listCostumAmplis(costum: unknown): AmpliModel[] {
   if (!isPlainObj(costum) || !isPlainObj(costum.ampli)) return [];
@@ -64,6 +75,7 @@ export function listCostumAmplis(costum: unknown): AmpliModel[] {
     }
     const entry = parsed.data;
     amplis.push({
+      key,
       slug: entry.slug ?? key,
       name: entry.name,
       description: entry.description,
@@ -78,6 +90,24 @@ export function listCostumAmplis(costum: unknown): AmpliModel[] {
 /** Les amplis du site : ceux du costum si la fonctionnalité est activée. */
 export function listAmplis(ampliConfig: unknown, costum: unknown): AmpliModel[] {
   return ampliSourceMode(ampliConfig) === "costum" ? listCostumAmplis(costum) : [];
+}
+
+/**
+ * Tous les identifiants déjà pris dans `costum.ampli` : la clé de chaque entrée
+ * ET son champ `slug`. Lus sur la donnée BRUTE, sans passer par `safeParse` —
+ * une entrée qu'on ne saurait pas lire occupe quand même sa place, et le serveur
+ * l'écraserait sans prévenir.
+ */
+export function costumAmpliSlugs(costum: unknown): string[] {
+  if (!isPlainObj(costum) || !isPlainObj(costum.ampli)) return [];
+
+  const pris = new Set<string>();
+  for (const [key, raw] of Object.entries(costum.ampli)) {
+    pris.add(key);
+    const slug = isPlainObj(raw) ? raw.slug : undefined;
+    if (typeof slug === "string" && slug.trim() !== "") pris.add(slug.trim());
+  }
+  return [...pris];
 }
 
 export function findAmpli(amplis: AmpliModel[], slug: string): AmpliModel | null {

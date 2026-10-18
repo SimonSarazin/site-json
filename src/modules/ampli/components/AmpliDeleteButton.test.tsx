@@ -19,6 +19,7 @@ vi.mock("../hooks/useAmpliAdmin", () => ({
 const { AmpliDeleteButton } = await import("./AmpliDeleteButton");
 
 const AMPLI: AmpliModel = {
+  key: "sinistre",
   slug: "sinistre",
   name: "Sinistre",
   tags: [],

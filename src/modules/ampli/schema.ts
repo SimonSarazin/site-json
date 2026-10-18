@@ -39,10 +39,14 @@ const tagList = z
 /**
  * Une entrée `costum.ampli.<slug>` telle que Co la stocke.
  *
- * Donnée BACKEND, lue avec `safeParse` : seul `path` est bloquant (sans lui,
- * aucune section ne sait quoi afficher). Les autres champs se dégradent — un
- * `coform` absent ou qui n'est pas un ObjectId donne un ampli LISTÉ mais « non
- * configuré », plutôt qu'un ampli qui disparaît sans explication.
+ * Donnée BACKEND, lue avec `safeParse` : AUCUN champ n'est bloquant. Une entrée
+ * incomplète — celle qu'écrit l'outil legacy de Co, `{ name, description, tags,
+ * pages, home }`, sans `coform` ni `path` — donne un ampli LISTÉ mais « non
+ * configuré », jamais un ampli qui disparaît.
+ *
+ * Ce n'est pas qu'un confort d'affichage : une entrée écartée est invisible pour
+ * la garde anti-collision de la création (`AmpliCreateDialog`), et le serveur
+ * ÉCRASE sans prévenir une entrée dont le slug est déjà pris.
  */
 export const CostumAmpliEntrySchema = z.object({
     slug: softString,
@@ -50,7 +54,8 @@ export const CostumAmpliEntrySchema = z.object({
     description: softString,
     tags: tagList,
     coform: z.string().regex(/^[0-9a-f]{24}$/i).optional().catch(undefined),
-    path: AmpliPathSchema,
+    /** Mapping des rôles de carte. Absent des entrées anciennes de Co. */
+    path: AmpliPathSchema.optional().catch(undefined),
 });
 
 export type CostumAmpliEntry = z.infer<typeof CostumAmpliEntrySchema>;
