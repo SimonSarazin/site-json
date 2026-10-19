@@ -64,16 +64,20 @@ describe("selectedZones / matchesZones", () => {
   } as never;
 
   it("ne lit que les zones cochées", () => {
-    expect(selectedZones(sbf)).toEqual([{ id: "Z", level: "level3" }]);
+    expect(selectedZones(sbf)).toEqual(["Z"]);
     expect(selectedZones(undefined)).toEqual([]);
   });
 
   it("garde un lieu dans une des zones, écarte les autres et les lieux inconnus", () => {
-    const zones = [{ id: "Z", level: "level3" }];
-    expect(matchesZones({ level3: "Z" }, zones)).toBe(true);
-    expect(matchesZones({ level3: "Y" }, zones)).toBe(false);
-    expect(matchesZones(undefined, zones)).toBe(false);
+    expect(matchesZones(["P", "Z"], ["Z"])).toBe(true);
+    expect(matchesZones(["P", "Y"], ["Z"])).toBe(false);
+    expect(matchesZones(undefined, ["Z"])).toBe(false);
     expect(matchesZones(undefined, [])).toBe(true);
+  });
+
+  it("zone reconnue quel que soit le niveau sous lequel l'adresse la porte (DOM : pays = région)", () => {
+    // Option « Réunion » de niveau 3, adresse qui ne porte la zone que sous level1.
+    expect(matchesZones(["RE-zone"], ["RE-zone"])).toBe(true);
   });
 });
 
@@ -96,15 +100,16 @@ describe("thematicParentIds", () => {
   });
   it("réseaux cochés : union de leurs lieux membres, sans les autres filtres", () => {
     const sbf = {
-      a: { field: "_id", value: ["p1", "p2"] },
-      b: { field: "_id", value: ["p2", "p3"] },
+      a: { field: "parentId", value: ["p1", "p2"] },
+      b: { field: "parentId", value: ["p2", "p3"] },
+      e: { field: "_id", value: ["autre"] }, // un autre groupe écrivant `_id` n'est pas un réseau
       c: { field: "priceHourly", value: ["0-20"] },
       d: { field: "Zlevel3", type: "scopeList", value: { id: "Z", type: "level3" } },
     } as never;
     expect(thematicParentIds(sbf)).toEqual(["p1", "p2", "p3"]);
   });
   it("réseau coché SANS lieu membre : [] (et non null — sinon tout l'annuaire s'afficherait)", () => {
-    expect(thematicParentIds({ a: { field: "_id", value: [] } } as never)).toEqual([]);
+    expect(thematicParentIds({ a: { field: "parentId", value: [] } } as never)).toEqual([]);
   });
 });
 

@@ -14,10 +14,19 @@ import { getSiteCostumContext } from "@/lib/siteCostum";
 import PasswordToggleTextInput from "@/components/form/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { toast } from "sonner";
 import { useNavigate, useLocation } from "react-router";
 import { returnToOrHome } from "@/lib/authRedirect";
+import type { RegisterFieldConfig } from "../../schema";
+import {
+  collectRegisterFields,
+  firstMissingRequiredField,
+  registerWithExtras,
+  visibleRegisterFields,
+} from "../../lib/registerExtras";
 
 interface RegisterFormState {
   name: string;
@@ -40,6 +49,12 @@ interface RegisterFormProps {
   prefill?: { email?: string; name?: string };
 }
 
+// Même habillage que `Input` (components/ui/input) pour un `<select>` NATIF : le formulaire est à état
+// local (pas react-hook-form), le natif est accessible au clavier et sur mobile sans portail, et il se
+// pilote dans un test par `selectOptions` — ce que le Select Radix du projet ne permet pas en jsdom.
+const SELECT_CLASS =
+  "border-input h-12 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30";
+
 export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormProps = {}): React.ReactNode {
   /* ------------------------------------------------------------------- */
   const [formData, setFormData] = useState<RegisterFormState>({
@@ -49,6 +64,8 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
     pwd: "",
     confirmPassword: "",
   });
+  // Champs SUPPLÉMENTAIRES déclarés par `config.auth.register.fields` (docs/33) — valeurs par `name`.
+  const [extraValues, setExtraValues] = useState<Record<string, string>>({});
 
   const [loadingRegister, setLoading] = useState<boolean>(false);
 
@@ -62,10 +79,14 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
   const t                            = useT("modules/auth");
   const { config }                   = useSite();
 
-  const registerTitle = config.auth?.register?.title || { fr: "Créer un compte", en: "Create an account" };
+  const registerConfig = config.auth?.register;
+  const registerTitle = registerConfig?.title || { fr: "Créer un compte", en: "Create an account" };
   // Défaut NEUTRE : « SiteForge » est le nom du générateur, il ne doit jamais
   // fuiter sur un site — chaque site personnalise via config.auth.register.
-  const registerSubtitle = config.auth?.register?.subtitle || { fr: "Rejoignez-nous dès aujourd'hui", en: "Join us today" };
+  const registerSubtitle = registerConfig?.subtitle || { fr: "Rejoignez-nous dès aujourd'hui", en: "Join us today" };
+  const registerMode = registerConfig?.mode;
+  const extraFields = registerConfig?.fields;
+  const visibleExtraFields = visibleRegisterFields(extraFields, extraValues);
 
   /* Redirige l’utilisateur déjà connecté ------------------------------- */
   useEffect(() => {
@@ -78,6 +99,9 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
     value: string,
   ): void => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+  const handleExtraChange = (name: string, value: string): void => {
+    setExtraValues((prev) => ({ ...prev, [name]: value }));
   };
 
   /* ------------------------------------------------------------------- */
@@ -114,6 +138,14 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
       });
       return false;
     }
+    // Champs supplémentaires : `required` ne vaut que pour un champ VISIBLE (showIf).
+    const missing = firstMissingRequiredField(extraFields, extraValues);
+    if (missing) {
+      toast.error(t("Erreur"), {
+        description: t("Le champ « {{field}} » est requis", undefined, { field: t(missing.label) }),
+      });
+      return false;
+    }
     return true;
   };
 
@@ -146,19 +178,26 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
       // cache costum sur le SLUG, ils ne sont qu'un confort. Même source que ContactFormSection.
       const costumCtx = getSiteCostumContext({ contextId, contextType }) ?? {};
 
-      const response = await userApi.register({
+      // `fields` : seulement les valeurs non vides des champs visibles — validés côté serveur par la
+      // règle costum des citoyens (un champ hors règle → `Contenu Invalide <clé> : Person`).
+      const response = await registerWithExtras(userApi, {
         name,
         username,
         email,
         pwd,
         ...costumCtx,
+        mode: registerMode,
+        fields: collectRegisterFields(extraFields, extraValues),
       });
 
       if (response.result) {
+        // Le texte dépend du MODE : en `single_step_register` le compte est actif tout de suite ; en
+        // `normal` (défaut) la connexion est REFUSÉE tant que l'e-mail n'est pas validé — l'ancien
+        // toast (« vous pouvez maintenant vous connecter ») était faux dans ce cas.
         toast.success(t("Succès"), {
-          description: t(
-            "Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter."
-          ),
+          description: registerMode === "single_step_register"
+            ? t("Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.")
+            : t("Votre compte a été créé. Vous pourrez vous connecter dès que vous aurez validé votre adresse e-mail (un message vient de vous être envoyé)."),
         });
         if (onSwitchToLogin) onSwitchToLogin();
         else navigate("/login", { state: location.state });
@@ -182,7 +221,68 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
     } finally {
       setLoading(false);
     }
-  }; 
+  };
+
+  /* ------------------------------------------------------------------- */
+  // Pas de `required` NATIF sur ces contrôles : la validation est celle du formulaire (toasts, comme les
+  // champs standards) — l'attribut HTML ferait bloquer la soumission par le navigateur AVANT nos messages.
+  const renderExtraField = (field: RegisterFieldConfig): React.ReactNode => {
+    const id = `register-field-${field.name}`;
+    const value = extraValues[field.name] ?? "";
+    const label = t(field.label);
+    const placeholder = field.placeholder ? t(field.placeholder) : undefined;
+    let control: React.ReactNode;
+    if (field.widget === "select") {
+      control = (
+        <select
+          id={id}
+          name={field.name}
+          className={SELECT_CLASS}
+          value={value}
+          aria-required={field.required}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) => handleExtraChange(field.name, e.target.value)}
+        >
+          <option value="">{placeholder ?? t("Sélectionnez une option")}</option>
+          {(field.options ?? []).map((o) => (
+            <option key={o.value} value={o.value}>{t(o.label)}</option>
+          ))}
+        </select>
+      );
+    } else if (field.widget === "textarea") {
+      control = (
+        <Textarea
+          id={id}
+          name={field.name}
+          placeholder={placeholder ?? label}
+          value={value}
+          aria-required={field.required}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleExtraChange(field.name, e.target.value)}
+        />
+      );
+    } else {
+      control = (
+        <Input
+          id={id}
+          name={field.name}
+          type="text"
+          placeholder={placeholder ?? label}
+          value={value}
+          aria-required={field.required}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => handleExtraChange(field.name, e.target.value)}
+          className="h-12"
+        />
+      );
+    }
+    return (
+      <div key={field.name} className="space-y-2">
+        <Label htmlFor={id}>
+          {label}
+          {field.required && <span className="text-destructive ml-1" aria-hidden>*</span>}
+        </Label>
+        {control}
+      </div>
+    );
+  };
 
   /* ------------------------------------------------------------------- */
   if (!loaded) {
@@ -260,6 +360,9 @@ export default function RegisterForm({ onSwitchToLogin, prefill }: RegisterFormP
           }
           className="h-12"
         />
+
+        {/* Champs supplémentaires du site (config.auth.register.fields), après les champs standards. */}
+        {visibleExtraFields.map(renderExtraField)}
 
         <Button
           className="w-full"

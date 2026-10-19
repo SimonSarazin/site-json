@@ -686,7 +686,8 @@ les entités homonymes d'autres sites.
 
 #### Facettes « par réponses » (`answer-facets.test.ts`)
 
-Les groupes `filtersByAnswers`/`filtersByPath` ont deux cibles possibles (`filterTarget`) et se
+Les groupes `filtersByAnswers`/`filtersByPath` ont trois cibles possibles (`filterTarget` : éléments
+liés, réponses, `parentId`) et se
 trompent **en silence** : une facette mal ciblée s'affiche normalement, avec ses options, et vide
 simplement la liste au clic (défaut mesuré sur `/creneaux` — filtrage par `_id` d'organisation sur
 une liste qui porte les réponses elles-mêmes). Deux règles statiques, sur toutes les configs de
