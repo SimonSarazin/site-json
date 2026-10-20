@@ -15,6 +15,7 @@ import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuer
 import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
 import { usePageFiltersUrlSync } from "@/modules/search/hooks/usePageFiltersUrlSync";
 import { buildViewAllHref } from "@/modules/search/lib/viewAllHref";
+import { useServiceSuggestions } from "@/modules/search/hooks/useServiceSuggestions";
 import { getEntityIcon } from "@/lib/entityIcons";
 
 const getEntityTitle = (entity: SearchEntity): string => {
@@ -181,9 +182,15 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
     indexMax: 8,
   }), [mergedBaseParams, props.searchVariant, activeTags]);
 
-  const { suggestions, isLoading } = useAutocomplete(search, autocompleteOptions);
+  // Suggestions de services (`serviceSuggestions`) : elles REMPLACENT celles des fiches — la requête
+  // de fiches reçoit alors une saisie vide et ne part pas.
+  const services = useServiceSuggestions(props.serviceSuggestions, search);
+  const serviceMode = services.enabled;
+  const { suggestions, isLoading: fichesLoading } = useAutocomplete(serviceMode ? "" : search, autocompleteOptions);
+  const isLoading = serviceMode ? services.isLoading : fichesLoading;
+  const suggestionCount = serviceMode ? services.suggestions.length : suggestions.length;
 
-  const isAutocompleteOpen = !dismissed && suggestions.length > 0 && search.length >= 2;
+  const isAutocompleteOpen = !dismissed && suggestionCount > 0 && search.length >= 2;
 
   const isFullStyle = props.ctaButtons && props.ctaButtons.length > 0 && props.subhead;
 
@@ -236,7 +243,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
       case "ArrowDown":
         e.preventDefault();
         setHighlightedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
+          prev < suggestionCount - 1 ? prev + 1 : prev
         );
         break;
       case "ArrowUp":
@@ -245,7 +252,10 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
         break;
       case "Enter":
         e.preventDefault();
-        if (suggestions[highlightedIndex]) {
+        if (serviceMode) {
+          const service = services.suggestions[highlightedIndex];
+          if (service) navigate(service.href);
+        } else if (suggestions[highlightedIndex]) {
           handleSelectSuggestion(suggestions[highlightedIndex]);
         }
         break;
@@ -262,6 +272,26 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
     // arrivent — l'ancien effet rouvrait le dropdown juste après la sélection.
     setDismissed(true);
   };
+
+  // Lignes de suggestions de services : nom du service, lieu porteur · ville ; ouvre son détail.
+  const renderServiceRows = () =>
+    services.suggestions.map((service, index) => (
+      <button
+        key={service.id}
+        type="button"
+        onClick={() => navigate(service.href)}
+        onMouseEnter={() => setHighlightedIndex(index)}
+        className={cn(
+          "w-full px-4 py-3 flex items-start gap-3 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0",
+          highlightedIndex === index && "bg-accent"
+        )}
+      >
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-popover-foreground truncate">{service.title}</div>
+          {service.subtitle && <div className="text-sm text-muted-foreground truncate">{service.subtitle}</div>}
+        </div>
+      </button>
+    ));
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -352,12 +382,12 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
                     </button>
                   </div>
 
-                  {isAutocompleteOpen && suggestions.length > 0 && (
+                  {isAutocompleteOpen && (
                     <div
                       ref={dropdownRef}
                       className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-xl shadow-2xl border border-border max-h-96 overflow-y-auto z-50"
                     >
-                      {suggestions.map((item, index) => {
+                      {serviceMode ? renderServiceRows() : suggestions.map((item, index) => {
                         const title = getEntityTitle(item);
                         const address = getEntityAddress(item);
                         const id = getEntityId(item, index);
@@ -483,12 +513,12 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
                   </button>
                 </div>
 
-                {isAutocompleteOpen && suggestions.length > 0 && (
+                {isAutocompleteOpen && (
                   <div
                     ref={dropdownRef}
                     className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-xl shadow-2xl border border-border max-h-96 overflow-y-auto z-50"
                   >
-                    {suggestions.map((item, index) => {
+                    {serviceMode ? renderServiceRows() : suggestions.map((item, index) => {
                       const title = getEntityTitle(item);
                       const address = getEntityAddress(item);
                       const id = getEntityId(item, index);

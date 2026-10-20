@@ -81,3 +81,19 @@ export function walkSections(sections: SectionLike[]): SectionLike[] {
   }
   return out;
 }
+
+/**
+ * Section du site désignée par le chemin de sa PAGE et son id (containers traversés). Le chemin est
+ * requis : un id de section n'est pas unique dans une config (sur le site des tiers-lieux,
+ * `section-events` désigne l'agenda de l'accueil ET l'annuaire de `/lieux`). `null` si rien ne
+ * correspond.
+ */
+export function findSectionByRef(
+  // Sections non typées : la config typée (`SiteConfig.pages`) et les configs brutes passent toutes deux.
+  pages: ReadonlyArray<{ path?: string; sections?: ReadonlyArray<unknown> }> | undefined,
+  ref: { page: string; sectionId: string },
+): SectionLike | null {
+  const page = pages?.find((p) => p.path === ref.page);
+  if (!page?.sections) return null;
+  return walkSections(page.sections as SectionLike[]).find((s) => (s as { id?: unknown }).id === ref.sectionId) ?? null;
+}

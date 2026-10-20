@@ -241,6 +241,8 @@ export const FiltersSectionSchema = z.object({
     className: z.string().optional(),
     /** Masque le champ de recherche texte du panneau (ne garde que les groupes de filtres). */
     hideSearch: z.boolean().optional(),
+    /** Texte d'aide du champ de recherche. Absent : « Rechercher par nom… ». */
+    searchPlaceholder: LocalizedString.optional(),
   }),
 });
 
@@ -1473,6 +1475,17 @@ export const CoformResourceDirectorySectionSchema = z.object({
       thematicPath: z.string(),
       finderPath: z.string(),
     }).optional(),
+    /**
+     * Champ de recherche texte dans la colonne de filtres (relu/écrit en `?search=`) : nom du service,
+     * nom du lieu porteur, ville, code postal — filtre CÔTÉ NAVIGATEUR (le backend ne sait pas
+     * chercher par lieu). Défaut : false.
+     */
+    searchFilter: z.boolean().optional(),
+    /**
+     * Bascule Liste / Carte au-dessus des résultats : un repère par lieu porteur, sa popup liste ses
+     * services ; « En savoir plus » filtre la liste sur ce lieu. Défaut : false.
+     */
+    showMap: z.boolean().optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });

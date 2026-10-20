@@ -4,6 +4,7 @@ import {
   defaultOpenFilterGroups,
   matchesCapacity,
   matchesZones,
+  narrowResourceTypes,
   parentIdsFilter,
   parseCapacityRange,
   resourceCapacity,
@@ -148,5 +149,16 @@ describe("addressZoneIds", () => {
   it("adresse absente ou vide : aucune zone", () => {
     expect(addressZoneIds(undefined)).toEqual([]);
     expect(addressZoneIds({ level1: "" })).toEqual([]);
+  });
+});
+
+describe("narrowResourceTypes", () => {
+  const types = [{ id: "coworking" }, { id: "meeting-room" }, { id: "accommodation" }];
+  it("ne garde que les types demandés", () => {
+    expect(narrowResourceTypes(types, ["coworking"])).toEqual([{ id: "coworking" }]);
+  });
+  it("demande vide ou inconnue : tous les types (une URL fautive ne vide pas l'annuaire)", () => {
+    expect(narrowResourceTypes(types, [])).toEqual(types);
+    expect(narrowResourceTypes(types, ["inconnu"])).toEqual(types);
   });
 });

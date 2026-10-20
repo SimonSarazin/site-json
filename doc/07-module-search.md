@@ -581,11 +581,23 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 | `columns` | `{ sm?, md?, lg?, xl? }` | Grille de résultats (déf. `1/2/3`) |
 | `customHeader` | `{ title?, linkText?, linkHref? }` | En-tête : titre à gauche et bouton de lien vers la page complète à droite |
 | `limit` | entier ≥ 1 | Nombre maximal de cartes affichées ; borne aussi la requête initiale et désactive le scroll infini. La limite s'applique après l'éclatement des salles |
-| `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes |
+| `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes ; le type se lit alors dans l'URL de la page (`?resourceType=<id>,…`, posé par les boutons `ctaButtons[].filters` d'un `hero-search`) et filtre la **requête** (formulaires du type seulement, `narrowResourceTypes`) — avec `limit`, un filtre côté navigateur ne verrait que les N ressources chargées |
 | `priceFilters` | boolean (défaut `true`) | `false` retire les 3 groupes prix |
 | `thematicFilter` | `{ label, thematicPath, finderPath }` | Facette « réseaux thématiques » du lieu porteur (même réglage que `filtersByPath` de la section `filters`). Absente : pas de facette |
 | `capacityFilter` | boolean (défaut `false`) | Facette « Capacité d'accueil » (`1-10` / `10-30` / `30-50` / `50-`) |
 | `regionFilter` | `{ label, countryCode, level }` | Facette de zone (`scopeList`, ex. `level: ["3"]` = régions) sur l'adresse du lieu porteur. Absente : pas de facette |
+| `searchFilter` | boolean (défaut `false`) | Champ de recherche texte dans la colonne de filtres (`?search=`, donc relu depuis un lien, ex. `hero-search.searchHref`) : nom du service, nom du lieu porteur, ville, code postal — **CÔTÉ CLIENT**, sans accents ni casse, tous les mots requis |
+| `showMap` | boolean (défaut `false`) | Bascule Liste / Carte (`SearchMapWrapper` en `lazy` vite-preload) : **un repère par service** : position du service, sinon de son lieu porteur, sinon d'un service du même lieu (`resolveServicePoints`) ; les services d'un même point s'écartent en cercle autour de lui (`spreadServicePoints`, ~15 m entre voisins) pour rester cliquables au zoom. Popup = nom du service, « Porté par … », adresse ; « En savoir plus » ouvre la fiche du service (même détail que la liste). Sous la carte, le nombre de services sans aucune position (lieu non géolocalisé). Ignoré sans `showFilters` |
+
+Le chargement (requête, lecture, lieux porteurs) vit dans `hooks/useResourceDirectoryItems.ts`
+(`buildResourceDirectoryBaseParams`), partagé avec les suggestions de services du `hero-search`
+(`useServiceSuggestions`). Champ de recherche : texte d'aide « Lieu, ville, code postal… »
+(`FiltersSection.searchPlaceholder`, option du panneau de filtres, défaut « Rechercher par nom… »).
+
+Les lieux porteurs sont lus pour **toutes** les ressources chargées (filtre de zone, recherche sur leur
+nom et leur ville). Logique pure dans `lib/resourceDirectorySearch.ts`
+(`matchesResourceSearch`, `resolveServicePoints`, `spreadServicePoints`, et `resourceDisplayName`, le nom
+affiché d'une ressource partagé par la carte, l'aperçu, la recherche et la vue carte).
 
 Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
 en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas

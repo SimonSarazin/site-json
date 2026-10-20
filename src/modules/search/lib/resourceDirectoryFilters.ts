@@ -137,3 +137,13 @@ export function defaultOpenFilterGroups(
     ...declared.priceGroupIds,
   ].slice(0, count);
 }
+
+/**
+ * Types de ressource à INTERROGER : ceux dont l'id est demandé, ou tous si la demande est vide ou ne
+ * désigne aucun type connu (une URL fautive ne vide pas l'annuaire).
+ */
+export function narrowResourceTypes<T extends { id: string }>(types: readonly T[], ids: readonly string[]): T[] {
+  if (ids.length === 0) return [...types];
+  const retenus = types.filter((t) => ids.includes(t.id));
+  return retenus.length > 0 ? retenus : [...types];
+}

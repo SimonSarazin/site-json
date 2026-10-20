@@ -172,7 +172,7 @@ export function FiltersSection({
     const v = (s ?? "").trim();
     return v ? v.charAt(0).toUpperCase() + v.slice(1) : v;
   };
-  const { title, filterGroups: propsFiltersGroupsBruts, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className, hideSearch } = props;
+  const { title, filterGroups: propsFiltersGroupsBruts, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className, hideSearch, searchPlaceholder } = props;
   // Options DYNAMIQUES résolues AVANT l'enrichissement : l'effet ci-dessous dépend de cette liste, il se
   // rejoue donc quand les valeurs arrivent, `setFilterGroups` suit, et la synchro URL — déjà continue
   // ici — restaure le deep-link. Un groupe sans `optionsFrom` traverse inchangé, sans aucune requête.
@@ -635,7 +635,7 @@ export function FiltersSection({
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="text"
-        placeholder={t("Rechercher par nom...")}
+        placeholder={searchPlaceholder ? t(searchPlaceholder) : t("Rechercher par nom...")}
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         className="pl-9"

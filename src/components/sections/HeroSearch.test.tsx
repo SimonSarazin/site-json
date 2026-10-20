@@ -15,6 +15,8 @@ vi.mock("@/modules/search/hooks/useAutocomplete", () => ({
   useAutocomplete: () => ({ suggestions: [], isLoading: false }),
 }));
 vi.mock("@/modules/search/hooks/usePageFiltersUrlSync", () => ({ usePageFiltersUrlSync: () => undefined }));
+const services = { enabled: false, isLoading: false, suggestions: [] as Array<{ id: string; title: string; subtitle: string; href: string }> };
+vi.mock("@/modules/search/hooks/useServiceSuggestions", () => ({ useServiceSuggestions: () => services }));
 const setSearchQuery = vi.fn();
 vi.mock("@/modules/search/contexts/pageFilters", () => ({
   usePageFiltersOptional: () => ({ setSearchQuery, selectedFilters: {}, searchByFields: {} }),
@@ -38,6 +40,8 @@ const hero = (props: Record<string, unknown>) =>
 afterEach(() => {
   cleanup();
   setSearchQuery.mockClear();
+  services.enabled = false;
+  services.suggestions = [];
 });
 
 describe("HeroSearch — lancement de la recherche", () => {
@@ -61,5 +65,17 @@ describe("HeroSearch — lancement de la recherche", () => {
     fireEvent.click(screen.getAllByText("Rechercher")[0]);
     expect(setSearchQuery).toHaveBeenCalledWith("Lille");
     expect(screen.getByTestId("lieu").textContent).toBe("/?typologies=Coworking");
+  });
+
+  it("suggestions de services : nom + lieu, le choix ouvre le détail du service dans l'annuaire", () => {
+    services.enabled = true;
+    services.suggestions = [
+      { id: "r1", title: "Salle Majorelle", subtitle: "La Coroutine · Lille", href: "/annuaire-ressources?resource=r1" },
+    ];
+    hero({ searchHref: "/annuaire-ressources", serviceSuggestions: { page: "/annuaire-ressources", sectionId: "x" } });
+    fireEvent.change(screen.getByPlaceholderText("Ville"), { target: { value: "major" } });
+    expect(screen.getByText("La Coroutine · Lille")).toBeTruthy();
+    fireEvent.click(screen.getByText("Salle Majorelle"));
+    expect(screen.getByTestId("lieu").textContent).toBe("/annuaire-ressources?resource=r1");
   });
 });

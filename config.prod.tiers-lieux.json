@@ -1266,7 +1266,7 @@
                 },
                 "filters": [
                   {
-                    "param": "services",
+                    "param": "resourceType",
                     "values": [
                       "meeting-room"
                     ]
@@ -1280,7 +1280,7 @@
                 },
                 "filters": [
                   {
-                    "param": "typologies",
+                    "param": "resourceType",
                     "values": [
                       "coworking"
                     ]
@@ -1294,9 +1294,9 @@
                 },
                 "filters": [
                   {
-                    "param": "services",
+                    "param": "resourceType",
                     "values": [
-                      "accomodation"
+                      "accommodation"
                     ]
                   }
                 ]
@@ -1306,13 +1306,17 @@
                   "fr": "+",
                   "en": "+"
                 },
-                "href": "/lieux"
+                "href": "/annuaire-ressources"
               }
             ],
-            "scrollTarget": "section-lieux",
+            "searchHref": "/annuaire-ressources",
+            "serviceSuggestions": {
+              "page": "/annuaire-ressources",
+              "sectionId": "annuaire-ressources-tl"
+            },
             "placeholder": {
-              "fr": "Ville, département, code postal ...",
-              "en": "City, ZIP code ..."
+              "fr": "Lieu, ville, code postal ...",
+              "en": "Place, city, ZIP code ..."
             },
             "searchButtonText": {
               "fr": "Rechercher",
@@ -3238,6 +3242,8 @@
                 "3"
               ]
             },
+            "searchFilter": true,
+            "showMap": true,
             "finderSuffix": "miem3epsztzcm9dgim",
             "fieldSuffixes": {
               "equipments": "mieg8j24m89gm99t5mi",

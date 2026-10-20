@@ -211,6 +211,10 @@ export const HeroSearchSchema = z.object({
     // texte saisi (`?search=`) et les filtres actifs de la page, au lieu de filtrer la liste de la page
     // (souvent un aperçu de quelques résultats) — même champ vide. Absent : comportement historique.
     searchHref: z.string().optional(),
+    // Suggestions de SERVICES (au lieu des fiches) pendant la saisie : l'annuaire de ressources désigné
+    // par sa page et l'id de sa section `coform-resource-directory` (sa config est reprise). Une
+    // suggestion ouvre le détail du service dans cet annuaire. Absent : suggestions de fiches.
+    serviceSuggestions: z.object({ page: z.string(), sectionId: z.string() }).optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
     // Scope de l'autocomplétion du hero — aligner sur le `searchProStatic` de la page
