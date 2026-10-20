@@ -47,7 +47,7 @@ interface Montage {
 function monter({ audiences = ["authorAll", "authorAdmin"], reponse = async () => ({ result: true, thread: FIL_CREE }) }: Montage = {}) {
   const createDiscussion = vi.fn(reponse);
   const cocolight = {
-    api: { createDiscussion }, me: { isConnected: true }, entity: { userContext: { id: "65d4000000000000000000d1" } }, helper: {},
+    api: { discussions: { create: createDiscussion } }, me: { isConnected: true }, entity: { userContext: { id: "65d4000000000000000000d1" } }, helper: {},
   } as unknown as CocolightContextType;
   const onCreated = vi.fn();
   const onCancel = vi.fn();

@@ -135,7 +135,7 @@ interface Montage {
 function monter({ session = true, reponse = REPONSE, hote = true, commun = false, etapes = ETAPES }: Montage = {}) {
   const getDiscussionSpace = vi.fn(async () => espace(session));
   const entity = session ? { userContext: { id: UTILISATEUR } } : null;
-  const cocolight = { api: { getDiscussionSpace }, me: null, entity, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity, helper: {} } as unknown as CocolightContextType;
   const formulaire = (
     <form data-testid="formulaire" onSubmit={event => { event.preventDefault(); soumis(); }}>
       <FormStepKeyContext.Provider value="etapeUn_0">
@@ -339,7 +339,7 @@ describe("l'hôte des discussions (`FormQuestionDiscussions`)", () => {
         </FormStepKeyContext.Provider>
       </FormQuestionDiscussions>
     );
-    const cocolight = { api: { getDiscussionSpace: vi.fn() }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { space: vi.fn() } }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
     return avecSession ? <CocolightContext.Provider value={cocolight}><LocalizationProvider>{contenu}</LocalizationProvider></CocolightContext.Provider> : <LocalizationProvider>{contenu}</LocalizationProvider>;
   };
 
@@ -360,7 +360,7 @@ describe("l'hôte des discussions (`FormQuestionDiscussions`)", () => {
     const champ = document.querySelector<HTMLInputElement>("#champ-projet")!;
     champ.value = "saisie en cours";
     const ETAPE = document.querySelector('[data-etape="un"]');
-    const cocolight = { api: { getDiscussionSpace: vi.fn(async () => espace(true)) }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { space: vi.fn(async () => espace(true)) } }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
     rerender(
       <MemoryRouter initialEntries={["/coform/un-formulaire"]}>
         <QueryClientProvider client={new QueryClient()}>
@@ -408,7 +408,7 @@ describe("en lecture (`CoFormReadOnly`)", () => {
 
   it("une question ouverte reçoit son bouton dans son libellé de lecture ; une question fermée garde le libellé seul", async () => {
     const getDiscussionSpace = vi.fn(async () => espace(true));
-    const cocolight = { api: { getDiscussionSpace }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
     render(
       <MemoryRouter initialEntries={["/coform/un-formulaire/answer/une-reponse"]}>
         <QueryClientProvider client={new QueryClient()}>
@@ -440,7 +440,7 @@ describe("en lecture (`CoFormReadOnly`)", () => {
 
   it("sans hôte, une question ouverte garde son libellé de lecture seul — et rien n'est demandé", async () => {
     const getDiscussionSpace = vi.fn(async () => espace(true));
-    const cocolight = { api: { getDiscussionSpace }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
     render(
       <MemoryRouter initialEntries={["/coform/un-formulaire/answer/une-reponse"]}>
         <QueryClientProvider client={new QueryClient()}>
@@ -467,7 +467,7 @@ describe("en lecture (`CoFormReadOnly`)", () => {
       } } },
     } as unknown as CoFormData;
     const getDiscussionSpace = vi.fn(async () => ({ ...espace(true), threads: [fil(ETAPE_UN, "etapeUn_0", "depense", { virtual: false, total: 2 })] }));
-    const cocolight = { api: { getDiscussionSpace }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
     render(
       <MemoryRouter initialEntries={["/coform/un-formulaire/answer/une-reponse"]}>
         <QueryClientProvider client={new QueryClient()}>

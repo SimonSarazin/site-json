@@ -64,7 +64,7 @@ function SondeUrl() {
 }
 
 function monter(url: string) {
-  const cocolight = { api: { getDiscussionSpace: vi.fn(async () => ESPACE) }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: vi.fn(async () => ESPACE) } }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
   return render(
     <MemoryRouter initialEntries={["/aac", url]}>
       <QueryClientProvider client={new QueryClient()}>

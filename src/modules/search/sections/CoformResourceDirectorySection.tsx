@@ -194,8 +194,8 @@ export default function CoformResourceDirectorySection({
             }))
           : []),
       ],
-      // Réseaux thématiques : la sélection donne `filters._id.$in` = lieux membres, renvoyé au
-      // backend en `parentId` par la liste (cf. `parentIdsFilter`).
+      // Réseaux thématiques : `filterTarget: "parentId"` pose la sélection en `parentId` (lieux
+      // membres) ; la liste la croise avec le lieu cliqué (cf. `parentIdsFilter`).
       ...(thematicFilter
         ? {
             filtersByPath: {
@@ -203,6 +203,8 @@ export default function CoformResourceDirectorySection({
                 label: thematicFilter.label,
                 thematicPath: thematicFilter.thematicPath,
                 finderPath: thematicFilter.finderPath,
+                // Sélection posée en `parentId` (lieux membres) : le champ que filtre le backend.
+                filterTarget: "parentId" as const,
                 notSourceKey: true,
                 optionStyle: "check" as const,
                 order: 1,
@@ -327,8 +329,9 @@ function ResourceDirectoryList({
   // backend, qui rendrait tout l'annuaire — et liste vide.
   const aucunLieu = lieuxFiltres !== null && lieuxFiltres.length === 0;
   const serverFilters = useMemo(() => {
-    const { _id: _thematic, ...rest } = filters;
-    void _thematic;
+    // `parentId` est recomposé ici (réseaux cochés × lieu cliqué, cf. `parentIdsFilter`).
+    const { parentId: _reseaux, ...rest } = filters;
+    void _reseaux;
     return { ...rest, ...(lieuxFiltres && lieuxFiltres.length > 0 ? { parentId: { $in: lieuxFiltres } } : {}) };
   }, [filters, lieuxFiltres]);
   const mergedBaseParams = useMemo(
@@ -391,7 +394,7 @@ function ResourceDirectoryList({
     () => items.map((it) => it.model.parent?.id).filter((v): v is string => !!v),
     [items],
   );
-  const { parents, isLoading: parentsLoading } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
+  const { parents, isLoading: parentsLoading, isError: parentsError } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
 
   // Facettes CLIENT : type (`selectedFilters.resourceType`), capacité (`selectedFilters.capacity`),
   // zone du lieu porteur (`searchByFields`, type `scopeList`).
@@ -432,7 +435,9 @@ function ResourceDirectoryList({
         </p>
       </div>
 
-      {error ? (
+      {/* Zone cochée : elle se juge sur l'adresse des lieux porteurs — s'ils n'ont pas pu être lus, la
+          liste vide serait un « Aucun résultat » faux. */}
+      {error || (zones.length > 0 && parentsError) ? (
         <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {t("Aucun résultat trouvé.")}
         </div>

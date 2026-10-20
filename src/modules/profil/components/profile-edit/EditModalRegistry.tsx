@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useSite } from "@/hooks/useSite";
+import { useCocolight } from "@/hooks/useCocolight";
 import { entityMatchData } from "@/lib/entityMatch";
 import { check } from "@/modules/formEngine/engine/conditional";
 import type { FormValues, Predicate } from "@/modules/formEngine/types";
@@ -59,6 +60,13 @@ interface EditModalRoute {
   editModal?: string;
   editModalMatch?: Record<string, unknown>;
   when?: Predicate;
+  /** Condition sur le VISITEUR (cf. `profil/schema.ts` editModals) — tranchée par `routeMatches` avec `ctx.me`. */
+  userContext?: "own" | "other";
+}
+
+/** Contexte du VISITEUR pour les routes à `userContext` : le compte connecté (slug). */
+export interface EditModalResolveCtx {
+  me?: { slug?: string | null } | null;
 }
 
 /**
@@ -97,8 +105,15 @@ function matchesEditModalCondition(
  * Échouer plutôt que matcher est le choix SÛR : au pire l'utilisateur obtient le formulaire
  * générique, jamais un formulaire costum sur une entité qui n'en relève pas.
  */
-function routeMatches(data: FormValues, route: EditModalRoute): boolean {
+function routeMatches(data: FormValues, route: EditModalRoute, ctx: EditModalResolveCtx, entitySlug: string | undefined): boolean {
   if (!matchesEditModalCondition(data, route.editModalMatch)) return false;
+  // `userContext` : même règle que `isTabVisible` (lib/tabVisibility) — « le sien » = slug du compte
+  // connecté égal au slug de l'entité ; sans compte connu, un profil n'est JAMAIS « le sien ».
+  if (route.userContext) {
+    const isOwn = !!ctx.me?.slug && !!entitySlug && ctx.me.slug === entitySlug;
+    if (route.userContext === "own" && !isOwn) return false;
+    if (route.userContext === "other" && isOwn) return false;
+  }
   try {
     return check(route.when, data);
   } catch (err) {
@@ -120,7 +135,10 @@ function routeMatches(data: FormValues, route: EditModalRoute): boolean {
  * Conditions d'une route (toutes optionnelles, cumulatives) :
  *  - `editModalMatch` — forme plate `{clé: valeur}`, cf. {@link matchesEditModalCondition} ;
  *  - `when` — prédicat complet (`and`/`or`/`not`, ops `eq`/`contains`/`ne`/…), même grammaire que
- *    `list.itemRules` et les règles d'icônes de la palette.
+ *    `list.itemRules` et les règles d'icônes de la palette ;
+ *  - `userContext` — `own`/`other`, tranché contre `ctx.me` (le compte connecté) : la seule
+ *    condition qui regarde le VISITEUR et non l'entité. Sans `ctx.me`, une route `own` ne matche
+ *    jamais (comme un onglet `own` avant hydratation).
  * Une route SANS condition est un **catch-all** : elle s'applique à TOUTES les entités du type,
  * y compris celles étrangères au costum, et court-circuite les routes suivantes → la placer en
  * dernier, et n'y recourir que si le formulaire vaut vraiment pour toute la collection.
@@ -148,8 +166,10 @@ function routeMatches(data: FormValues, route: EditModalRoute): boolean {
  */
 export function resolveEditModalName(
   entity: EntityTypes,
-  config: ReturnType<typeof useSite>["config"]
+  config: ReturnType<typeof useSite>["config"],
+  ctx: EditModalResolveCtx = {},
 ): string {
+  const entitySlug = typeof entity.slug === "string" ? entity.slug : undefined;
   const profileKey = typeof entity.getEntityType === "function" ? entity.getEntityType() : null;
   const profiles = config.profiles as
     | Record<string, ({ editModals?: EditModalRoute[] } & EditModalRoute) | undefined>
@@ -165,12 +185,12 @@ export function resolveEditModalName(
   //    (ex. poi → edit-<slug>-recoveryCenter si type==="recoveryCenter", edit-<slug>-article si "article", …)
   if (Array.isArray(profileConfig.editModals)) {
     for (const route of profileConfig.editModals) {
-      if (route.editModal && routeMatches(data, route)) return route.editModal;
+      if (route.editModal && routeMatches(data, route, ctx, entitySlug)) return route.editModal;
     }
   }
 
   // 2. Rétro-compat : editModal unique conditionnel (comportement historique).
-  if (profileConfig.editModal && routeMatches(data, profileConfig)) {
+  if (profileConfig.editModal && routeMatches(data, profileConfig, ctx, entitySlug)) {
     return profileConfig.editModal;
   }
 
@@ -192,7 +212,8 @@ export function DynamicEditModal({
   modalName: forcedModalName,
 }: EditModalProps & { modalName?: string }) {
   const { config } = useSite();
-  const modalName = forcedModalName ?? resolveEditModalName(entity, config);
+  const { me } = useCocolight();
+  const modalName = forcedModalName ?? resolveEditModalName(entity, config, { me: me as EditModalResolveCtx["me"] });
   ensureLazyEditModal(modalName);
   const ModalComponent = lazyComponents[modalName];
 

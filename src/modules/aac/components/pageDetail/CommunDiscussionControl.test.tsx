@@ -104,7 +104,7 @@ interface Montage {
 function monter({ url = FICHE, total = 0, unread = 0, utilisateur = unread > 0 ? UTILISATEUR : null, reponse }: Montage = {}) {
   const getDiscussionSpace = vi.fn(reponse ?? (async () => espace(total, unread, utilisateur !== null)));
   const entity = utilisateur ? { userContext: { id: utilisateur } } : null;
-  const cocolight = { api: { getDiscussionSpace }, me: null, entity, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity, helper: {} } as unknown as CocolightContextType;
   const client = new QueryClient();
   const rendu = render(
     <MemoryRouter initialEntries={[url]}>

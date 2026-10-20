@@ -579,6 +579,14 @@ export const ProfileConfigSchema = z.object({
     editModal: z.string(),
     editModalMatch: z.record(z.string(), z.unknown()).optional(),
     when: PredicateJson.optional(),
+    /**
+     * Condition sur le VISITEUR (même vocabulaire que `tabs[].condition.userContext`) : `own` = la
+     * route ne vaut que sur le profil de la personne CONNECTÉE, `other` = sur celui d'un tiers.
+     * Cumulative avec `editModalMatch`/`when` (qui, eux, ne voient que l'entité). Sert le
+     * formulaire costum d'un CITOYEN (cocolight-backend/docs/33 : droit = soi-même), qu'un
+     * super-admin ouvrant le profil d'un tiers ne doit pas recevoir.
+     */
+    userContext: z.enum(["own", "other"]).optional(),
   })).optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),

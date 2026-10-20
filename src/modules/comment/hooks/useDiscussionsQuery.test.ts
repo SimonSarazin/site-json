@@ -76,7 +76,7 @@ describe("useDiscussionsQuery — le sondage, câblé", () => {
   ) {
     const getDiscussions = vi.fn(reponse);
     const entity = utilisateur ? { userContext: { id: utilisateur } } : null;
-    const cocolight = { api: { getDiscussions }, me: null, entity, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { list: getDiscussions } }, me: null, entity, helper: {} } as unknown as CocolightContextType;
     const client = new QueryClient();
     const wrapper = ({ children }: { children: ReactNode }) =>
       createElement(QueryClientProvider, { client },
@@ -173,7 +173,7 @@ describe("useDiscussionsQuery — le sondage, câblé", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(client.getQueryData(COMMENT_QUERY_KEYS.DISCUSSIONS("rail", null, null))).toBeDefined();
 
-    const cocolight = { api: { getDiscussions }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { list: getDiscussions } }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
     const rendus: boolean[] = [];
     renderHook(() => {
       const requete = useDiscussionsQuery(RAIL);

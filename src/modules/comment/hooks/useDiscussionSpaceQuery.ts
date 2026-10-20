@@ -65,9 +65,9 @@ export function useDiscussionSpaceQuery(
     retry: reessayer,
     queryFn: async (): Promise<DiscussionSpace> => {
       if (!space) throw new Error("Aucun espace de discussion");
-      const raw = await rawOrRefusal(() => (api as unknown as {
-        getDiscussionSpace: (o: Record<string, unknown>) => Promise<unknown>;
-      }).getDiscussionSpace({ contextType: space.type, contextId: space.id }));
+      if (!api) throw new Error("SDK indisponible");
+      // `api.discussions.space` (SDK 1.0.202) ; la réponse est relue par `parseSpace`, qui fait foi.
+      const raw = await rawOrRefusal(() => api.discussions.space({ contextType: space.type, contextId: space.id }));
       return parseSpace(raw);
     },
   });

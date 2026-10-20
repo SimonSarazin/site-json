@@ -91,7 +91,7 @@ function Formulaire({ depart }: { depart: DepenseEntry[] }) {
 
 function monter(enregistrees: DepenseEntry[] = [LOCAL, MATERIEL, SALAIRES]) {
   const getDiscussionSpace = vi.fn(async () => espace);
-  const cocolight = { api: { getDiscussionSpace }, me: null, entity: { userContext: { id: "65d4000000000000000000d1" } }, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity: { userContext: { id: "65d4000000000000000000d1" } }, helper: {} } as unknown as CocolightContextType;
   const client = new QueryClient();
   const rendu = render(
     <MemoryRouter initialEntries={[`/aac/commun/${COMMUN}`]}>

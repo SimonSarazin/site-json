@@ -48,6 +48,7 @@
       "usageSubCategory": "Usage sub-category",
       "tags": "Filter by tag",
       "maturity": "Usable",
+      "commune": "Municipality",
       "sort": "Sort by",
       "reset": "Clear"
     },
@@ -55,6 +56,9 @@
       "untitled": "Untitled commons",
       "noDescription": "(No description)",
       "pending": "Pending",
+      "project": "Project: {{name}}",
+      "inProject": "In project",
+      "location": "Municipality",
       "collected": "Collected on ongoing co-funding",
       "noFunding": "No co-funding request currently pending",
       "user": "user",
@@ -137,6 +141,12 @@
       "remaining": "Remaining to fund",
       "cta": "Fund this commun",
       "goalReached": "Goal reached",
+      "raised": "Funds raised",
+      "cofinancersCount_one": "{{count}} co-funder",
+      "cofinancersCount_other": "{{count}} co-funders",
+      "remainingToFund": "{{amount}} left to fund",
+      "expensesTotal": "Total:",
+      "support": "Support this project",
       "selectOrganization": "Select an organization",
       "noOrganizationFound": "No organization found."
     },
@@ -202,6 +212,18 @@
       "pendingTitle": "Pending invitations",
       "pendingInvitation": "Invitation sent",
       "seeProject": "See the project"
+    },
+    "newsSection": {
+      "error": "The project's news could not be loaded."
+    },
+    "agendaSection": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "ongoing": "Ongoing",
+      "empty": "No upcoming events.",
+      "emptyPast": "No past events.",
+      "error": "The project's events could not be loaded.",
+      "more": "Show more"
     },
     "prose": {
       "empty": "No information available."
@@ -318,5 +340,92 @@
   },
   "highlight": {
     "communs": "Commons submitted"
+  },
+  "editorial": {
+    "directory": {
+      "count_one": "{{count}} project",
+      "count_other": "{{count}} projects",
+      "reset": "Reset filters",
+      "searchPlaceholder": "Search a project by name",
+      "filters": {
+        "tags": "Theme",
+        "usage": "Need",
+        "maturity": "Stage",
+        "commune": "Municipality",
+        "all": "All",
+        "selected_one": "{{count}} selected",
+        "selected_other": "{{count}} selected",
+        "usageSubCategory": "Narrow the need",
+        "sort": "Sort",
+        "sortDefault": "Default order"
+      },
+      "card": {
+        "raised": "€{{raised}} raised of €{{needed}}",
+        "interested": "Interested"
+      }
+    },
+    "detail": {
+      "breadcrumb": "Projects",
+      "project": "The project",
+      "peopleInvolved": "{{count}} people involved",
+      "commands": "Actions on this commons",
+      "export": "Export the file",
+      "soon": "Coming soon",
+      "tabs": {
+        "label": "Project sections",
+        "fiche": "Overview",
+        "action": "Taking action",
+        "argent": "Money and transparency",
+        "communaute": "Community",
+        "vie": "News and agenda",
+        "maturation": "Maturation",
+        "cooperations": "Cooperations"
+      },
+      "noProject": "Milestones and actions open as soon as a project is linked to this commons.",
+      "noProjectLife": "News and agenda open as soon as a project is linked to this commons.",
+      "noProjectCommunity": "Contributors appear as soon as a project is linked to this commons.",
+      "impact": "Impact indicators",
+      "calls": {
+        "title": "Calls for projects companion",
+        "intro": "Which open calls fit this project, and what should be prepared?",
+        "cta": "Find relevant calls"
+      },
+      "feedback": {
+        "title": "Reviews and ideas ({{count}})",
+        "cta": "Give my opinion"
+      },
+      "supports": {
+        "title": "Support ({{count}})",
+        "cta": "Offer my support"
+      },
+      "news": "News",
+      "expenses": "Committed expenses",
+      "agenda": "Agenda",
+      "maturation": {
+        "title": "Questions that help the project mature",
+        "intro": "Each answer enriches the single project file and will be reused in the next applications.",
+        "askedBy": "Asked by {{name}}",
+        "addTitle": "Add a question",
+        "addIntro": "Write down a question asked by a funder, a partner or a resident.",
+        "addPlaceholder": "E.g. How is the project funded once the grant ends?",
+        "askedByPlaceholder": "Asked by (optional)",
+        "addCta": "Add the question",
+        "assistantTitle": "Maturation assistant",
+        "assistantIntro": "The assistant reads the project file and suggests the questions a funder will ask.",
+        "assistantCta": "Suggest questions",
+        "keep": "Add to the file"
+      },
+      "cooperations": {
+        "kicker": "Team up rather than working alone",
+        "title": "Possible cooperations",
+        "intro": "These projects share a territory, a need or an experience with this one. For each, here is what could concretely be pooled.",
+        "open": "Open the cooperation",
+        "see": "See this project"
+      }
+    },
+    "demo": {
+      "badge": "Example",
+      "notice": "Demo content — this feature is coming soon."
+    }
   }
 }

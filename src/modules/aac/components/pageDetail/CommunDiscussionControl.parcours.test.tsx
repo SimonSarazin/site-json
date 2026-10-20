@@ -133,7 +133,7 @@ function monter(historique: readonly string[] = [AVANT, FICHE], { deposant = fal
     return { result: true, thread };
   });
   const cocolight = {
-    api: { getDiscussionSpace, createDiscussion },
+    api: { discussions: { space: getDiscussionSpace, create: createDiscussion } },
     me: deposant ? { isConnected: true } : null,
     entity: deposant ? { userContext: { id: DEPOSANT } } : null,
     helper: {},

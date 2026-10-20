@@ -162,7 +162,7 @@ function preparer(options: Montage = {}) {
   const getDiscussionSpace = vi.fn(typeof sert === "function" ? (sert as () => Promise<unknown>) : async () => sert);
   const createDiscussion = vi.fn(cree);
   const cocolight = {
-    api: { getDiscussionSpace, createDiscussion },
+    api: { discussions: { space: getDiscussionSpace, create: createDiscussion } },
     me: session ? { isConnected: true } : null,
     // La clé de cache porte le lecteur : une session sans lui rangerait sa liste sous celle du visiteur.
     entity: session ? { userContext: { id: UTILISATEUR } } : null,

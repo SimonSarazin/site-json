@@ -62,7 +62,7 @@ const ETAPES: SubFormFields[] = [{ subFormId: "aapStep1", subFormName: "Dépôt"
 
 function monter(formulaireDAbord: boolean) {
   const getDiscussionSpace = vi.fn(async () => espace());
-  const cocolight = { api: { getDiscussionSpace }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
   const fiche = <CommunDiscussionControl key="fiche" answerId={COMMUN} communTitle="Un commun" />;
   const formulaire = (
     <FormQuestionDiscussions key="formulaire" answerId={COMMUN} form={{ name: "Appel à communs", type: "aap" }} steps={ETAPES}>

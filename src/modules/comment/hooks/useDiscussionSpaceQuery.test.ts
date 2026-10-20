@@ -68,7 +68,7 @@ function monter({ reponse = async () => REPONSE, space = ESPACE, options, utilis
   const session = { entity: (utilisateur ? { userContext: { id: utilisateur } } : null) as { userContext: { id: string } } | null };
   const client = new QueryClient();
   const wrapper = ({ children }: { children: ReactNode }) => {
-    const cocolight = { api: { getDiscussionSpace }, me: null, entity: session.entity, helper: {} } as unknown as CocolightContextType;
+    const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity: session.entity, helper: {} } as unknown as CocolightContextType;
     return createElement(QueryClientProvider, { client },
       createElement(CocolightContext.Provider, { value: cocolight }, children));
   };

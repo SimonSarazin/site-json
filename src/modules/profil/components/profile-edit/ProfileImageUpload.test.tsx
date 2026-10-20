@@ -28,10 +28,13 @@ const carre = new File(["carre"], "photo.png", { type: "image/png" });
 const padFileToSquare = vi.fn(async (_file: File) => carre);
 vi.mock("../../lib/padToSquare", () => ({ padFileToSquare: (f: File) => padFileToSquare(f) }));
 // `lightenImage` réel par défaut (une petite photo part telle quelle) ; surchargé au cas par cas.
-const { lightenImage } = vi.hoisted(() => ({ lightenImage: vi.fn() }));
+const { lightenImage, lightenReel } = vi.hoisted(() => ({
+  lightenImage: vi.fn(),
+  lightenReel: { fn: null as null | ((f: File) => Promise<File>) },
+}));
 vi.mock("@/utils/imageUtils", async (importOriginal) => {
   const reel = await importOriginal<typeof import("@/utils/imageUtils")>();
-  lightenImage.mockImplementation(reel.lightenImage);
+  lightenReel.fn = (f: File) => reel.lightenImage(f);
   return { ...reel, lightenImage: (f: File) => lightenImage(f) };
 });
 vi.mock("@/modules/news", () => ({
@@ -64,6 +67,10 @@ vi.mock("@/modules/news", () => ({
 
 import { ProfileImageUpload } from "./ProfileImageUpload";
 
+/** Dernier fichier reçu par une fonction simulée. Comparé par IDENTITÉ (`toBe`) : `toEqual` juge deux
+ *  `File` égaux quel que soit leur contenu (aucune propriété énumérable) — un mauvais fichier passerait. */
+const dernierFichier = (fn: { mock: { calls: unknown[][] } }) => fn.mock.calls[fn.mock.calls.length - 1]?.[0];
+
 const entity = {} as EntityTypes;
 const photo = new File(["photo"], "photo.png", { type: "image/png" });
 
@@ -78,6 +85,12 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     state.uploadImage.mockClear();
     state.uploadBanner.mockClear();
     state.taille = { width: 1200, height: 400 };
+    // `mockReset` vide aussi les valeurs « Once » non consommées : sans lui, un test qui en programme
+    // une sans la consommer la ferait déborder sur le suivant.
+    lightenImage.mockReset();
+    lightenImage.mockImplementation((f: File) => lightenReel.fn!(f));
+    padFileToSquare.mockReset();
+    padFileToSquare.mockImplementation(async () => carre);
   });
 
   it("propose les formats, la photo d'origine en premier, pour les deux types", async () => {
@@ -90,14 +103,16 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     await choisirPhoto("banner");
     fireEvent.click(screen.getByText("image entière"));
     await waitFor(() => expect(state.uploadBanner).toHaveBeenCalled());
-    expect(state.uploadBanner).toHaveBeenCalledWith({ file: photo, cropX: 0, cropY: 0, cropW: 1200, cropH: 400 });
+    expect(state.uploadBanner).toHaveBeenCalledWith(expect.objectContaining({ cropX: 0, cropY: 0, cropW: 1200, cropH: 400 }));
+    expect((dernierFichier(state.uploadBanner) as { file: File }).file).toBe(photo);
   });
 
   it("photo de profil, image entière : le fichier d'origine, complété en carré, est envoyé", async () => {
     await choisirPhoto("profile");
     fireEvent.click(screen.getByText("image entière"));
-    await waitFor(() => expect(state.uploadImage).toHaveBeenCalledWith(carre));
-    expect(padFileToSquare).toHaveBeenCalledWith(photo);
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
+    expect(dernierFichier(state.uploadImage)).toBe(carre);
+    expect(dernierFichier(padFileToSquare)).toBe(photo);
   });
 
   it("photo de profil : si la mise au carré échoue, la photo part telle quelle (rien n'est perdu)", async () => {
@@ -105,7 +120,8 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     vi.spyOn(console, "warn").mockImplementation(() => {});
     await choisirPhoto("profile");
     fireEvent.click(screen.getByText("image entière"));
-    await waitFor(() => expect(state.uploadImage).toHaveBeenCalledWith(photo));
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
+    expect(dernierFichier(state.uploadImage)).toBe(photo);
   });
 
   it("grande bannière : allégée avant l'envoi, zone de recadrage aux dimensions du fichier envoyé", async () => {
@@ -115,7 +131,44 @@ describe("ProfileImageUpload — envoi de la bannière et de la photo de profil"
     await choisirPhoto("banner");
     fireEvent.click(screen.getByText("image entière"));
     await waitFor(() => expect(state.uploadBanner).toHaveBeenCalled());
-    expect(state.uploadBanner).toHaveBeenCalledWith({ file: legere, cropX: 0, cropY: 0, cropW: 1920, cropH: 1269 });
+    expect(state.uploadBanner).toHaveBeenCalledWith(expect.objectContaining({ cropX: 0, cropY: 0, cropW: 1920, cropH: 1269 }));
+    expect((dernierFichier(state.uploadBanner) as { file: File }).file).toBe(legere);
+  });
+
+  it("photo de profil : allégée AVANT la mise au carré (photo déjà carrée ou carré en échec : jamais à pleine taille)", async () => {
+    const legere = new File(["legere"], "photo.jpg", { type: "image/jpeg" });
+    lightenImage.mockResolvedValueOnce(legere);
+    padFileToSquare.mockClear();
+    await choisirPhoto("profile");
+    fireEvent.click(screen.getByText("image entière"));
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
+    expect(dernierFichier(state.uploadImage)).toBe(carre);
+    expect(dernierFichier(padFileToSquare)).toBe(legere);
+  });
+
+  it("photo de profil, carré en échec : c'est la version ALLÉGÉE qui part", async () => {
+    const legere = new File(["legere"], "photo.jpg", { type: "image/jpeg" });
+    lightenImage.mockResolvedValueOnce(legere);
+    padFileToSquare.mockRejectedValueOnce(new Error("canvas refusé"));
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    await choisirPhoto("profile");
+    fireEvent.click(screen.getByText("image entière"));
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
+    expect(dernierFichier(state.uploadImage)).toBe(legere);
+  });
+
+  it("échec d'envoi : le champ fichier est remis à zéro (rechoisir la même photo relance un envoi)", async () => {
+    state.uploadImage.mockRejectedValueOnce(new Error("réseau"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { container } = render(<ProfileImageUpload entity={entity} type="profile" />);
+    const input = container.querySelector("input[type=file]") as HTMLInputElement;
+    const remiseAZero = vi.fn();
+    Object.defineProperty(input, "value", { get: () => "photo.png", set: remiseAZero, configurable: true });
+    fireEvent.change(input, { target: { files: [photo] } });
+    await screen.findByText("appliquer");
+    fireEvent.click(screen.getByText("image entière"));
+    await waitFor(() => expect(state.uploadImage).toHaveBeenCalled());
+    await waitFor(() => expect(remiseAZero).toHaveBeenCalledWith(""));
   });
 
   it("bannière : jamais complétée en carré", async () => {

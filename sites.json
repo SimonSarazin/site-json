@@ -212,6 +212,17 @@
     "config": "config.prod.open-atlas.json",
     "css": "index-open-atlas",
     "images": "openAtlas",
+    "coolifyApp": "site-json-open-atlas",
+    "domain": "open-atlas.00.re",
+    "env": {
+      "VITE_COSTUM_FORCE_LIVE": "true"
+    }
+  },
+  {
+    "slug": "projetsre1",
+    "config": "config.prod.projetsre.json",
+    "css": "index-projetsre",
+    "images": "projetsre",
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
     }

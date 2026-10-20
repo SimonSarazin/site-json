@@ -10,6 +10,7 @@ const card = (p: Partial<AacCommunCard>): AacCommunCard => ({
   hasTitle: true,
   description: "",
   tags: [],
+  keywords: [],
   maturity: null,
   imageUrl: null,
   funds: [],
@@ -21,6 +22,8 @@ const card = (p: Partial<AacCommunCard>): AacCommunCard => ({
   interestCount: 0,
   isSelected: null,
   usage: EMPTY_AAC_USAGE,
+  address: null,
+  project: null,
   createdAt: 0,
   updatedAt: 0,
   ...p,
@@ -31,10 +34,20 @@ const f = (p: Partial<AacDirectoryFiltersState> = {}): AacDirectoryFiltersState 
   ...p,
 });
 
+/** Une adresse réduite à ce qui compte pour le filtre : sa commune. */
+const at = (locality: string): AacCommunCard["address"] => ({
+  locality,
+  postalCode: "",
+  streetAddress: "",
+  country: "",
+  localityId: "",
+  label: locality,
+});
+
 const CARDS = [
-  card({ id: "1", title: "Comparateur de statuts", tags: ["Numérique"], maturity: "Prototype" }),
-  card({ id: "2", title: "Vivants en Tiers-Lieux", tags: ["Gouvernance", "Vivant"], maturity: "Idée" }),
-  card({ id: "3", title: "Yeswiki", tags: ["Numérique", "Gouvernance"], maturity: "En production" }),
+  card({ id: "1", title: "Comparateur de statuts", tags: ["Numérique"], maturity: "Prototype", address: at("Saint-Denis") }),
+  card({ id: "2", title: "Vivants en Tiers-Lieux", tags: ["Gouvernance", "Vivant"], maturity: "Idée", address: at("Le Tampon") }),
+  card({ id: "3", title: "Yeswiki", tags: ["Numérique", "Gouvernance"], maturity: "En production", address: at("Saint-Denis") }),
   card({ id: "4", title: "Écologie appliquée", tags: [], maturity: null }),
 ];
 
@@ -83,10 +96,34 @@ describe("filterCommuns", () => {
     ]);
   });
 
+  it("commune : OR à l'intérieur de la facette", () => {
+    expect(ids(filterCommuns(CARDS, f({ commune: ["Saint-Denis"] })))).toEqual(["1", "3"]);
+    expect(ids(filterCommuns(CARDS, f({ commune: ["Saint-Denis", "Le Tampon"] })))).toEqual([
+      "1",
+      "2",
+      "3",
+    ]);
+  });
+
+  it("commune : comparaison repliée, comme les tags — accents et casse indifférents", () => {
+    expect(ids(filterCommuns(CARDS, f({ commune: ["saint-denis"] })))).toEqual(["1", "3"]);
+    expect(ids(filterCommuns(CARDS, f({ commune: ["LE TAMPON"] })))).toEqual(["2"]);
+  });
+
+  it("commune : un commun SANS adresse est exclu, pas inclus par défaut", () => {
+    expect(ids(filterCommuns(CARDS, f({ commune: ["Saint-Denis"] })))).not.toContain("4");
+  });
+
   it("AND entre facettes différentes", () => {
     expect(
       ids(filterCommuns(CARDS, f({ tags: ["Numérique"], maturity: ["Prototype"] })))
     ).toEqual(["1"]);
+    // La commune entre dans le ET au même titre que les autres facettes.
+    expect(ids(filterCommuns(CARDS, f({ tags: ["Numérique"], commune: ["Saint-Denis"] })))).toEqual([
+      "1",
+      "3",
+    ]);
+    expect(ids(filterCommuns(CARDS, f({ tags: ["Vivant"], commune: ["Saint-Denis"] })))).toEqual([]);
     expect(
       ids(filterCommuns(CARDS, f({ tags: ["Gouvernance"], maturity: ["Prototype"] })))
     ).toEqual([]);

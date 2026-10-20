@@ -100,7 +100,7 @@ interface Montage {
 function monter({ enregistrees = [A, B, C], lignes = [A, B, C], enabled = true, champ, reponse, session = true }: Montage = {}) {
   const getDiscussionSpace = vi.fn(async () => espace(session));
   const entity = session ? { userContext: { id: UTILISATEUR } } : null;
-  const cocolight = { api: { getDiscussionSpace }, me: null, entity, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity, helper: {} } as unknown as CocolightContextType;
   const client = new QueryClient();
   const rendu = render(
     <MemoryRouter initialEntries={[`/aac/commun/${COMMUN}`]}>

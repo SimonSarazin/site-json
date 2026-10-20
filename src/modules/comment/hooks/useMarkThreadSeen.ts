@@ -4,6 +4,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { COMMENT_QUERY_KEYS } from "../constants/queryKeys";
 import { threadValue } from "../lib/filKey";
 import type { CommentTarget } from "../types";
+import type { MarkCommentsSeenData } from "@communecter/cocolight-api-client";
 
 /**
  * Marque un fil comme LU dès qu'il s'ouvre — appelé par `CommentThread`, donc partout où un fil
@@ -68,7 +69,7 @@ export function useMarkThreadSeen(target: CommentTarget | null, unreadIds: reado
   const signature = unreadIds.join(",");
 
   useEffect(() => {
-    if (!cle || !target || !connecte) return;
+    if (!cle || !target || !connecte || !api) return;
     const ids = signature ? signature.split(",") : [];
     const deja = marques.current.get(cle) ?? new Set<string>();
     const nouveaux = ids.filter(id => !deja.has(id));
@@ -82,13 +83,13 @@ export function useMarkThreadSeen(target: CommentTarget | null, unreadIds: reado
 
     void (async () => {
       try {
-        const res = await (api as unknown as {
-          markCommentsSeen: (o: Record<string, unknown>) => Promise<unknown>;
-        }).markCommentsSeen({
-          contextType: target.type,
+        // `api.discussions.markSeen` (SDK 1.0.202) : `{ result: true, marked }`.
+        const res = await api.discussions.markSeen({
+          contextType: target.type as MarkCommentsSeenData["contextType"],
           contextId: target.id,
           ...(target.path ? { path: target.path } : {}),
-          ids: envoyes,
+          // Jamais vide ici (`nouveaux.length > 0`) : le tuple du contrat (1 à 500) le dit.
+          ids: envoyes as [string, ...string[]],
         });
 
         const marked = Number((res as { marked?: unknown } | null)?.marked ?? 0);

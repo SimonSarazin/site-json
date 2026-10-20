@@ -44,6 +44,8 @@ export interface AacDirectoryFiltersState {
   tags: string[];
   /** Question « Utilisable » — un radio, mais plusieurs valeurs cochables. */
   maturity: string[];
+  /** Communes retenues, par leur NOM (cf. `countCommuneFacets`). */
+  commune: string[];
   /** Catégories d'usage (niveau 1 de « Filtrer par besoins »). */
   usage: string[];
   /** Sous-catégories d'usage (niveau 2). */
@@ -55,6 +57,7 @@ export const EMPTY_AAC_FILTERS: AacDirectoryFiltersState = {
   q: "",
   tags: [],
   maturity: [],
+  commune: [],
   usage: [],
   usageSub: [],
   sort: "",
@@ -73,6 +76,7 @@ export function hasActiveFilters(filters: AacDirectoryFiltersState): boolean {
     filters.q.trim() !== "" ||
     filters.tags.length > 0 ||
     filters.maturity.length > 0 ||
+    filters.commune.length > 0 ||
     filters.usage.length > 0 ||
     filters.usageSub.length > 0 ||
     filters.sort !== ""
@@ -96,6 +100,7 @@ export function aacFiltersKey(
   opts: { pageSize: number }
 ): string {
   const parts: Record<string, string> = {
+    commune: canonList(filters.commune),
     maturity: canonList(filters.maturity),
     n: String(opts.pageSize),
     q: filters.q.trim().toLowerCase(),

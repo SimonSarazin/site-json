@@ -14,18 +14,21 @@ import {
   hasActiveFilters,
   AAC_SORT_KEYS,
   type AacDirectoryFiltersState,
-  type AacSortKey,
 } from "../../lib/filtersKey";
+import {
+  maturityOptionsOf,
+  resetFilters,
+  toggleIn,
+  toggleSort,
+  toggleUsageCategory,
+  visibleUsageSubs,
+  type AacFacetOption,
+} from "../../lib/directoryFilterActions";
 import type { AacDirectoryEnabledFilters } from "../../lib/directoryFilters";
 import type { AacUsageOption } from "../../lib/aacUsage";
 import type { AacCardFieldRef } from "../../lib/resolveAacCardFields";
 
-/** Une option cochable : identifiant, libellé, et décompte facultatif. */
-export interface AacFacetOption {
-  id: string;
-  label: string;
-  count?: number;
-}
+export type { AacFacetOption };
 
 interface AacDirectoryFiltersProps {
   filters: AacDirectoryFiltersState;
@@ -34,6 +37,8 @@ interface AacDirectoryFiltersProps {
   usageTree: AacUsageOption[];
   /** Tags avec leur décompte. */
   tagOptions: AacFacetOption[];
+  /** Communes avec leur décompte (rôle `directory.fields.adresse`) ; vide ⇒ facette masquée. */
+  communeOptions: AacFacetOption[];
   /** Question « Utilisable » résolue — porte le libellé ET les options. */
   maturityField: AacCardFieldRef | null;
   /** Filtres à afficher — DÉJÀ fusionnés avec les défauts (`resolveDirectoryFilters`). */
@@ -71,6 +76,7 @@ export function AacDirectoryFilters({
   onChange,
   usageTree,
   tagOptions,
+  communeOptions,
   maturityField,
   enabled,
   isLoading = false,
@@ -80,18 +86,10 @@ export function AacDirectoryFilters({
   const patch = (next: Partial<AacDirectoryFiltersState>) =>
     onChange({ ...filters, ...next });
 
-  const toggleIn = (list: readonly string[], value: string) =>
-    list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
-
   /** Sous-catégories des seules catégories retenues — « Tous » = toutes. */
-  const visibleSubs = usageTree
-    .filter((c) => filters.usage.length === 0 || filters.usage.includes(c.id))
-    .flatMap((c) => c.children);
+  const visibleSubs = visibleUsageSubs(usageTree, filters.usage);
 
-  const maturityOptions: AacFacetOption[] = (maturityField?.options ?? []).map((o) => ({
-    id: o.value,
-    label: o.label,
-  }));
+  const maturityOptions = maturityOptionsOf(maturityField);
 
   return (
     <aside className="rounded-xl border bg-card">
@@ -102,7 +100,7 @@ export function AacDirectoryFilters({
         </h3>
         <button
           type="button"
-          onClick={() => patch({ q: "", tags: [], maturity: [], usage: [], usageSub: [], sort: "" })}
+          onClick={() => onChange(resetFilters())}
           disabled={!hasActiveFilters(filters)}
           className="text-sm text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
         >
@@ -142,27 +140,8 @@ export function AacDirectoryFilters({
               allLabel={String(t("directory.filters.all"))}
               options={usageTree.map((c) => ({ id: c.id, label: c.label, count: c.count }))}
               selected={filters.usage}
-              onToggle={(id) => {
-                const nextUsage = toggleIn(filters.usage, id);
-                patch({
-                  usage: nextUsage,
-                  // Une sous-catégorie dont la catégorie n'est plus retenue
-                  // n'est plus atteignable : la garder filtrerait sur du
-                  // masqué, ce qui se lit comme un bug. SAUF si plus aucune
-                  // catégorie n'est retenue : « Tous » réaffiche toutes les
-                  // sous-catégories, celle qui est cochée reste donc
-                  // atteignable — la vider changerait la liste dans le dos
-                  // de l'utilisateur.
-                  usageSub:
-                    nextUsage.length === 0
-                      ? filters.usageSub
-                      : filters.usageSub.filter((subId) =>
-                          usageTree
-                            .filter((c) => nextUsage.includes(c.id))
-                            .some((c) => c.children.some((s) => s.id === subId))
-                        ),
-                });
-              }}
+              // Les sous-catégories inatteignables tombent avec leur catégorie (`toggleUsageCategory`).
+              onToggle={(id) => onChange(toggleUsageCategory(filters, usageTree, id))}
               onClear={() => patch({ usage: [], usageSub: [] })}
             />
 
@@ -197,6 +176,24 @@ export function AacDirectoryFilters({
               options={tagOptions}
               selected={filters.tags}
               onToggle={(id) => patch({ tags: toggleIn(filters.tags, id) })}
+            />
+          </Section>
+        )}
+
+        {enabled.commune && (
+          <Section
+            value="commune"
+            label={String(t("directory.filters.commune"))}
+            selectedCount={filters.commune.length}
+            isLoading={isLoading && communeOptions.length === 0}
+            isEmpty={communeOptions.length === 0}
+            loadingLabel={String(t("directory.loading"))}
+          >
+            <CheckboxList
+              name="commune"
+              options={communeOptions}
+              selected={filters.commune}
+              onToggle={(id) => patch({ commune: toggleIn(filters.commune, id) })}
             />
           </Section>
         )}
@@ -244,9 +241,7 @@ export function AacDirectoryFilters({
                       checked={filters.sort === key}
                       // Un seul tri à la fois : re-cocher le tri actif le retire
                       // et rend l'ordre du serveur.
-                      onCheckedChange={() =>
-                        patch({ sort: (filters.sort === key ? "" : key) as AacSortKey })
-                      }
+                      onCheckedChange={() => onChange(toggleSort(filters, key))}
                     />
                     <label
                       htmlFor={id}

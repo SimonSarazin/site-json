@@ -8,6 +8,7 @@ import { carrierKey, errorCodeOf, isRefusalCode, parseDiscussions, rawOrRefusal 
 import { threadValue } from "../lib/filKey";
 import { useDiscussionsRealtime } from "./useDiscussionsRealtime";
 import type { CarrierRef, CommentTarget, DiscussionsResult } from "../types";
+import type { GetDiscussionsData } from "@communecter/cocolight-api-client";
 
 /**
  * Le périmètre demandé au panneau. C'est LUI qui décide du travail fait côté serveur :
@@ -137,9 +138,9 @@ export function useDiscussionsQuery(
      */
     retry: reessayer,
     queryFn: async (): Promise<DiscussionsResult> => {
-      const raw = await rawOrRefusal(() => (api as unknown as {
-        getDiscussions: (o: Record<string, unknown>) => Promise<unknown>;
-      }).getDiscussions(payload));
+      if (!api) throw new Error("SDK indisponible");
+      // `api.discussions.list` (SDK 1.0.202) ; la réponse est relue par `parseDiscussions`, qui fait foi.
+      const raw = await rawOrRefusal(() => api.discussions.list(payload as GetDiscussionsData));
       return parseDiscussions(raw);
     },
   });

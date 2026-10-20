@@ -98,7 +98,7 @@ function Navigateur() {
 function monter(historique: readonly string[] = [AVANT, FICHE], { session = true } = {}) {
   const getDiscussionSpace = vi.fn(async () => espace(session));
   const cocolight = {
-    api: { getDiscussionSpace },
+    api: { discussions: { space: getDiscussionSpace } },
     me: session ? { isConnected: true } : null,
     entity: session ? { userContext: { id: UTILISATEUR } } : null,
     helper: {},

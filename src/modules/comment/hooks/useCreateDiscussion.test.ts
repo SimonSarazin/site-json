@@ -54,7 +54,7 @@ const refusDuSdk = (code: string) => async (): Promise<never> => {
 function monter(reponse: (corps: Record<string, unknown>) => Promise<unknown>, { enCache = true } = {}) {
   const createDiscussion = vi.fn(reponse);
   const cocolight = {
-    api: { createDiscussion }, me: { isConnected: true }, entity: { userContext: { id: UTILISATEUR } }, helper: {},
+    api: { discussions: { create: createDiscussion } }, me: { isConnected: true }, entity: { userContext: { id: UTILISATEUR } }, helper: {},
   } as unknown as CocolightContextType;
   const client = new QueryClient();
   if (enCache) client.setQueryData(CLE, LISTE);

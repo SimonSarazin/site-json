@@ -21,7 +21,7 @@ import type { CommentTarget } from "../types";
 const session = vi.hoisted(() => ({ connecte: true, markCommentsSeen: vi.fn() }));
 vi.mock("@/hooks/useCocolight", () => ({
   useCocolight: () => ({
-    api: { markCommentsSeen: session.markCommentsSeen },
+    api: { discussions: { markSeen: session.markCommentsSeen } },
     me: { isConnected: session.connecte },
   }),
 }));

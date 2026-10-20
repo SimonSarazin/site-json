@@ -32,9 +32,9 @@ export function useCreateDiscussion(space: SpaceRef) {
 
   return useMutation<DiscussionThread, unknown, NewDiscussion>({
     mutationFn: async ({ name, audience }) => {
-      const raw = await rawOrRefusal(() => (api as unknown as {
-        createDiscussion: (o: Record<string, unknown>) => Promise<unknown>;
-      }).createDiscussion({ contextType: space.type, contextId: space.id, name, audience }));
+      if (!api) throw new Error("SDK indisponible");
+      // `api.discussions.create` (SDK 1.0.202) ; le fil rendu est relu par `parseCreatedDiscussion`.
+      const raw = await rawOrRefusal(() => api.discussions.create({ contextType: space.type, contextId: space.id, name, audience }));
       return parseCreatedDiscussion(raw);
     },
     onSuccess: thread => {

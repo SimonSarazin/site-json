@@ -41,6 +41,7 @@ const contextState = {
   // Droits du visiteur. Au repos : aucun — l'annuaire se rend d'abord pour un
   // visiteur ordinaire, la suppression est l'exception qu'on active au cas par cas.
   permissions: { isAdmin: false, canDeleteCommun: () => false },
+  variants: {},
 };
 const CONTEXT_AT_REST = { ...contextState };
 

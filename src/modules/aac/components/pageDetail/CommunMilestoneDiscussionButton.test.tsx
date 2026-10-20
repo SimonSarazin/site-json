@@ -117,7 +117,7 @@ const TOUTES = [["0", "Local"], ["2", "Matériel"], ["5", "Salaires"], ["9", "Sa
 function monter({ url = FICHE, session = true, lignes = TOUTES, fils = [], reponse }: Montage = {}) {
   const getDiscussionSpace = vi.fn(reponse ?? (async () => espace(session, fils)));
   const entity = session ? { userContext: { id: UTILISATEUR } } : null;
-  const cocolight = { api: { getDiscussionSpace }, me: null, entity, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity, helper: {} } as unknown as CocolightContextType;
   const client = new QueryClient();
   const rendu = render(
     <MemoryRouter initialEntries={[url]}>
@@ -298,7 +298,7 @@ describe("CommunMilestoneDiscussionButton", () => {
     it("un bouton, jamais un envoi de formulaire : dans un formulaire, y cliquer ne le soumet pas", async () => {
       const soumis = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
       const getDiscussionSpace = vi.fn(async () => espace(true));
-      const cocolight = { api: { getDiscussionSpace }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
+      const cocolight = { api: { discussions: { space: getDiscussionSpace } }, me: null, entity: { userContext: { id: UTILISATEUR } }, helper: {} } as unknown as CocolightContextType;
       const client = new QueryClient();
       render(
         <MemoryRouter initialEntries={[FICHE]}>

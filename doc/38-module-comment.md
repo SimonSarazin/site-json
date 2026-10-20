@@ -48,11 +48,12 @@ réponses arrivent imbriquées).
 > (`mediaImg`, `uploadDocument`) au §13. La compatibilité avec `main` est établie au §2.5.
 > **La liste complète des demandes à l'équipe SDK, à transmettre telle quelle, est au §14.**
 >
-> ⚠️ **Trois pièces écrites À LA MAIN, que le module appelle** (relevé par la revue du 29/09) :
-> `Api.getDiscussions()` et `Api.markCommentsSeen()` sur la façade `Api` — le générateur ne produit
-> que `endpointApi.getDiscussions` / `endpointApi.markCommentsSeen` —, et l'export
-> `helper.createFromCollection` (`src/index.ts`). Sans elles, le SDK publié compilerait (le module
-> y accède par des conversions de type) mais lèverait « is not a function » à l'exécution.
+> ⚠️ **Deux pièces écrites À LA MAIN, que le module appelle** (relevé par la revue du 29/09, forme
+> arrêtée le 20/10) : l'objet `api.discussions` (`list`, `markSeen`, `space`, `create` — le
+> générateur ne produit que `endpointApi.getDiscussions` / `markCommentsSeen` / `getDiscussionSpace` /
+> `createDiscussion`), et l'export `helper.createFromCollection` (`src/index.ts`). Depuis la 1.0.202
+> les hooks appellent `api.discussions.*` sans conversion de type : un SDK qui ne les porte pas ne
+> compile plus.
 
 ### 2.1 Les quatre modifications
 
@@ -1684,7 +1685,7 @@ sa spécification est reproduite ici pour reprise officielle.
 
 | | |
 |---|---|
-| Constante | `MARK_COMMENTS_SEEN` (le générateur en dérive `endpointApi.markCommentsSeen()` ; la méthode de façade `Api.markCommentsSeen()` est écrite à la main, §2) |
+| Constante | `MARK_COMMENTS_SEEN` (le générateur en dérive `endpointApi.markCommentsSeen()` ; la façade `api.discussions.markSeen()` est écrite à la main, §2) |
 | Route | `POST /co2/comment/seen`, `application/x-www-form-urlencoded` |
 | Auth | `bearer` |
 | Requête | `contextType` (enum, requis) · `contextId` (`^[a-f0-9]{24}$`, requis) · `path` (optionnel) · `ids` (optionnel, 1 à 500 identifiants — §14.10, 16/10) |
@@ -2120,13 +2121,13 @@ ce qui suit côté backend reste à mesurer.
 | 2 | `BaseEntity.getComments({ path? })` et `BaseEntity.comment()`, remonté de `News` et `Comment` | méthodes | §2.1, §14.2 | `getComments` n'existe que sur `News` |
 | 3 | **`GET_COMMENTS_BY_PATH`** — nouveau | endpoint | §14.2 | le fil d'une question montre les messages de toutes les questions du formulaire |
 | 4 | `EntityRegistry` : rendre `Comment` aux dépendances de `poi` | registre | §2.1 | `api.poi({ id }).comment()` lève un `TypeError` |
-| 5 | **`GET_DISCUSSIONS`** — nouveau, `auth: "bearer"` — et sa façade `Api.getDiscussions()` écrite à la main | endpoint + façade | §9, §14.3 (l'entrée complète) | pas de panneau « Discussions » |
-| 6 | **`MARK_COMMENTS_SEEN`** — nouveau, `auth: "bearer"` — et sa façade `Api.markCommentsSeen()` | endpoint + façade | §11.6 | les non-lus ne s'éteignent jamais |
+| 5 | **`GET_DISCUSSIONS`** — nouveau, `auth: "bearer"` — et sa façade `api.discussions.list()` écrite à la main | endpoint + façade | §9, §14.3 (l'entrée complète) | pas de panneau « Discussions » |
+| 6 | **`MARK_COMMENTS_SEEN`** — nouveau, `auth: "bearer"` — et sa façade `api.discussions.markSeen()` | endpoint + façade | §11.6 | les non-lus ne s'éteignent jamais |
 | 7 | Export `helper.createFromCollection` | export | §2 | lien profond vers une actualité ou une action : troisième colonne vide |
 | 8 | `mediaImg` sur `ADD_COMMENTS` et `UPDATE_COMMENTS.params` ; `folder: "comments"` accepté par `UPLOAD_DOCUMENT` | schéma | §13.2 à §13.4, §14.5 | pas d'images ; et corriger un message qui en porte lève au brouillon (`[DraftProxy]`) — le module y pose `mediaImg`, sans lequel la correction les effacerait |
 | 9 | **`Comment._update` en liste blanche**, mentions normalisées | méthode | §14.4 | éditer un message à mention ou à `path` échoue, et le serveur efface ses mentions |
-| 10 | **`GET_DISCUSSION_SPACE`** — nouveau, `auth: "none"` — et sa façade `Api.getDiscussionSpace()` ; un fil y a **16 champs** (`step` depuis le 14/10) | endpoint + façade | §15, §14.6 | pas d'espace de discussion sur la fiche d'un commun |
-| 11 | **`CREATE_DISCUSSION`** — nouveau, `auth: "bearer"` — et sa façade `Api.createDiscussion()` | endpoint + façade | §16, §14.8 | pas de bouton « + » : on ne crée de discussion supplémentaire que depuis le legacy |
+| 10 | **`GET_DISCUSSION_SPACE`** — nouveau, `auth: "none"` — et sa façade `api.discussions.space()` ; un fil y a **16 champs** (`step` depuis le 14/10) | endpoint + façade | §15, §14.6 | pas d'espace de discussion sur la fiche d'un commun |
+| 11 | **`CREATE_DISCUSSION`** — nouveau, `auth: "bearer"` — et sa façade `api.discussions.create()` | endpoint + façade | §16, §14.8 | pas de bouton « + » : on ne crée de discussion supplémentaire que depuis le legacy |
 | 12 | **`markdownActive`** (booléen) sur `ADD_COMMENTS` et `UPDATE_COMMENTS.params`, repris par `Comment._update` | schéma + méthode | §14.9 | **toute correction faite depuis le module lève au brouillon** (`[DraftProxy]`) — le module pose le champ sur l'instance ; et nos messages se lisent bruts dans le legacy |
 | 13 | **`ids`** sur `MARK_COMMENTS_SEEN` : les messages affichés, et eux seuls | schéma (backend du 16/10) | §11.6, §14.10 | tout le fil est marqué lu, y compris un message arrivé depuis le chargement, que personne n'a vu |
 
@@ -2311,10 +2312,10 @@ l'écriture retraite l'aperçu côté serveur — c'est à l'équipe backend de 
 | `comment.getVotes()` | `hooks/useCommentVoters.ts` |
 | `me.uploadDocument(file, { contentKey: "slider", docType: "image", folder: "comments", ownerId: me.id })` — une pièce jointe | `hooks/useCommentImages.ts` |
 | `me.uploadDocument(file, { contentKey: "mdImage", docType: "image", folder: "comments", ownerId: me.id })` — une image écrite DANS le texte | `hooks/useInlineImageUpload.ts` |
-| `api.getDiscussions(payload)` | `hooks/useDiscussionsQuery.ts` |
-| `api.markCommentsSeen({ contextType, contextId, path?, ids })` | `hooks/useMarkThreadSeen.ts` |
-| `api.getDiscussionSpace({ contextType, contextId })` | `hooks/useDiscussionSpaceQuery.ts` |
-| `api.createDiscussion({ contextType, contextId, name, audience })` | `hooks/useCreateDiscussion.ts` |
+| `api.discussions.list(payload)` | `hooks/useDiscussionsQuery.ts` |
+| `api.discussions.markSeen({ contextType, contextId, path?, ids })` | `hooks/useMarkThreadSeen.ts` |
+| `api.discussions.space({ contextType, contextId })` | `hooks/useDiscussionSpaceQuery.ts` |
+| `api.discussions.create({ contextType, contextId, name, audience })` | `hooks/useCreateDiscussion.ts` |
 
 Le téléversement part de **`me`**, la personne connectée — jamais d'une entité `comments`. Ce qu'il
 faut au module est donc `folder: "comments"` dans `UPLOAD_DOCUMENT` (n° 8). Le SDK local retire aussi
@@ -2339,12 +2340,12 @@ pas de jeton ; `none` **joint le jeton quand il existe** et ne l'exige pas. C'es
 facultative » : l'espace se lit sans être connecté (§15.2), et ses compteurs comme ses audiences se
 calculent pour la session quand il y en a une.
 
-Façade écrite à la main, à côté de `getDiscussions` et `markCommentsSeen` et pour la même raison —
-l'appelant ne tient qu'un couple (type, id) :
+Façade écrite à la main, sur l'objet `api.discussions` à côté de `list` et `markSeen` et pour la même
+raison — l'appelant ne tient qu'un couple (type, id) — avec sa réponse typée :
 
 ```ts
-async getDiscussionSpace(options: GetDiscussionSpaceData): Promise<unknown> {
-  return this.endpointApi.getDiscussionSpace(options);
+async space(options: GetDiscussionSpaceData): Promise<DiscussionSpaceResponse> {
+  return this._endpointApi.getDiscussionSpace(options);
 }
 ```
 
@@ -2374,9 +2375,8 @@ serveur arrive en `ApiResponseError` (§14.7) ; chaque fil rendu porte les seize
 
 ### 14.7 Un refus arrive en exception (mesuré le 09/10)
 
-Rien à demander ici : un fait du client, commun aux quatre façades de ce module (`getDiscussions`,
-`markCommentsSeen`, `getDiscussionSpace`, `createDiscussion`), que leur JSDoc dit (`@throws`, dans
-le SDK local) au lieu de « tester `result` » :
+Rien à demander ici : un fait du client, commun aux quatre méthodes de `api.discussions` (`list`,
+`markSeen`, `space`, `create`), que leur JSDoc dit (`@throws`) au lieu de « tester `result` » :
 
 - le serveur refuse en HTTP 200 avec `{ result: false, code, msg }` ; la façade ne **rend pas** ce
   corps : `EndpointApi.call()` lève `ApiResponseError` (statut 200), le corps rangé dans
@@ -2438,8 +2438,8 @@ client qui l'ignore ne change pas.
 Façade écrite à la main, à côté des trois autres :
 
 ```ts
-async createDiscussion(options: CreateDiscussionData): Promise<unknown> {
-  return this.endpointApi.createDiscussion(options);
+async create(options: CreateDiscussionData): Promise<CreateDiscussionResponse> {
+  return this._endpointApi.createDiscussion(options);
 }
 ```
 
@@ -2891,10 +2891,10 @@ corrections et date de la nuit du 12 au 13/10.
   de toute page, par une chaîne d'imports antérieure à ce lot (`profil/routes` →
   `@/modules/news` → `NewsItem` → `@/modules/comment`). Lu sur le serveur de développement, pas sur
   un build de production.
-- **La compilation ne voit pas un SDK sans ces endpoints.** Les appels aux façades passent par un
-  transtypage, comme dans tout le module : installé depuis le registre sans `getDiscussionSpace`,
-  le SDK ferait échouer l'appel à l'exécution — une « panne », bouton sans compteur — sans que
-  `tsc` ni un test ne le disent. L'ordre de livraison du §2.5 (le SDK d'abord) en est le seul filet.
+- **La compilation voit un SDK sans ces endpoints — depuis le 20/10.** Les hooks appellent
+  `api.discussions.*` sans transtypage : installé depuis le registre sans l'objet, le SDK fait
+  échouer `tsc`. Avant, l'appel échouait à l'exécution — une « panne », bouton sans compteur — sans
+  que `tsc` ni un test ne le disent ; l'ordre de livraison du §2.5 (le SDK d'abord) reste de mise.
 - **Si le code de la modale ne peut pas être téléchargé** — hors ligne, ou le site remplacé par une
   version plus récente pendant qu'on lit —, l'erreur remonte à l'écran d'erreur du site, comme pour
   tout morceau chargé en différé : ce bouton n'a pas de repli à lui.

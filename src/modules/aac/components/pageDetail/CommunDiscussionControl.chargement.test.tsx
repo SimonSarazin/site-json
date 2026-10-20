@@ -70,7 +70,7 @@ const ESPACE = {
 
 /** La fiche, réduite à son bouton — et le bouton, une fois son compteur arrivé. */
 async function monterLaFiche(): Promise<HTMLElement> {
-  const cocolight = { api: { getDiscussionSpace: vi.fn(async () => ESPACE) }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
+  const cocolight = { api: { discussions: { space: vi.fn(async () => ESPACE) } }, me: null, entity: null, helper: {} } as unknown as CocolightContextType;
   render(
     <MemoryRouter initialEntries={[`/aac/commun/${COMMUN}`]}>
       <QueryClientProvider client={new QueryClient()}>
