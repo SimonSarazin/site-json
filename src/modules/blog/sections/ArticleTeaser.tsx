@@ -58,7 +58,7 @@ function TeaserCard({ article, href, ctaLabel, accentColor, accentTextColor }: T
     >
       <div className={cn("z-10 h-28 w-28 shrink-0 overflow-hidden bg-muted", PHOTO_ROUNDING)}>
         {image
-          ? <OptimizedImage src={image} alt="" width={224} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          ? <OptimizedImage src={image} alt="" width={224} className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105" />
           : <div className="flex h-full w-full items-center justify-center text-muted-foreground/70">—</div>}
       </div>
       <div className="min-w-0 flex-1 pt-1">
