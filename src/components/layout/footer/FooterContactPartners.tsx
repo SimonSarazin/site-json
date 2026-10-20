@@ -1,5 +1,8 @@
 import NavLink from "../NavLink";
 import SocialLinks from "./SocialLinks";
+import { FooterLinkColumn } from "./FooterLinkColumn";
+import { useFooterColumns, useFooterLinks } from "./useFooterLinks";
+import { SOCIAL_ICONS } from "./socialIcons";
 import { MapPin, Phone, Mail, Globe, Building2, Clock } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -10,6 +13,8 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 interface FooterContactPartnersProps {
   footer: Footer;
 }
+
+const COLUMN_LINK_CLASS = "text-muted-foreground hover:text-primary transition-colors text-sm";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "map-pin": MapPin,
@@ -32,7 +37,9 @@ function getIconComponent(icon?: string) {
     return MapPin;
   }
   const key = icon.toLowerCase();
-  return iconMap[key] ?? MapPin;
+  // Réseaux (`facebook`, `linkedin`…) : même table que la rangée `socials`, pour qu'un
+  // réseau ajouté une fois serve aussi aux lignes de contact avec libellé.
+  return SOCIAL_ICONS[key] ?? iconMap[key] ?? MapPin;
 }
 
 export default function FooterContactPartners({ footer }: FooterContactPartnersProps) {
@@ -45,7 +52,8 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
   const tKey = useT("components/layout");
   const contactItems = footer.contactSection?.items ?? [];
   const partnerLogos = footer.partners?.logos ?? [];
-  const columns = footer.columns ?? [];
+  const columns = useFooterColumns(footer.columns);
+  const legalLinks = useFooterLinks(footer.legalLinks);
 
   return (
     <footer className="bg-background border-t border-border">
@@ -186,22 +194,8 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
           <div className="mt-10 pt-8 border-t border-border flex flex-col gap-8 md:flex-row md:justify-between">
             {columns.length > 0 && (
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {columns.map((column, index) => (
-                  <div key={index}>
-                    <h3 className="font-semibold mb-4 text-foreground">{t(column.title)}</h3>
-                    <ul className="space-y-2">
-                      {column.links?.map((link, linkIdx) => (
-                        <li key={linkIdx}>
-                          <NavLink
-                            to={link.href}
-                            className="text-muted-foreground hover:text-primary transition-colors text-sm"
-                          >
-                            {t(link.label)}
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                {columns.map(({ column, links }, index) => (
+                  <FooterLinkColumn key={index} column={column} links={links} linkClassName={COLUMN_LINK_CLASS} />
                 ))}
               </div>
             )}
@@ -219,9 +213,9 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
       <div className="border-t border-border">
         <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <p>{t(footer.copyright)}</p>
-          {footer.legalLinks && footer.legalLinks.length > 0 && (
+          {legalLinks.length > 0 && (
             <div className="flex flex-wrap items-center gap-4">
-              {footer.legalLinks.map((link, idx) => (
+              {legalLinks.map((link, idx) => (
                 <NavLink key={idx} to={link.href} className="hover:text-foreground transition-colors underline">
                   {t(link.label)}
                 </NavLink>

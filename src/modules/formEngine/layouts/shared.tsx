@@ -39,6 +39,18 @@ export interface LayoutProps {
 const isSlot = (f: string) => f.startsWith("$slot:");
 const slotName = (f: string) => f.slice("$slot:".length);
 
+/**
+ * Cellule d'un slot. Un slot qui n'a rien à MONTRER ne doit pas laisser une cellule vide dans la
+ * grille `gap-4` (16 px de blanc sous le champ voisin), et l'hôte ne peut pas le savoir à
+ * l'avance — le slot décide au rendu, d'où deux règles CSS :
+ *  - `empty:hidden` : le slot ne rend rien (inerte en édition) ;
+ *  - hors flux (`absolute`) quand son SEUL enfant est marqué `data-slot-quiet` : un slot qui garde
+ *    montée une région d'annonce invisible (`role="status"`, à créer AVANT le message pour être
+ *    lue) ne peut pas être masqué par `display:none`, qui la retirerait de l'arbre d'accessibilité.
+ *    Un enfant de grille positionné en absolu ne crée ni piste ni gouttière.
+ */
+const SLOT_CELL = "empty:hidden has-[>[data-slot-quiet]:only-child]:absolute";
+
 const COLS: Record<number, string> = { 1: "", 2: "sm:grid-cols-2", 3: "sm:grid-cols-3" };
 
 /** Normalise une section vers ses groupes (format plat = un unique groupe 1 colonne). */
@@ -54,7 +66,7 @@ function sectionFieldNames(section: SectionDescriptor | undefined): string[] {
 }
 
 function renderEntry(f: string, p: LayoutProps): ReactNode {
-  return isSlot(f) ? <div key={f}>{p.renderSlot(slotName(f))}</div> : <div key={f}>{p.renderField(f)}</div>;
+  return isSlot(f) ? <div key={f} className={SLOT_CELL}>{p.renderSlot(slotName(f))}</div> : <div key={f}>{p.renderField(f)}</div>;
 }
 
 /** Rend une section : ses groupes (grille N colonnes + titre + séparateur + conditionnel de bloc). */

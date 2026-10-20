@@ -23,6 +23,7 @@
     "noCarrier": "No carrier entity: member management requires a carrier costum."
   },
   "AdminResourceTable": {
+    "preview": "Preview",
     "create": "Create",
     "searchPlaceholder": "Search…",
     "statusAll": "All statuses",
@@ -275,5 +276,37 @@
     "optionsChanged": "Options changed: run the analysis again before applying.",
     "selectionIds": "{{count}} selected record(s)",
     "subTypeSuggestions": "Types found in the selection:"
+  },
+  "AdminAnswerCopySection": {
+    "preview": "Preview",
+    "title": "Answer copy",
+    "hint": "Answers submitted on another site (source form). “Copy” takes an answer over into this site's form, under its identity. Answers already taken over are hidden; a “Probable duplicate” shares title, organization and postal code with an answer of this site.",
+    "searchPlaceholder": "Search…",
+    "candidates": "{{count}} source answer(s)",
+    "indexing": "Reading existing answers…",
+    "indexCapped": "Too many answers in the target form: copy disabled",
+    "indexed": "{{count}} answer(s) in the target form",
+    "colStatus": "Copy",
+    "colAction": "Action",
+    "copy": "Copy",
+    "status": {
+      "probable": "Probable duplicate",
+      "new": "To copy"
+    },
+    "empty": "No answer to take over: everything is already copied.",
+    "confirmTitle": "Copy “{{name}}” despite a probable duplicate?",
+    "confirmDescription": "An answer with the same title, organization and postal code already exists in the target form, without any copy trace (direct entry or taken over through another channel). Copying will create a second record.",
+    "confirmAction": "Copy anyway",
+    "cancel": "Cancel",
+    "indexError": "Failed to read the target form's answers: copy disabled",
+    "hiddenCopied": "{{count}} already copied, hidden"
+  },
+  "useCopyAnswer": {
+    "success": "“{{name}}” copied into the site's form.",
+    "alreadyCopied": "“{{name}}” was already copied: nothing was duplicated.",
+    "unknownInputs": "“{{name}}”: {{count}} field(s) not declared in the target form (values kept).",
+    "error": "Failed to copy “{{name}}”",
+    "noApi": "API not initialised",
+    "badResponse": "Unexpected server response"
   }
 }

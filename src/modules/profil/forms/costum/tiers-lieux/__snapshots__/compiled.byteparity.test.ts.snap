@@ -594,6 +594,17 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
       "widget": "number",
       "write": "coerce:numOrUndef",
     },
+    "tags": {
+      "label": {
+        "en": "Tags",
+        "fr": "Mots-clés",
+      },
+      "name": "tags",
+      "read": "tl:tagsRead",
+      "type": "array",
+      "widget": "tags",
+      "write": "tl:tagsWrite",
+    },
     "videoUrl": {
       "label": "",
       "name": "videoUrl",
@@ -640,6 +651,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           "columns": 1,
           "fields": [
             "name",
+            "$slot:duplicates",
           ],
         },
         {
@@ -699,6 +711,7 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
           "columns": 1,
           "fields": [
             "address",
+            "$slot:duplicates",
           ],
         },
         {
@@ -788,6 +801,13 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > descript
             "description",
           ],
         },
+        {
+          "columns": 1,
+          "divider": true,
+          "fields": [
+            "tags",
+          ],
+        },
       ],
       "icon": "file-text",
       "id": "details",
@@ -861,6 +881,22 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     "ref": "tiers-lieux",
   },
   "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+  "duplicateCheck": {
+    "confirmOnSubmit": true,
+    "limit": 5,
+    "minChars": 3,
+    "nameField": "name",
+    "postalCodeField": "postalCode",
+    "search": {
+      "from": {
+        "page": "/lieux",
+        "sectionId": "section-events",
+      },
+      "types": [
+        "organizations",
+      ],
+    },
+  },
   "gradientHeader": true,
   "icon": "building-2",
   "id": "tiers-lieux",
@@ -890,6 +926,9 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     "invalidateFn": {
       "fn": "invalidate:standard",
       "params": {
+        "searchKeys": [
+          "entityDuplicates",
+        ],
         "userList": "organizations",
       },
     },
@@ -908,71 +947,6 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
         "op": "append",
         "value": {
           "$costum": "compagnon",
-        },
-      },
-      {
-        "field": "tags",
-        "on": "both",
-        "op": "append",
-        "value": {
-          "$mapLabels": {
-            "from": "typePlace",
-            "map": {
-              "ateliers-artisanaux": "Ateliers artisanaux partagés",
-              "autre": "Autre famille de tiers-lieux",
-              "coworking": "Bureaux partagés / Coworking",
-              "culturel": "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
-              "fablab": "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
-              "foodlab": "Cuisine partagée / Foodlab",
-              "livinglab": "LivingLab / Laboratoire d'innovation sociale",
-              "nourricier": "Tiers-lieu nourricier",
-            },
-            "sep": ",",
-          },
-        },
-      },
-      {
-        "field": "tags",
-        "on": "both",
-        "op": "append",
-        "value": {
-          "$mapLabels": {
-            "from": "manageModel",
-            "map": {
-              "association": "Association",
-              "autre-gestion": "Autre mode de gestion",
-              "collectif-citoyen": "Collectif citoyen",
-              "collectivites": "Collectivités (Département, Intercommunalité, Région, etc)",
-              "etablissements-scolaires": "Établissements scolaires (Lycée, Collège, Ecole)",
-              "sarl-sa-sas": "SARL-SA-SAS",
-              "scic": "SCIC",
-              "scop": "SCOP",
-              "universites": "Universités / Écoles d'ingénieurs ou de commerce / EPST",
-            },
-          },
-        },
-      },
-      {
-        "field": "tags",
-        "on": "both",
-        "op": "append",
-        "value": {
-          "$bucket": {
-            "buckets": [
-              {
-                "label": "Moins de 60m²",
-                "lt": 60,
-              },
-              {
-                "label": "Entre 60 et 200m²",
-                "lt": 201,
-              },
-              {
-                "label": "Plus de 200m²",
-              },
-            ],
-            "from": "buildingSurfaceArea",
-          },
         },
       },
     ],
@@ -1009,6 +983,9 @@ exports[`tiers-lieu — byte-parité structurelle (descriptor + spec) > spec fig
     "derive": "tl:scope",
     "slugFrom": "derived",
     "slugKey": "slug",
+  },
+  "slots": {
+    "duplicates": "slot:entityDuplicates",
   },
   "submitLabel": {
     "add": {

@@ -32,3 +32,22 @@ export const Vertical = () => (
     }}
   />
 );
+
+// Design `tiles` : tuiles arrondies, la première sur l'aplat primaire. Valeurs ÉCRITES ici
+// (une story ne fetch pas) ; en config, chaque tuile porte plutôt `source` — compte vivant.
+// Usage réel : « Le réseau en direct » de l'accueil d'Open Atlas.
+export const Tiles = () => (
+  <StatsSection
+    props={{
+      design: "tiles",
+      layout: "horizontal",
+      animated: false,
+      columns: { sm: 3 },
+      items: [
+        { value: "144", label: { fr: "projets publiés" }, highlight: true },
+        { value: "91", label: { fr: "membres" } },
+        { value: "18", label: { fr: "organisations" } },
+      ],
+    }}
+  />
+);

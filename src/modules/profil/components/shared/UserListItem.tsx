@@ -13,6 +13,9 @@ interface UserListItemProps {
    * Sous-titre optionnel (ex: @username, email, etc.)
    */
   subtitle?: string;
+  /** Contenu libre rendu SOUS le sous-titre (ex. pastilles de rôles). Absent → rien, la ligne
+   *  est inchangée pour tous ses autres appelants. */
+  extra?: React.ReactNode;
   /**
    * Badge ou indicateur de statut
    */
@@ -44,6 +47,7 @@ export const UserListItem = forwardRef<HTMLDivElement, UserListItemProps>(
     {
       user,
       subtitle,
+      extra,
       badge,
       actions,
       onClick,
@@ -106,6 +110,7 @@ export const UserListItem = forwardRef<HTMLDivElement, UserListItemProps>(
                 {displaySubtitle}
               </p>
             )}
+            {extra}
           </div>
         </div>
 

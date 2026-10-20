@@ -22,6 +22,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
+import { useGeoShapesWarmup } from "@/lib/geoShapes";
 import { SearchProSectionProps, TagsFilter } from "./schema";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -101,6 +102,10 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     map: defaultViewMode === "map" ? true : defaultViewMode === "list" ? false : (!!enableMap && !!showMap),
   });
 
+
+  // Contours géographiques : préchauffage des couches `load: "page"`/`"idle"` (no-op sinon). La
+  // carte, elle, lit le même cache au montage — cf. useGeoShapes dans SearchMap.
+  useGeoShapesWarmup(props.map?.shapes);
 
   const mapUsed = enableMap ? rawMapUsed : false;
   const setMapUsed = enableMap ? rawSetMapUsed : () => { };

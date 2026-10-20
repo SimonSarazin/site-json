@@ -160,13 +160,19 @@ export function FiltersSection({
   // valeurs backend (sinon elles remontent en haut de liste).
   const byLabel = (a: string, b: string) =>
     (a ?? "").trim().localeCompare((b ?? "").trim(), currentLocale, { sensitivity: "base" });
+  /** Options d'un groupe dans l'ordre d'affichage : par libellé, SAUF si
+   *  `keepOptionOrder` (l'ordre déclaré fait sens — ex. tranches de prix). */
+  const orderedOptions = (group: { options?: FilterGroupOption[]; keepOptionOrder?: boolean }) => {
+    const opts = [...(group.options ?? [])];
+    return group.keepOptionOrder ? opts : opts.sort((a, b) => byLabel(t(a.label), t(b.label)));
+  };
   // Normalise la casse d'affichage des valeurs backend (casse incohérente :
   // "bar" / "Bureautiques") → 1ʳᵉ lettre en majuscule.
   const capitalizeFirst = (s: string) => {
     const v = (s ?? "").trim();
     return v ? v.charAt(0).toUpperCase() + v.slice(1) : v;
   };
-  const { title, filterGroups: propsFiltersGroupsBruts, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className } = props;
+  const { title, filterGroups: propsFiltersGroupsBruts, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className, hideSearch } = props;
   // Options DYNAMIQUES résolues AVANT l'enrichissement : l'effet ci-dessous dépend de cette liste, il se
   // rejoue donc quand les valeurs arrivent, `setFilterGroups` suit, et la synchro URL — déjà continue
   // ici — restaure le deep-link. Un groupe sans `optionsFrom` traverse inchangé, sans aucune requête.
@@ -624,7 +630,7 @@ export function FiltersSection({
      desktop ET dans le Sheet mobile. */
   /* Champ de recherche — séparé du corps : sur mobile il vit AU-DESSUS du
      bouton « Filtres » (directement accessible, sans ouvrir le Sheet). */
-  const searchField = (
+  const searchField = hideSearch ? null : (
     <div className="relative">
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
@@ -752,8 +758,7 @@ export function FiltersSection({
           // remplace l'accordéon. onChange reçoit la CSV complète → diff puis
           // toggleFilter par changement (la logique de sélection est inchangée).
           if (group.select) {
-            const fieldOptions = [...(group.options ?? [])]
-              .sort((a, b) => byLabel(t(a.label), t(b.label)))
+            const fieldOptions = orderedOptions(group)
               .map((o) => ({ id: o.name || o.id, label: t(o.label) }));
             // Valeur affichée = MÊME sémantique qu'isFilterSelected : les
             // groupes scopeList stockent leur sélection dans searchByFields
@@ -835,7 +840,7 @@ export function FiltersSection({
             ) : (
               renderOptionsCherchables(
                 group.id,
-                [...(group.options ?? [])].sort((a, b) => byLabel(t(a.label), t(b.label))),
+                orderedOptions(group),
                 renderOption,
                 (o) => isFilterSelected(group.id, o.name || o.id),
               )
@@ -1002,7 +1007,7 @@ export function FiltersSection({
           </div>
           {clearButton}
         </div>
-        <div className="border-b border-border pb-4">{searchField}</div>
+        {searchField && <div className="border-b border-border pb-4">{searchField}</div>}
         {body}
       </aside>
     </div>

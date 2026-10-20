@@ -10,6 +10,7 @@
 
 import Cocolight, { type Api, type ApiClient, type Organization, type Project, type User, type UserApi } from "@communecter/cocolight-api-client";
 import { getBaseUrl, getSlug } from "./constant/common";
+import { applySiteCostum } from "./siteCostum";
 
 // ————————————————————————————————————————————————————————————
 // Types utilitaires — dérivés automatiquement depuis la lib JS
@@ -80,6 +81,15 @@ async function createApiInstances(
     tokenStorageStrategy,
   });
 
+  // Identité costum du SITE, posée AVANT le premier appel : le client injecte alors `costumSlug`
+  // (+ id/type quand ils sont connus) dans le payload de tout endpoint MARQUÉ `costumContext` au
+  // contrat — les endpoints mailants. Sans elle, le legacy ne sait pas sous quel costum il parle et
+  // envoie un e-mail générique « Communecter » (cf. lib/siteCostum.ts).
+  // ⚠️ INERTE avec la lib PUBLIÉE 1.0.191 (pas de `setSiteCostum`) : actif à partir de la 1.0.192.
+  // Le slug seul suffit au legacy (clé du cache costum) : on le pose tout de suite, l'id/type
+  // arrivent plus bas avec la résolution réseau de l'entité porteuse.
+  applySiteCostum(newClient);
+
   const newUserApi = Cocolight.Api.userApi(newClient);
 
   let me: User | null = null;
@@ -135,6 +145,12 @@ async function createApiInstances(
       newApi = new Cocolight.Api(null, newUserApi.client);
     }
   }
+
+  // L'entité porteuse est (peut-être) résolue : on complète l'identité costum avec son id et son
+  // type. Repose le slug au passage — `setSiteCostum` remplace l'ancienne valeur, c'est idempotent.
+  // Les deux branches convergent ici (cache SSR hydraté ou résolution `entityBySlug`), et un échec de
+  // résolution laisse simplement le slug seul, déjà posé plus haut.
+  applySiteCostum(newClient, { contextId, contextType });
 
   return {
     client: newClient,

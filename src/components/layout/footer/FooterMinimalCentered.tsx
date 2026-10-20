@@ -2,6 +2,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Footer } from "@/types/site-schema";
 import NavLink from "../NavLink";
+import { useFooterLinks } from "./useFooterLinks";
 
 interface FooterMinimalCenteredProps {
   footer: Footer;
@@ -11,6 +12,9 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
   const { t } = useLocalization();
 
   const bg = footer.backgroundImage;
+
+  const navLinks = useFooterLinks(footer.columns?.[0]?.links);
+  const bottomLinks = useFooterLinks(footer.legalLinks ?? footer.bottomLinks);
 
   return (
     <footer
@@ -44,8 +48,8 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
         {/* `sm:text-base` (au lieu de `sm:text-sm`) : même cran d'agrandissement que le header en
             dehors de `xs` — la base (`text-xs`, < 475px) ne bouge pas. */}
         <nav className={`flex flex-wrap justify-center gap-x-4 sm:gap-x-8 gap-y-2 sm:gap-y-4 text-xs sm:text-base mb-8 sm:mb-12 ${bg ? "text-white" : "text-foreground"}`}>
-          {footer.columns?.[0]?.links?.map((link, idx: number) => (
-            <NavLink key={idx} to={link.href} className={bg ? "hover:opacity-80 transition-opacity" : "text-muted-foreground hover:text-primary transition-colors"}>
+          {navLinks.map((link, idx: number) => (
+            <NavLink key={idx} to={link.href} external={link.external} className={bg ? "hover:opacity-80 transition-opacity" : "text-muted-foreground hover:text-primary transition-colors"}>
               {t(link.label)}
             </NavLink>
           ))}
@@ -56,7 +60,7 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
         <div className={`flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-[10px] sm:text-sm pt-6 sm:pt-8 ${bg ? "border-white/30" : "text-muted-foreground border-border"} border-t`}>
           <p className={`text-center sm:text-left ${bg ? "" : "text-muted-foreground"}`}>{t(footer.copyright)}</p>
           <div className="flex gap-4 sm:gap-6 flex-wrap justify-center">
-            {(footer.legalLinks ?? footer.bottomLinks)?.map((link, idx: number) => (
+            {bottomLinks.map((link, idx: number) => (
               <NavLink key={idx} to={link.href} className={bg ? "hover:opacity-80 transition-opacity" : "text-muted-foreground hover:text-primary transition-colors"}>
                 {t(link.label)}
               </NavLink>

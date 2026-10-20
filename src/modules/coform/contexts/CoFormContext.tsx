@@ -39,12 +39,48 @@ export interface CoFormContextType {
   restorableDraft: { timestamp: number } | null;
   /** Métadonnées du brouillon écarté (server plus récent). null si absent. */
   staleDraftInfo: { timestamp: number } | null;
+  /**
+   * Nombre de reprises de brouillon depuis le montage. Le formulaire
+   * react-hook-form de l'étape courante (`useCoFormStep`) ne se réinitialise
+   * que sur changement d'index d'étape ; or reprendre un brouillon écrit sur
+   * l'étape où l'on se trouve ne change pas l'index. Ce compteur donne à
+   * l'effet de reset un second déclencheur, sans lui faire suivre chaque
+   * `stepsData` (ce qui remettrait le formulaire « propre » à chaque
+   * `submitStep` et couperait la détection de modifications).
+   */
+  draftRestoreCount: number;
 
   // Actions
   goToNextStep: () => void;
   goToPreviousStep: () => void;
   goToStep: (stepIndex: number) => void;
   saveStepData: (subFormId: string, data: SubFormData) => void;
+  /**
+   * Marque (ou lève) l'état « à corriger » d'une étape.
+   *
+   * Une validation Zod ratée n'est pas qu'une affaire d'écran courant : en
+   * quittant l'étape, l'en-tête et le sommaire doivent continuer à la montrer
+   * en erreur. `submitStepData` lève le drapeau de lui-même quand l'étape
+   * repasse.
+   */
+  markStepInvalid: (subFormId: string, invalid: boolean) => void;
+  /**
+   * Marque (ou retire) une étape comme complétée.
+   *
+   * En navigation libre, aucun bouton « Suivant » n'est franchi : c'est en
+   * quittant l'étape qu'on constate si elle passerait sa validation. Le sens
+   * inverse compte autant — vider une étape déjà complétée doit la décompléter.
+   */
+  setStepCompleted: (subFormId: string, completed: boolean) => void;
+  /**
+   * Données de toutes les étapes, à jour à l'instant de l'appel.
+   *
+   * `stepState.stepsData` est capturé par les closures au rendu : après un
+   * `saveStepData`, un callback fabriqué avant lui voit encore l'ancien objet.
+   * C'est ce que `submitAllData` évite depuis toujours via son ref ; cette
+   * fonction ouvre le même ref à ceux qui doivent juger la donnée fraîche.
+   */
+  getStepsData: () => AllStepsData;
   saveAddedOptions: (subFormId: string, fieldName: string, options: string[]) => void;
   submitStepData: (subFormId: string, data: SubFormData) => Promise<void>;
   submitAllData: () => Promise<void>;
@@ -81,11 +117,15 @@ export const defaultCoFormContext: CoFormContextType = {
 
   restorableDraft: null,
   staleDraftInfo: null,
+  draftRestoreCount: 0,
 
   goToNextStep: () => {},
   goToPreviousStep: () => {},
   goToStep: () => {},
   saveStepData: () => {},
+  markStepInvalid: () => {},
+  setStepCompleted: () => {},
+  getStepsData: () => ({}),
   saveAddedOptions: () => {},
   submitStepData: async () => {},
   submitAllData: async () => {},

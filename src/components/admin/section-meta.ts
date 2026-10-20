@@ -19,6 +19,7 @@ export const SECTION_FAMILIES = [
   "observatoire",
   "agenda",
   "blog",
+  "aac",
 ] as const;
 
 export type SectionFamily = (typeof SECTION_FAMILIES)[number];
@@ -90,6 +91,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   table: { label: "Table", desc: "Tableau de données structurées", image: "https://placehold.co/300x180/dfe6e9/333?text=Table", family: "data" },
   map: { label: "Map", desc: "PLACEHOLDER non fonctionnel : encadré gris + liste texte des marqueurs (aucun rendu Leaflet). Pour une vraie carte : searchPro/searchProStatic (defaultViewMode \"map\") ou agenda (enableMap)", image: "https://placehold.co/300x180/00b894/eee?text=Map", family: "data" },
   "map-bubbles": { label: "Carte à bulles", desc: "Illustration de carte avec bulles-marqueurs cliquables positionnées en %, image ronde + libellé en pastille, titre en badge incliné", image: "https://placehold.co/300x180/e17055/eee?text=Map+Bubbles", family: "presentation" },
+  "map-shapes": { label: "Contours cliquables", desc: "Contours géographiques réels (communes, bassins de vie, zones) rendus en SVG sans fond de carte : chaque territoire est un lien vers une page de recherche filtrée", image: "https://placehold.co/300x180/0984e3/eee?text=Map+Shapes", family: "presentation" },
 
   // utilitaires
   breadcrumb: { label: "Breadcrumb", desc: "Fil d'Ariane de navigation", image: "https://placehold.co/300x180/b2bec3/333?text=Breadcrumb", family: "utilitaires" },
@@ -111,6 +113,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   searchHeader: { label: "Header recherche", desc: "Bandeau horizontal titre + recherche texte, dropdowns de filtres et boutons d'action, producteur du PageFiltersContext (module search) pilotant les listes de la page", image: "https://placehold.co/300x180/74b9ff/333?text=Search+Header", family: "search" },
   cardCountCT: { label: "Compteurs par type", desc: "Grille de compteurs par type d'entité (count de globalautocomplete, sans liste de résultats) ; requiert l'entité costum initialisée, cards[] optionnel avec auto-détection sinon", image: "https://placehold.co/300x180/0984e3/eee?text=Card+Count", family: "search" },
   thematics: { label: "Thématiques", desc: "Grille des filières/thématiques (icône + nom) lues depuis serverData.filiere de l'entité Cocolight, sans requête supplémentaire (module search)", image: "https://placehold.co/300x180/6c5ce7/eee?text=Thematics", family: "search" },
+  "coform-resource-directory": { label: "Annuaire de ressources", desc: "Annuaire à plat des ressources d'un tiers-lieu (coworking / salle de réunion / hébergement), une carte par réponse coform : facette par type, capacités/tarifs (service-pricing), résolution du tiers-lieu porteur et garde région côté client (portage de Navigator::getRessourceTL, sans nouvel endpoint)", image: "https://placehold.co/300x180/74b9ff/333?text=Resource+Dir", family: "search" },
   "featured-carousel": { label: "Carrousel à la une", desc: "Carrousel plein écran d'entités (POI…) filtrées par tag, une par diapositive : badge, titre, description, CTA et image", image: "https://placehold.co/300x180/74b9ff/333?text=Featured", family: "search" },
 
   // news
@@ -121,6 +124,7 @@ const SECTION_META: Record<string, SectionMeta> = {
 
   // profil
   member: { label: "Member", desc: "Section membre / profil", image: "https://placehold.co/300x180/6c5ce7/eee?text=Member", family: "profil" },
+  "my-places": { label: "Mes lieux", desc: "Organisations dont le compte connecté est MEMBRE (links.members), 4 onglets (lieux/news/agenda/projets) — page dédiée, invite à se connecter si anonyme", image: "https://placehold.co/300x180/6c5ce7/eee?text=Mes+Lieux", family: "profil" },
 
   // ampli
   meeteem: { label: "Meeteem", desc: "Annuaire participatif des réponses d'un coform : cartes filtrables par tags et auteur, vues Annuaire/Carte/Split (carte en placeholder ; requiert id du coform et mapping path)", image: "https://placehold.co/300x180/a29bfe/eee?text=Meeteem", family: "ampli" },
@@ -150,6 +154,9 @@ const SECTION_META: Record<string, SectionMeta> = {
   articleFeed: { label: "Fil d'articles", desc: "Fil paginé (scroll infini) des articles d'un costum (module blog, costumSlug requis), variantes de carte et grille/liste, lecture via /blog/:slug ou /blog/id/:id", image: "https://placehold.co/300x180/e84393/eee?text=Article+Feed", family: "blog" },
   articleReader: { label: "Lecteur d'article", desc: "Affiche un article (POI) précis par slug ou id sur n'importe quelle page — île client du module blog, sans SEO propre", image: "https://placehold.co/300x180/636e72/eee?text=Article+Reader", family: "blog" },
   articleTeaser: { label: "Aperçu d'articles", desc: "Aperçu figé des N derniers articles d'un costum (module blog, costumSlug requis) : titre en badge incliné, grille de cartes à bouton, CTA « voir tout » — sans pagination, pensé pour être posé entre deux sections", image: "https://placehold.co/300x180/00b894/eee?text=Article+Teaser", family: "blog" },
+  // aac
+  "aac-highlight": { label: "Bande AAC", desc: "Bande d'appel à l'action d'un Appel à Communs : titre, texte, bouton et médaillon comptant les communs déposés (compté en direct, jamais écrit dans la config)", image: "https://placehold.co/300x180/00cec9/eee?text=Bande+AAC", family: "aac" },
+  "aac-directory": { label: "Annuaire des communs", desc: "Listing paginé des communs d'un Appel à Communs : cartes avec cofinancement collecté, filtres par nom, thème et maturité", image: "https://placehold.co/300x180/00cec9/eee?text=Annuaire+communs", family: "aac" },
 };
 
 export default SECTION_META;

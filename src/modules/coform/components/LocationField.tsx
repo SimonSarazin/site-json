@@ -1,9 +1,8 @@
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { AddressPicker } from "@/lib/location/AddressPicker";
 import { parseStoredToEntries, entriesToStored } from "../utils/coformLocality";
 import type { FormFieldMapping } from "../types";
-import { HintText, FieldError } from "./FormFields";
+import { HintText, FieldLabel, FieldError } from "./FormFields";
 
 interface LocationFieldProps {
   field: FormFieldMapping;
@@ -26,12 +25,7 @@ export function LocationField({ field, value, onChange, errors }: LocationFieldP
 
   return (
     <div className={cn("space-y-3", field.width)}>
-      {field.label && (
-        <Label className="text-sm font-medium text-foreground">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      <FieldLabel field={field} />
       {field.info && <HintText text={field.info} />}
 
       {/* Ancienne réponse texte libre (champ historiquement rendu en `text`) : non convertible en

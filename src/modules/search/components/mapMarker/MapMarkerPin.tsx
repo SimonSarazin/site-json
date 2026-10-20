@@ -3,20 +3,23 @@
  * fill = couleur de thème (`color`) ; contour + pastille = `borderColor`
  * (déf. `--background`, lisible sur tout fond de carte en light comme en dark).
  * Rendu en React (les couleurs suivent light/dark au paint, sans recalcul).
+ * `size` (px) vient de `map.marker.iconSize`.
  */
 export default function MapMarkerPin({
   cssColor,
   borderCssColor = "var(--background)",
+  size,
 }: {
   cssColor: string;
   borderCssColor?: string;
+  size: number;
 }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      width={34}
-      height={34}
+      width={size}
+      height={size}
       className="search-map-pin"
       aria-hidden
     >

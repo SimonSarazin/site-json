@@ -67,6 +67,7 @@
     "HeroWithIconSection": "src/components/sections/HeroWithIconSection.tsx",
     "LogoCloudSection": "src/components/sections/LogoCloudSection.tsx",
     "MapSection": "src/components/sections/MapSection.tsx",
+    "MapShapes": "src/components/sections/MapShapes.tsx",
     "MarkdownSection": "src/components/sections/MarkdownSection.tsx",
     "NewsletterSection": "src/components/sections/NewsletterSection.tsx",
     "PricingSection": "src/components/sections/PricingSection.tsx",

@@ -1,0 +1,95 @@
+{
+  "site": "federationDesCae",
+  "slug": "federationDesCae",
+  "addMenus": {
+    "default": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event",
+        "poi": "add-poi"
+      },
+      "customs": [
+        "add-organization",
+        "add-cae"
+      ]
+    }
+  },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "question:finderaapStep1lurzepkc4q8n686r8h": "add-cae"
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-cae",
+          "native": "edit-cae",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
+  "adminResources": {},
+  "pages": {
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "sourceKey": [
+          "federationDesCae"
+        ],
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "address",
+          "tags",
+          "geo",
+          "geoPosition"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "address.addressLocality",
+          "tags"
+        ],
+        "indexStepList": 24,
+        "indexStepMap": 500
+      }
+    }
+  },
+  "stamps": {
+    "cae": [
+      {
+        "field": "tags",
+        "value": "CAE",
+        "op": "append",
+        "on": "add",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$from": "tags"
+        },
+        "op": "append",
+        "on": "edit",
+        "channel": "payload"
+      }
+    ]
+  },
+  "referencement": {},
+  "membership": {},
+  "profileRelated": {}
+}

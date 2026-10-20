@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Upload, X } from "lucide-react";
+import { Crop, Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { ImageCropDialog } from "@/modules/news";
+import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
+import { lightenImage } from "@/utils/imageUtils";
 
 interface ImageUploadFieldProps {
-	/** Fichier choisi (déjà recadré) ou `null`. */
+	/** Fichier choisi (recadré, ou entier sous `allowOriginal`) ou `null`. */
 	value: File | null;
 	onChange: (file: File | null) => void;
 	/** Image existante affichée en aperçu tant qu'aucune nouvelle n'est choisie (édition). */
@@ -16,6 +18,12 @@ interface ImageUploadFieldProps {
 	onRemoveExisting?: () => void;
 	/** Ratio de recadrage imposé (défaut 1:1, comme l'avatar). */
 	aspect?: number;
+	/**
+	 * Opt-in : l'image déposée est gardée ENTIÈRE (allégée si elle est lourde), et un bouton « Recadrer »
+	 * permet ensuite de la cadrer — toujours depuis l'original. Absent (défaut), le recadrage reste
+	 * obligatoire au dépôt : le comportement historique des sites.
+	 */
+	allowOriginal?: boolean;
 	shape?: "square" | "circle";
 	label?: string;
 	hint?: string;
@@ -24,7 +32,8 @@ interface ImageUploadFieldProps {
 /**
  * Champ d'upload d'image partagé (POI équipement, tiers-lieux…) : sélection →
  * recadrage via `ImageCropDialog` (même flux que `ProfileImageUpload`/l'avatar du
- * header) → renvoie le `File` recadré via `onChange`. Contrôlé : ne porte aucune
+ * header) → renvoie le `File` recadré via `onChange` ; sous `allowOriginal`, l'image
+ * part entière et le recadrage devient facultatif. Contrôlé : ne porte aucune
  * mutation ; le formulaire transmet le fichier au hook (`profil_avatar`).
  */
 export function ImageUploadField({
@@ -35,6 +44,7 @@ export function ImageUploadField({
 	onRemoveExisting,
 	aspect = 1,
 	shape = "square",
+	allowOriginal = false,
 	label,
 	hint,
 }: ImageUploadFieldProps) {
@@ -43,6 +53,10 @@ export function ImageUploadField({
 	const [cropOpen, setCropOpen] = useState(false);
 	const [cropSrc, setCropSrc] = useState<string | null>(null);
 	const [pendingName, setPendingName] = useState("image");
+	// `allowOriginal` : fichier déposé, gardé intact pour que chaque recadrage reparte de lui — recadrer une
+	// version déjà recadrée la réduirait et la recompresserait à chaque passe.
+	const [originalFile, setOriginalFile] = useState<File | null>(null);
+	const [preparing, setPreparing] = useState(false);
 
 	// Aperçu : objectURL du fichier choisi (révoqué à chaque changement / au démontage)
 	// sinon image existante.
@@ -59,11 +73,7 @@ export function ImageUploadField({
 
 	const openPicker = () => inputRef.current?.click();
 
-	const handleFile = (file: File) => {
-		if (!file.type.startsWith("image/")) {
-			toast.error(t("ImageUploadField.imageOnly"));
-			return;
-		}
+	const openCrop = (file: File) => {
 		setPendingName(file.name || "image");
 		const reader = new FileReader();
 		reader.onloadend = () => {
@@ -73,15 +83,56 @@ export function ImageUploadField({
 		reader.readAsDataURL(file);
 	};
 
-	const handleCrop = (blob: Blob) => {
-		const file = new File([blob], pendingName, { type: blob.type || "image/png" });
-		onChange(file);
+	const closeCrop = () => {
 		setCropOpen(false);
 		setCropSrc(null);
 		if (inputRef.current) inputRef.current.value = "";
 	};
 
+	/** Transmet l'image au formulaire ; sous `allowOriginal`, allégée d'abord (cf. `lightenImage`). */
+	const commit = (file: File) => {
+		if (!allowOriginal) {
+			onChange(file);
+			return;
+		}
+		setPreparing(true);
+		void lightenImage(file).then((light) => {
+			onChange(light);
+			setPreparing(false);
+		});
+	};
+
+	const handleFile = (file: File) => {
+		if (!file.type.startsWith("image/")) {
+			toast.error(t("ImageUploadField.imageOnly"));
+			return;
+		}
+		if (allowOriginal) {
+			setOriginalFile(file);
+			commit(file);
+			return;
+		}
+		openCrop(file);
+	};
+
+	const handleCrop = (blob: Blob) => {
+		const file = new File([blob], pendingName, { type: blob.type || "image/png" });
+		commit(file);
+		closeCrop();
+	};
+
+	/** Retour à l'image entière, sans la redéposer. */
+	const handleUseOriginal = () => {
+		if (originalFile) commit(originalFile);
+		closeCrop();
+	};
+
+	// Recadrer une image déjà enregistrée n'est pas proposé : chargée d'un autre domaine, elle rendrait le
+	// canvas inexportable. Il faut la redéposer.
+	const cropSource = allowOriginal ? (originalFile ?? value) : null;
+
 	const removeImage = () => {
+		setOriginalFile(null);
 		if (value) {
 			onChange(null); // retire le nouveau fichier choisi (revient à l'existante)
 		} else if (existingUrl && !existingDeleted) {
@@ -101,10 +152,16 @@ export function ImageUploadField({
 				</div>
 			)}
 			<div className="flex justify-center">
-				{preview ? (
+				{preparing ? (
+					<div className={`flex h-40 w-40 flex-col items-center justify-center gap-2 border-2 border-border bg-muted/30 text-center ${rounded}`}>
+						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+						<p className="px-2 text-xs text-muted-foreground">{t("ImageUploadField.preparing")}</p>
+					</div>
+				) : preview ? (
 					<div className="group relative cursor-pointer" onClick={openPicker}>
 						<div className={`h-40 w-40 overflow-hidden border-2 border-border bg-muted shadow-sm ${rounded}`}>
-							<img src={preview} alt={label ?? ""} className="h-full w-full object-cover" />
+							{/* Image gardée entière : l'aperçu la montre entière, sinon il ferait croire à un rognage. */}
+							<img src={preview} alt={label ?? ""} className={`h-full w-full ${allowOriginal ? "object-contain" : "object-cover"}`} />
 						</div>
 						{canRemove && (
 							<button
@@ -136,6 +193,14 @@ export function ImageUploadField({
 					</div>
 				)}
 			</div>
+			{cropSource && !preparing && (
+				<div className="flex justify-center">
+					<Button type="button" variant="outline" size="sm" onClick={() => openCrop(cropSource)}>
+						<Crop />
+						{t("ImageUploadField.crop")}
+					</Button>
+				</div>
+			)}
 			<input
 				ref={inputRef}
 				type="file"
@@ -153,6 +218,8 @@ export function ImageUploadField({
 					onOpenChange={setCropOpen}
 					imageUrl={cropSrc}
 					aspect={aspect}
+					// Sans original en main (champ remonté entre-temps), il n'y a pas d'image entière à reprendre.
+					onUseOriginal={allowOriginal && originalFile ? handleUseOriginal : undefined}
 					onCrop={(blob) => handleCrop(blob)}
 				/>
 			)}

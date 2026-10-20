@@ -51,15 +51,20 @@ function labelText(label: DropdownOptionConfig["label"] | undefined): string {
 }
 
 /**
- * Résout l'option d'un filtre pour une `value` affichée. Chaîne déterministe :
- * id exact → value normalisée → label normalisé (fr/en). Pas de fallback
- * substring (élimine les faux positifs ordre-dépendants).
+ * Résout une option dans une LISTE d'options, pour une `value` affichée. Chaîne déterministe :
+ * id exact → value normalisée → label normalisé (fr/en). Pas de fallback substring (élimine les
+ * faux positifs ordre-dépendants).
+ *
+ * Forme « liste » exposée à part de `resolveDropdownOption` pour les appelants qui tiennent les
+ * options RÉSOLUES (socle de config fusionné aux valeurs de `costum.lists`, cf.
+ * `useDynamicFilterOptions`) et non le filtre brut de la config : l'hydratation d'URL
+ * (`resolveFilterHydration`) doit rapprocher la valeur de l'URL des options RÉELLEMENT affichées.
+ * Une seule implémentation, donc une seule notion d'égalité dans tout le repo.
  */
-export function resolveDropdownOption(
-  filter: DropdownFilterConfig,
+export function resolveOptionInList(
+  options: readonly DropdownOptionConfig[],
   value: string,
 ): DropdownOptionConfig | null {
-  const options = filter.options ?? [];
   const byId = options.find((o) => o.id === value);
   if (byId) return byId;
 
@@ -69,6 +74,14 @@ export function resolveDropdownOption(
 
   const byLabel = options.find((o) => normalizeFilterValue(labelText(o.label)) === n);
   return byLabel ?? null;
+}
+
+/** Idem, à partir du filtre de config (sa liste d'options déclarées). */
+export function resolveDropdownOption(
+  filter: DropdownFilterConfig,
+  value: string,
+): DropdownOptionConfig | null {
+  return resolveOptionInList(filter.options ?? [], value);
 }
 
 /** Tous les dropdownFilters de toutes les pages (via les sections `searchHeader`). */

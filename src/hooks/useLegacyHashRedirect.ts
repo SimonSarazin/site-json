@@ -11,6 +11,8 @@ import { buildProfileTabUrl } from "@/modules/profil/hooks/useNewsDetailUrlGener
 const COMMUNITY_TAB_IDS = new Set([
   "members", "membership", "community", "communaute", "contributors", "contributeurs",
 ]);
+/** Ids d'onglet « réglages » d'un profil, pour le `#settings.redirect` du pied de page des e-mails. */
+const SETTINGS_TAB_IDS = new Set(["settings", "parametres", "reglages", "notifications", "preferences"]);
 
 /**
  * Rattrape les DEEP-LINKS EN FRAGMENT des e-mails legacy (`<base>/#page.type.<coll>.id.<id>`, `#@<slug>`).
@@ -34,7 +36,7 @@ const COMMUNITY_TAB_IDS = new Set([
  */
 export function useLegacyHashRedirect(): void {
   const navigate = useNavigate();
-  const { api, entity } = useCocolight();
+  const { api, entity, me } = useCocolight();
   const { config } = useSite();
   const traite = useRef<string | null>(null);
 
@@ -47,6 +49,30 @@ export function useLegacyHashRedirect(): void {
     let cible: ReturnType<typeof parseLegacyHash> = null;
     try { cible = parseLegacyHash(hash); } catch { return; }
     if (!cible) return; // pas un lien d'e-mail legacy → on laisse passer
+
+    // `#settings.redirect` (pied de page de tous les e-mails legacy) : la cible est le compte CONNECTÉ,
+    // sans id à résoudre. Tant que `me` n'est pas là (chargement, ou visiteur anonyme) on ne marque
+    // rien : anonyme, le visiteur reste sur l'accueil — pas pire qu'avant ; connecté un peu plus
+    // tard (hydratation), l'effet repasse et le rattrape.
+    if (cible.kind === "settings") {
+      if (!me?.slug) return;
+      traite.current = hash;
+      const root = `/profil/${me.slug}`;
+      navigate(buildProfileTabUrl(config, me, (tab) => SETTINGS_TAB_IDS.has(tab.id)) ?? root, { replace: true });
+      return;
+    }
+
+    // `#detail-un-commun.communId.<id>` (AAC legacy, liens imprimés) : l'id EST celui de la route,
+    // aucune résolution. Seulement si le site déclare `config.aac` — sinon `/aac/commun/:answerId`
+    // n'est pas montée (cf. `modules/aac/routes.tsx`) et on ferait pire que l'accueil. Un commun
+    // disparu affiche la fiche « introuvable » du module : plus parlant que l'accueil pour qui a
+    // scanné un document papier.
+    if (cible.kind === "aacCommun") {
+      if (!config?.aac) return;
+      traite.current = hash;
+      navigate(`/aac/commun/${cible.id}`, { replace: true });
+      return;
+    }
 
     // ⚠️ Le marquage vient APRÈS les garde-fous de disponibilité : tant que l'API n'est pas prête on
     // ne marque rien, sinon le fragment serait consommé sans rien faire et la redirection perdue.
@@ -92,5 +118,5 @@ export function useLegacyHashRedirect(): void {
         console.error("[legacy-hash] résolution impossible", error);
       }
     })();
-  }, [api, entity, config, navigate]);
+  }, [api, entity, me, config, navigate]);
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { sectionBgClass } from "./sectionBg";
 import {
   Accordion,
   AccordionContent,
@@ -39,7 +40,7 @@ export function AccordionSection({ id, props }: { id?: string; props: AccordionS
 
   /* ------------------------------------------------------------------ */
   return (
-    <section id={id} className="py-16 bg-background text-foreground">
+    <section id={id} className={`py-16 text-foreground ${sectionBgClass(props.bg) || "bg-background"}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <Accordion {...accordionRootProps}>

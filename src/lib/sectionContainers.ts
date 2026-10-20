@@ -24,15 +24,23 @@ export interface SectionLike {
  * Pour ajouter un nouveau container : ajouter 1 ligne ici.
  */
 export const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unknown[]> = {
-  gridLayout: (p) => [p.leftSection, p.rightSection],
+  // `sections` : mode « rangée » à N colonnes, cf. `GridLayoutSectionPropsSchema`.
+  gridLayout: (p) => [p.leftSection, p.rightSection, ...(Array.isArray(p.sections) ? p.sections : [])],
   tabs: (p) =>
     (Array.isArray(p.tabs) ? p.tabs : []).flatMap((t: { content: unknown }) =>
       Array.isArray(t.content) ? t.content : [],
     ),
 };
 
-/** Les sections filles d'un container, ou `[]` si `section` n'en est pas un. */
-function enfantsDe(section: SectionLike): SectionLike[] {
+/**
+ * Les sections filles d'un container, ou `[]` si `section` n'en est pas un.
+ *
+ * Exporté sous le nom `enfantsDeSection` : c'est le SEUL point d'entrée du registre pour un
+ * parcours qui a sa propre logique de collecte (le prefetch des filtres, par exemple, ne cherche
+ * pas un type mais une forme de props). Sans lui, ce parcours recopiait le registre et il fallait
+ * penser à reporter chaque ajout des deux côtés.
+ */
+export function enfantsDeSection(section: SectionLike): SectionLike[] {
   const extraire = SECTION_EXTRACTORS[section.type];
   if (!extraire || !section.props) return [];
   return extraire(section.props).filter(Boolean) as SectionLike[];
@@ -51,7 +59,7 @@ export function findSectionsOfTypes(
   const result: SectionLike[] = [];
   for (const section of sections) {
     if (types.has(section.type)) result.push(section);
-    else result.push(...findSectionsOfTypes(enfantsDe(section), types));
+    else result.push(...findSectionsOfTypes(enfantsDeSection(section), types));
   }
   return result;
 }
@@ -69,7 +77,7 @@ export function walkSections(sections: SectionLike[]): SectionLike[] {
   const out: SectionLike[] = [];
   for (const section of sections) {
     out.push(section);
-    out.push(...walkSections(enfantsDe(section)));
+    out.push(...walkSections(enfantsDeSection(section)));
   }
   return out;
 }

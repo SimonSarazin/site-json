@@ -9,6 +9,7 @@
 // Fonctions PURES (testées sans rendu).
 
 import getValueByPath from "@/helpers/getValueByPath";
+import { toStringArray } from "@/helpers/toStringArray";
 
 import type { ColorByConf, TagColorsConf } from "../schema";
 
@@ -35,6 +36,20 @@ export function resolveColorBy(
 }
 
 export type DecoratedTag = { tag: string; label: string; cssColor?: string };
+
+/**
+ * Le pipeline COMPLET des chips d'un item, partagé par toutes les cartes et la popup de carte :
+ * `tags` bruts (tableau, objet PHP à trous, dictionnaire — cf. `toStringArray`) → valeurs des
+ * `tagColors.paths` ajoutées → décoration (couleur, libellé, masquage). Une seule définition : un
+ * presenter qui réimplémentait la chaîne oubliait tantôt la normalisation, tantôt le masquage.
+ */
+export function decorateItemTags(
+  rawTags: unknown,
+  serverData: Record<string, unknown> | undefined,
+  conf: TagColorsConf | undefined,
+): DecoratedTag[] {
+  return decorateTags(collectChipValues(toStringArray(rawTags), serverData, conf), conf);
+}
 
 /**
  * Valeurs à afficher en chips : les `tags` de l'item PUIS les valeurs lues aux
@@ -72,11 +87,13 @@ export function stripTagNamespace(tag: string): string {
  *    (`labels[tag]`, sinon namespace retiré + capitalisation) ;
  *  - tag commençant par un préfixe de `hidePrefixes` → MASQUÉ (les tags
  *    techniques `public:`/`age:` filtrent mais ne s'affichent pas bruts) ;
+ *  - tag ÉGAL à une entrée de `hideTags` → MASQUÉ (un marqueur d'annuaire
+ *    complet, sans emporter les tags qui commencent pareil) ;
  *  - sinon → chip standard inchangée.
  * Sans conf, retourne les tags tels quels (comportement historique).
  */
 export function decorateTags(tags: string[], conf?: TagColorsConf): DecoratedTag[] {
-  if (!conf?.mapping && !conf?.hidePrefixes) {
+  if (!conf?.mapping && !conf?.hidePrefixes && !conf?.hideTags) {
     return tags.map((tag) => ({ tag, label: tag }));
   }
   const out: DecoratedTag[] = [];
@@ -86,6 +103,7 @@ export function decorateTags(tags: string[], conf?: TagColorsConf): DecoratedTag
       out.push({ tag, label: conf.labels?.[tag] ?? stripTagNamespace(tag), cssColor });
       continue;
     }
+    if (conf.hideTags?.includes(tag)) continue;
     if (conf.hidePrefixes?.some((p) => tag.startsWith(p))) continue;
     out.push({ tag, label: tag });
   }

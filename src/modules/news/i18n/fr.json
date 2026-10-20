@@ -101,7 +101,9 @@
     "imageCrop": {
       "title": "Recadrer l'image",
       "cancel": "Annuler",
-      "apply": "Appliquer"
+      "apply": "Appliquer",
+      "useOriginal": "Utiliser l'image entière",
+      "format": "Format du recadrage"
     }
   },
   "reportDialog": {

@@ -15,10 +15,15 @@ export function HeroTintedOverlay({ id, props }: HeroTintedOverlayComponentProps
      * sur un thème clair. On retombe alors sur l'encre du thème, sans ombre portée
      * (inutile hors photo). Classes écrites en toutes lettres : Tailwind scanne les
      * sources, une classe construite à l'exécution serait purgée du build de prod.
+     *
+     * `hero-text-shadow(-strong)` plutôt que `drop-shadow`/`drop-shadow-lg` : ces
+     * utilitaires Tailwind plafonnent à 0,15 d'opacité — pensés pour l'élévation
+     * d'une carte, pas pour garantir la lecture d'un titre blanc sur une photo
+     * claire (ciel, plage au soleil…). Cf. `shared.css` pour le détail.
      */
     const hasImage = Boolean(props.backgroundImage);
-    const inkStrong = hasImage ? "text-white drop-shadow-lg" : "text-foreground";
-    const ink = hasImage ? "text-white drop-shadow" : "text-foreground";
+    const inkStrong = hasImage ? "text-white hero-text-shadow-strong" : "text-foreground";
+    const ink = hasImage ? "text-white hero-text-shadow" : "text-foreground";
     // Overlay vert et contenu centré
     return (
         <section id={id} className="relative min-h-screen flex items-center justify-center overflow-hidden">

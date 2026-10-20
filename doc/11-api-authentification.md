@@ -206,7 +206,7 @@ function getHydratedCocolightData(): CocolightHydratedData | null {
 
 **Fonctionnement** :
 1. Le serveur SSR pré-charge les données `cocolight-data` via React Query
-2. Ces données sont sérialisées dans `window.__REACT_QUERY_STATE__` (via `serialize-javascript`)
+2. Ces données sont sérialisées dans `window.__REACT_QUERY_STATE__` (via `serializeSsrState`, même échappement que `serialize-javascript`)
 3. Côté client, si l'utilisateur n'est **pas connecté**, `createApiInstances()` réutilise ces données
 4. L'entité est reconstituée via `Cocolight.helper.fromEntityJSON()` pour obtenir un objet SDK complet
 5. Cela évite un appel réseau supplémentaire à `entityBySlug()` au premier render
@@ -255,7 +255,8 @@ export function initApi(options: InitApiOptions = {}) {
 ```
 
 **Usage recommandé** :
-- `initApi()` : dans les loaders SSR et l'initialisation côté client (avec options)
+- `ensureInitApi(queryClient)` (`src/lib/cocolightInitQuery.ts`) : dans `entry-server` et les loaders SSR — l'init API de la requête, partagée sous l'entrée React Query `["cocolight-init"]`
+- `initApi()` : l'initialisation côté client (`useCocolightInit`, avec options) ; hors cycle SSR (`/blog/feed.xml`)
 - `getApiClient()`, `getApi()`, `getUserApi()` : accès lazy dans les composants client
 
 ### `resetApiState()`
@@ -354,23 +355,23 @@ try {
 
 ### Usage dans les loaders SSR
 
-Les loaders de routes utilisent `initApi()` pour créer des instances fraîches côté serveur :
+Les loaders de routes passent par `ensureInitApi(queryClient)` (`src/lib/cocolightInitQuery.ts`) : l'init API de la requête, sous l'entrée React Query `["cocolight-init"]` du `QueryClient` que `entry-server` crée pour chaque requête HTTP.
 
 ```ts
-// Dans routes.tsx du module profil
-loader: async ({ params }) => {
-  const { api, entity } = await initApi({
-    baseURL: getBaseUrl(),
-  });
-
-  return await queryClient.ensureQueryData({
-    queryKey: ["element-about", params.slug],
-    queryFn: () => api.entitySlug(params.slug)
-  });
-}
+// Dans prefetch/prefetchProfile.ts du module profil
+return queryClient.ensureQueryData({
+  queryKey: PROFIL_QUERY_KEYS.ELEMENT_ABOUT(slug),
+  queryFn: async () => {
+    const { entity } = await ensureInitApi(queryClient);
+    if (!entity) throw new Error("API non initialisée");
+    return entity.entityBySlug(slug);
+  },
+});
 ```
 
-**Avantage** : côté serveur, chaque requête SSR crée ses propres instances via `createApiInstances()`, aucun état global n'est partagé entre les requêtes concurrentes.
+**Pourquoi pas `initApi()` directement** : chaque appel crée un `ApiClient` de plus et refait la résolution de l'entité porteuse (`getinfo/key` + `element/about`, 51 Ko). Les loaders d'une page tournent en parallèle (`Promise.all` dans `buildRoutes`) et `entry-server` refait l'init après eux : mesuré sur tiers-lieux `/lieux`, 6 inits et 17 appels backend par page servie. Avec l'entrée partagée, React Query dédoublonne les demandes concurrentes : une init par requête, `entry-server` retrouve celle du premier loader. Le préflight `tests/preflight/ssr-init-api-unique.test.ts` interdit tout `initApi(` direct dans ce périmètre.
+
+**Isolation** : inchangée — elle tient au `QueryClient` par requête (vidé à la fermeture de la réponse, `queryClient.clear()`), pas au nombre d'appels à `initApi`. Aucun état global n'est partagé entre les requêtes concurrentes.
 
 ### Limitations et considérations
 

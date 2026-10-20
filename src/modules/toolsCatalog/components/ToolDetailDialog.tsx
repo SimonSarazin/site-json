@@ -13,6 +13,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { classifyHref } from "@/lib/linkKind";
+import NavLink from "@/components/layout/NavLink";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import { getNoteAppearance } from "@/modules/coform/utils/commonTableNote";
@@ -21,6 +23,8 @@ import { SectionHeader } from "./SectionHeader";
 import { ToolImage } from "./ToolImage";
 import { CommunInfoSection } from "./CommunInfoSection";
 import { ToolEditDialog } from "./ToolEditDialog";
+import { normalizeToolHref } from "../utils/toolHref";
+import type { ToolsCatalogSectionProps } from "../schema";
 
 /** Emoji de satisfaction (map partagée coform, cf. CommonTableContributorsDialog). */
 const HAPPINESS_EMOJI: Record<string, string> = {
@@ -54,6 +58,7 @@ interface ToolDetailDialogProps {
   enableEnrichmentEditing?: boolean;
   /** Gabarit d'URL du commun pour l'éditeur (`{communId}`). */
   communUrlTemplate?: string;
+  placeKind?: ToolsCatalogSectionProps["placeKind"];
   onClose: () => void;
 }
 
@@ -98,9 +103,11 @@ export function ToolDetailDialog({
   communFormId,
   enableEnrichmentEditing,
   communUrlTemplate,
+  placeKind,
   onClose,
 }: ToolDetailDialogProps) {
   const t = useT("modules/toolsCatalog");
+  const placeCtx = { context: placeKind };
   const { entity } = useCocolight();
   const [editing, setEditing] = useState(false);
   // Admin DIRECT du host du costum = `isCostumAdmin` côté backend. Le serveur
@@ -154,6 +161,16 @@ export function ToolDetailDialog({
   // vrai en permanence. On traite alors la liste comme vide au lieu d'un spinner bloqué.
   const hasCriteria = tool.criteriaIds.length > 0;
 
+  // Le lien de l'outil peut désigner la fiche du commun SUR CE SITE
+  // (`/aac/commun/<id>`) : l'ouvrir dans un nouvel onglet rejouerait tout le
+  // démarrage de l'app pour une page qu'un `<Link>` affiche instantanément. D'où
+  // `NavLink`, qui consomme le contrat 4 voies partagé du parc (`classifyHref`).
+  // `normalizeToolHref` rend d'abord son schéma à un lien nu — cf. sa doc.
+  const lienOutil = normalizeToolHref(tool.url);
+  // Normalisé et PAS `tool.url` : une valeur qui ne tient que des espaces afficherait
+  // sinon un libellé « Voir le lien » sur un `<span>` que rien ne rend cliquable.
+  const lienOutilExterne = classifyHref(lienOutil) === "external";
+
   return (
     <>
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -167,7 +184,7 @@ export function ToolDetailDialog({
               </span>
             )}
           </DialogTitle>
-          <DialogDescription className="sr-only">{t("detail.description")}</DialogDescription>
+          <DialogDescription className="sr-only">{t("detail.description", undefined, placeCtx)}</DialogDescription>
         </DialogHeader>
 
         <div className="-mx-6 flex-1 space-y-5 overflow-y-auto px-6">
@@ -182,16 +199,14 @@ export function ToolDetailDialog({
                 <p className="text-lg font-bold text-foreground">{tool.title}</p>
                 <p className="text-sm text-muted-foreground">
                   {t("detail.toolLink")}:{" "}
-                  {tool.url ? (
-                    <a
-                      href={tool.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {lienOutil ? (
+                    <NavLink
+                      to={lienOutil}
                       className="inline-flex items-center gap-0.5 text-primary hover:underline"
                     >
                       {t("openLink")}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
+                      {lienOutilExterne && <ExternalLink className="h-3 w-3" />}
+                    </NavLink>
                   ) : (
                     <span>{t("detail.noLink")}</span>
                   )}
@@ -239,7 +254,7 @@ export function ToolDetailDialog({
           {/* ── Filtrer par contexte d'usage ───────────────────────────── */}
           {showContextFilter && (
             <section className="space-y-3">
-              <SectionHeader>{t("detail.filterTitle")}</SectionHeader>
+              <SectionHeader>{t("detail.filterTitle", undefined, placeCtx)}</SectionHeader>
               {categories.length > 1 && (
                 <div>
                   <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -275,31 +290,31 @@ export function ToolDetailDialog({
                 </div>
               )}
               <p className="text-right text-xs text-muted-foreground">
-                {t("detail.placesShown", undefined, { count: filtered.length })}
+                {t("detail.placesShown", undefined, { ...placeCtx, count: filtered.length })}
               </p>
             </section>
           )}
 
           {/* ── Les tiers-lieux qui l'utilisent ────────────────────────── */}
           <section className="space-y-3">
-            <SectionHeader>{t("detail.placesTitle")}</SectionHeader>
+            <SectionHeader>{t("detail.placesTitle", undefined, placeCtx)}</SectionHeader>
 
             {hasCriteria && isPending && (
               <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">{t("detail.loading")}</span>
+                <span className="text-sm">{t("detail.loading", undefined, placeCtx)}</span>
               </div>
             )}
 
             {!isPending && error && (
               <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-4 text-destructive">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span className="text-sm">{t("detail.error")}</span>
+                <span className="text-sm">{t("detail.error", undefined, placeCtx)}</span>
               </div>
             )}
 
             {(!hasCriteria || (!isPending && !error && filtered.length === 0)) && (
-              <p className="py-10 text-center text-sm text-muted-foreground">{t("detail.empty")}</p>
+              <p className="py-10 text-center text-sm text-muted-foreground">{t("detail.empty", undefined, placeCtx)}</p>
             )}
 
             {hasCriteria && !isPending && !error && filtered.length > 0 && (

@@ -3,20 +3,14 @@
   "titre": "Agenda multi-sources (baseParams.sourceKey multiple)",
   "description": "Même section agenda mais agrégeant plusieurs costums via baseParams.sourceKey = [a, b, c].",
   "source": "config.prod.tiers-lieux.json",
-  "selector": "pages[path=/evenements].sections[id=section-evenements]",
+  "selector": "pages[path=/actualites].sections[id=actualites-tabs].props.tabs[id=evenements].content[id=actualites-agenda]",
   "snapshot": {
     "type": "agenda",
-    "id": "section-evenements",
+    "id": "actualites-agenda",
     "props": {
-      "customHeader": {
-        "title": {
-          "fr": "Les événements autour de tiers-lieux.org",
-          "en": "events around tiers-lieux.org"
-        }
-      },
       "filters": {
         "type": true,
-        "text": true,
+        "text": false,
         "tags": true
       },
       "detailsMode": "drawer",

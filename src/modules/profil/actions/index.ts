@@ -50,6 +50,9 @@ export {
   useInviteAdmin,
 } from "./mutations/member";
 
+// Suppression d'une fiche (définitive, ≠ retrait du référencement) — cf. mutations/deleteEntity.ts
+export { useDeleteEntity } from "./mutations/deleteEntity";
+
 // Invitation par email (personnes sans compte) — inviteEvent → multiconnect listInvite.invites
 export { useInviteByEmail, canInviteByEmail } from "./mutations/inviteByEmail";
 export type { EmailInvite } from "./mutations/inviteByEmail";

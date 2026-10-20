@@ -10,6 +10,7 @@
     - [Deploiement avec Coolify](#deploiement-avec-coolify)
   - [Verifier un build : `npm run verify:build`](#verifier-un-build--npm-run-verifybuild)
   - [Piloter les deploiements depuis le depot](#piloter-les-deploiements-depuis-le-depot)
+    - [D'ou Coolify clone : le miroir GitHub](#dou-coolify-clone--le-miroir-github)
   - [Variables d'environnement runtime](#variables-denvironnement-runtime)
   - [Volumes](#volumes)
   - [Ajouter des images de contenu en production](#ajouter-des-images-de-contenu-en-production)
@@ -18,7 +19,7 @@
     - [Compression](#compression)
     - [Politique de cache HTTP](#politique-de-cache-http)
     - [Gestion des 404 statiques](#gestion-des-404-statiques)
-    - [Routes API HelloAsso](#routes-api-helloasso)
+    - [Routes API](#routes-api)
   - [Recapitulatif du flux build / runtime](#recapitulatif-du-flux-build--runtime)
   - [Voir aussi](#voir-aussi)
 
@@ -198,6 +199,7 @@ Ces variables sont lues par `prod-server.js` au demarrage du conteneur. Elles so
 | `VITE_MAPTILER_API_KEY` | non | Cle des fonds de carte MapTiler, injectee dans `window.__ENV__`. Absente : repli sur des tuiles libres. Non versionnee (`SECRETES` de `deploy-config.ts`) mais **pas confidentielle** : comme toute `VITE_*`, elle est lisible dans la page. | `""` |
 | `VITE_COSTUM_FORCE_LIVE` | non | Drapeau de depannage costum, injecte dans `window.__ENV__`. A `"true"`, la lib ignore ses schemas costum bundles et ne resout que par `getcostumjson` — a activer quand l'artefact publie devient plus vieux que la base et masque des champs reels. Cout : plus de demarrage a froid. Se pose par site via le champ `env` de `sites.json`. | `"false"` |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | non | Domaines autorises pour le proxy d'images, separes par des virgules | localhost + hostname du backend |
+| `SSR_FACET_CACHE_TTL_MS` | non | Duree de vie, en ms, du cache serveur des facettes de filtres (zones, listes d'entites, filtres par reponses et par thematique — `src/modules/search/prefetch/facetCache.ts`). Serveur uniquement, **pas** injectee dans `window.__ENV__`. `0` (ou negatif) desactive. Contrepartie : une liste de filtres peut avoir jusqu'a une duree de vie de retard. | `300000` (5 min) |
 | `PORT` | non | Port d'ecoute du serveur. Sur Coolify, **pose automatiquement** (premier port expose) : la valeur par defaut du code ne s'applique qu'hors Coolify. | `3000` |
 
 `NODE_ENV` ne figure pas dans cette table : **aucun code du depot ne la lit**. Elle est posee par le `Dockerfile` (etape runner) parce que `react` et `react-dom`, `external` du bundle SSR et reinstalles dans l'image, choisissent leur variante production ou developpement d'apres elle **au chargement du module**. Ne pas la poser fait tourner les builds de developpement de React cote serveur. Aucune autre voie ne la fournit : ni l'image de base `node:22-alpine`, ni Coolify — elle n'est pas dans ses [variables predefinies](https://coolify.io/docs/knowledge-base/environment-variables) (`COOLIFY_FQDN`, `COOLIFY_URL`, `COOLIFY_BRANCH`, `COOLIFY_RESOURCE_UUID`, `COOLIFY_CONTAINER_NAME`, `SOURCE_COMMIT`, `PORT`, `HOST`). C'est **nixpacks** qui la pose pour les applications Node, build pack que ce projet n'utilise pas (`build_pack: dockerfile`).
@@ -219,7 +221,7 @@ Le log de demarrage nomme l'origine retenue :
 Config chargée depuis dist/site-config.json : Institut Bleu — l'économie bleue à La Réunion
 ```
 
-> **Note dotenv** : `prod-server.js` n'importe pas `dotenv` directement, mais `server/api/helloasso-checkout.js` fait `import "dotenv/config"`. Un fichier `.env` present dans le repertoire de travail est donc lu en production. Sans effet dans l'image Docker (l'etape runner ne copie ni `.env` ni le depot), mais a connaitre pour un `npm start` local : un `SITE_CONFIG_PATH` dans `.env` gagnera sur la config figee.
+> **Note dotenv** : `prod-server.js` ne charge pas `dotenv` : un `npm start` local ne lit pas `.env`, les variables doivent etre exportees dans le shell (comme le fait `npm run preview` pour `SITE_CONFIG_PATH`). Seul `dev-server.js` lit `.env`.
 
 > **Note `window.__ENV__`** : le bloc `window.__ENV__` n'est injecte dans le HTML que si au moins une des trois variables (`VITE_BASE_URL_BACKEND`, `VITE_SERVER_URL`, `VITE_SLUG`) est definie. Si aucune n'est renseignee, aucun script `__ENV__` n'est emis.
 
@@ -342,18 +344,17 @@ Un ETag fort (`app.set('etag', 'strong')`) est active globalement pour permettre
 
 Les requetes vers des extensions de fichiers statiques inexistants (`.png`, `.jpg`, `.css`, `.js`, `.json`, `.ico`, `.webp`, `.mp4`, `.woff2`, `.woff`, etc.) retournent un 404 immediat sans passer par le rendu SSR. Les routes `/api/*` sont exemptees de cette verification.
 
-### Routes API HelloAsso
+### Routes API
 
-`prod-server.js` enregistre quatre routes pour l'integration HelloAsso (paiement) :
+`prod-server.js` ne sert que le relais temps reel (`server/api/realtime.js`) et une redirection temporaire, avant le rendu SSR :
 
 | Methode | Route | Description |
 |---------|-------|-------------|
-| `GET` | `/api/helloasso/token` | Obtention du token OAuth HelloAsso |
-| `POST` | `/api/helloasso/checkout-intent` | Creation d'une intention de paiement |
-| `GET` | `/api/helloasso/callback` | Callback apres paiement |
-| `GET` | `/api/helloasso/checkout-status/:checkoutIntentId` | Statut d'un paiement |
+| `GET` | `/api/realtime/flux` | Flux SSE relaye depuis le hub (monte avant `compression()`) |
+| toutes | `/api/realtime/push/*splat` | Relais JSON des routes d'abonnement push du hub |
+| `GET` | `/api/helloasso/callback` | Temporaire : redirige l'ancien retour HelloAsso vers `${VITE_BASE_URL_BACKEND}/co2/helloAsso/callback` (query conservee ; 404 sans `VITE_BASE_URL_BACKEND`) |
 
-Ces routes sont servies directement par Express avant le rendu SSR. Elles requierent que les variables d'environnement HelloAsso soient configurees dans le conteneur (voir la documentation du module `cagnotte`).
+Les paiements de la cagnotte (Stripe, HelloAsso) ne passent pas par ce serveur : le navigateur appelle l'action `fundingEnvelope` du backend Communecter, qui cree, verifie et enregistre les paiements. Aucune variable de paiement n'est a poser dans le conteneur (voir le [module Cagnotte](18-module-cagnotte.md#services-de-paiement)).
 
 ## Recapitulatif du flux build / runtime
 
@@ -382,7 +383,7 @@ npm run build =
         (copyPublicDir: !isSsrBuild)          Volume config.json ──→ inutile si SITE_EMBED
                                               Volume images/ ──→ express.static
 stats.html à la racine du dépôt,
-hors dist/ (donc hors de l'image)             Routes API : /api/helloasso/*
+hors dist/ (donc hors de l'image)             Routes API : /api/realtime/*
                                               Cache : /assets/* immutable 1 an
 COPY dans le runner : dist/ + server/                 /images/* 1 jour + SWR 7 jours
 (ni sites.json ni config.prod.*.json)         Compression gzip : level 6, seuil 1 Ko
@@ -404,7 +405,32 @@ Ce que pese `dist/` selon les arguments, mesure sur `institutBleu` :
 
 ### Pourquoi ce parti pris
 
-Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N applications du parc partagent les deux : un seul push les mettrait **toutes** en file. Et `is_auto_deploy_enabled` vaut `true` par defaut a la creation. Aucun webhook n'existe cote GitLab aujourd'hui, mais `npm run deploy:lock -- --yes` fait qu'ajouter un webhook un jour ne declenchera rien tout seul.
+Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N applications du parc partagent les deux : un seul push les mettrait **toutes** en file. Et `is_auto_deploy_enabled` vaut `true` par defaut a la creation.
+
+Ce n'etait qu'hypothetique tant que le parc clonait GitLab, ou aucun webhook n'est declare. Depuis la bascule sur l'App GitHub (voir ci-dessous), **le webhook vient avec la source** : un push sur le miroir suffirait. `npm run deploy:lock -- --yes` coupe le reglage sur tout le parc, et **verifie** par relecture — `GET /applications/{uuid}` renvoie `settings.is_auto_deploy_enabled` depuis la 4.3.x.
+
+> Jusqu'au 2026-09-16 cette commande etait **inversee** (`const cible = !unlock`) : elle *activait* l'auto-deploiement en annoncant le couper, et `--unlock` faisait l'inverse. Personne ne pouvait le voir, le code ayant renonce a relire le reglage sur la foi de l'API 4.1.1. C'est ce qu'a change l'ajout de la relecture : un PATCH accepte mais sans effet est desormais un echec, pas un `✓`.
+
+### D'ou Coolify clone : le miroir GitHub
+
+**Le parc ne clone plus GitLab.** Depuis le 2026-09-16, `gitlab.adullact.net` limite les clones : `HTTP 429` sur `git ls-remote` **et** sur `git clone`, **quelle que soit l'authentification** — anonyme, deploy token et token oauth2 ont ete mesures en echec le meme jour. La limite porte sur l'IP, pas sur les droits ; elle frappe aussi l'API GitLab depuis un poste de dev. Notre modele y est expose par construction : un deploiement = un clone (~52 Mo), `force` est en dur, donc un rollout du parc = N clones a la file.
+
+Coolify bâtit donc le **miroir GitHub prive `aboire/site-json`**, via une source « GitHub App ».
+
+| | |
+|---|---|
+| Source de verite | **GitLab** — c'est la qu'on pousse, et `reference()` vise toujours `origin/main` |
+| Ce que Coolify clone | le miroir GitHub, relais de build uniquement |
+| Synchronisation | **push mirror sortant depuis GitLab** (un pull consommerait le quota justement epuise) |
+
+Deux controles tiennent l'ecart, parce que c'est le seul mode de panne que cette architecture ajoute — Coolify publierait un vieux commit sans que rien ne le dise :
+
+- `deploy:status` affiche l'etat du miroir et **sort en 1** s'il est en retard ;
+- `deploy` (push) **refuse de partir** sur un miroir en retard.
+
+Un etat **non verifiable** (miroir prive sans credentials, reseau coupe, remote local absent) n'arrete rien : il est annonce, et la commande continue. L'outil tente `git ls-remote` nu, puis le helper de `gh` s'il est installe — sans jamais ecrire dans la config git de la machine.
+
+> **Changer la source d'une application existante n'est PAS scriptable.** `PATCH /applications/{uuid}` refuse `github_app_uuid`, `source_id`, `source_type` et `source_uuid` en **422 « This field is not allowed »** (mesure sur 4.3.21 ; la doc publique de Coolify decrit une version plus recente). Seul `git_repository` est modifiable — et le poser seul casse l'application, en laissant un `owner/repo` sur une source publique. La bascule se fait **dans l'UI**, ou a la creation via la route `POST /applications/private-github-app`, qui est celle qu'emploie `deploy:create`.
 
 ### La source de verite
 
@@ -417,7 +443,7 @@ Coolify ne filtre les webhooks git que sur le couple **(depot, branche)**. Les N
 | `aliases` | domaines **propres** du site. Leur DNS vit ailleurs et se pointe **a la main** en CNAME vers le sous-domaine d'amorce. L'outil ne les cree jamais — il verifie qu'ils resolvent deja avant de les declarer. |
 | `coolifyServer` | nom du serveur ou poser le site, quand le parc n'est pas homogene. Absent, il est deduit — voir ci-dessous. |
 | `coolifyProject` | idem pour le projet. |
-| `build` | surcharge du depot, de la branche, du moteur ou du port pour ce site. Sert au site de recette sur une autre branche, ou repris d'un autre depot. |
+| `build` | surcharge du depot, de la branche, du moteur, du port ou de l'**App GitHub** pour ce site. Sert au site de recette sur une autre branche, ou repris d'un autre depot. `githubApp` y est un **nom**, jamais un uuid (meme raison que `coolifyApp`) ; `""` cree le site en source publique, `depot` devant alors etre une URL complete. |
 | `env` | surcharge, pour ce site, d'une variable deployee — uniquement les cles de `CONSTANTES`/`SECRETES` (`deploy-config.ts`), les autres sont ignorees en silence. Ex. `"env": { "VITE_COSTUM_FORCE_LIVE": "true" }`. |
 
 Les 6 variables derivees (`VITE_SLUG`, `SITE_CONFIG_PATH`, `SITE_CSS_PATH`, `SITE_IMAGES`, `SITE_EMBED`, `VITE_SITE_PUBLIC_URL`) ne sont stockees nulle part : elles sont **derivees** de la ligne. Les 3 constantes (`VITE_BASE_URL_BACKEND`, `VITE_SERVER_URL`, `VITE_COSTUM_FORCE_LIVE`) vivent dans `scripts/lib/deploy-config.ts`, surchargeables par entree (champ `env`). La cle MapTiler vient de `.env`. Soit **10 variables** par application. Le token Coolify reste dans `~/.config/coolify/config.json`, celui du CLI.
@@ -517,6 +543,8 @@ npm run deploy        -- monSlug --yes       # premier deploiement
 ```
 
 `create` ne passe jamais `instant_deploy` : deployer avant d'avoir pose les variables produirait le theme par defaut et une config non figee. L'ordre DNS → application → variables → deploiement n'est pas negociable.
+
+L'application est creee via `POST /applications/private-github-app`, avec l'App nommee par `BUILD_DEFAUT.githubApp` (resolue nom → uuid a chaud). **C'est le seul moment ou la source se choisit** : elle n'est pas modifiable ensuite par l'API. `create` relit donc l'application apres creation et **echoue** si le depot ou la source ne sont pas ceux demandes, en renvoyant vers l'UI — la version precedente tentait au contraire de corriger le depot par un PATCH, contournement ecrit pour la troncature des URLs GitLab et devenu nuisible avec un depot en `owner/repo`.
 
 ## Voir aussi
 

@@ -16,7 +16,9 @@ import type { MapConf } from "../schema";
 import MapMarkerAvatar from "./mapMarker/MapMarkerAvatar";
 import MapMarkerIcon from "./mapMarker/MapMarkerIcon";
 import MapMarkerCircle from "./mapMarker/MapMarkerCircle";
+import MapMarkerCircleIcon from "./mapMarker/MapMarkerCircleIcon";
 import MapMarkerPin from "./mapMarker/MapMarkerPin";
+import MapMarkerPinIcon from "./mapMarker/MapMarkerPinIcon";
 
 /**
  * Dispatcher des VUES de marqueur point, sur le même modèle que `SearchCard` :
@@ -33,15 +35,45 @@ import MapMarkerPin from "./mapMarker/MapMarkerPin";
 function MarkerVisualView({ visual }: { visual: MarkerVisual }) {
   switch (visual.kind) {
     case "image":
-      return <MapMarkerAvatar src={visual.src} />;
+      return <MapMarkerAvatar src={visual.src} size={visual.size} />;
     case "icon":
       return <MapMarkerIcon src={visual.src} size={visual.size} />;
     case "circle":
-      return <MapMarkerCircle cssColor={visual.cssColor} borderCssColor={visual.borderCssColor} />;
+      return (
+        <MapMarkerCircle
+          cssColor={visual.cssColor}
+          borderCssColor={visual.borderCssColor}
+          size={visual.size}
+        />
+      );
+    case "circle-icon":
+      return (
+        <MapMarkerCircleIcon
+          icon={visual.icon}
+          cssColor={visual.cssColor}
+          borderCssColor={visual.borderCssColor}
+          size={visual.size}
+        />
+      );
     case "pin":
-      return <MapMarkerPin cssColor={visual.cssColor} borderCssColor={visual.borderCssColor} />;
+      return (
+        <MapMarkerPin
+          cssColor={visual.cssColor}
+          borderCssColor={visual.borderCssColor}
+          size={visual.size}
+        />
+      );
+    case "pin-icon":
+      return (
+        <MapMarkerPinIcon
+          icon={visual.icon}
+          cssColor={visual.cssColor}
+          borderCssColor={visual.borderCssColor}
+          size={visual.size}
+        />
+      );
     default:
-      return <MapMarkerPin cssColor="var(--primary)" />;
+      return <MapMarkerPin cssColor="var(--primary)" size={visual.size} />;
   }
 }
 
@@ -74,7 +106,7 @@ export const PointMarker = memo(function PointMarker({
   // Vignette/pastille rondes : centrées sur le point ; goutte (pin) : la pointe
   // est sur le point ; icône custom : ancrage déclaré (déf. bottom).
   const anchor =
-    visual.kind === "image" || visual.kind === "circle"
+    visual.kind === "image" || visual.kind === "circle" || visual.kind === "circle-icon"
       ? "center"
       : visual.kind === "icon"
         ? visual.anchor

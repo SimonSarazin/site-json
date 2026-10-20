@@ -10,7 +10,7 @@ interface UseAutocompleteOptions {
   /** Scope réseau — mêmes `baseParams` que le `searchProStatic` de la page. */
   baseParams?: SearchBaseParamsInput;
   /** Variant SDK `searchCostum` (ex. `"navigator-tl"`) — comme la liste. */
-  variant?: "default" | "navigator-tl" | "admin";
+  variant?: "default" | "navigator-tl" | "navigator-tl-ressource" | "admin";
   /** Tags de filtres actifs (catégorie/tab) — appliqués comme la liste. */
   tags?: string[];
   indexMax?: number;

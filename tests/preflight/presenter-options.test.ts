@@ -16,12 +16,11 @@ const matrix = presenterMatrix(ROOT);
 
 /**
  * Presenters qui lisent une option que le dispatcheur ne leur transmet PAS
- * (option morte). Sortir une entrée d'ici = le bug a été corrigé.
- * - coform-answer : `PreviewCoformAnswer` déclare et lit `preview?.fields`,
- *   mais Preview.tsx rend `<PreviewCoformAnswer item onClose />` sans `preview`.
- *   Impact réel nul aujourd'hui (aucune config du parc ne pose `fields`).
+ * (option morte). Sortir une entrée d'ici = le bug a été corrigé. Vide depuis que
+ * Preview.tsx transmet `preview` à `PreviewCoformAnswer` (`editButton`, `fields`) :
+ * l'exemption, restée en place, désactivait la seule garde de cette transmission.
  */
-const OPTIONS_MORTES_CONNUES = new Set(["coform-answer"]);
+const OPTIONS_MORTES_CONNUES = new Set<string>();
 
 describe("matrice option × presenter (search)", () => {
   it("les deux dispatcheurs sont lus et couvrent les presenters", () => {
@@ -54,6 +53,16 @@ describe("matrice option × presenter (search)", () => {
     expect(keys.size).toBeGreaterThan(5);
     const dead = [...keys].filter((k) => !matrix.cardOptionsUsedAnywhere.has(k));
     expect(dead, "options de list.card déclarées au schéma mais lues nulle part").toEqual([]);
+  });
+
+  it("chaque exemption désigne encore une option réellement morte (pas d'exemption périmée)", () => {
+    // Une exemption qui survit à sa correction éteint la garde ci-dessous pour ce presenter :
+    // c'est ainsi que `coform-answer` est resté exempté longtemps après le correctif.
+    const encoreMorts = new Set(
+      [...matrix.cards, ...matrix.previews].filter((e) => !e.receivesConfig && e.options.length).map((e) => e.type),
+    );
+    const perimees = [...OPTIONS_MORTES_CONNUES].filter((t) => !encoreMorts.has(t));
+    expect(perimees, "exemptions à retirer : l'option est désormais transmise").toEqual([]);
   });
 
   it("aucune NOUVELLE option morte (lue par le composant, non transmise par le dispatcheur)", () => {

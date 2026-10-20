@@ -19,8 +19,10 @@ import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useCocolight } from "@/hooks/useCocolight";
+import { isCostumHostAdmin } from "@/lib/permissions";
 import { COSTUM_QUERY_KEYS } from "@/constants/queryKeys";
 import { costumSlugOf } from "@/lib/costumLists";
+import { getCostumForceLive } from "@/lib/constant/common";
 import { useNavigate } from "react-router";
 import { buildParentReference, buildOrganizerReference, logCocolightError } from "./mutationUtils";
 import { submitEntityEdit, type EditableEntity } from "./submitEntityEdit";
@@ -30,10 +32,24 @@ import type { SpecStamp } from "../forms/entityModalSpec";
 export type EntityKind = "organizations" | "projects" | "events" | "poi" | "citoyens";
 type SdkMethod = "organization" | "project" | "event" | "poi";
 
-/** entityType → méthode de création du SDK. (citoyens : pas de create par cette voie.) */
-const SDK_METHOD: Record<EntityKind, SdkMethod> = {
-  organizations: "organization", projects: "project", events: "event", poi: "poi", citoyens: "organization",
+/**
+ * entityType → méthode de création du SDK. `citoyens` n'y figure PAS, et c'est structurel : un
+ * citoyen ne se crée que par l'inscription (`person/register`) ; `element/save` collection=citoyens
+ * est une mise à jour seule (contrat `SAVE_CITOYEN`), et la lib n'a aucun créateur de personne
+ * (cocolight-backend/docs/33 §2). L'ancien mapping `citoyens: "organization"` aurait fait créer une
+ * ORGANISATION par un formulaire citoyen ouvert en mode ajout — cf. `assertCreatable`.
+ */
+const SDK_METHOD: Record<Exclude<EntityKind, "citoyens">, SdkMethod> = {
+  organizations: "organization", projects: "project", events: "event", poi: "poi",
 };
+
+/** Message levé par une CRÉATION de citoyen — AVANT tout appel SDK. Exporté pour les tests. */
+export const CITOYEN_CREATE_UNSUPPORTED =
+  "création de citoyen non supportée par cette voie (un citoyen naît par l'inscription ; element/save citoyens est une mise à jour seule)";
+
+function assertCreatable(kind: EntityKind): asserts kind is Exclude<EntityKind, "citoyens"> {
+  if (kind === "citoyens") throw new Error(CITOYEN_CREATE_UNSUPPORTED);
+}
 
 type Data = Record<string, unknown>;
 /** Instance créée par le SDK : sauvegardable + slug pour la navigation + `updateField` (canal
@@ -44,8 +60,11 @@ type CreatedEntity = {
   updateField?: (path: string, value: unknown) => Promise<unknown>;
   serverData?: Data | null;
 };
-/** Cible SDK de création : `me`, parent, ou scope costum (`me.costum(slug)`). */
-type SdkTarget = Record<SdkMethod, (payload: Data) => Promise<CreatedEntity>>;
+/** Options de création d'un scope costum (`CostumScope.organization(data, opts)`…) — jamais envoyées au serveur. */
+type CostumCreateOpts = { subType?: string };
+/** Cible SDK de création : `me`, parent, ou scope costum (`me.costum(slug)`). Le 2e argument n'est
+ *  passé QU'À un scope costum : sur `me`/parent (BaseEntity), il n'a pas ce sens. */
+type SdkTarget = Record<SdkMethod, (payload: Data, opts?: CostumCreateOpts) => Promise<CreatedEntity>>;
 /** `me` (utilisateur connecté). Le slug costum réel est typé `KnownCostumSlug` côté lib → cast au call. */
 type MeLike = EntityTypes | null;
 
@@ -59,6 +78,12 @@ export interface EntityMutationSpec {
   buildPayload: (formData: Data) => Data;
   /** create costum : `me.costum(slug).X()` au lieu de `(target??me).X()`. */
   costumSlug?: string;
+  /**
+   * CRÉATION costum : sous-type ciblé (clé `typeObj`, ex. `organizationsTls`) — relayé au SDK en 2e
+   * argument (`scope.X(payload, { subType })`) pour appliquer la variante (presets) de CE sous-type au
+   * lieu du défaut de la collection. Ignoré hors scope costum et en édition.
+   */
+  subType?: string;
   /**
    * ÉDITION costum : slug du costum qui DÉFINIT le formulaire (`FormDescriptor.costumSlug`) — épinglé
    * sur l'entité avant l'écriture du draft, pour que ses champs costum soient écrivables.
@@ -86,6 +111,9 @@ export interface EntityMutationSpec {
     dropEmptyEmail?: boolean;
     /** valeurs fixes ajoutées au payload (preset costum). */
     extraFields?: Data;
+    /** Comme `extraFields`, mais seulement pour un NON-admin du site — modération a priori (cf.
+     *  entityModalSpec : filtre d'affichage, pas barrière de sécurité). */
+    extraFieldsUnlessCostumAdmin?: Data;
   };
   /** Stamps déclaratifs ($scope DÉJÀ résolus par buildSpec) — canal payload appliqué après
    *  buildPayload (add+edit), canal pathValue après le save (entité PROPRE, échec non bloquant). */
@@ -107,15 +135,37 @@ export interface EntityMutationSpec {
  * d'ADMINISTRATION et la provenance (`source.key`) continue de gouverner le schéma — comportement
  * voulu pour `ensureCostumScope` (import/export/validation), PAS ici.
  *
+ * Costum LIVE (`VITE_COSTUM_FORCE_LIVE`) : la lib ignore ses schémas bundlés et ne résout un costum
+ * que depuis son cache live (TTL 5 min). Rien ne garantit ce cache au moment d'éditer : `get()` ne
+ * précharge que le costum de la PROVENANCE de l'entité (`source.key` — sur un annuaire, la fiche vient
+ * d'ailleurs : un lieu de tiers-lieux.org a `source.key: "laRosee"`, `"franceTierslieux"`…), `api.me()`
+ * ne charge rien, et un profil ouvert depuis plus de 5 min l'a laissé expirer. `setCostumScope` épingle
+ * alors un contexte NU, sans aucun champ, et tout champ costum est refusé (`[DraftProxy] Le champ
+ * "typepro" n'est pas autorisé.` sur le formulaire citoyen SSBE, `holderOrganization` sur l'annuaire
+ * tiers-lieux). D'où, en mode live seulement, `loadCostumScope` d'abord (chargement live du costum du
+ * FORMULAIRE, dédupliqué par la lib dans le TTL), PUIS `setCostumScope` dans tous les cas : lui seul
+ * passe `serverData.type` et garde la variante du sous-type de l'entité, là où `loadCostumScope`
+ * résout par (slug, collection). Hors mode live : inchangé (registre bundlé, aucun appel réseau).
+ *
  * Échec NON bloquant : un costum hors registre lève (« fournissez costumId/costumType ») ; on laisse
  * alors le save échouer avec l'erreur de champ, plus parlante qu'une erreur d'identité costum.
  */
-function pinSchemaCostumScope(target: unknown, slug: string | undefined): void {
+async function pinSchemaCostumScope(target: unknown, slug: string | undefined): Promise<void> {
   if (!slug || !target || typeof target !== "object") return;
   const holder = target as {
     setCostumScope?: (slug: string, opts?: { costumId?: string; costumType?: string; pinSchema?: boolean }) => void;
+    loadCostumScope?: (slug: string) => Promise<boolean>;
   };
   if (typeof holder.setCostumScope !== "function") return;
+  // Mode live : le cache live est la seule source, on y charge le costum du formulaire avant d'épingler.
+  if (getCostumForceLive() && typeof holder.loadCostumScope === "function") {
+    try {
+      await holder.loadCostumScope(slug);
+    } catch (err) {
+      console.warn(`[costum] chargement live du schéma « ${slug} » impossible (non bloquant)`, err);
+    }
+  }
+  // Toujours : épingle depuis le cache (live frais ou bundle), en gardant la variante du sous-type.
   try {
     holder.setCostumScope(slug, { pinSchema: true });
   } catch (err) {
@@ -141,7 +191,7 @@ function isGalleryFieldValue(v: unknown): v is GalleryFieldValue {
   return !!g && typeof g === "object" && Array.isArray(g.added) && Array.isArray(g.removedDocIds) && typeof g.contentKey === "string";
 }
 interface GalleryCapableEntity {
-  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file" }) => Promise<{ docId: string; docPath: string }>;
+  uploadDocument: (file: File, opts: { contentKey: string; docType?: "image" | "file"; subKey?: string }) => Promise<{ docId: string; docPath: string }>;
   deleteFile: (docId: string) => Promise<void>;
   data?: Record<string, unknown>;
   save?: () => Promise<unknown>;
@@ -178,7 +228,15 @@ async function processGalleryFields(entity: unknown, values: Data): Promise<void
       }
     }
     for (const file of v.added ?? []) {
-      const res = await ent.uploadDocument!(file, { contentKey: v.contentKey, docType: v.docType });
+      // `subKey` = clé du CHAMP de formulaire (ex. "statusFile", "responsableCivilePro") : le backend
+      // écrase `contentKey` des `doctype:file` par un bucket MIME (pdf/spreadsheet/…), mais conserve
+      // `subKey` verbatim → c'est lui qui permet de rattacher un document à son champ (seed d'édition,
+      // preview). Inutile pour les images (contentKey "slider" survit).
+      const res = await ent.uploadDocument!(file, {
+        contentKey: v.contentKey,
+        docType: v.docType,
+        subKey: v.docType === "file" ? v.contentKey : undefined,
+      });
       if (v.mediaTarget?.field && res?.docPath) {
         (mediaAdds[v.mediaTarget.field] ??= []).push({ type: v.mediaTarget.type, url: res.docPath });
       }
@@ -259,7 +317,7 @@ export async function runEntityMutation(
   // ── ÉDITION ─────────────────────────────────────────────────────────────────
   if (spec.mode === "edit") {
     if (!spec.target) throw new Error("No entity provided");
-    pinSchemaCostumScope(spec.target, spec.schemaCostumSlug);
+    await pinSchemaCostumScope(spec.target, spec.schemaCostumSlug);
     try {
       await submitEntityEdit(spec.target as unknown as EditableEntity, payload, { imageFile, imageDeleted });
     } catch (err) {
@@ -272,6 +330,8 @@ export async function runEntityMutation(
   }
 
   // ── CRÉATION ──────────────────────────────────────────────────────────────────
+  // Garde AVANT tout appel SDK : un form citoyen en mode ajout n'a aucune cible de création.
+  assertCreatable(spec.entityType);
   const target = (spec.target ?? me) as EntityTypes | null;
   if (!target) throw new Error("No entity provided");
 
@@ -290,6 +350,10 @@ export async function runEntityMutation(
   }
   if (spec.inject?.dropEmptyEmail && payload.email === "") delete payload.email;
   if (spec.inject?.extraFields) Object.assign(payload, spec.inject.extraFields);
+  // Modération a priori : le drapeau n'est posé que pour les NON-admins du site (cf. entityModalSpec).
+  if (spec.inject?.extraFieldsUnlessCostumAdmin && !isCostumHostAdmin(deps.contextEntity)) {
+    Object.assign(payload, spec.inject.extraFieldsUnlessCostumAdmin);
+  }
   if (imageFile) payload.profil_avatar = imageFile;
 
   const method = SDK_METHOD[spec.entityType];
@@ -305,10 +369,14 @@ export async function runEntityMutation(
   //  (3) sinon cible directe (parent explicite, ou `me`).
   const costumOf = me as unknown as { costum?: (arg: unknown) => Promise<SdkTarget> } | null;
   let scope: SdkTarget;
+  // Sous-type ciblé : relayé au SEUL scope costum (branches 1 et 2), jamais à la cible directe (3).
+  let costumOpts: CostumCreateOpts | undefined;
   if (spec.costumSlug && costumOf?.costum) {
     scope = await costumOf.costum(spec.costumSlug);
+    if (spec.subType) costumOpts = { subType: spec.subType };
   } else if (deps.contextEntity && costumOf?.costum) {
     scope = await costumOf.costum(deps.contextEntity);
+    if (spec.subType) costumOpts = { subType: spec.subType };
     if (spec.target) { // réplique l'auto-injection parent/organizer perdue (this.parent = me)
       if (spec.entityType === "events") {
         if (!payload.organizer) {
@@ -325,7 +393,8 @@ export async function runEntityMutation(
   } else {
     scope = target as unknown as SdkTarget;
   }
-  const entity = await scope[method](payload);
+  // Sans sous-type : appel STRICTEMENT inchangé (un seul argument).
+  const entity = await (costumOpts ? scope[method](payload, costumOpts) : scope[method](payload));
   try {
     await entity.save();
   } catch (err) {

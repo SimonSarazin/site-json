@@ -12,7 +12,7 @@ export interface FiltersByAnswersOptions {
     finderPath?: string;
     /** Cf. `FiltersByAnswersSchema.filterTarget` — `answers` = la liste porte les
      *  réponses elles-mêmes (prédicat de chemin) ; défaut = éléments liés (`_id`). */
-    filterTarget?: "answers" | "linkedElements";
+    filterTarget?: "answers" | "linkedElements" | "parentId";
     value?: {
       [key: string]: {
         id: string;

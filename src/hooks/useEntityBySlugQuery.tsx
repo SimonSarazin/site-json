@@ -17,28 +17,53 @@ interface QueryEntityBySlugProps {
   >;
 }
 
+/**
+ * Options React Query d'une fiche lue par slug : clé, fonction, fraîcheur.
+ *
+ * Extrait du hook pour qu'un appelant qui lit PLUSIEURS fiches d'un coup (`useQueries`) partage
+ * exactement le même cache — même clé, même fonction. Recopier ces trois lignes ailleurs
+ * suffirait à faire deux entrées de cache pour une même fiche, donc deux requêtes.
+ */
+export function optionsFicheParSlug({
+  slug,
+  entity,
+  me,
+  userContextId,
+  loading,
+}: {
+  slug: string | undefined;
+  entity: ReturnType<typeof useCocolight>["entity"];
+  me: ReturnType<typeof useCocolight>["me"];
+  userContextId: string | null;
+  loading: boolean;
+}) {
+  return {
+    queryKey: PROFIL_QUERY_KEYS.ELEMENT_ABOUT(slug ?? null, userContextId),
+    queryFn: async () => {
+      if (!slug) throw new Error("Slug manquant");
+      if (!entity) throw new Error("API non initialisée");
+      // Notre propre fiche est déjà chargée et plus complète que ce que l'API publique renvoie.
+      if (me && slug === me.slug) return me;
+      return entity.entityBySlug(slug);
+    },
+    enabled: !!slug && !loading && !!entity,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  };
+}
+
 export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugProps) => {
   const { entity, loading, helper, me } = useCocolight();
   const queryClient = useQueryClient();
 
   // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
   const userContextId = useHydratedUserContextId();
-  const queryKey = PROFIL_QUERY_KEYS.ELEMENT_ABOUT(slug ?? null, userContextId);
+  const base = optionsFicheParSlug({ slug, entity, me, userContextId, loading });
+  const queryKey = base.queryKey;
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({
-    queryKey,
-    queryFn: async () => {
-      if (!slug) throw new Error("Slug manquant");
-      if (!entity) throw new Error("API non initialisée");
-      if(me && slug === me.slug) {
-        return me;
-      }
-      return entity.entityBySlug(slug);
-    },
-    enabled: !!slug && !loading && !!entity,
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
+    ...base,
     ...options,
   });
 

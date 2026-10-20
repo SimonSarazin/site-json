@@ -36,8 +36,16 @@ export interface CoFormModalProps {
   inputKey?: string;
   /** ID de la réponse existante à éditer */
   answerId?: string;
-  /** Valeurs par défaut pour pré-remplir (mode édition) */
+  /** Valeurs par défaut : réponse éditée, ou préremplissage d'une création (cf. `hiddenFields`). */
   defaultValues?: AllStepsData;
+  /**
+   * `updated` de la réponse éditée. À TRANSMETTRE dès qu'on passe `answerId` :
+   * c'est la seule chose qui permet à `useCoFormDraft` de voir qu'un brouillon
+   * local est plus vieux que la version serveur. Sans lui, un brouillon
+   * d'avant-hier se restaure par-dessus une réponse modifiée entre-temps, sans
+   * le moindre avertissement.
+   */
+  baseUpdatedAt?: number | null;
   /** Mode lecture seule */
   readOnly?: boolean;
   /** Callback exécuté après soumission réussie (avant fermeture automatique) */
@@ -49,14 +57,36 @@ export interface CoFormModalProps {
   /** Liste de clés d'inputs verrouillés (non modifiables dans le modal) */
   lockedFields?: string[];
   /**
+   * Champs MASQUÉS à l'affichage pour cet appel (clés `field.name`, préfixe de type compris, comme
+   * `lockedFields` — ex. `finder<kunik>`). Le champ reste dans le schéma et sa valeur (souvent
+   * préremplie par `defaultValues`) part au submit : c'est ce qui le distingue de
+   * `access.restrictedFields`, que le parse retire et dont la valeur serait perdue. Un champ masqué
+   * en ERREUR de validation est réaffiché, sans quoi l'erreur listée resterait inatteignable.
+   */
+  hiddenFields?: readonly string[];
+  /**
+   * Étapes à retirer du parcours pour cet appel (cf. `SmartCoForm`). La règle
+   * vient de l'appelant, pas du formulaire — typiquement « l'étape d'évaluation
+   * n'est pas proposée à qui n'administre pas l'appel ».
+   */
+  hiddenStepKeys?: readonly string[];
+  /**
    * ID de l'élément lié au form (lieu, projet, événement…). Active le mode
    * "par élément" backend : `Coform::getFormAccessInfo` calcule alors
    * `access.restrictedFields` à partir de `placeAdminOnlyFields` /
-   * `placeMemberOnlyFields`. Requis avec `elementType`.
+   * `placeMemberOnlyFields`. Entre aussi dans la clé du brouillon : sans lui,
+   * une « nouvelle réponse » commencée depuis un lieu serait proposée sur un
+   * autre (cf. `useCoFormDraft`). Requis avec `elementType`.
    */
   elementId?: string;
   /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
   elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
+  /**
+   * Comment rendre un champ dont le type n'a pas de composant. Défaut :
+   * `"error"`. Cf. `UnsupportedField` — `"placeholder"` est réservé aux
+   * formulaires de CRÉATION ouverts au public.
+   */
+  unknownFieldVariant?: "error" | "placeholder";
 }
 
 /**
@@ -72,13 +102,17 @@ export function CoFormModal({
   inputKey,
   answerId,
   defaultValues,
+  baseUpdatedAt,
   readOnly = false,
   onAfterSubmit,
   closeOnSubmit = !inputKey,
   className,
   lockedFields,
+  hiddenFields,
+  hiddenStepKeys,
   elementId,
   elementType,
+  unknownFieldVariant,
 }: CoFormModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -86,6 +120,12 @@ export function CoFormModal({
   const [isDirty, setIsDirty] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
   const submitRef = useRef<(() => void) | null>(null);
+  // Rejet EXPLICITE du brouillon, câblé jusqu'au détenteur de `useCoFormDraft`
+  // (formulaire simple ou provider du wizard). Sans lui, « Abandonner les
+  // modifications » ne défaisait rien : l'auto-save avait déjà écrit, et le
+  // flush au démontage écrivait le reste — le brouillon qu'on venait de
+  // déclarer abandonner était reproposé à la réouverture.
+  const discardDraftRef = useRef<(() => void) | null>(null);
 
   // Réinitialise isDirty à la fermeture (propre pour la prochaine ouverture)
   const handleOpenChange = useCallback((nextOpen: boolean) => {
@@ -115,6 +155,9 @@ export function CoFormModal({
   const handleConfirmDiscard = useCallback(() => {
     setConfirmClose(false);
     setIsDirty(false);
+    // AVANT la fermeture : `discardDraft` supprime la clé ET jette le payload
+    // en attente, ce que le flush au démontage ne pourra plus réécrire.
+    discardDraftRef.current?.();
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -147,7 +190,12 @@ export function CoFormModal({
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
-          className="max-w-[calc(100%-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0"
+          // `min-w-0` : `DialogContent` est une GRILLE, et un item de grille a
+          // `min-width: auto` — sa largeur min-content remonte donc à la piste.
+          // Un seul enfant large (texte `nowrap`, bouton, tableau) élargit la
+          // piste, TOUS les enfants s'étirent avec elle, et la modale se met à
+          // défiler latéralement. Mesuré : 452 px de contenu pour 356 de large.
+          className="max-w-[calc(100%-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0 [&>*]:min-w-0"
           onInteractOutside={(e) => {
             if (isSubmitting) e.preventDefault();
           }}
@@ -170,14 +218,18 @@ export function CoFormModal({
               inputKey={inputKey}
               answerId={answerId}
               defaultValues={defaultValues}
+              baseUpdatedAt={baseUpdatedAt}
               readOnly={readOnly}
               onAfterSubmit={handleAfterSubmit}
               onDirtyChange={setIsDirty}
               submitRef={submitRef}
+              discardDraftRef={discardDraftRef}
               lockedFields={lockedFields}
+              hiddenFields={hiddenFields}
+              hiddenStepKeys={hiddenStepKeys}
               elementId={elementId}
               elementType={elementType}
-              inModal
+              unknownFieldVariant={unknownFieldVariant}
             />
           </div>
         </DialogContent>
@@ -186,8 +238,7 @@ export function CoFormModal({
   );
 }
 
-// Export default requis pour lazy(() => import(...)) — consommateurs lazy :
-// SearchProStatic (bouton « Ajouter » coform) et PreviewCoformAnswer (bouton
-// « Modifier »), qui ne doivent pas tirer le chunk coform tant que la modale
-// n'est pas demandée.
+// Export default requis pour lazy(() => import(...)) : ses consommateurs (bouton
+// « Ajouter » de SearchProStatic, « Modifier » d'un détail, « Créer » d'une table
+// admin…) ne tirent le chunk coform qu'à l'ouverture de la modale.
 export default CoFormModal;

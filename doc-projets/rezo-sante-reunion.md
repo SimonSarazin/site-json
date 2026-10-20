@@ -12,7 +12,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module formEngine](../doc/28-module-formengine.md).
 > Mémoire : `[[project-rezo-sante-reunion]]`.
 
-Dernière mise à jour : **2026-08-03** (lot 3 §9 — feuille CSS propre, Fraunces, essai carrousel ; synchronisation SDK 1.0.172 + `VITE_SITE_PUBLIC_URL`).
+Dernière mise à jour : **2026-10-07** (lot 7 §9, revue MR 76 instruite — **annuaire des lieux de santé** : page `/lieux-sante`, formulaire `rezo-sante-lieu`, codec générique `fixedTags`, lieux exclus de l'annuaire des acteurs, onglet admin dédié ; cahier des charges PSR reçu, §4.4 ; lot 5 §9 — création de fiches : 3 formulaires costum avec les champs **Thématiques** et **Bénéficiaires**, `typeObj` posé en base §6bis.1 ; lot 6 §9 — **changement de slug du costum en production**, `rezoSanteReunion` → `EcosystemeSanteReunion`).
 
 ---
 
@@ -20,7 +20,8 @@ Dernière mise à jour : **2026-08-03** (lot 3 §9 — feuille CSS propre, Fraun
 
 **RéseauSanté** (« Rézo Santé », domaine visé `rezoSanté.re`) est un réseau réunionnais de **santé
 globale** : il rassemble citoyens, associations et professionnels autour de la nutrition, de
-l'activité physique, du sommeil, des addictions et du bien-être mental.
+l'activité physique, du sommeil, des addictions, du bien-être mental et — depuis le lot 4 (27/08) —
+de la culture.
 
 Le besoin exprimé tient en quatre briques : un **annuaire** d'acteurs, la possibilité de **créer des
 fiches** et d'en **importer** en masse, une vitrine des **projets** portés par le réseau, et des
@@ -53,17 +54,17 @@ Deux conséquences de conception, à ne pas perdre de vue :
 
 | | |
 |---|---|
-| Slug de site | `rezoSanteReunion` |
-| Entité Cocolight | `rezoSanteReunion` — collection `organizations`, type `NGO`, « Rézo Santé Réunion » |
-| Costum backend | **CRÉÉ le 30/07** — config minimale posée sur l'org porteuse (motif *costum-in-org*) : `costum = { slug: "costumize", language: "fr" }`. `slug` désigne le **moteur**, pas le site : le slug de site reste `rezoSanteReunion`, celui de l'org, déjà présent dans la collection `slugs`. Cf. §6bis |
+| Slug de site | `EcosystemeSanteReunion` — **renommé en prod le 08/09** (ex-`rezoSanteReunion`, cf. §9 lot 6). C'est le `VITE_SLUG` de `sites.json` : il charge l'entité porteuse au boot, et sert de `costumSlug` / `sourceKey` sur toute la config |
+| Entité Cocolight | `EcosystemeSanteReunion` — collection `organizations`, type `NGO`, « Rézo Santé Réunion » (id `6a4ccc3b9da32f33e85e4c43`) |
+| Costum backend | **CRÉÉ le 30/07** — config minimale posée sur l'org porteuse (motif *costum-in-org*) : `costum = { slug: "costumize", language: "fr" }`. `slug` désigne le **moteur**, pas le site : le slug de site reste `EcosystemeSanteReunion`, celui de l'org, déjà présent dans la collection `slugs`. Cf. §6bis |
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
 | CSS | [`../src/index-rezo-sante-reunion.css`](../src/index-rezo-sante-reunion.css) — **feuille propre** depuis le 30/07 (commit `82669e97`, fin de l'héritage d'`index-parent62.css`) ; couleurs et typographie vivent dans `config.theme` |
 | Langues | `fr` (défaut) + `en` |
 | Header / Footer | `transparent-scroll` / `contact-partners` |
 | Archétype de départ | `parent62` (portail complet) |
 | Backend de référence | `https://www.communecter.org` (le backend local `:5080` était éteint) |
-| SDK | `@communecter/cocolight-api-client` **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a0` du 03/08 — fini le `npm pack` local) |
-| Branche | `main` |
+| SDK | `@communecter/cocolight-api-client` **1.0.191** (lu dans `node_modules` le 08/09 ; bumps transverses du monorepo, non spécifiques à ce site) |
+| Branche | `mira-dev` |
 
 ### Historique des chantiers
 
@@ -76,6 +77,11 @@ Deux conséquences de conception, à ne pas perdre de vue :
 | 2026-07-30 | Claude | Lot 2 — **création du costum backend** : config minimale sur l'org porteuse. `getcostumjson` passe de HTTP 500 à 200 côté legacy, et la réponse est byte-identique au backend Node. Le périmètre reste vide (§6bis). |
 | 2026-07-30 | Claude | Lot 3 — identité propre : feuille de style dédiée `index-rezo-sante-reunion.css` (fin de l'héritage parent62, `82669e97`), **Fraunces** en titres à la place du Baloo 2 hérité (`306380c8`), et `hero-carousel` en tête de `/thematiques` — **placement d'ESSAI** (`f0e0893f`). Mergé dans `main` le **02/08** via `36430caa`. |
 | 2026-08-03 | Claude | Synchronisation transverse : merge `fix/institut-bleu-ui` (`94251b7b`) → SDK **1.0.172 publiée**, `VITE_SITE_PUBLIC_URL` (§8). Gates rejoués : typecheck ✅, préflight **412/412 (22 fichiers)** ✅. Mise à jour de ce dossier. |
+| 2026-08-27 | Claude | Lot 4 — **6ᵉ thématique « Culture & Santé »**, en parité avec les 5 existantes (nav, footer, home, hub `/thematiques`, page `/theme/culture-sante`, 3 facettes `dropdownFilters`, `/a-propos`) ; visuel final fourni par le client (généré par IA, cohérent avec les 5 autres). Voir §9 pour le détail. |
+| 2026-08-27 | Claude | Lot 4 (suite) — **correctif de lisibilité des héros `hero-tinted-overlay`** : `drop-shadow`/`drop-shadow-lg` de Tailwind (≤ 0,15 d'opacité) remplacés par deux utilitaires dédiés `hero-text-shadow`/`hero-text-shadow-strong` (`shared.css`), posés en custom properties surchargeables via `theme.customCSS` (même patron que `--color-hero-tint`). Composant **partagé** avec `nos-commune` : vérifié en clair/sombre/mobile sur les deux configs, aucune régression. Documenté au passage : la cloche de notifications (`header.utilities.notifications`) est active depuis l'origine de cette config, jamais consignée jusqu'ici (§4.1, §10). |
+| 2026-09-08 | Claude | Lot 5 — **création de fiches** : `typeObj` du costum posé en base (`thematic` sur les 3 collections, `beneficiaires` sur les projets, §6bis.1), puis les 3 formulaires costum `rezo-sante-{acteur,projet,ressource}`, leurs routes d'édition bornées et la réconciliation `tags` ⇄ `thematic`. Voir §9. |
+| 2026-09-08 | Claude | Lot 6 — **changement de slug du costum en production** : `rezoSanteReunion` → `EcosystemeSanteReunion`, répercuté sur `sites.json`, les 10 `baseParams`, les 4 sources d'onglets admin, les 3 routes `editModals`, les 3 `costumForms` et la palette de commandes. Dossier d'assets `images/rezoSanteReunion/` inchangé (clé distincte). Voir §9. |
+| 2026-09-30 | Claude | Lot 7 — **annuaire des lieux de santé** : entrée « Annuaire des lieux de santé » sous « Le réseau », page `/lieux-sante` (organisations taguées `lieux-sante`, recherche, bascule carte, fiche au clic), formulaire `rezo-sante-lieu` (photo, nom, description, adresse, mots-clés ; tag imposé par le nouveau codec de groupe `fixedTags`), route d'édition dédiée. Deux effets de bord d'un 2ᵉ formulaire « organisations » traités (admin `create` explicite, menu « Créer » des citoyens en `custom`). Voir §9. |
 
 ---
 
@@ -84,8 +90,8 @@ Deux conséquences de conception, à ne pas perdre de vue :
 1. Un **annuaire** des acteurs de santé de La Réunion, filtrable et cartographiable.
 2. Une page **projets** du réseau.
 3. Une page **ressources** mêlant outils et projets dans une même grille.
-4. Cinq **pages thématiques** (nutrition · activité physique · sommeil · addictions · bien-être
-   mental) plus un hub.
+4. Six **pages thématiques** (nutrition · activité physique · sommeil · addictions · bien-être
+   mental · **culture & santé**, ajoutée au lot 4) plus un hub.
 5. Un **agenda** des rendez-vous du réseau.
 6. La **création de fiches** depuis le site et l'**import en masse** par le back-office.
 7. *(demandé, non livrable en config — cf. §5.2)* des **actions d'engagement** sur les projets et un
@@ -98,7 +104,7 @@ Deux conséquences de conception, à ne pas perdre de vue :
 ```
 Communecter (backend)                    SiteForge (ce dépôt)
 ─────────────────────                    ────────────────────
-entité  rezoSanteReunion  ──── slug ───▶ sites.json → config.prod.rezo-sante-reunion.json
+entité  EcosystemeSanteReunion  ──── slug ───▶ sites.json → config.prod.rezo-sante-reunion.json
   └─ costum  ✔ posé (30/07, §6bis)          ├─ theme  « Lumière du matin » (light + dark)
                                             ├─ header transparent-scroll · footer contact-partners
 données scopées par                         ├─ 14 pages / 41 sections / 16 types (03/08)
@@ -109,8 +115,8 @@ données scopées par                         ├─ 14 pages / 41 sections / 16
 ```
 
 **Une seule voie de filtrage** : le périmètre par **costum**, via le **paramètre natif**
-`sourceKey: ["rezoSanteReunion"]` posé sur les 9 `baseParams`, accompagné de
-`costumSlug: "rezoSanteReunion"` qui arme la porte de validation côté client.
+`sourceKey: ["EcosystemeSanteReunion"]` posé sur les 9 `baseParams`, accompagné de
+`costumSlug: "EcosystemeSanteReunion"` qui arme la porte de validation côté client.
 
 Ce choix se justifie sur trois plans (mesures en §5.5 à §5.7) :
 
@@ -133,12 +139,14 @@ Ce choix se justifie sur trois plans (mesures en §5.5 à §5.7) :
 | Annuaire | acteurs filtrables, carte | ✅ `/annuaire` — `searchProStatic`, presenter `profile` |
 | Projets | liste des projets du réseau | ✅ `/projets` |
 | Ressources | outils **et** projets dans une grille | ✅ `/ressources` — presenter `resource` + `list.itemRules` |
-| Thématiques | 5 axes + hub | ✅ 6 pages, filtrées par tags |
+| Thématiques | 6 axes + hub (6ᵉ axe « Culture & Santé » ajouté le 27/08, lot 4) | ✅ 7 pages, filtrées par tags |
 | Agenda | rendez-vous du réseau | ✅ `/agenda` |
-| Création de fiches | depuis le site | 🟡 **prévue** — formulaires costum liés à `rezoSanteReunion` annoncés par le client (29/07). Non activée tant que les `costumForms` ne sont pas écrits : un `modal` sans document rend `null` en silence. File de validation en place (onglet « Validation »). |
+| Notifications | cloche du header pour les membres connectés | ✅ `header.utilities.notifications: true` — activé, jamais consigné avant le 27/08. La cloche du header suffit, décision volontaire : pas de page `/notifications` dédiée |
+| Création de fiches | depuis le site | 🟡 **3 formulaires costum écrits (08/09, §9 lot 5)** — annuaire, projets, ressources, avec les champs Thématiques et Bénéficiaires. Actifs dans le back-office ; le `typeObj` reste à appliquer au backend de déploiement (§6bis.1). Création publique (`floatingActionButton`) non demandée à ce stade. File de validation en place (onglet « Validation »). |
 | Import de masse | CSV → entités | ✅ onglet `import-export` du back-office |
 | Validation des dépôts | file de modération | ✅ onglet « Validation » — section `moderation` (lot 1c) |
 | Éditorial | à propos, socle légal | ✅ `/a-propos`, `/mentions-legales`, `/confidentialite` |
+| Annuaire des lieux de santé | organisations taguées `lieux-sante` : liste, recherche, carte, ajout depuis la page, fiche au clic | ✅ `/lieux-sante` (30/09, §9 lot 7) — démarre **vide** tant qu'aucune fiche ne porte le tag ; création de bout en bout non vérifiée (§11) |
 
 ### 4.2 Ce qui a été demandé et **n'existe pas dans le produit**
 
@@ -183,6 +191,25 @@ par intention (« je soutiens », « je réutilise ») ouvert depuis la fiche. C
 réponse de formulaire. Limites assumées : pas de bouton d'état on/off, pas de compteur natif, pas de
 liste « qui a soutenu » sans écran dédié, et une modale là où l'utilisateur attend un clic.
 
+### 4.4 Cahier des charges PSR « Écosystème santé » (PDF, reçu le 30/09) — la partie lieux de santé
+
+Document d'une page et demie, en listes à puces, transmis le 30/09 (après la livraison du lot 7). Ce qu'il
+dit des lieux, mot pour mot : « **Annuaire des lieux de santé** · Fiche Lieux · Agenda » puis « **Fiche
+Lieu** · Les Antennes · A propos · Communauté ». Le formulaire « Ajouter une structure » qu'il décrit
+(Nom, Type d'orga, Rôle, Desc courte, Email, Site web, Tags, Localisation) est celui des **acteurs**,
+livré au lot 5. Deux décisions prises par Judi le 30/09 à la lecture du CDC : **les lieux ne s'affichent
+pas parmi les acteurs**, et **un lieu est créé en `LocalBusiness` par défaut**.
+
+| Point du CDC | État | Détail |
+|---|---|---|
+| Annuaire des lieux de santé | ✅ | `/lieux-sante` (§9 lot 7) : organisations taguées `lieux-sante`, recherche, carte, ajout |
+| → Fiche Lieux | ✅ | clic sur un lieu → fiche `/profil/<slug>` (gabarit `profiles.organizations`) |
+| → Agenda | ❌ | non demandé à ce stade. Un événement ne porte pas les tags de son organisateur : un agenda « des lieux » n'est pas exprimable en config par le seul tag `lieux-sante` — soit taguer aussi les événements, soit filtrer par organisateurs (à cadrer, §13) |
+| Fiche Lieu → Les Antennes | ❌ | **n'existe pas dans le produit** : aucune section de profil ne rend des « antennes » (adresses secondaires ou structures rattachées) — sections disponibles : about, badges, documents, gallery, info, map, members, opening-hours, organizer, related, tags, tools. À définir avec PSR (qu'est-ce qu'une antenne ?) puis développement moteur |
+| Fiche Lieu → À propos | ✅ | onglet existant |
+| Fiche Lieu → Communauté | 🟡 | onglet « Membres » existant (`profile-members`) ; le CDC demande le libellé « Communauté » (aussi pour les acteurs : « Membres > renommer Communauté ») — un libellé de config, à poser sur demande |
+| Lieux hors de l'annuaire des acteurs | ✅ | `/annuaire` et l'onglet admin « Annuaire » excluent le tag (`$nin`, mesuré §9 lot 7) ; onglet admin « Lieux de santé » dédié |
+
 ---
 
 ## 4bis. Questions de Thomas — réponses établies
@@ -202,7 +229,7 @@ décrivent **deux moments** :
 > le costum est le **périmètre de service** (ce qu'on interroge à l'exécution).
 
 Le chemin est donc : reprendre les **1 088 fiches** taguées `#santé` → les trier et nettoyer avec PSR
-→ les **référencer** sous `reference.costum: "rezoSanteReunion"` → le site les sert par le costum,
+→ les **référencer** sous `reference.costum: "EcosystemeSanteReunion"` → le site les sert par le costum,
 avec modération. Aucune ligne de la config actuelle n'est à jeter pour cela.
 
 ---
@@ -213,7 +240,7 @@ Sondé le **29/07** sur `https://www.communecter.org`.
 
 | Fait | Valeur |
 |---|---|
-| Entité | `rezoSanteReunion` — `organizations`, type `NGO`, « Rézo Santé Réunion » |
+| Entité | `EcosystemeSanteReunion` — `organizations`, type `NGO`, « Rézo Santé Réunion » |
 | Costum | **`null`** |
 | Liens | `members(2)` — rien d'autre |
 | Tags portés par l'entité | `Santé` · `Ecran` · `Addiction` · `Alimentation` · `Activité physique` · `Competences psycho social` · `Sommeil` · `sédentarité` · `Santé Sexuelle` |
@@ -233,6 +260,7 @@ configuration : c'est l'état de la donnée.
 | `/theme/bien-etre-mental` | Bien-être mental | **Competences psycho social** | `["Competences psycho social","Santé mentale","Bien-être mental","bien-etre-mental"]` |
 | `/theme/activite-physique` | Activité physique | ✔ + `sédentarité` | `["Activité physique","sédentarité","activite-physique","Activite physique"]` |
 | `/theme/sommeil` | Sommeil | ✔ | `["Sommeil","sommeil"]` |
+| `/theme/culture-sante` | Culture & Santé | — | `["Culture & Santé","Culture et Santé","Culture","culture","Santé","santé"]` |
 
 Sans ce réalignement, **trois pages sur cinq seraient restées vides en silence**, même une fois les
 données présentes. Les filtres acceptent volontairement plusieurs graphies.
@@ -357,7 +385,7 @@ dont PSR a besoin pour trier.
 Le flag `toBeValidated` sert **l'autre** cas : les fiches créées par des tiers **via le site**.
 
 ⚠ **Correction du 29/07 (précision du client)** : ce cas **existera**. Des formulaires costum liés au
-costum `rezoSanteReunion` sont prévus. Trois conséquences, qui rendent la correction du lot 1b
+costum `EcosystemeSanteReunion` sont prévus. Trois conséquences, qui rendent la correction du lot 1b
 d'autant plus nécessaire :
 
 1. **La modération par flag devient la voie principale**, à côté du référencement. Deux flux
@@ -380,7 +408,7 @@ deux en `$exists: false`. Elle sort prématurément dans deux cas : `notSourceKe
 réimplémentait la garde à la main sur **un seul** champ avec `$ne: true` — un opérateur **plus
 permissif**, démontré inopérant sur une fiche réelle (`vegetalitec`, en attente chez `cressReunion`,
 passait le filtre). Correction appliquée : `notSourceKey` et le `$or` manuel supprimés,
-`sourceKey: ["rezoSanteReunion"]` + `costumSlug: "rezoSanteReunion"` posés sur les **9** `baseParams`.
+`sourceKey: ["EcosystemeSanteReunion"]` + `costumSlug: "EcosystemeSanteReunion"` posés sur les **9** `baseParams`.
 La garde native s'applique donc désormais, et le passage au multi-source se fera en ajoutant des clés
 au tableau.
 
@@ -400,14 +428,15 @@ doublon à traiter puisqu'il concerne le porteur lui-même.
 | Config | [`../config.prod.rezo-sante-reunion.json`](../config.prod.rezo-sante-reunion.json) |
 | Déclaration du site | [`../sites.json`](../sites.json) — `{slug, config, css, images}` (vérifié 03/08 ; **ni `domain` ni `coolifyApp`** : la cible de déploiement n'est pas déclarée, cf. §8) |
 | Thème | `config.theme` (couleurs + typographie : `sans` Hanken Grotesk, `serif` **Fraunces**, `mono` Spline Sans Mono) + [`../src/index-rezo-sante-reunion.css`](../src/index-rezo-sante-reunion.css) (feuille propre depuis le 30/07) |
-| Assets | **5 visuels** dans `public/images/rezoSanteReunion/` (fournis le 29/07, générés via Lovable) ; clé `images` déclarée dans `sites.json` |
+| Assets | **7 visuels** dans `public/images/rezoSanteReunion/` : 5 fournis le 29/07 (4 thématiques + accueil) + `hero-culture-sante-reunion.jpg` et `hero-addictions-sante-reunion.jpg` fournis le 27/08 (lot 4) — **les 7 générés par IA**, à remplacer par de vraies photos avant mise en ligne ; clé `images` déclarée dans `sites.json` |
+| Code moteur partagé (lot 7) | [`../src/modules/profil/forms/costum/sharedCodecs.ts`](../src/modules/profil/forms/costum/sharedCodecs.ts) — codec de groupe `fixedTags:read/write` (+ `sharedCodecs.fixedTags.test.ts`) · [`../src/modules/search/components/card/CardProfile.tsx`](../src/modules/search/components/card/CardProfile.tsx) — `card.tagColors` honoré (+ `CardProfile.test.tsx`) · garde config-driven du formulaire lieu : [`../src/modules/profil/forms/rezo-sante.configDriven.test.ts`](../src/modules/profil/forms/rezo-sante.configDriven.test.ts) · fixtures `__fixtures__/configCostum.ts`, `tests/preflight/__effective__/rezo-sante-reunion.json` |
 
 ---
 
 ## 6bis. Le costum backend — ce qui a été posé, et ce qui manque encore
 
 **Posé le 30/07** sur l'org porteuse `Rézo Santé Réunion` (`6a4ccc3b9da32f33e85e4c43`, slug
-`rezoSanteReunion`) :
+`EcosystemeSanteReunion`) :
 
 ```js
 costum: { slug: "costumize", language: "fr" }
@@ -418,7 +447,7 @@ Trois choses à comprendre sur ces deux clés :
 - **`slug` désigne le MOTEUR, pas le site.** C'est le motif *costum-in-org* : `costumize` est le
   moteur générique partagé, et le slug du SITE est celui de l'org porteuse. Même structure que
   `institutBleu`, `sportSanteBienetre` et `equipementsSportifs974`, qui portent tous
-  `costum.slug = "costumize"`. C'est bien `rezoSanteReunion` que la config envoie en `costumSlug` et
+  `costum.slug = "costumize"`. C'est bien `EcosystemeSanteReunion` que la config envoie en `costumSlug` et
   en `sourceKey`, et son entrée dans la collection `slugs` existait déjà.
 - **`language`** est défaussé à `"fr"` par les deux backends s'il manque ; l'écrire évite de dépendre
   de ce défaut.
@@ -427,7 +456,7 @@ Trois choses à comprendre sur ces deux clés :
   `app` et `htmlConstruct`, qui relèvent de la construction d'UI legacy dont site-json n'a pas besoin
   (il fait tout par config).
 
-**Ce que ça débloque.** Avant, `POST /co2/cms/getcostumjson?slug=rezoSanteReunion` rendait une
+**Ce que ça débloque.** Avant, `POST /co2/cms/getcostumjson?slug=EcosystemeSanteReunion` rendait une
 **HTTP 500** sur le legacy : `GetCostumJsonAction.php:21` fait `$costum = $costum["costum"]` sans
 garde, et l'index manquant lève un E_NOTICE que Yii convertit en exception. Le backend Node, lui,
 tolérait et rendait `{language, id}` — c'est la sémantique de PROD (en `error_reporting(0)` PHP
@@ -435,10 +464,58 @@ auto-vivifie). Après, **les deux rendent 200 et la réponse est byte-identique*
 `{"result":true,"msg":"Success","data":{"slug":"costumize","language":"fr","id":"6a4ccc3b…"}}`.
 
 **Ce que ça ne débloque PAS — et c'est le vrai reste à faire.** Le périmètre est toujours **vide** :
-`sourceKey[]=rezoSanteReunion` renvoie **0 résultat** sur les deux serveurs, parce qu'aucune fiche ne
+`sourceKey[]=EcosystemeSanteReunion` renvoie **0 résultat** sur les deux serveurs, parce qu'aucune fiche ne
 porte encore ce slug dans `source.key`, `source.keys` ou `reference.costum`. Créer le costum le rend
 *résolvable* ; le peupler est un travail de donnée distinct — référencement à l'unité (§5.6, avec ses
 quatre limites) ou import.
+
+### 6bis.1 Le `typeObj` — posé le 08/09, et ce qu'il déclare
+
+Les formulaires du lot 5 (§9) exigeaient des champs que le contrat d'écriture du SDK ne connaît pas.
+Un costum les déclare dans `costum.typeObj.<clé>.dynFormCostum.beforeBuild.properties` — c'est cette
+déclaration, et elle seule, qui les rend écrivables (`costum/co/resolved` la sert, `liveDigest` du
+SDK la digère). Trois nœuds, sur le modèle exact de `parent62.costum.typeObj.recoveryCenter` :
+
+| clé `typeObj` | collection | propriétés déclarées |
+|---|---|---|
+| `organizations` | annuaire | `thematic` |
+| `projects` | projets | `thematic`, `beneficiaires` |
+| `poi` | ressources | `thematic` |
+
+chacune `{ inputType: "selectMultiple", list: …, select2: { multiple: true } }`, avec
+`costum.lists.thematiques` (6 valeurs) et `costum.lists.beneficiaires` (10 valeurs). Vérifié digéré
+par le SDK : `thematic` array/6 enum sur les trois collections, `beneficiaires` array/10 sur projets.
+
+Le nom `thematic` n'est pas un choix libre : c'est **déjà** un champ du contrat `ADD_ORGANIZATION`
+(`array<string>`), et celui qu'emploie le formulaire annuaire de Sport Santé Bien-Être. Un seul nom
+pour les trois collections, aucun doublon avec un champ de base.
+
+> ⚠ **Deux pièges pour l'application au backend de DÉPLOIEMENT.**
+>
+> 1. **Ne pas `$set` le bloc `costum` entier — `costum.slug` désigne le MOTEUR, pas le site.** L'org
+>    porte `{ slug: "costumize", … }` ; écrire uniquement `costum.typeObj`,
+>    `costum.lists.thematiques` et `costum.lists.beneficiaires`.
+>
+>    **Ce n'est pas une question de style : un `slug` qui ne désigne aucun document existant de la
+>    collection `costum` CASSE TOUTE ÉCRITURE d'entité du costum.** Chaîne mesurée le 08/09 (l'erreur
+>    a été produite en vrai, puis remontée à sa source) :
+>    `Costum::init` fait `PHDB::findOne(Costum::COLLECTION, {slug: <costum.slug de l'élément>})`, et
+>    **tout son corps est sous `if(isset($c) && !empty($c))`** — moteur introuvable ⇒ init muet ⇒
+>    `cacheCostumInit` ne met rien en cache ⇒ `CacheHelper::getCostum()` rend vide ⇒
+>    `DataValidator::validate` ne retire plus `costumSlug`/`costumType`/`costumId` des valeurs (ce
+>    `unset` est conditionné à `!empty($costum)`) ⇒ la clé tombe dans le `else` et le save échoue sur
+>    **`Contenu Invalide costumType : Poi`**. Le costum n'a pas besoin d'être « rendu » par le legacy
+>    au préalable : `costumCacheParams()` réchauffe le cache à la volée depuis `$_POST["costumSlug"]`
+>    — mais seulement si `Costum::init` aboutit.
+>
+>    Deux conséquences pratiques : (a) `costum/co/resolved` **ne suffit pas à valider** un costum, il
+>    tolère un moteur absent (`$doc = array()` → overlay seul) là où le chemin d'écriture legacy ne
+>    le tolère pas — le test qui compte est un vrai save ; (b) le `typeObj` du moteur `costumize`
+>    étant **vide**, il n'apporte rien au `typeObj` fusionné : l'enjeu du bon `slug` est la
+>    résolution elle-même, pas son contenu.
+> 2. **Vider le cache legacy** après écriture : `GetCostumJsonAction` met la réponse en `CFileCache`
+>    sous `costumlite<id>`. Sans purge, l'ancienne valeur (vide) continue d'être servie.
+>    `costum/co/resolved`, lui, n'a pas de cache.
 
 ---
 
@@ -451,10 +528,17 @@ quatre limites) ou import.
 | CSS **propre** `index-rezo-sante-reunion` (30/07 — revient sur le partage initial d'`index-parent62`) | la feuille parent62 embarquait ~60 lignes d'identité locale (10 couleurs de territoire `#territoire-*`, `.p62-*`) dont **aucun sélecteur ne pouvait correspondre ici** (vérifié : 0 occurrence dans la config). La nouvelle feuille (165 lignes à sa création, 168 depuis les commentaires Fraunces de `306380c8`) ne garde que le générique : mapping `@theme inline`, réglages document, mini-prose légale, scrollbar, `--gradient-section`. Rien ne change à l'écran — tokens et polices viennent de `config.theme`. Le partage reste légitime **à design identique** (communes, sites sport) ; ce n'en était pas un cas (`82669e97`) |
 | Titres **Fraunces** (serif douce à taille optique), à la place du Baloo 2 hérité (30/07) | Baloo 2 venait de `config:init --from parent62`, pas d'un choix : le rond-jovial travaille contre les pages addictions / santé mentale et l'audience institutionnelle (ARS, CPTS, Thésis). Corps inchangé (Hanken Grotesk), mono conservée (Spline Sans Mono) ; repli passé de `sans-serif` à `serif`. Vérifié : Fraunces porte réellement les 4 graisses `400;500;600;700` que `buildGoogleFontURL` demande toujours — sinon le navigateur synthétise de faux gras (`306380c8`) |
 | Thème « Lumière du matin » (vert feuille `oklch(0.52 0.13 145)` + or `oklch(0.78 0.13 80)`) | le parc est saturé de bleus (7 configs) ; les visuels de référence du client sont en lumière dorée et verts naturels ; le corail glissait vers le registre « urgence », inadapté à la prévention |
-| 5 thématiques en `chart1..5` | une thématique = une teinte, réutilisée par les graphiques et l'observatoire si un jour il est activé |
+| 5 thématiques en `chart1..5` | une thématique = une teinte, réutilisée par les graphiques et l'observatoire si un jour il est activé. **Budget épuisé au lot 4** : le schéma (`site-schema.ts`) ne définit que `chart1..chart5`, aucun `chart6`. La 6ᵉ thématique (Culture & Santé) réutilise le token **`accent`** (déjà valide sur `action-tiles`/marqueurs de carte/`tagColors`) plutôt qu'une couleur en dur — cf. §13 pour la question ouverte si une 7ᵉ thématique arrive |
+| `hero-text-shadow`/`hero-text-shadow-strong` (lot 4, `shared.css`) au lieu de `drop-shadow`/`drop-shadow-lg` sur les héros `hero-tinted-overlay` | les utilitaires Tailwind plafonnent à 0,15 d'opacité — pensés pour l'élévation d'une carte, quasi invisibles pour garantir la lecture d'un titre blanc sur une photo claire (constaté sur le nouveau visuel `/theme/culture-sante`, ciel et sable clairs). Custom properties avec repli invariant, surchargeables via `theme.customCSS` — même patron que `--color-hero-tint`, pas une valeur en dur isolée |
 | Header `transparent-scroll` **sans** `piggyBank` ni `urgenceButton` | standard de fait du parc (10/14) ; les deux autres champs auraient été du décor (pas de cagnotte, pas d'urgence) |
 | `sportSanteBienetre` **écarté** malgré son nom | marqué `wip`, et 8 de ses 9 `baseParams` sont vides — le seul renseigné emprunte le `sourceKey` d'un autre site |
 | Pas de section `articleFeed` | le module blog n'est pas activé sur ce site |
+| Lieux de santé = **organisations taguées `lieux-sante`** (lot 7), pas une collection ni un sous-type | c'est le modèle demandé ; une organisation porte adresse, géolocalisation, photo et fiche `/profil/<slug>` sans rien inventer. Les lieux sont **exclus** de l'annuaire des acteurs (public et admin) par `defaultFilters.tags.$nin` — égalité exacte côté serveur, mesurée en local (§9 lot 7) ; l'exclusion tient parce que le formulaire écrit le tag tel quel |
+| Tag imposé par le codec de groupe **`fixedTags`** (nouveau, générique, `params: {field, fixed[]}`) plutôt qu'une estampille `append` ou `createDefaults` | `createDefaults` pré-remplit un tag que l'utilisateur peut retirer (la fiche sort de l'annuaire) ; `stamps append` refusionne les tags serveur en édition et rend tout mot-clé libre indélébile (constat du lot 5, `rezo-sante/fns.ts`). Le codec retire le tag de l'affichage et le remet en tête à chaque enregistrement ; la liste des tags vit en config, réutilisable par un autre site |
+| Cartes `profile` avec `tagColors.hideTags: ["lieux-sante"]` (égalité stricte, clé ajoutée au schéma à la revue — `hidePrefixes` aurait emporté « lieux-sante-mentale ») — `CardProfile` et la popup de carte honorent désormais `card.tagColors` | un annuaire filtré sur un tag n'a pas à le répéter sur chaque carte ; même brique que `CardDefault` (`collectChipValues`/`decorateTags`), identité sans conf : rien ne change pour les 24 annuaires du parc |
+| `type: "LocalBusiness"` et `role: "admin"` par `mutation.inject.extraFields` | `type` est requis par le serveur (`Organization::$dataBinding`, règle `required`) et n'est pas dans la liste de champs demandée ; `role: admin` rend le créateur éditeur de sa fiche. Patron de cyber-reunion et institut-bleu. Valeur **confirmée par Judi le 30/09** (« créer les en LocalBusiness par défaut ») |
+| Clic sur un lieu → fiche `/profil/<slug>` (`itemAction: {kind: "profil"}`, liste ET carte) | la « fiche » demandée existe déjà : gabarit `profiles.organizations` (à propos, galerie, localisation) avec sa route d'édition ; un aperçu en tiroir aurait doublé ce gabarit |
+| Admin annuaire : `create: "add-rezo-sante-acteur"` explicite ; menu « Créer » des citoyens : `addConfig.custom` (acteur + lieu) | avec deux formulaires `organizations`, `create: "inherit"` et `costumCreateKey` ne tranchent plus et retombent sur la modale générique — la garde d'impact (`__effective__`) l'a montré. C'est le mécanisme prévu par le moteur (« le site déclare l'entrée qu'il veut via `addConfig.custom` », précédent institut-bleu) |
 
 ---
 
@@ -484,34 +568,45 @@ marque. Palette finale, cinq teintes franchement distinctes, aucune ne heurtant 
 | Sommeil | `chart3` | indigo `265` |
 | Addictions | `chart4` | prune `320` |
 | Bien-être mental | `chart5` | turquoise `195` |
+| Culture & Santé (lot 4, 27/08) | `accent` | or chaud `oklch(0.78 0.13 80)` — `chart1..5` épuisés (§7) |
 
-**Visuels câblés** (lot 1d) : `mission-healthcare` en héro d'accueil (cercle intergénérationnel — la
-plus « réseau » des cinq), et les quatre `hero-*` sur leurs pages thématiques, qui passent de `title`
-à `hero-tinted-overlay`.
+**Visuels câblés** (lot 1d, complété lot 4) : `mission-healthcare` en héro d'accueil (cercle
+intergénérationnel — la plus « réseau » des thématiques), et les **6** `hero-*` sur leurs pages
+thématiques respectives (`hero-tinted-overlay`) — les quatre d'origine (29/07), `hero-culture-sante-reunion.jpg`
+(27/08, cercle de danse et percussions traditionnelles) et `hero-addictions-sante-reunion.jpg`
+(27/08, cercle d'écoute et d'entraide en extérieur) fournis par le client. Toutes générées par IA,
+même registre visuel.
 
-⚠ **`/theme/addictions` reste en `title`** — 4 pages sur 5 ont donc le héro. Faute d'image, un
-`hero-tinted-overlay` y afficherait un bloc de 100 vh quasi vide : le composant ne rend NI l'image NI
-le voile sans `backgroundImage` (`HeroTintedOverlay.tsx:26`), il retombe seulement sur l'encre du
-thème. À unifier le jour où la thématique aura son visuel.
+✅ **`/theme/addictions` a désormais son visuel (lot 4, 27/08)** — dernière des 6 pages thématiques à
+passer de `title` à `hero-tinted-overlay`. La planche des 6 thématiques est maintenant homogène.
 
-**Essai en cours (30/07, `f0e0893f`) — carrousel des héros.** Un `hero-carousel` de 4 diapositives,
-**dérivées** des héros existants des pages `/theme/*` (titre, sous-titre, image, alt repris tels
-quels + CTA vers la page), a été branché **en tête de `/thematiques`** (`sections[0]`,
-`autoplay: false`). **C'est un placement d'ESSAI, pas une décision actée** — le message de commit le
-dit. Le carrousel en home, comme sur la maquette Lovable, reste à arbitrer : il coûterait 4 sections,
-4 ancres et 4 URL partageables ; `/theme/addictions` sans image donnerait une diapositive trouée ; et
-la photo de home est en 16:9 quand les thématiques sont en 3:2 — le candidat LCP basculerait. Se
-retire en enlevant un bloc. Cf. §13.
+**Correctif de lisibilité (lot 4, 27/08)** : les héros `hero-tinted-overlay` utilisaient
+`drop-shadow`/`drop-shadow-lg` de Tailwind sur le texte blanc — des utilitaires plafonnés à 0,15
+d'opacité, pensés pour l'élévation d'une carte, pas pour garder un titre lisible sur une photo claire.
+Constaté sur un premier candidat visuel très clair (ciel, sable) proposé pour Culture & Santé, puis
+vérifié sur les 5 autres pages thématiques et sur `nos-commune` (seul autre consommateur du
+composant, clair **et** sombre, desktop **et** mobile) : aucune régression, gain de lisibilité
+partout. Détail en §7.
+
+**Essai en cours (30/07, `f0e0893f`) — carrousel des héros.** Un `hero-carousel`, **dérivé** des
+héros existants des pages `/theme/*` (titre, sous-titre, image, alt repris tels quels + CTA vers la
+page), a été branché **en tête de `/thematiques`** (`sections[0]`, `autoplay: false`). **C'est un
+placement d'ESSAI, pas une décision actée** — le message de commit le dit. Passé à 4 diapositives à
+sa création (30/07), complété à 5 (Culture & Santé, lot 4) puis à **6** — les 6 thématiques y ont
+maintenant chacune leur diapositive, dans l'ordre des pages. Le carrousel en home, comme sur la
+maquette Lovable, reste à arbitrer : il coûterait 6 sections, 6 ancres et 6 URL partageables ; et la
+photo de home est en 16:9 quand les thématiques sont en 3:2 — le candidat LCP basculerait. Se retire
+en enlevant un bloc. Cf. §13.
 
 ---
 
 ## 8. Étapes de mise en place
 
-1. ☑ ~~**Créer le costum `rezoSanteReunion`** côté Communecter~~ — **fait le 30/07** (lot 2 :
+1. ☑ ~~**Créer le costum `EcosystemeSanteReunion`** côté Communecter~~ — **fait le 30/07** (lot 2 :
    config minimale *costum-in-org* posée sur l'org porteuse, §6bis). Le costum **résout** ; il reste à le **peupler**.
 2. ☐ **Amorcer depuis `#santé`** : extraire les **1 088** fiches taguées, les trier/nettoyer avec PSR
    (à commencer par le doublon PSR lui-même, §5.8), puis les **référencer** sous
-   `reference.costum: "rezoSanteReunion"`.
+   `reference.costum: "EcosystemeSanteReunion"`.
 3. ☐ **Arrêter le vocabulaire des « sujets pratiqués »** avec PSR, et le renseigner pendant le
    nettoyage — sans quoi les 5 pages thématiques restent inexploitables (§5.2).
 4. ☐ Rejouer `npm run config:probe -- config.prod.rezo-sante-reunion.json` → viser 9/9 périmètres non vides.
@@ -519,14 +614,14 @@ retire en enlevant un bloc. Cf. §13.
 6. ☐ Compléter les marqueurs « à compléter » du socle légal (§11).
 7. ☐ **Trancher l'essai `hero-carousel`** (§7.1) : le garder en tête de `/thematiques`, le porter en
    home, ou le retirer (un bloc à enlever).
-8. ☐ Prévisualiser : `VITE_SLUG=rezoSanteReunion npm run dev`.
+8. ☐ Prévisualiser : `VITE_SLUG=EcosystemeSanteReunion npm run dev`.
 9. ☐ Build / déploiement (DNS `rezoSanté.re`). **Variables d'env à connaître depuis le 03/08**
    (merge `fix/institut-bleu-ui`) :
    - **`VITE_SITE_PUBLIC_URL`** — URL publique du site-json **lui-même** (canonical, `og:url`/`og:image`,
      `sitemap.xml`, flux RSS) ; lue par `getSitePublicUrl()`
      ([`../src/lib/constant/common.ts`](../src/lib/constant/common.ts)) et
      [`../server/lib/sitemap.js`](../server/lib/sitemap.js) ; dérivée par `deploy:env` depuis
-     `sites.json` (`aliases[0]` prioritaire, sinon `domain`). ⚠ L'entrée `rezoSanteReunion` de
+     `sites.json` (`aliases[0]` prioritaire, sinon `domain`). ⚠ L'entrée `EcosystemeSanteReunion` de
      `sites.json` ne déclare **ni `domain` ni `coolifyApp`** (vérifié 03/08) → repli `getServerUrl()`
      (comportement historique) tant que la cible de déploiement n'est pas déclarée.
    - **`VITE_SERVER_URL`** — à ne PAS confondre : c'est le serveur **communecter** (images `/upload`,
@@ -547,8 +642,8 @@ composition initiale, corrigé le jour même :
 | `notSourceKey: true` sur 8 `baseParams` | **supprimé** (il coupait `applyValidationGate`) |
 | `defaultFilters.$or` scalaire à 3 clés, écrit à la main | **supprimé** (redondant, mono-costum, non extensible) |
 | `"preferences.toBeValidated.…": {"$ne": true}` | **supprimé** — opérateur inopérant, démontré sur `vegetalitec` |
-| — | `sourceKey: ["rezoSanteReunion"]` sur **9** `baseParams` |
-| — | `costumSlug: "rezoSanteReunion"` sur **9** `baseParams` (arme la porte native à 2 flags) |
+| — | `sourceKey: ["EcosystemeSanteReunion"]` sur **9** `baseParams` |
+| — | `costumSlug: "EcosystemeSanteReunion"` sur **9** `baseParams` (arme la porte native à 2 flags) |
 
 Régressions à revalider : aucune constatée — validate ✅, audit **0 constat**, préflight **328/328**,
 rendu **40/40**. Le périmètre reste vide (costum absent), donc le comportement de la porte de
@@ -556,7 +651,7 @@ validation **n'a pas pu être observé sur des données réelles** : à revérif
 référencement.
 
 **Lot 1c — 29/07 — file de validation.** Le client précise que **des formulaires costum liés à
-`rezoSanteReunion` sont prévus**. Conséquence immédiate : sans file de validation, une fiche déposée
+`EcosystemeSanteReunion` sont prévus**. Conséquence immédiate : sans file de validation, une fiche déposée
 via un formulaire serait masquée par la porte (armée au lot 1b) **et** impossible à valider. Ajout
 d'un onglet « Validation » portant la section builtin `moderation` (placée avant `import-export`,
 dans l'ordre du flux de travail). Le bloc `status` n'est **pas** configuré (sous-champs non câblés,
@@ -598,7 +693,274 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
 | `audit:config` | ✅ RAS (dernière mesure : 30/07, commit `f0e0893f`) |
 | `test:preflight` | ✅ **412/412 (22 fichiers)** (rejoué le 03/08, après merge `fix/institut-bleu-ui`) |
 | `config:render` | ✅ 14/14 pages · **41/41 sections** avec contenu SSR (30/07, commit `f0e0893f`) |
-| `config:probe` | ⛔ **0/9 périmètres** — le costum RÉSOUT désormais (lot 2), mais le périmètre est vide : aucune fiche ne porte encore `source.key`/`source.keys`/`reference.costum` = `rezoSanteReunion` (§6bis) |
+| `config:probe` | ⛔ **0/9 périmètres** — le costum RÉSOUT désormais (lot 2), mais le périmètre est vide : aucune fiche ne porte encore `source.key`/`source.keys`/`reference.costum` = `EcosystemeSanteReunion` (§6bis) |
+
+---
+
+**Lot 4 — 26-27/08 — 6ᵉ thématique « Culture & Santé » + correctif de lisibilité des héros.**
+Travail réalisé sur la branche `mira-dev`, **non commité** au moment de cette mise à jour
+(modifications en working tree). Deux volets :
+
+1. **Ajout de la thématique « Culture & Santé »**, en parité avec les 5 existantes — surfaces
+   touchées : nav du header (dropdown Thématiques), colonne footer, home (CTA + `action-tiles`
+   `home-thematiques`, 6ᵉ tuile en `accent`), hub `/thematiques` (carrousel + titre + grille
+   `categories-grid`, colonnes 5→6), nouvelle page `/theme/culture-sante` (calquée sur le patron
+   `hero-tinted-overlay` + `searchHeader` + `searchProStatic` des 4 pages illustrées), `tagColors`
+   des **6** pages thématiques étendu à `culture-sante`, 3 facettes `dropdownFilters`
+   (`/annuaire`, `/projets`, `/ressources`), et `/a-propos` (tags, stat « 5 »→« 6 », bloc
+   `features-glass`). La FAQ éditoriale « Pourquoi santé globale plutôt que prévention ? » (argumentée
+   sur cinq domaines imbriqués) a été **délibérément laissée telle quelle** sur décision explicite du
+   client — la culture devient une 6ᵉ porte d'entrée pratique sans réécrire cet argumentaire.
+   Tag de filtre `$in` écrit comme les 5 autres thématiques (§5). Icône
+   `palette`, couleur `accent` (chart budget épuisé, §7). Visuel final : `hero-culture-sante-reunion.jpg`
+   — cercle de danse et percussions traditionnelles en extérieur, lumière dorée, **fourni par le
+   client** le 27/08, généré par IA comme les 5 autres visuels du site. Trois candidats Unsplash
+   avaient été proposés entretemps (un premier écarté : verres de vin/bière visibles, à contre-emploi
+   sur un site avec une page Addictions) avant que le client ne fournisse directement ce visuel final,
+   plus cohérent avec le registre des 5 autres.
+2. **Correctif `hero-text-shadow`** sur `HeroTintedOverlay.tsx`/`shared.css` — détail en §7 et §7.1.
+   Composant **partagé avec `nos-commune`** : vérifié clair/sombre/mobile sur les deux configs.
+3. **Suite du lot, même jour — visuel Addictions.** Le client a fourni `hero-addictions-sante-reunion.jpg`
+   (cercle d'écoute et d'entraide en extérieur) : dernière des 6 pages thématiques à passer de
+   `title` à `hero-tinted-overlay`, comblant la limitation documentée depuis le lot 1d. La diapositive
+   Addictions a été ajoutée au `hero-carousel` de `/thematiques` (à sa place dans l'ordre des pages,
+   entre Sommeil et Bien-être mental) — le carrousel couvre maintenant les 6 thématiques. Détail en
+   §7.1.
+
+
+Gates rejoués le 27/08 :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ **15 pages** · **44 sections** |
+| `audit:config` | ✅ RAS |
+| `typecheck` / `lint` | ✅ / ✅ (0 erreur, 21 warnings préexistants ailleurs, aucun sur les fichiers touchés) |
+| `test:unit` (préflight inclus) | ✅ **2788/2794** (6 skip) |
+| `test:preflight` (seul) | ✅ **532/538** (34 fichiers, 6 skip) |
+| `config:render` | ✅ 15/15 pages avec contenu SSR |
+| `test:integration` | ✅ une fois isolé des deux effets de bord d'environnement ci-dessus (non liés à ce lot) |
+| `config:probe` | non rejoué — le périmètre était déjà à 0/9 avant ce lot (§6bis), rien ne l'a changé |
+
+**Lot 5 — 08/09 — création de fiches : les 3 formulaires costum.** Demande client : un champ
+**Bénéficiaires** à l'ajout de projet, et un champ **Thématique** sur les formulaires projets,
+annuaire et ressources, dont la valeur alimente `tags` à l'enregistrement.
+
+*Le point dur, et sa résolution.* Aucun des deux champs n'était écrivable : le contrat de base du
+SDK ne connaît, pour `projects`, que `name / shortDescription / description / url / public / tags /
+address / socialNetwork / profil_avatar`, et le costum ne déclarait AUCUNE extension (absent de
+l'artefact bundlé comme du contrat live). Un champ inventé aurait été retiré en silence du
+`element/save` par le `DraftProxy` du SDK. La réponse n'était donc pas dans `site-json` : elle était
+**en base**, dans le `typeObj` du costum (§6bis.1). Une fois posé, `costum/co/resolved` le sert, le
+SDK le digère automatiquement — un slug absent de l'artefact part en live sans qu'il faille
+`VITE_COSTUM_FORCE_LIVE` — et les deux champs deviennent réels.
+
+| Surface | Changement |
+|---|---|
+| `config.costumForms` | **créée** — `rezo-sante-acteur` (organizations), `rezo-sante-projet` (projects), `rezo-sante-ressource` (poi) ; layout `flat`, groupe d'adresse standard, image de profil |
+| `profiles.{organizations,projects,poi}.editModals` | **créées**, chacune bornée par un `when` sur `sourceKeys` / `reference.costum` — sans quoi le formulaire s'ouvrirait sur toute entité du type (bug institutBleu, ~29 400 organisations) |
+| `admin.tabs` | **inchangés** : les trois onglets étaient déjà en `create: "inherit"`, qui résout seul vers le form costum du bon `entityType` |
+| `costumForms.*.fields.tags` | codecs `read`/`write` (`rezoSante:tagsHorsThematiques` / `…AvecThematiques`) — la réconciliation `tags` ⇄ `thematic`. **Aucune `mutation.stamps`** |
+| `src/modules/profil/forms/costum/rezo-sante/fns.ts` (+ `registerSpecFns`) | **nouveau** — les 2 seules clés de code des 3 formulaires |
+| `src/modules/profil/forms/rezo-sante.configDriven.test.ts` + `costum/rezo-sante/fns.test.ts` | **nouveaux** — 20 tests : pipeline d'écriture réel et helpers purs |
+| `tests/preflight/stamps.test.ts` | sentinelle d'inventaire : le site **n'y figure pas**, avec le motif écrit sur place |
+| `__contract__/costum-types.live.json` | entrée du costum ajoutée **à la main** — la régénération globale supprimait `associationEkilibre` et `saintpaulSport1`, que le backend local ne résout pas |
+
+*Pourquoi la recopie vers `tags` n'est pas cosmétique.* Toute la surface de filtrage du site
+interroge `tags` et jamais `thematic` : les 6 pages `/theme/*` (`defaultFilters.tags.$in`) comme les
+filtres « Thématique » de `/projets`, `/annuaire` et `/ressources`. Sans elle, une fiche correctement
+qualifiée n'apparaîtrait sur aucune page de thématique. Les 6 libellés sont donc un contrat avec ces
+filtres — un test le vérifie contre les `defaultFilters` réels, sans recopier la liste.
+
+*La réconciliation `tags` ⇄ `thematic`.* Elle vit dans les codecs `read`/`write` du champ `tags` :
+
+```
+lecture  (édition)   tags affichés = tags en base   −  thématiques de la fiche
+écriture (save)      tags envoyés  = tags affichés  ∪  thématiques cochées
+```
+
+Les thématiques ne doublent donc pas dans « Mots-clés », cocher pose le tag, **décocher le retire**,
+et un mot-clé libre reste supprimable.
+
+> **Pourquoi pas une `mutation.stamps`.** Elle ne sait qu'AJOUTER : `op:"append"` fait
+> `unionDedup(targetServerData, payload, valeur)` (`stamps.ts`), donc elle repose tout tag retiré
+> dans le formulaire — thématique décochée comprise, et même un simple mot-clé libre. `op:"set"`
+> n'est pas une issue : le préflight l'interdit sur un champ présent dans `fields`, et il écraserait
+> les mots-clés libres. La réconciliation appartient au CHAMP. Garde de non-retour :
+> `rezo-sante.configDriven.test.ts` vérifie qu'**aucun** des 3 formulaires ne porte d'estampille
+> `tags`, et le motif est écrit dans la sentinelle de `tests/preflight/stamps.test.ts`, là où on
+> s'étonnerait de ne pas trouver le site.
+
+On soustrait les thématiques **réellement stockées sur la fiche**, pas les 6 options du formulaire :
+une fiche importée taguée « Nutrition » sans `thematic` renseigné garde ce mot-clé, visible et
+supprimable. Le masquer le rendrait invisible tout en le laissant en base — et l'écriture le
+supprimerait à l'insu de tous. Deux clés de code, parce qu'un transform de CHAMP ne reçoit pas de
+`params` : la règle ne peut pas se déclarer en JSON (même raison que `costum/structure/fns.ts`).
+
+*Un champ retiré.* `email` était proposé au formulaire projet : `config:costum-drift` l'a désigné
+fantôme (absent d'`ADD_PROJECT`, donc perdu au save). Retiré plutôt que livré silencieusement mort.
+
+*Deux contraintes de `ADD_ORGANIZATION` que le formulaire annuaire devait satisfaire.* Toutes deux
+vérifiées **côté client** par l'AJV du SDK : un manquement lève
+`ApiValidationError: ADD_ORGANIZATION - Request validation failed` **sans qu'aucune requête ne parte**,
+donc sans rien à lire côté serveur — d'où un diagnostic qui ne peut se faire qu'en rejouant la
+validation (schéma de base ⊕ `properties` du costum ⊕ contexte, cf. `ApiClient.callEndpoint`).
+
+| Contrainte | Symptôme | Correctif |
+|---|---|---|
+| `role` est **requis** (`enum: ["admin","member"]`) et n'a **aucun défaut** au schéma | échec systématique à la création | **champ du formulaire**, `default: "admin"` — c'est ainsi que fait le formulaire générique du parc (`addOrganization.descriptor.ts` + `inject.role`), qui posait déjà la question ; la remplacer par une modale costum ne devait pas l'escamoter |
+| `email` est `{format:"email"}` **sans alternative `const:""`**, contrairement à `url` ou `geo` | échec dès que l'email est laissé vide | `write: "omitEmpty"` — clé partagée prévue pour « les champs optionnels que l'AJV ADD rejette si envoyés vides ». L'édition est inchangée : `emitEmpty` retransforme l'absence en clear typé, nécessaire pour vider l'adresse d'une fiche |
+
+Les deux autres formulaires ne sont pas concernés : `ADD_POI` et `ADD_PROJECT` n'ont ni `role` ni
+`email` requis, et la création de ressource fonctionnait déjà. Quatre assertions gardent le tout
+(présence de `role`, email vide omis, email renseigné transmis, vidage en édition possible).
+
+**Lot 6 — 08/09 — changement de slug du costum en production.** Le costum a été renommé côté prod :
+`rezoSanteReunion` → **`EcosystemeSanteReunion`**. Le slug n'est pas une étiquette : c'est le
+`VITE_SLUG` de `sites.json`, qui **charge l'entité porteuse au boot**, sert de `costumSlug` (porte de
+validation), de `sourceKey` (périmètre de recherche), et de valeur testée par les prédicats `when`
+des routes d'édition. Répercuté sur toutes ces surfaces :
+
+| Surface | Occurrences |
+|---|---|
+| `sites.json` → `slug` | 1 (`VITE_SLUG`) |
+| `pages[].sections[].props.baseParams` → `sourceKey[]` + `costumSlug` | 10 + 10 |
+| `admin.tabs[].sections[].source.defaultFilters.$or` (`source.key` / `source.keys` / `reference.costum`) | 4 × 3 |
+| `profiles.{organizations,projects,poi}.editModals[].when.or[].value` | 3 × 2 |
+| `costumForms.*.costumSlug` | 3 |
+| `commandPalette.entitySearch.params.sourceKey[]` | 1 |
+| `__contract__/costum-types.live.json` (clé du costum) · `__effective__/rezo-sante-reunion.json` | fixtures resynchronisées |
+
+**Inchangés, et c'est voulu** : la clé `images` de `sites.json` et le dossier
+`public/images/rezoSanteReunion/` (le slug de costum et le dossier d'assets sont deux choses
+distinctes) ; le nom du fichier de config, la feuille CSS, le domaine, l'app Coolify ; les
+identifiants locaux des formulaires (`rezo-sante-*`) et les clés de transform (`rezoSante:*`), qui
+sont des noms de config/registre et non le slug.
+
+> ⚠ **Le backend local n'a pas suivi.** L'organisation porteuse y porte encore `slug:
+> "rezoSanteReunion"` (base `prod270726`, instantané du 27/07). Tant qu'elle n'est pas renommée —
+> dans `organizations` ET dans la collection `slugs` — le site ne résout plus son costum en local :
+> `VITE_SLUG` ne trouve pas l'entité au boot. Sans effet sur la prod, où le renommage a eu lieu.
+
+Gates rejoués le 08/09 :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 15 pages · 44 sections |
+| `config:costum-drift` | ✅ 0 fantôme sur les 3 formulaires (`_telSlot`/`_telRest` de l'acteur = faux positif du script, qui ne lit pas `field.group` ; les 2 formulaires organisations de sport-sante portent le même signalement) |
+| `typecheck` / `lint` | ✅ / ✅ |
+| `test:unit` (préflight inclus) | ✅ **3140/3146** (6 skip) — **aucun échec** |
+| `config:surface --check` | ⛔ **rouge AVANT ce lot** : le fichier généré est périmé de 3 configs entières (`equipements-Sportifs-Scolaire`, `maison-sport-sante-la-tampon`, `relief`). Régénération volontairement laissée hors de ce lot — elle produit 800+ lignes étrangères. À traiter dans son propre commit |
+
+**Lot 7 — 30/09 — annuaire des lieux de santé.** Demande : dans le menu « Le réseau », une entrée
+« Annuaire des lieux de santé » ; une page qui liste les organisations taguées `lieux-sante`, avec une
+recherche et une bascule vers la carte ; un bouton d'ajout (nom, description, adresse, mots-clés hors
+`lieux-sante`, photo de profil) ; une fiche à l'ouverture d'un lieu. Le cahier des charges annoncé n'a
+pas été reçu : le lot suit la demande telle que formulée, à rapprocher du CDC dès qu'il arrive.
+
+| Surface | Ce qui a été posé |
+|---|---|
+| Menu & footer | enfant `/lieux-sante` (icône `hospital`) après « Annuaire des acteurs » ; lien dans la colonne « Explorer » du footer |
+| Page `/lieux-sante` | `searchHeader` (recherche, bouton **Référencer un lieu de santé** → `modal: "add-rezo-sante-lieu"`) › `searchProStatic` : même périmètre que `/annuaire` **+ `defaultTags: ["lieux-sante"]`** ; liste par défaut, `enableMap` pour la bascule, carte `full` à pins photo (`marker.useItemImage`) ; cartes `profile` et popups de carte sans le tag d'annuaire (`tagColors.hideTags`) ; clic → fiche `/profil/<slug>` (`itemAction: profil`, liste et carte) |
+| Formulaire `rezo-sante-lieu` | 5 champs visibles : photo, nom, description, localisation (groupe `address` + `geo`), mots-clés ; `type`/`role` injectés ; tag `lieux-sante` imposé par `serializeGroups.tags` → codec **`fixedTags`** (`params.fixed`) — jamais saisi, jamais retirable, jamais affiché dans « Mots-clés » |
+| Fiche & édition | gabarit `profiles.organizations` existant ; route `edit-rezo-sante-lieu` **avant** celle de l'acteur, prédicat `tags contains lieux-sante` ET provenance (`sourceKeys` / `reference.costum`) |
+| Exclusion des lieux de l'annuaire des acteurs (décision du 30/09) | `/annuaire` : `baseParams.defaultFilters.tags.$nin: ["lieux-sante"]` ; admin « Annuaire » : même `$nin` dans `source.defaultFilters` ; nouvel onglet admin **« Lieux de santé »** (`defaultTags`, `create: "add-rezo-sante-lieu"`, colonnes nom / commune / contact / mise à jour). Les 6 pages `/theme/*` l'excluent aussi (`$nin` ajouté à leur `defaultFilters.tags` après la revue) ; la palette de commandes, non (§11) |
+| Effets de bord d'un 2ᵉ formulaire `organizations` | admin « Annuaire » : `create: "add-rezo-sante-acteur"` (l'`inherit` devenait ambigu, garde `edit-modal-scope`) ; profils citoyens : `addConfig.organization: false` + deux entrées `custom` (acteur, lieu), sinon `costumCreateKey` retombait sur la modale générique (vu dans la fixture `__effective__`) |
+| Code moteur | codec de groupe générique `fixedTags:read/write` (`sharedCodecs.ts`, 8 tests) ; `CardProfile` honore `card.tagColors` (4 tests) — identité sans conf ; doc/28, doc/07, cartographie des codecs, référence de la skill config-assistant |
+| Gardes | `rezo-sante.configDriven.test.ts` : 9 tests sur le lieu — tag posé à la création même sans mot-clé, masqué à l'affichage, mot-clé libre supprimable, un seul contrat tag ↔ `defaultTags` ↔ `hideTags` ↔ `$nin` (`/annuaire`, admin, 6 pages thématiques) ↔ `editModalMatch`, email/téléphone, scope constant et pays par défaut sur les 4 formulaires, bouton public (`requiresAdmin: false`), cache carte invalidé, `profile-tags.hideTags` |
+
+**Périmètre.** Aucune organisation ne porte `lieux-sante`, ni en base locale (0 sur 0 fiche du costum —
+le backend local est resté sur l'ancien slug, §11) ni, à vérifier, en production : la page démarre
+vide et se peuple par le bouton.
+
+**Mesure serveur de l'exclusion (backend local, 30/09).** `searchFilters` (SearchNew.php) traduit
+`filters.tags.$nin` en égalité EXACTE (pas de regex, contrairement à `searchTags`), et `addQuery` empile
+chaque clause en `$and` : sur les 4 214 organisations `franceTierslieux` du backend local, `$nin
+[TiersLieux]` → **71** ; `[tierslieux]` (casse différente) → 4 213 ; `searchTags [Coworking]` = 1 477,
+combiné au `$nin` → **20**. L'exclusion et les filtres thématiques se cumulent donc en ET, et elle ne
+tient que sur la graphie exacte — celle que le formulaire écrit (`fixedTags`). `notags`
+(`prepareTagsRequete`) n'est PAS utilisable : il n'est appelé que par Poi/Event/Cms, jamais par la
+recherche d'organisations.
+
+**Recette locale de Judi (30/09, soir) — trois constats, trois corrections.**
+
+| Constat | Cause établie | Correction |
+|---|---|---|
+| « Je n'arrive pas à ajouter un lieu » — et la liste reste vide (annuaire et admin) | la création avait **réussi** (`Test lieu`, base locale, 19:34 UTC, tags `lieux-sante` + 3 mots-clés, `type: LocalBusiness`, créateur admin) mais **sans `source`** : sans bloc `scope`, la création repose sur le costum *ambiant* (`useCocolight().entity`), nul en local où le carrier ne se résout pas (slug `rezoSanteReunion`, §11). Sans `source.keys`, la fiche n'entre dans aucun périmètre (`sourceKey`) : invisible partout | `scope: {slugFrom: "constant", constant: "EcosystemeSanteReunion"}` sur les **4** formulaires (patron Ekilibre `structure`, sport-sante) — la création est scopée explicitement, et échoue **bruyamment** si le costum ne se résout pas, au lieu de produire une orpheline. Défaut hérité du lot 5 |
+| « Sur l'adresse il n'affiche pas les villes » | le widget d'adresse ne cherche les villes qu'une fois un **pays** choisi (`EditLocationTab` : `if (!addressCountry) return []`) ; le champ caché `addressCountry` partait vide. Le backend local répond bien (`cityAutocompleteByCountry` : « Le Tampon » → 1 ville en `RE` comme en `FR`) | `fields.addressCountry.default: "RE"` sur les 4 formulaires — `buildConfigDefaults` applique le défaut des membres de groupe en création, et `address:read` garde le pays d'une fiche existante. `RE` = 4 345 des 4 360 organisations réunionnaises en base |
+| « Ajoute un champ téléphone et mail » | — | section **Contact** du formulaire lieu : `email` (omis si vide, contrainte `format: email` d'ADD_ORGANIZATION) et `telephone` (groupe `telephone`, codec `telephone:read/write`), recopiés de l'acteur |
+
+> ⚠ **En local, deux écritures en base restent à faire à la main** (le renommage du lot 6 n'y a jamais été
+> répercuté, §11) : renommer l'organisation porteuse `rezoSanteReunion` → `EcosystemeSanteReunion` dans
+> `organizations` ET dans `slugs`, puis rattacher (ou supprimer) `Test lieu`. Commandes dans le message de
+> livraison du 30/09. Sans le renommage, la création échoue désormais avec une erreur explicite (costum
+> introuvable), ce qui est le comportement voulu.
+
+**Revue adversariale (30/09, 5 relecteurs puis 2 sceptiques par constat).** 36 constats, 26 confirmés,
+10 réfutés. Tous les confirmés ont été instruits :
+
+| Constat confirmé | Sort |
+|---|---|
+| Le bouton « Référencer un lieu de santé » n'était rendu qu'aux **admins du costum** (défaut `requiresAdmin` du moteur) | ✅ `requiresAdmin: false` |
+| L'exclusion `$nin` de `/annuaire` **sautait dès qu'une thématique était cochée** (la facette écrasait la clé `tags`) | ✅ moteur : `mergeMongoFilters` compose les opérateurs d'une même clé (`{$nin, $in}`, forme que le serveur traite) — test `mongoFilters.test.ts` |
+| `CardProfile` **plantait** sur un `tags` en objet (tableau PHP à trous), forme réelle en base | ✅ helper partagé `lib/normalizeTags` (valeurs pour `{"1": …}`, clés pour `{tag: true}`), repris par `useItem` — 3 tests |
+| « Aucun tag » affiché quand tous les tags sont masqués (faux, non traduit) | ✅ tags masqués ≠ fiche sans tag : rien n'est rendu ; le repli historique reste pour une fiche sans tag |
+| La **carte** de `/lieux-sante` ne se rafraîchissait pas après création (cache 30 min sous un autre préfixe) | ✅ `searchCostumStaticMapAll` ajouté aux `searchKeys` des 4 formulaires (patron sport-sante / Ekilibre) |
+| La garde `__effective__` ne sondait jamais la route lieu (discriminant dans `when`) | ✅ `editModalMatch: {tags: "lieux-sante"}` + `when` pour la provenance ; la fixture sonde maintenant `edit-rezo-sante-lieu` |
+| Toast « Organisation créée » au bout d'un parcours qui parle de lieu | ✅ clés `toast.add.poiSuccess/poiError` (« Lieu créé avec succès ») |
+| Le texte d'aide du champ « Mots-clés » n'était **jamais affiché** (widget `tags` sans `hint`) — sur les 4 formulaires | ✅ moteur : `TagsWidget` → `FormFieldTags` rend `info` en `FormDescription` ; aide reformulée sans identifiant technique |
+| Placeholder « une commune » sans recherche sur l'adresse | ✅ `address.addressLocality` ajouté à `searchBy` |
+| Titres de section = libellés de champ (« Localisation / Localisation ») | ✅ « Où le trouver » / « Adresse », « Pour le retrouver » / « Mots-clés » |
+| Anglais : « health venues », « health houses » | ✅ « health facilities », « health centres and clinics » partout |
+| Masquage par **préfixe** (`hidePrefixes`) alors que le codec compare à l'égalité : « lieux-sante-mentale » aurait disparu | ✅ `tagColors.hideTags` (schéma + `decorateTags`, égalité stricte) — tests `colorBy` |
+| Popup de carte : « #lieux-sante » en tête alors que la liste le masque | ✅ `MapPopupDefault` honore `tagColors` (conf de l'item, `itemRules` comprises) — 3 tests |
+| Fiche : « lieux-sante » sous « Thématiques de santé » | ✅ `profile-tags.hideTags` (schéma + section), titre « Thématiques et mots-clés » |
+| Les 6 pages `/theme/*` listaient les lieux tagués d'une thématique | ✅ `$nin` ajouté (décision « pas de lieux parmi les acteurs ») |
+| 4ᵉ normaliseur « unknown → string[] » et 3ᵉ union dédupliquée | ✅ `coerceStringArray` (read par défaut du widget) + `unionDedup` exporté de `stamps.ts` |
+| En-tête du test config-driven périmé ; doc en retard ; réserve typecheck/SDK fausse ; `useFilter` inerte | ✅ corrigés |
+| Ciblage insensible à la casse (regex) vs exclusion exacte (`$nin`) | 🟡 **assumé** (§11 a) : le formulaire écrit le tag tel quel ; `$not` regex casserait la composition avec les facettes (une seule branche d'opérateur par clé côté serveur) |
+| Publication immédiate, sans modération | 🟡 **assumé**, comme les 3 autres formulaires — question §13 |
+| `useFilter` inerte sur les 10 autres sections du site | 🟡 lot dédié |
+
+Réfutés (10) : entre autres « `defaultTags` écrase les tags cochés » (aucune facette de tags sur la page),
+« contraste 4,45:1 des chips » (mesure hors périmètre du lot), « nommage français dans un module anglais »
+(idiome du fichier), « bouton `/annuaire` en modale générique » (préexistant, hors lot).
+
+**01/10 — deux précisions de Judi.** (1) *Les commandes Mongo sont-elles nécessaires en prod ?* **Non** :
+elles ne visaient que la base LOCALE (porteuse restée sur l'ancien slug depuis le lot 6, `Test lieu` créé
+sans provenance). En production, la porteuse s'appelle `EcosystemeSanteReunion` depuis le 08/09 et toute
+fiche créée par le formulaire porte sa `source` grâce au `scope` — rien à écrire en base. (2) *Retirer
+« Contacter » et « Suivre » des cartes de lieux* : nouvelle option `list.card.showActions` (absent =
+affichés, aucun des 24 annuaires du parc ne change), posée à `false` sur `/lieux-sante`. Les cartes de
+`/annuaire` les gardent — le CDC s'interroge sur « Contacter > ça fait quoi ? » : même clé si PSR tranche.
+
+**07/10 — revue de la MR 76 (aboire, relue avec Claude Code) : 3 points bloquants, 6 à discuter,
+4 de nettoyage — tous instruits.**
+
+| Constat | Sort |
+|---|---|
+| **Projets et ressources créés sans organisation parente** : avec un `scope`, la création passe par `me.costum(slug)` et le parent n'est plus auto-injecté depuis `spec.target` | ✅ `inject.parent: true` sur `rezo-sante-projet` et `rezo-sante-ressource` — parent = l'organisation de la fiche d'origine, ou la porteuse (le tableau admin la transmet en `parent`). Garde dans le test config-driven |
+| **`mergeMongoFilters` fusionnait trop large** : le serveur n'applique qu'une famille d'opérateurs par champ ; `{$exists}` + `{$in}` aurait fait ignorer la facette en silence | ✅ composition limitée à la paire `$in`/`$nin` (seule que la branche `$nin` traite ensemble) ; les autres familles gardent le remplacement historique — tests |
+| **`tags` en objet PHP à trous non géré** par `fixedTags`, `editModalMatch` et le `enTableau` de l'acteur (« [object Object] », écrasement des mots-clés au save) | ✅ **helper source unique `helpers/toStringArray`** étendu aux objets (clés toutes entières → valeurs ; sinon clés), `lib/normalizeTags` supprimé ; repris par `useItem`, les cartes, la popup, le codec `fixedTags`, `rezo-sante/fns.ts` et `entityMatchData` (`tags` normalisé comme `source.keys`) |
+| `$in` + `$nin` sur `tags` (pages `/theme/*`, facette de `/annuaire`) : dépend du correctif citizenToolKit `7b19f871` — déployé en prod ? | ✅ **mesuré en production le 07/10** (lecture anonyme, organisations `franceTierslieux`) : `$in [Coworking]` 1 468, `$nin [TiersLieux]` 70, les deux sur la même clé **20** → le correctif est en prod. Un `$and` brut, lui, fait 500 |
+| Marqueur comparé de deux façons (inclusion par regex insensible à la casse, exclusions exactes) | ✅ inclusion passée en `defaultFilters.tags.$in` (branche `$in`, égalité exacte) sur `/lieux-sante` et l'onglet admin, à la place de `defaultTags` : toutes les comparaisons sont strictes, une graphie voisine n'est un lieu nulle part |
+| Marqueur acceptable comme mot-clé libre dans les 3 formulaires acteur/projet/ressource (l'autocomplétion le proposera) | ✅ `rezoSante:tagsAvecThematiques` le retire à l'écriture (`MARQUEUR_LIEU`, test) : un acteur ne devient pas un lieu par un mot-clé |
+| Heuristique clés/valeurs de `normalizeTags` fragile (`{"a": "true"}` → `["true"]`) | ✅ règle « clés toutes entières → valeurs, sinon clés », testée sur les deux formes |
+| doc/28 parlait de `hidePrefixes` | ✅ corrigé (`hideTags`, `$in` exact) |
+| Onglets admin Annuaire / Lieux : le filtre « en attente » (`$or`) écrasait le `$or` du périmètre — bug préexistant que le nouvel onglet reproduisait | ✅ `mergeMongoFilters` à la place d'`Object.assign` dans `AdminResourceTable` (ET des deux `$or`) ; commentaire de `validationFilter.ts` mis à jour, test de composition |
+| Nettoyage : double `resolveAction` dans SearchMap ; pipeline des puces copié dans un 4ᵉ composant et `tagLimit` ignoré par `CardProfile` ; marqueur recopié ~14 fois en config | ✅ `selectedAction` résolu une fois ; `decorateItemTags` (colorBy) partagé par CardDefault, CardEventTimeline, CardProfile et MapPopupDefault, `card.tagLimit` honoré (défaut 3) ; **garde config-driven** : toute liste d'organisations de la config (pages et admin) doit cibler ou exclure le marqueur |
+
+Gates rejoués le 30/09 :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 16 pages · 46 sections |
+| `audit:config` | ✅ RAS (icône `hospital` connue, aucune référence morte) |
+| `config:render` | ✅ 16/16 pages, 46/46 sections avec contenu SSR — `/lieux-sante` 200, 2/2 sections |
+| `config:probe --slug rezoSanteReunion` | ⛔ 11 périmètres VIDES — **attendu** : backend local sans fiche du costum (§11), inchangé depuis le lot 6 |
+| `typecheck` / `lint` | ✅ 0 erreur (SDK **1.0.195**, installé le 29/09 — la réserve « aac/cagnotte » du lot 6 ne vaut plus) / ✅ 0 message sur le lot |
+| unit `lib` · `search` · `profil` · `formEngine` · `admin` | ✅ **1963/1963** après la revue (dont `rezo-sante.configDriven` 22/22, `normalizeTags`, `mongoFilters`, `colorBy`, `CardProfile`, `MapPopupDefault`, `useItem`) |
+| `test:preflight` | ✅ 764 passés · 6 skip · 0 échec — fixture `__effective__/rezo-sante-reunion.json` régénérée (diffs voulus : route `edit-rezo-sante-lieu`, `baseParams` de `/lieux-sante`, `builtins.organization` des citoyens → entrées `customs`) |
+| Recette navigateur | ❌ **non faite** (clair/sombre, 375 px, lecteur d'écran, création de bout en bout) |
 
 ---
 
@@ -606,10 +968,10 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Thème & identité | ✅ | light + dark en parité (40 tokens), 5 thématiques en `chart1..5` ; depuis le 30/07 : feuille propre `index-rezo-sante-reunion.css` + titres **Fraunces** (lot 3) |
-| 2 | Chrome (header/footer) | 🟡 | nav regroupée en 4 entrées ; **coordonnées de contact « à compléter »**, aucun logo partenaire |
-| 3 | Home | ✅ | 6 sections |
-| 4 | Thématiques (hub + 5) | ❌ | rendent, mais **le vocabulaire de classification n'existe pas** : les tags mesurés donnent 1 à 13 fiches, ou 1 348 hors sujet (§5.2). En attente des « sujets pratiqués ». Hub : `hero-carousel` en tête depuis le 30/07 — **essai à confirmer** (§7.1) |
+| 1 | Thème & identité | ✅ | light + dark en parité (40 tokens), 6 thématiques dont 5 en `chart1..5` + 1 en `accent` (budget épuisé, §7) ; depuis le 30/07 : feuille propre `index-rezo-sante-reunion.css` + titres **Fraunces** (lot 3) ; depuis le 27/08 : héros `hero-tinted-overlay` lisibles sur photo claire (`hero-text-shadow`, lot 4) |
+| 2 | Chrome (header/footer) | 🟡 | nav regroupée en 4 entrées (Thématiques passe à 6 enfants au lot 4) ; cloche de **notifications active** (`header.utilities.notifications`, jamais consignée avant le 27/08) ; **coordonnées de contact « à compléter »** ; **2 logos partenaires** posés dans `footer.partners` (ARS La Réunion, Promotion Santé La Réunion), servis depuis `public/images/rezoSanteReunion/` |
+| 3 | Home | ✅ | 6 sections, `action-tiles` des thématiques à 6 tuiles depuis le lot 4 |
+| 4 | Thématiques (hub + 6) | ❌ | rendent, mais **le vocabulaire de classification n'existe pas** : les tags mesurés donnent 1 à 13 fiches, ou 1 348 hors sujet (§5.2). En attente des « sujets pratiqués ». Hub : `hero-carousel` en tête depuis le 30/07 — **essai à confirmer** (§7.1) |
 | 5 | Annuaire | 🟡 | rend ; périmètre vide |
 | 6 | Projets | 🟡 | rend ; périmètre vide |
 | 7 | Ressources | 🟡 | rend ; **convention de sous-type à arrêter** (§11) |
@@ -617,35 +979,70 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
 | 9 | À propos | ✅ | 6 sections, alternance des registres |
 | 10 | Socle légal | 🟡 | 2 pages ; marqueurs « à compléter » à renseigner |
 | 11 | Back-office + import | 🟡 | **9 onglets** (mesuré 03/08 : dashboard, membres, annuaire, projets, agenda, ressources, validation, import-export, référencement) ; le costum résout depuis le 30/07, le périmètre reste à peupler |
-| 12 | Création de fiches | 🟡 | **prévue** : formulaires costum annoncés. Porte de validation armée et file « Validation » posée — il reste à écrire les `costumForms` et le `floatingActionButton` |
+| 12 | Création de fiches | 🟡 | **3 `costumForms` livrés le 08/09** (`rezo-sante-acteur` / `-projet` / `-ressource`) : les onglets admin Annuaire, Projets et Ressources ouvrent le formulaire costum au lieu de la modale générique (`create: "inherit"` les résout seul). Champs **Thématiques** (6, synchronisées avec `tags`) et **Bénéficiaires** (10, projets). Reste : appliquer le `typeObj` au backend de DÉPLOIEMENT (§6bis.1), et la création publique (`floatingActionButton`), non demandée à ce stade |
 | 13 | Actions d'engagement | ❌ | **hors config** — chiffrage §4.3 |
 | 14 | Partenariat inter-orga | ❌ | **hors config** — chiffrage §4.3 |
+| 15 | Annuaire des lieux de santé `/lieux-sante` | 🟡 | 30/09 — livré (menu, page, formulaire, fiche, carte), gates verts (§9 lot 7) ; création locale d'un lieu vérifiée par Judi le 30/09 ; **MR 76 en revue**, constats du 07/10 instruits (§9) ; `type: LocalBusiness` confirmé ; lieux exclus de `/annuaire` et de l'admin Annuaire, onglet admin « Lieux de santé » ; CDC PSR reçu et rapproché (§4.4 : Antennes et Agenda des lieux hors config) |
 
 ---
 
 ## 11. Points d'attention / limitations
 
-- **Le costum est créé (30/07, §6bis) mais son périmètre est VIDE.** `sourceKey[]=rezoSanteReunion`
+- **Lieux de santé (lot 7).** (a) Exclus de `/annuaire` et de l'admin « Annuaire » par `$nin` **exact**
+  (mesuré §9 lot 7) : une fiche importée avec une autre graphie (« Lieux-Sante ») serait comptée comme
+  acteur ET listée par `/lieux-sante` (dont le `defaultTags` est insensible à la casse) — assumé : le
+  formulaire écrit le tag tel quel. Les 6 pages `/theme/*` excluent les lieux (`$nin`) ; la palette de
+  commandes, non. (b) La fiche
+  `/profil/<slug>` ne montre plus le marqueur : `profile-tags.hideTags` (clé ajoutée à la revue), section
+  retitrée « Thématiques et mots-clés ». (c) Tout lieu est créé en `type: LocalBusiness` — un centre
+  hospitalier public ou une association y sera classé « Professionnel & entreprise » dans le filtre
+  « Type d'acteur » de `/annuaire`. (d) Le périmètre est vide : rien n'a été observé sur des données
+  réelles, ni la création (le backend local ne connaît pas le costum, §11 lot 6). (e) **Publication
+  immédiate** : un lieu créé par un utilisateur connecté entre dans l'annuaire sans passer par l'onglet
+  « Validation » (aucun `preferences.toBeValidated` posé) — comme les 3 autres formulaires du site ; à
+  trancher (§13).
+- **Le backend LOCAL n'a pas suivi le renommage de slug (lot 6) — et c'est ce qui a fait échouer la recette du 30/09** (§9 lot 7, création sans `source`). L'organisation porteuse y
+  porte encore `slug: "rezoSanteReunion"` (base `prod270726`, instantané du 27/07). Tant qu'elle
+  n'est pas renommée dans `organizations` ET dans la collection `slugs`, `VITE_SLUG` ne trouve plus
+  l'entité au boot et le costum ne résout pas en local. Sans effet sur la prod, où le renommage a eu
+  lieu.
+- **Le costum est créé (30/07, §6bis) mais son périmètre est VIDE.** `sourceKey[]=EcosystemeSanteReunion`
   renvoie 0 résultat sur les deux backends : aucune fiche ne porte encore
-  `source.key`/`source.keys`/`reference.costum` = `rezoSanteReunion`. Le blocage n°1 est désormais le
+  `source.key`/`source.keys`/`reference.costum` = `EcosystemeSanteReunion`. Le blocage n°1 est désormais le
   **peuplement** (référencement à l'unité §5.6, ou import).
-- **Création de fiches : prévue, pas encore activée.** Des formulaires costum liés à `rezoSanteReunion` sont annoncés (29/07) ; le socle est prêt (porte de validation armée, file « Validation »). Reste le blocage de forme : le bouton flottant n'accepte **qu'un seul**
-  `modal` : on ne peut pas proposer « créer un acteur » *et* « créer un projet » par ce biais. Et
-  surtout, un `modal: "add-X"` sans document `costumForms.X` correspondant produit un bouton qui
-  **rend `null` en silence** (constat d'audit `ref-morte`). Activer ce bouton exige d'abord d'écrire
-  le formulaire costum.
+- **Création de fiches : les 3 formulaires existent depuis le 08/09** (§9 lot 5), et les onglets du
+  back-office les ouvrent. **Deux restes.** (a) Le `typeObj` doit être appliqué au backend de
+  déploiement, sans quoi `thematic`/`beneficiaires` y seront retirés en silence du save (§6bis.1 —
+  lire les deux pièges avant d'écrire). (b) La création **publique** n'est pas activée : le bouton
+  flottant n'accepte **qu'un seul** `modal`, on ne peut donc pas proposer « créer un acteur » *et*
+  « créer un projet » par ce biais — et un `modal: "add-X"` sans document `costumForms.X` rend
+  `null` en silence (constat d'audit `ref-morte`). Non demandé à ce stade.
+- **Le filtre « Format » de `/ressources` reste non remplissable.** Il porte sur `category`, qui
+  n'est ni au contrat d'écriture POI ni déclaré au `typeObj` : aucune fiche créée depuis le site ne
+  pourra le renseigner. Le formulaire ressource expose `type` à la place (Lien / Vidéo / Document /
+  Outil). Trois issues possibles, à trancher : déclarer `category` au `typeObj`, basculer le filtre
+  sur `type`, ou le basculer sur `tags`. **Rien n'a été changé sur la page** — décision client.
 - **Convention de sous-type des ressources à arrêter.** Il n'existe aucune collection « ressource » :
-  dans le parc, c'est un POI sous-typé (parent62 utilise `type: "recoveryCenter"`). Le sous-type doit
+  dans le parc, c'est un POI sous-typé (parent62 utilise `type: "recoveryCenter"`). Le formulaire du
+  08/09 ne tranche PAS : il laisse l'utilisateur choisir `type` parmi 4 valeurs, sans `presetValue`
+  ni `identity`, précisément pour ne pas figer la convention par effet de bord. Le sous-type doit
   être décidé **avant** que les `itemRules` soient figées, puisqu'il est testé dans les prédicats.
 - **CTA de la preview `resource` figé.** Les libellés d'action sont câblés sur quatre valeurs
   françaises (`lien`, `video`, `document`, `compte-rendu`). Des catégories nommées autrement
   (« Outil », « Guide », « Protocole ») ne produiront **aucun bouton d'action principal**, et aucune
   clé de config ne corrige cela — seules les icônes sont surchargeables.
-- **Visuels : 5 fournis, 1 manquant.** `/theme/addictions` n'a **aucune image**, et reste donc en
-  section `title` : la planche des 5 thématiques est visuellement dépareillée.
-  Manque aussi l'image « communauté » (le `community-healthcare` de la maquette) qui porterait la
-  section communauté de la home. Les visuels actuels sont **générés par IA** : à remplacer par de
-  vraies photos du réseau avant mise en ligne (enjeu de crédibilité pour un annuaire d'acteurs).
+- **Visuels : les 6 thématiques ont désormais leur image (lot 4, 27/08).** `/theme/addictions` était
+  la seule sans visuel ; c'est réglé, la planche des 6 thématiques est homogène. Il manque encore
+  l'image « communauté » (le `community-healthcare` de la maquette) qui porterait la section
+  communauté de la home. Les 7 visuels du site sont **générés par IA** (les 6ᵉ et 7ᵉ,
+  `hero-culture-sante-reunion.jpg` et `hero-addictions-sante-reunion.jpg`, fournis le 27/08 lot 4) —
+  à remplacer par de vraies photos du réseau avant mise en ligne (enjeu de crédibilité pour un
+  annuaire d'acteurs).
+- **Chart budget épuisé (lot 4).** `chart1..chart5` sont tous pris ; la 6ᵉ thématique réutilise
+  `accent`. Si une 7ᵉ thématique arrivait, il faudrait soit ajouter `chart6` au schéma (`site-schema.ts`
+  — hors config, changement moteur), soit choisir une autre couleur du thème déjà validée
+  (`primary`/`destructive`), soit accepter une teinte dupliquée. Décision à prendre le moment venu,
+  pas anticipée ici.
 - **Trois tags orphelins** : `Ecran`, `Santé Sexuelle`, `sédentarité` (ce dernier rattaché à
   l'activité physique). Faut-il des pages dédiées ?
 - **Socle légal incomplet, volontairement.** Tous les champs d'identité sont marqués « à compléter » —
@@ -658,8 +1055,9 @@ Gates rejoués le 03/08 après merge : typecheck ✅ · préflight **412/412 (22
 
 ## 12. Dépendances SDK ↔ cocolight-api-client
 
-SDK installé : **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a0` du 03/08 — fini le
-`npm pack` local).
+SDK installé : **1.0.195** (`package.json` `^1.0.195`, mesuré le 30/09 — 1.0.189 documenté par erreur jusque-là ; 1.0.172 documenté le 03/08, commit `09e145a0`,
+est désormais périmé — dérive constatée le 27/08, bump transverse du monorepo sans lien avec ce
+projet).
 
 | Demande | État | Preuve / substitut |
 |---|---|---|
@@ -676,8 +1074,8 @@ SDK installé : **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a
 
 | Question | Responsable |
 |---|---|
-| ~~Créer le costum `rezoSanteReunion`~~ **fait le 30/07 (§6bis)** → reste le **peuplement** : qui référence/importe les premières fiches, et quand ? | PSR / admin Communecter |
-| **Essai `hero-carousel`** (30/07) : confirmer ou non son maintien en tête de `/thematiques`, et arbitrer le portage en home voulu par la maquette Lovable (coûts mesurés : diapositive addictions sans image, ratio 16:9 vs 3:2 → bascule du candidat LCP) | Client + Thomas |
+| ~~Créer le costum `EcosystemeSanteReunion`~~ **fait le 30/07 (§6bis)** → reste le **peuplement** : qui référence/importe les premières fiches, et quand ? | PSR / admin Communecter |
+| **Essai `hero-carousel`** (30/07, complété à 6 diapositives le 27/08) : confirmer ou non son maintien en tête de `/thematiques`, et arbitrer le portage en home voulu par la maquette Lovable (coût mesuré : ratio 16:9 vs 3:2 → bascule du candidat LCP) | Client + Thomas |
 | **Vocabulaire des « sujets pratiqués »** : quelle liste, saisie où, renseignée quand ? Sans elle, les 5 pages thématiques n'ont rien à filtrer | Tibor + PSR (@Pierre, @duvardfrancois, @SebastienPSR) |
 | Reprise des **1 088 fiches `#santé`** : qui trie, selon quels critères d'inclusion ? | PSR |
 | **Doublon PSR** (`PromotionSanteLaReunion` / `promotionSanteLaReunion`) : lequel fait foi ? | PSR |
@@ -692,3 +1090,10 @@ SDK installé : **1.0.172 publiée** (`package.json` `^1.0.172`, commit `09e145a
 | Champs d'identité du socle légal | Client |
 | Formulaires costum annoncés : quelles collections (acteur ? projet ? ressource ?), et quels champs — au-delà des « sujets pratiqués » ? | Tibor + PSR |
 | Un seul bouton flottant est possible : quel formulaire y met-on, et comment atteint-on les autres ? | Client + intégrateur |
+| **Chart budget épuisé** (`chart1..5` tous pris, 6ᵉ thématique en `accent`) : si une 7ᵉ arrive, ajouter `chart6` au schéma moteur ou réutiliser une teinte du thème ? | Tibor + dev moteur |
+| **Lieux de santé** : facette « Commune » sur `/lieux-sante` (comme `/annuaire`), onglet admin dédié, alerte « lieu déjà existant » (`duplicateCheck`, livré sur tiers-lieux le 29/09) ? | Client |
+| **CDC — « Les Antennes » d'un lieu** (§4.4) : adresses secondaires, structures rattachées, autre chose ? Rien ne le rend aujourd'hui | PSR + dev moteur |
+| **CDC — « Agenda » de l'annuaire des lieux** (§4.4) : agenda des événements des lieux ? Un événement ne porte pas le tag de son organisateur — taguer les événements, ou filtrer par organisateurs ? | PSR + intégrateur |
+| **CDC — onglet « Membres » à renommer « Communauté »** (acteurs et lieux) : un libellé de config, à poser dès que PSR confirme | PSR |
+| **Lieux de santé** : les exclure aussi de la palette ⌘K (les pages `/theme/*` les excluent depuis la revue) ? | Client |
+| **Modération a priori** des lieux — et des acteurs — créés depuis le site : poser `mutation.inject.extraFieldsUnlessCostumAdmin: {preferences: {toBeValidated: true}}` (l'onglet « Validation » existe déjà) ou assumer la publication immédiate ? | PSR |

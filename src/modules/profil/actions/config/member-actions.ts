@@ -60,6 +60,15 @@ export const MEMBER_ACTION_CONFIG = {
     },
     isDestructive: true,
   },
+  // Pas une mutation : ouvre `ManageRolesDialog` (callback `onManageRoles`, cf. `buildManageRolesAction`).
+  // `requiresConfirmation` reste false — la confirmation est le dialogue lui-même, pas une 2e boîte.
+  manageRoles: {
+    id: "manage-roles",
+    icon: "tag",
+    variant: "outline",
+    i18nKey: "InviteMemberDialog.manageRoles",
+    requiresConfirmation: false,
+  },
 
   // ============ VALIDATION ============
   validate: {

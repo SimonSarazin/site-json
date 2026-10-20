@@ -23,3 +23,4 @@ export { registerPermissions, getCalculator, getAllCalculators, hasCalculator } 
 
 // Hook
 export { usePermissions } from "./usePermissions";
+export { isCostumHostAdmin } from "./isCostumHostAdmin";

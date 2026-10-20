@@ -8,7 +8,7 @@ import {
     type MilestoneEditFormData,
 } from '@/modules/cagnotte/schemaForm';
 import {useFundingEnvelope} from '@/modules/cagnotte/hooks/useFundingEnvelope';
-import {useCagnotteAdapter} from '@/modules/cagnotte/hooks/useCagnotteAdapter';
+import {useCagnotteAdapter, useOrphanDepenseRepair} from '@/modules/cagnotte/hooks/useCagnotteAdapter';
 import {useCocolight} from '@/hooks/useCocolight';
 import {useT} from '@/hooks/useT';
 import {useLoadNamespace} from '@/hooks/useLoadNamespace';
@@ -53,8 +53,9 @@ import {useOptionalProfileEntity} from '@/modules/profil/hooks/useProfileEntity'
 import {useSite} from "@/hooks/useSite.tsx";
 import {useCagnotteType} from "@/modules/cagnotte/hooks/useCagnotteType.ts";
 import {useOrganizationProjectsWithAnswers} from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers.ts";
+import {readFinancerPaymentState, toDisplayPaymentStatus} from "@/modules/cagnotte/utils/financerPayment";
 
-type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+type PaymentStatus = 'pending' | 'paid' | 'partial' | 'failed' | 'refunded';
 type TransactionHistoryItem = {
     id: string;
     financerName: string;
@@ -93,6 +94,11 @@ function PaymentStatusBadge({status}: { status: PaymentStatus }) {
     const config: Record<PaymentStatus, { icon: ReactNode; label: string; className: string }> = {
         pending: {icon: <Clock className="h-3 w-3"/>, label: 'En attente', className: 'bg-warning/20 text-warning'},
         paid: {icon: <CheckCircle2 className="h-3 w-3"/>, label: 'Payé', className: 'bg-success/20 text-success'},
+        partial: {
+            icon: <CircleDot className="h-3 w-3"/>,
+            label: 'Partiel',
+            className: 'bg-primary/15 text-primary'
+        },
         failed: {
             icon: <CircleDot className="h-3 w-3"/>,
             label: 'Échoué',
@@ -142,7 +148,7 @@ export default function FinanceSection({id, props}: { id?: string; props: Financ
         enabled: !!entity,
     });
 
-    const {resources, savedSelectedResource} = useCagnotteAdapter(
+    const {resources, savedSelectedResource, pendingMilestoneRepairs} = useCagnotteAdapter(
         fundingData,
         allProjects,
         cagnotteConfig,
@@ -197,9 +203,9 @@ export default function FinanceSection({id, props}: { id?: string; props: Financ
 
         const mappedMilestones: Milestone[] = items.map((item, index) => {
             const transactions: TransactionHistoryItem[] = (item.funding || []).map((fund, fundIdx) => {
-                const pStatus: PaymentStatus =
-                    (fund.paymentStatus as PaymentStatus) ||
-                    (fund.fundingType === 'prepaid' ? 'paid' : 'pending');
+                // Statut lu sur le bloc `payment` de la ligne, seul à savoir dire
+                // « partiellement versé » (repli legacy sur `fundingType`).
+                const pStatus: PaymentStatus = toDisplayPaymentStatus(readFinancerPaymentState(fund).status);
 
                 return {
                     id: String(fund.id || fund.transactionId || `${item.itemId}-${fundIdx}`),
@@ -246,6 +252,13 @@ export default function FinanceSection({id, props}: { id?: string; props: Financ
     const cagnottePerms = useCagnottePermissions(permissionEntity, {
         hasActiveItems: openMilestones.length > 0,
         resourceId: projectId,
+    });
+    // Surface d'édition : les dépenses orphelines de la ressource affichée sont
+    // réparées ici, par qui peut créer un palier — l'adaptateur n'écrit plus (M40).
+    useOrphanDepenseRepair({
+        resource: targetResource,
+        repairs: pendingMilestoneRepairs,
+        enabled: cagnottePerms.canCreateMilestone,
     });
     const cagnotteCtx = useCagnotteContext();
 

@@ -965,6 +965,7 @@ exports[`poi-équipement — byte-parité structurelle (descriptor + spec) > spe
     "doublons": "slot:poiDoublons",
     "parentInfo": "slot:parentInfo",
   },
+  "subType": "recoveryCenter",
   "submitLabel": {
     "add": {
       "en": "Create",

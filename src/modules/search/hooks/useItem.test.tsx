@@ -48,3 +48,62 @@ describe("useItem — résolution de l'image", () => {
     expect(img({ profilImageUrl: "" })).toBe("");
   });
 });
+
+/**
+ * `startDate` (ponctuel) sinon `startDateSort`/`startDateSortFormat` (occurrence calculée d'un event
+ * récurrent — cf. `modules/agenda/lib/eventDates.ts`, même défaut). Sans ce repli, une carte d'event
+ * récurrent (aucun `startDate`) affichait une date vide.
+ */
+const startDate = (sd: Record<string, unknown>) => renderHook(() => useItem(ent(sd))).result.current.startDate;
+
+describe("useItem — date d'événement", () => {
+  it("ponctuel : startDate résolu", () => {
+    expect(startDate({ startDate: "2026-08-14T09:00:00Z" })?.toISOString()).toBe("2026-08-14T09:00:00.000Z");
+  });
+
+  it("récurrent : startDateSort en objet PHP brut (forme réelle backend) → ignoré, repli sur startDateSortFormat", () => {
+    expect(
+      startDate({
+        startDateSort: { date: "2026-08-14 09:00:00.000000", timezone_type: 3, timezone: "Europe/Paris" },
+        startDateSortFormat: "2026-08-14T09:00:00+0200",
+      })?.toISOString(),
+    ).toBe("2026-08-14T07:00:00.000Z");
+  });
+
+  it("aucune date exploitable : null", () => {
+    expect(startDate({ name: "Sans date" })).toBeNull();
+  });
+});
+
+describe("useItem — liens comptés (actifs seulement, règle : countActiveLinks)", () => {
+  it("branché sur links.contributors, invitations en attente exclues", () => {
+    const { countContributors } = renderHook(() =>
+      useItem(ent({ links: { contributors: { a: { type: "citoyens" }, b: { type: "citoyens", isInviting: true } } } }))
+    ).result.current;
+    expect(countContributors).toBe(1);
+  });
+
+  it("members : ni l'invitation en attente ni la demande à valider ne font un membre", () => {
+    const { countMembers } = renderHook(() =>
+      useItem(
+        ent({
+          links: {
+            members: {
+              a: { type: "citoyens" },
+              b: { type: "citoyens", isInviting: true },
+              c: { type: "citoyens", toBeValidated: true },
+            },
+          },
+        }),
+      )
+    ).result.current;
+    expect(countMembers).toBe(1);
+  });
+
+  it("projects : même règle — un rattachement à valider n'est pas encore un projet", () => {
+    const { countProjects } = renderHook(() =>
+      useItem(ent({ links: { projects: { p1: { type: "projects" }, p2: { type: "projects", toBeValidated: true } } } }))
+    ).result.current;
+    expect(countProjects).toBe(1);
+  });
+});

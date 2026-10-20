@@ -25,6 +25,7 @@ import { getOriginalFieldKey } from "../utils/formParser";
 import { getNoteAppearance } from "../utils/commonTableNote";
 import { buildUsageGroupKeyResolver, normalizeUsage } from "../utils/commonTableUsage";
 import { CommonTableContributorsDialog } from "./CommonTableContributorsDialog";
+import { FieldLabel } from "./FormFields";
 import type {
   FormFieldMapping,
   CommonTableValue,
@@ -1399,15 +1400,7 @@ export function CommonTableField({
       aria-required={field.isRequired || undefined}
       className={cn("space-y-3", field.width || "col-span-12")}
     >
-      {!hideLabel && field.label && (
-        <Label
-          id={labelId}
-          className={cn("block text-sm font-medium", hasError && "text-destructive")}
-        >
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+      {!hideLabel && <FieldLabel field={field} id={labelId} hasError={hasError} />}
 
       {field.info && <p id={descId} className="text-xs text-muted-foreground">{field.info}</p>}
 

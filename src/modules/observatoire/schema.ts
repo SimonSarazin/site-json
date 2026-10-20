@@ -1,118 +1,32 @@
 // ------------------------------------------------------------
 // schema.ts — Observatoire de données (dashboard déclaratif)
 // ------------------------------------------------------------
-// Tous les types (Zod + TS) du module vivent ici. AUCUN modèle métier en
-// dur : le dataset, les dimensions, les KPI, les graphes, les filtres et la
-// table viennent de la CONFIG de section. Convention calquée sur
-// src/modules/search/schema.ts.
+// Les types (Zod + TS) du module vivent ici — à l'exception des primitives du
+// tableau de bord (dimensions, KPI, graphes), passées dans `dashboardSchema.ts`
+// pour rester importables par le module search ; ce fichier les ré-exporte.
+// AUCUN modèle métier en dur : le dataset, les dimensions, les KPI, les
+// graphes, les filtres et la table viennent de la CONFIG de section.
+// Convention calquée sur src/modules/search/schema.ts.
 // ------------------------------------------------------------
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
 import { PreviewConfSchema, SearchVariantSchema } from "@/modules/search/schema";
 
 /*───────────────────────────────────────────────────────────────*/
-/* 1. Item — document brut                                       */
+/* 1-2. Item, dimensions, KPI, graphes                           */
 /*───────────────────────────────────────────────────────────────*/
-/**
- * Item du dashboard : le document `serverData` BRUT d'une entité. Aucun
- * schéma métier : la lecture et la coercion (bool tolérant, nombres,
- * dates SDK) se font au moment de résoudre une DIMENSION (moteur,
- * dimensions.ts) — seuls les champs déclarés sont consommés.
- */
-export type ObservatoryItem = Record<string, unknown>;
-
-/*───────────────────────────────────────────────────────────────*/
-/* 2. Dimensions — cœur déclaratif du module                     */
-/*───────────────────────────────────────────────────────────────*/
-// Une « dimension » = une grandeur lisible sur chaque item (commune, type,
-// accessibilité…). Filtres, KPI, graphes et colonnes de table ne font que
-// CONSOMMER des dimensions — c'est ce qui rend le module entièrement
-// pilotable par la config (mécanisme dans le composant, données dans la
-// config) : le code ne connaît AUCUN dataset particulier.
-export const DimensionDefSchema = z.object({
-  /** Chaînes de priorité : le premier chemin non vide gagne. Chemins pointés
-   *  acceptés (ex. "address.addressLocality") et ARRAY-AWARE : un segment
-   *  tombant sur un tableau (sans index numérique) mappe le reste du chemin sur
-   *  chaque élément puis aplatit — une réponse CoForm embarquée se lit ainsi
-   *  par un simple chemin `answers.<form>.serverData.answers.<section>.<field>`
-   *  (cf. resolveSegments, dimensions.ts), sans accesseur métier dédié. */
-  paths: z.array(z.string()).min(1),
-  /** REGROUPEMENT sur clé canonique (kind `value`) : quand un libellé affiché
-   *  (`paths`, ex. `address.level4Name`) est du texte libre SALE (variantes de
-   *  casse/accents : "NORD"/"Nord", "ISERE"/"Isère"…), `keyPaths` désigne une
-   *  clé propre et stable (ex. `address.level4`, l'id de zone). Le moteur
-   *  regroupe les items par cette clé et, comme TOUTES les données sont chargées,
-   *  DÉRIVE un libellé canonique par groupe (la variante la plus « riche » :
-   *  casse mixte + accents). Filtre/KPI/graphe/table voient alors une valeur
-   *  unique par groupe — fini les doublons. Sans `keyPaths` : comportement
-   *  normal (la valeur affichée EST la clé). */
-  keyPaths: z.array(z.string()).min(1).optional(),
-  /** value (défaut) : 1ʳᵉ chaîne non vide · list : CSV/tableau aplati ·
-   *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique ·
-   *  contains : un chemin (liste) contient `value` (booléen d'appartenance). */
-  kind: z.enum(["value", "list", "anyTrue", "number", "contains"]).optional(),
-  /** `list` : restreint ET ordonne la sortie à cet ALLOWLIST — décompose un
-   *  champ fourre-tout (ex. `tags` qui mêle typologie/portage/surface) en axes
-   *  orthogonaux distincts. */
-  values: z.array(z.string()).optional(),
-  /** `contains` : valeur dont l'appartenance à la liste fait le booléen
-   *  (ex. label "Compagnon France Tiers-Lieux"). */
-  value: z.string().optional(),
-  /** Normalisation des valeurs brutes → valeur canonique (avant allowlist) :
-   *  fusionne les variantes saisies à la main du backend (ex.
-   *  "Plus de 200m2" → "Plus de 200m²", "Switzerland" → "Suisse"). S'applique
-   *  aux kinds `value` et `list`. */
-  valueMap: z.record(z.string(), z.string()).optional(),
-  /** Libellé localisé (prioritaire sur labelKey). */
-  label: LocalizedString.optional(),
-  /** Clé i18n du namespace modules/observatoire (réservé au chrome interne
-   *  du module — les libellés métier passent par `label`). */
-  labelKey: z.string().optional(),
-});
-export type DimensionDef = z.infer<typeof DimensionDefSchema>;
-
-export const DimensionsSchema = z.record(z.string(), DimensionDefSchema);
-export type DimensionsConfig = z.infer<typeof DimensionsSchema>;
-
-// Jeton de couleur de thème (jamais d'hex : les rendus mappent vers les
-// classes/var(--…) correspondantes — les graphes suivent le thème du site).
-const ColorTokenSchema = z.enum([
-  "primary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "muted",
-]);
-
-/** KPI déclaratif : une FORME de calcul appliquée à une dimension. */
-export const KpiDefSchema = z.object({
-  kind: z.enum(["count", "distinct", "percentTrue", "valueSplit", "top", "sum", "avg"]),
-  /** Dimension consommée (requise sauf pour `count`). */
-  dimension: z.string().optional(),
-  /** `valueSplit` : valeur comptée (affiché « n / total−n »). */
-  value: z.string().optional(),
-  label: LocalizedString.optional(),
-  labelKey: z.string().optional(),
-  /** Nom d'icône lucide (kebab-case) — rendu via DynamicIcon. */
-  icon: z.string().optional(),
-  accent: ColorTokenSchema.optional(),
-  /** Unité affichée après la valeur (`sum`/`avg` — ex. "m²"). */
-  unit: z.string().optional(),
-});
-export type KpiDef = z.infer<typeof KpiDefSchema>;
-
-/** Graphe déclaratif : une FORME de visualisation d'une dimension. */
-export const ChartDefSchema = z.object({
-  kind: z.enum(["donut", "pie", "bars", "barsHorizontal", "booleanGroups"]),
-  dimension: z.string().optional(),
-  /** `booleanGroups` : dimensions anyTrue comparées (oui/non empilés). */
-  dimensions: z.array(z.string()).optional(),
-  /** `barsHorizontal` : nombre de valeurs retenues (tri décroissant). */
-  top: z.number().int().positive().optional(),
-  label: LocalizedString.optional(),
-  labelKey: z.string().optional(),
-  /** Couleur par VALEUR de dimension (jeton de thème). */
-  colors: z.record(z.string(), ColorTokenSchema).optional(),
-  /** Largeur dans la grille : `full` (défaut) ou `half` (appairé 2 colonnes). */
-  layout: z.enum(["full", "half"]).optional(),
-});
-export type ChartDef = z.infer<typeof ChartDefSchema>;
+// Déplacés dans `dashboardSchema.ts` : le module search les importe pour son
+// tableau de bord embarqué, et ce fichier-ci importe search (cf. l'en-tête de
+// dashboardSchema.ts). Ré-exportés ici — `from "../schema"` reste la voie
+// d'accès normale pour le module.
+export * from "./dashboardSchema";
+import {
+  ChartDefSchema,
+  ColorTokenSchema,
+  DimensionDefSchema,
+  DimensionsSchema,
+  KpiDefSchema,
+} from "./dashboardSchema";
 
 /** Colonne de table déclarative. */
 export const TableColumnSchema = z.object({
@@ -146,25 +60,57 @@ export const FilterDefSchema = z.object({
 });
 export type FilterDef = z.infer<typeof FilterDefSchema>;
 
+/** Ouverture d'une FICHE depuis une ligne de table ou un item de liste —
+ *  CHOIX déclaratif :
+ *  - "profil"  : navigation vers /profil/<slug>
+ *  - "preview" : ouvre le détail du module search (drawer/dialog + preview),
+ *    le comportement de la liste /equipements-sportifs au clic sur une carte. */
+export const RowActionSchema = z.object({
+  kind: z.enum(["profil", "preview"]),
+  /** preview : conteneur du détail (défaut "drawer"). */
+  detailsMode: z.enum(["drawer", "dialog"]).optional(),
+  /** preview : contenu (schéma du module search — poi-amenities…). */
+  preview: PreviewConfSchema.optional(),
+});
+export type RowActionDef = z.infer<typeof RowActionSchema>;
+
 export const TableDefSchema = z.object({
   columns: z.array(TableColumnSchema).min(1),
   /** Dimension du tri initial (défaut : la 1ʳᵉ colonne). */
   defaultSort: z.string().optional(),
-  /** Action au clic sur une ligne — CHOIX déclaratif :
-   *  - "profil"  : navigation vers /profil/<slug>
-   *  - "preview" : ouvre le détail du module search (drawer/dialog + preview),
-   *    le comportement de la liste /equipements-sportifs au clic sur une carte. */
-  rowAction: z
-    .object({
-      kind: z.enum(["profil", "preview"]),
-      /** preview : conteneur du détail (défaut "drawer"). */
-      detailsMode: z.enum(["drawer", "dialog"]).optional(),
-      /** preview : contenu (schéma du module search — poi-amenities…). */
-      preview: PreviewConfSchema.optional(),
-    })
-    .optional(),
+  /** Cf. RowActionSchema. Repli de `props.rowAction` : une config antérieure au
+   *  mode `split` déclare son action ICI, et continue de fonctionner. */
+  rowAction: RowActionSchema.optional(),
 });
 export type TableDef = z.infer<typeof TableDefSchema>;
+
+/**
+ * Liste latérale du mode `layout: "split"` — l'équivalent « une ligne, un
+ * item » de la table, pensé pour un panneau étroit : pas de colonnes, un
+ * libellé, un sous-titre, un bouton fiche.
+ */
+export const ObservatoryListSchema = z.object({
+  /** Dimension du libellé d'une ligne (ex. le nom de l'équipement). */
+  titleDimension: z.string(),
+  /** Dimensions du sous-titre, jointes par « · » (valeurs vides ignorées). */
+  subtitleDimensions: z.array(z.string()).optional(),
+  /**
+   * Dimensions interrogées par la SÉLECTION (clic sur une ligne) : chaque MOT
+   * du libellé cliqué doit s'y trouver. Défaut : `titleDimension` seule.
+   * En déclarer plusieurs (ex. équipement ET installation) ÉLARGIT le
+   * résultat — les mots sont cherchés dans leur réunion, pas dans chacune.
+   */
+  selectDimensions: z.array(z.string()).optional(),
+  /** Titre du panneau (défaut : i18n `list.title`). */
+  label: LocalizedString.optional(),
+  /** Répartition liste / tableau de bord en `split` (défaut "40-60"). */
+  splitRatio: z.enum(["40-60", "50-50", "60-40"]).optional(),
+  /** Lignes rendues avant « Voir plus » (défaut 50). Sans virtualisation dans
+   *  le parc, tout rendre d'un coup coûte trop cher au-delà de quelques
+   *  centaines d'items. */
+  pageSize: z.number().int().positive().optional(),
+});
+export type ObservatoryListDef = z.infer<typeof ObservatoryListSchema>;
 
 /*───────────────────────────────────────────────────────────────*/
 /* 3. Filtres — valeurs dynamiques (clé = id de dimension)       */
@@ -268,6 +214,26 @@ export const DataObservatorySectionSchema = z.object({
     maxWidth: z.enum(["4xl", "5xl", "6xl", "7xl", "8xl", "full"]).optional(),
     charts: z.array(ChartDefSchema).optional(),
     table: TableDefSchema.optional(),
+    /**
+     * Agencement de la section. `stacked` (défaut) : filtres, KPI, graphes puis
+     * table empilés — le rendu historique, inchangé. `split` : KPI en bandeau
+     * pleine largeur sous les filtres, puis liste des items à GAUCHE et graphes
+     * à DROITE, sur le patron du split liste+carte du module search (desktop
+     * seulement — sous 768 px les deux colonnes sont illisibles, la liste
+     * repasse alors SOUS les graphes, avant la table éventuelle). Une `table`
+     * déclarée avec `split` vient SOUS les deux colonnes, en pleine largeur.
+     * Demande `list`.
+     */
+    layout: z.enum(["stacked", "split"]).optional(),
+    list: ObservatoryListSchema.optional(),
+    /**
+     * Ouverture de la fiche depuis la LISTE (le deep-link `?installation=` y
+     * puise aussi sa config). Historiquement déclarée sous `table.rowAction` —
+     * toujours lue en repli, donc une page qui remplace sa table par une liste
+     * déplace simplement son bloc ici, sans rien dupliquer. La table, elle, ne
+     * lit QUE `table.rowAction` : une page qui GARDE sa table y laisse le bloc.
+     */
+    rowAction: RowActionSchema.optional(),
   }),
 });
 

@@ -37,9 +37,15 @@ describe("fetchElementSummary", () => {
     ).toEqual({ name: "Org A", img: "/t.jpg" });
   });
 
-  it("name/img = undefined si absents ou chaînes vides", async () => {
+  it("remonte le slug de la fiche, pour le lien `/profil/<slug>`", async () => {
     expect(
-      await fetchElementSummary(fakeApi({ name: "   ", profilImageUrl: "" }), "1", "organizations"),
+      await fetchElementSummary(fakeApi({ name: "Org A", slug: "org-a" }), "1", "organizations"),
+    ).toEqual({ name: "Org A", slug: "org-a" });
+  });
+
+  it("name/img/slug = undefined si absents ou chaînes vides", async () => {
+    expect(
+      await fetchElementSummary(fakeApi({ name: "   ", profilImageUrl: "", slug: " " }), "1", "organizations"),
     ).toEqual({});
   });
 

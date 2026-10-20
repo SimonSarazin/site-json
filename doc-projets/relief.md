@@ -211,6 +211,18 @@ legacy :5080 : 0 avant, 7 après. Gates au commit : typecheck OK, préflight + a
 | `lint` | ✅ 0 erreur (20 warnings `react-hooks/preserve-manual-memoization` connus, cf. `[[project-lint-react-compiler-rules]]`) |
 | `build` | ✅ client + serveur, 1 min 06 (14/08) |
 
+### 9.4 (24/09) — home : l'illustration du hero ne recouvre plus « Découvrir les lieux »
+
+**Code seul** (`HeroSearch.tsx`, correctif venu de tiers-lieux). L'illustration du hero déborde de
+40 px sous la section (`-bottom-10`) et recouvrait le titre et le bouton de `section-lieux`. La
+section réserve désormais cette place (`mb-10` quand `backgroundImage` est posé) : le contenu qui
+suit descend de 40 px, le hero ne change pas. Même lot : l'en-tête de `searchProStatic`
+(`customHeader`) s'aligne désormais **par défaut** sur les bords de la grille de résultats (ni
+`container` ni marge latérale, `mb-3`) — les **3 sections** de relief qui en portent un (`/`,
+`/lieux`, `/communaute`) commencent au même bord que leurs cartes.
+Vérifié à 1440 et 390 px (titre à 16 px sous l'illustration) ; `config:render` ✅ sur
+`config.prod.relief.json`.
+
 ---
 
 ## 10. Checklist d'avancement

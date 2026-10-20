@@ -28,7 +28,9 @@ export default function PreviewResourceCard({ item, list, onClose }: PreviewProp
   const badgeColor = data.badge?.color ?? "var(--primary)";
   const tint = bubbleTint(badgeColor);
   const typeIcon = (data.badge?.icon ?? "file") as IconName;
-  const cat = normalizeFilterValue(data.badge?.value ?? "");
+  // Valeur STOCKÉE (`raw`), pas le libellé affiché : ce jeton indexe les styles par catégorie,
+  // il ne doit pas changer avec la langue ni avec une retouche de libellé.
+  const cat = normalizeFilterValue(data.badge?.raw ?? "");
   const descHtml = data.description.trim() ? renderMarkdown(data.description, { markdownEnabled: true }) : "";
 
   // Détail : charge l'entité COMPLÈTE pour la galerie (`about.images`) + les documents (`about.files`),

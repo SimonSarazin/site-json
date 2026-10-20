@@ -16,6 +16,23 @@ export function countBy<T>(
   return Array.from(m.entries()).map(([name, value]) => ({ name, value }));
 }
 
+/**
+ * Déclenche le téléchargement d'un CSV — BOM UTF-8 pour qu'Excel lise les
+ * accents. Partagée par la table et la liste du mode `split` : le corps du CSV
+ * est construit par `dashboard.ts` (pur, testable), seule la remise au
+ * navigateur vit ici. Ne touche au DOM qu'à l'appel (jamais au chargement du
+ * module) — sans effet sur le rendu serveur.
+ */
+export function downloadCsv(csv: string, filename: string): void {
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filename}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 /** Liste triée et dédupliquée des valeurs non vides. */
 export function uniqSorted(values: Array<string | undefined>): string[] {
   const set = new Set<string>();

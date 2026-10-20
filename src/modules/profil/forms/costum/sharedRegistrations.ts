@@ -15,6 +15,6 @@
 import "@/modules/formEngine/engine/coercions"; // coerce:string/number/bool/stringArray/dateYMD/orEmpty/…
 import "../geoTransforms";                       // geo:write / geoPosition:write
 import "../validators";                          // addressComplete / addressValid / eventDates…
-import "./sharedCodecs";                         // address / openingHours / social / monthYear / enumOrOther / multiCsv
+import "./sharedCodecs";                         // address / openingHours / social / monthYear / enumOrOther / multiCsv / entityRef / event*
 import "./sharedFns";                            // image:profilUrl / cleanValues:dropEmptyArrayItems / invalidate:standard
 import "../registerWidgets";                     // widgets DOMAINE (location/finder/tags/image/email/tel/eventDates/editSocial/editSchedule) — GARANTIS avant la garde widget de registerCostumForm (runtime + test)

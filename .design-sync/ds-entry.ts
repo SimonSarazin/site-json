@@ -91,6 +91,7 @@ export { default as HeroTintedOverlay } from "@/components/sections/HeroTintedOv
 export { default as HeroWithIconSection } from "@/components/sections/HeroWithIconSection";
 export { default as LogoCloudSection } from "@/components/sections/LogoCloudSection";
 export { default as MapSection } from "@/components/sections/MapSection";
+export { default as MapShapes } from "@/components/sections/MapShapes";
 export { default as MarkdownSection } from "@/components/sections/MarkdownSection";
 export { default as NewsletterSection } from "@/components/sections/NewsletterSection";
 export { default as PricingSection } from "@/components/sections/PricingSection";

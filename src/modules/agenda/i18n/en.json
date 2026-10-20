@@ -40,5 +40,9 @@
     "internship": "Internship",
     "stand": "Stand",
     "others": "Other"
+  },
+  "pdfExport": {
+    "button": "Export PDF",
+    "error": "Unable to generate the PDF."
   }
 }

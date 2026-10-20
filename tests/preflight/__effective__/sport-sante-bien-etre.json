@@ -4,7 +4,7 @@
   "addMenus": {
     "citoyens": {
       "builtins": {
-        "organization": "add-organization",
+        "organization": "add-sport-sante-bienetre-organizations",
         "project": "add-sport-sante-bienetre-formation",
         "event": "add-sport-sante-bienetre-session-formation",
         "poi": "add-poi"
@@ -24,15 +24,27 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "projects": "add-project",
+    "events": "add-event",
+    "poi": "add-poi"
+  },
   "editModals": {
-    "organizations": {
+    "citoyens": {
       "vierge": "edit-profile",
       "routes": [
         {
-          "declare": "edit-sport-sante-bienetre-mss",
-          "native": "edit-sport-sante-bienetre-mss",
-          "horsPerimetre": "edit-profile"
-        },
+          "declare": "edit-sport-sante-bienetre-citoyen",
+          "native": "edit-sport-sante-bienetre-citoyen",
+          "horsPerimetre": "edit-profile",
+          "nativeVuParUnTiers": "edit-profile"
+        }
+      ]
+    },
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
         {
           "declare": "edit-sport-sante-bienetre-organizations",
           "native": "edit-sport-sante-bienetre-organizations",
@@ -72,6 +84,11 @@
           "declare": "edit-sport-sante-bienetre-recovery-center",
           "native": "edit-sport-sante-bienetre-recovery-center",
           "horsPerimetre": "edit-profile"
+        },
+        {
+          "declare": "edit-sport-sante-bienetre-ressource",
+          "native": "edit-sport-sante-bienetre-ressource",
+          "horsPerimetre": "edit-profile"
         }
       ]
     }
@@ -89,16 +106,19 @@
         "modalName": null
       }
     },
-    "organisations/organizations#1": {
+    "maisons-sport-sante/organizations": {
       "source": {
         "defaultFilters": {
-          "type": "NGO"
+          "mss": "true"
         },
         "defaultSortBy": {
           "name": 1
         }
       },
-      "create": "add-sport-sante-bienetre-mss",
+      "create": "add-sport-sante-bienetre-organizations",
+      "createDefaults": {
+        "mss": true
+      },
       "edit": {
         "enabled": true,
         "modalName": null
@@ -163,6 +183,49 @@
         "enabled": true,
         "modalName": null
       }
+    },
+    "ressources/poi": {
+      "source": {
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "defaultFilters": {
+          "type": "ressource"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "searchBy": [
+          "name",
+          "description"
+        ]
+      },
+      "create": "add-sport-sante-bienetre-ressource",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    },
+    "moderation/answers": {
+      "source": {
+        "notSourceKey": true,
+        "defaultFilters": {
+          "form": "6928096adf5caf0d230e7f26"
+        },
+        "defaultSortBy": {
+          "created": -1
+        },
+        "searchBy": [
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxv88txy6f5z6svg"
+        ]
+      },
+      "create": null,
+      "edit": {
+        "enabled": false,
+        "modalName": null
+      }
     }
   },
   "pages": {
@@ -170,24 +233,7 @@
       "baseParams": {
         "defaultTypes": [
           "projects"
-        ],
-        "notSourceKey": true,
-        "defaultFilters": {
-          "links.preferences.toBeValidated.sportSanteBienetre": {
-            "$exists": false
-          },
-          "$or": {
-            "links.contributors.682b2ac5e05a1d45844340e7": {
-              "$exists": true
-            },
-            "parent.682b2ac5e05a1d45844340e7": {
-              "$exists": true
-            }
-          },
-          "links.contributors.682b2ac5e05a1d45844340e7": {
-            "$exists": true
-          }
-        }
+        ]
       }
     },
     "/communaute/searchProStatic": {
@@ -220,7 +266,8 @@
             "source.key": "sportSanteBienetre",
             "source.keys": "sportSanteBienetre",
             "reference.costum": "sportSanteBienetre"
-          }
+          },
+          "statusActor": "Validé"
         }
       }
     },
@@ -235,9 +282,8 @@
             "source.keys": "sportSanteBienetre",
             "reference.costum": "sportSanteBienetre"
           },
-          "tags": [
-            "mss"
-          ]
+          "mss": "true",
+          "statusActor": "Validé"
         }
       }
     },
@@ -248,11 +294,47 @@
         ],
         "defaultFilters": {
           "$or": {
+            "source.key": "sportSanteBienetre",
             "source.keys": "sportSanteBienetre",
             "reference.costum": "sportSanteBienetre"
-          }
+          },
+          "statusActor": "Validé"
+        }
+      }
+    },
+    "/programmes-dispositifs/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "defaultFilters": {
+          "type": "ressource",
+          "thematique": "dispositifs",
+          "status": "Visible"
         },
-        "notSourceKey": true
+        "defaultFields": [
+          "name",
+          "thematique",
+          "description",
+          "urls",
+          "medias",
+          "status",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
       }
     },
     "/creneaux/searchProStatic": {
@@ -262,8 +344,14 @@
         ],
         "notSourceKey": true,
         "defaultFilters": {
-          "form": "6928096adf5caf0d230e7f26"
-        }
+          "form": "6928096adf5caf0d230e7f26",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1jcq445i0mb9bap7": "Validé"
+        },
+        "searchBy": [
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+          "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxv88txy6f5z6svg"
+        ]
       }
     },
     "/formation/searchProStatic": {
@@ -279,7 +367,8 @@
           },
           "tags": [
             "Labellisé"
-          ]
+          ],
+          "statusActor": "Validé"
         }
       }
     },
@@ -358,9 +447,101 @@
           "type": "recoveryCenter"
         }
       }
+    },
+    "/ressources/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "poi"
+        ],
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "defaultFilters": {
+          "type": "ressource",
+          "status": "Visible"
+        },
+        "defaultFields": [
+          "name",
+          "thematique",
+          "description",
+          "urls",
+          "medias",
+          "status",
+          "created",
+          "type",
+          "source",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "description"
+        ],
+        "defaultSortBy": {
+          "created": -1
+        }
+      }
+    },
+    "/blog/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "events"
+        ],
+        "sourceKey": [
+          "sportSanteBienetre"
+        ],
+        "costumSlug": "sportSanteBienetre",
+        "fediverse": false,
+        "defaultFilters": {
+          "category": {
+            "$ne": "sessionFormation"
+          }
+        },
+        "defaultSortBy": {
+          "startDate": -1
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "description",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "medias",
+          "urls",
+          "address",
+          "tags",
+          "created",
+          "startDate",
+          "endDate",
+          "organizer",
+          "reference"
+        ]
+      }
     }
   },
-  "referencement": {},
+  "contributions": {
+    "/creneaux/searchProStatic": {
+      "ajout": {
+        "coform": "6928096adf5caf0d230e7f26",
+        "adminOnly": false
+      },
+      "modifier": true,
+      "ficheStructure": {
+        "audience": "managers"
+      }
+    }
+  },
+  "referencement": {
+    "projects": {
+      "sousTypes": [],
+      "annotation": null
+    }
+  },
   "membership": {
     "citoyens/membership": {
       "types": [
@@ -370,6 +551,16 @@
         "events"
       ],
       "scope": "network"
+    }
+  },
+  "structuresTabs": {
+    "citoyens/structures": {
+      "formId": "6928096adf5caf0d230e7f26",
+      "structureFinderPath": "answers.sportSanteBienetre2172025_854_0.findersportSanteBienetre2172025_854_0mdn1fzoewyjg66n85p",
+      "editButton": true,
+      "submittedSlots": true,
+      "scope": "costum",
+      "structureStatusField": "statusActor"
     }
   },
   "profileRelated": {}

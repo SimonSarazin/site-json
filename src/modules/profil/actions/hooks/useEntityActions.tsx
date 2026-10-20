@@ -8,9 +8,9 @@ import { useUserEntityActions } from "./useUserEntityActions";
 import { useOrgEntityActions } from "./useOrgEntityActions";
 import { useProjectEntityActions } from "./useProjectEntityActions";
 import { useEventEntityActions } from "./useEventEntityActions";
-import type { EntityActionsResult } from "../../types";
+import type { EntityActionsResult, EntityActionsOptions } from "../../types";
 
-export type { EntityAction, EntityActionsResult } from "../../types";
+export type { EntityAction, EntityActionsResult, EntityActionsOptions } from "../../types";
 
 type EntityType = "user" | "organization" | "project" | "event";
 
@@ -30,6 +30,7 @@ function getEntityType(entity: EntityTypes): EntityType | null {
  * Retourne les actions appropriées selon le type d'entité et les permissions
  *
  * @param entity - L'entité concernée (User, Organization, Project, Event)
+ * @param options - Actions ouvertes par la section qui rend l'entité (cf. `EntityActionsOptions`)
  * @returns Configuration des actions et du layout
  *
  * @example
@@ -39,14 +40,17 @@ function getEntityType(entity: EntityTypes): EntityType | null {
  *   // result.layout indique le type de rendu ("separate-buttons" ou "status-dropdown")
  * }
  */
-export function useEntityActions(entity: EntityTypes | null): EntityActionsResult | null {
+export function useEntityActions(
+  entity: EntityTypes | null,
+  options: EntityActionsOptions = {},
+): EntityActionsResult | null {
   // Déterminer le type d'entité une seule fois
   const entityType = entity ? getEntityType(entity) : null;
 
   // Appeler les hooks avec null si le type ne correspond pas
   // Cela évite d'appeler les mutations inutiles
   const userActions = useUserEntityActions(entityType === "user" ? (entity as User) : null);
-  const orgActions = useOrgEntityActions(entityType === "organization" ? (entity as Organization) : null);
+  const orgActions = useOrgEntityActions(entityType === "organization" ? (entity as Organization) : null, options);
   const projectActions = useProjectEntityActions(entityType === "project" ? (entity as Project) : null);
   const eventActions = useEventEntityActions(entityType === "event" ? (entity as Event) : null);
 

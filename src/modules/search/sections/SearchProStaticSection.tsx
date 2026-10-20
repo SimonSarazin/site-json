@@ -6,6 +6,7 @@ import { SearchProStaticSectionProps } from "@/modules/search/schema";
 import { SearchPropsProvider } from "../contexts/SearchPropsProvider";
 import useInSections from "@/hooks/useInSection";
 import { useCocolight } from "@/hooks/useCocolight";
+import { sectionBgClass } from "@/components/sections/sectionBg";
 
 export interface SearchSectionStaticWrapperProps {
   id?: string;
@@ -17,22 +18,13 @@ export interface SearchSectionStaticWrapperProps {
  * Affichage statique de résultats de recherche sans synchronisation URL
  * Utilisé pour afficher plusieurs sections de recherche sur une même page
  */
-const BG_MAP: Record<string, string> = {
-  card: "bg-card",
-  muted: "bg-muted",
-  primary: "bg-primary/10",
-  secondary: "bg-secondary",
-  accent: "bg-accent/10",
-  transparent: "bg-transparent",
-};
-
 export function SearchProStaticSection({
   id,
   props,
 }: SearchSectionStaticWrapperProps) {
   const inSection = useInSections(id || "");
   const widthClass = props.width === "container" ? "mx-auto max-w-6xl" : "w-full";
-  const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : "";
+  const sectionBg = sectionBgClass(props.bg);
 
   const { entity } = useCocolight();
   const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;

@@ -35,6 +35,14 @@ export interface CostumFormSchema {
   icon?: string;
   /** slug costum statique du descripteur (= scope.defaults.sourceKey, source unique). */
   costumSlug?: string;
+  /** SOUS-TYPE canonique du form dans son costum (clé `typeObj`) — cf. le zod (`costumFormSchema.zod.ts`).
+   *  Relayé à la CRÉATION au SDK (`me.costum(…).X(payload, { subType })`) pour cibler la variante
+   *  costum de CE sous-type (presets) au lieu du défaut de la collection. */
+  subType?: string;
+  /** Libellé du sous-type dans le sélecteur de référencement (LocalizedString ou clé i18n). */
+  subTypeLabel?: I18n;
+  /** Discriminant d'un NATIF de ce form en base (grammaire `editModalMatch`) — jamais écrit. */
+  identity?: Record<string, unknown>;
   /** Dériver un `field.default` du widget (string→"", bool→false, array→[]). Défaut TRUE. Mettre FALSE quand
    *  le socle vient d'une fn enregistrée (`defaultsBase`) et qu'aucun champ ne porte de défaut (ex. tiers-lieu). */
   deriveDefaults?: boolean;
@@ -65,6 +73,8 @@ export interface CostumFormSchema {
   /** clé → `defaultsRegistry` (socle structuré/scope-aware) ; absent → buildConfigDefaults. */
   defaultsBase?: string;
   slots?: Record<string, string>;
+  /** Détection de doublons à la création — cf. `DuplicateCheckSpec`. */
+  duplicateCheck?: EntityModalSpec["duplicateCheck"];
   schemaFn?: string;
   cleanValues?: FnRef;
   afterSubmit?: string;
@@ -182,6 +192,7 @@ function buildSpec(s: CostumFormSchema): EntityModalSpec {
     id: s.id,
     descriptor: { ref: s.id },
     ...(s.descriptorVariant ? { descriptorVariant: s.descriptorVariant } : {}),
+    ...(s.subType ? { subType: s.subType } : {}),
     title: c.title,
     ...(c.description ? { description: c.description } : {}),
     ...(c.submitLabel ? { submitLabel: c.submitLabel } : {}),
@@ -195,6 +206,7 @@ function buildSpec(s: CostumFormSchema): EntityModalSpec {
     ...(s.listsFromCarrier ? { listsFromCarrier: s.listsFromCarrier } : {}),
     ...(s.scope ? { scope: s.scope } : {}),
     ...(s.slots ? { slots: s.slots } : {}),
+    ...(s.duplicateCheck ? { duplicateCheck: s.duplicateCheck } : {}),
     ...(s.schemaFn ? { schemaFn: s.schemaFn } : {}),
     mutation: s.mutation,
     ...(s.afterSubmit ? { afterSubmit: s.afterSubmit } : {}),

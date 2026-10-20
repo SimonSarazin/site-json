@@ -7,7 +7,7 @@ import { describe, it, expect } from "vitest";
 import "./sharedRegistrations"; // enregistre invalidate:standard + invalidate:blog
 import { getInvalidateFn } from "../specRegistries";
 import { PROFIL_QUERY_KEYS } from "../../constants";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
+import { SEARCH_QUERY_KEYS, SEARCH_STAT_COUNT_PREFIX } from "@/modules/search/constants";
 import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
 import type { EntityModalCtx } from "../entityModalSpec";
 
@@ -29,5 +29,12 @@ describe("invalidate:blog", () => {
     expect(keys).toContain(JSON.stringify(PROFIL_QUERY_KEYS.USER_POIS_PREFIX("moi")));
     expect(keys).toContain(JSON.stringify(SEARCH_QUERY_KEYS.RESULTS_PREFIX("blog:sportSanteBienetre")));
     expect(keys).toContain(JSON.stringify(BLOG_QUERY_KEYS.ARTICLE_BY_ID("abc123")));
+  });
+  it("les chiffres des tuiles de stat suivent, en création comme en édition (base `invalidate:standard`)", () => {
+    const tuiles = JSON.stringify(SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STAT_COUNT_PREFIX));
+    expect(flat("add")).toContain(tuiles);
+    expect(flat("edit")).toContain(tuiles);
+    const standard = getInvalidateFn("invalidate:standard")!(ctx("add"), {}).map((k) => JSON.stringify(k));
+    expect(standard).toContain(tuiles);
   });
 });

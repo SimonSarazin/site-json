@@ -92,6 +92,15 @@ describe("answerToggleArgs", () => {
     });
   });
 
+  it("groupe ciblant parentId → { field: 'parentId', value: orgaNameArray } (annuaire des ressources)", () => {
+    expect(answerToggleArgs({ filterTarget: "parentId", thematicPath: "x" }, "Obésité", option)).toEqual({
+      field: "parentId",
+      value: ["6a7b4da9212fb41f050d2e4e"],
+      fieldType: null,
+    });
+    expect(answerToggleArgs({ filterTarget: "parentId" }, "Sans membre", {}).value).toEqual([]);
+  });
+
   it("groupe ciblant les answers → prédicat de chemin, l'orgaNameArray est ignoré", () => {
     expect(
       answerToggleArgs(

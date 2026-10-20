@@ -8,7 +8,9 @@
   "ImageUploadField": {
     "dropHint": "Drag & drop or click to choose",
     "remove": "Remove image",
-    "imageOnly": "Only images are accepted."
+    "imageOnly": "Only images are accepted.",
+    "crop": "Crop",
+    "preparing": "Preparing image…"
   },
   "EntityGridView": {
     "gridView": "Grid",
@@ -58,6 +60,22 @@
   "ProfileAbout": {
     "title": "About"
   },
+  "ProfileParent62About": {
+    "notProvided": "Not provided",
+    "description": "Description",
+    "categoryThematic": "Thematic category",
+    "typeAction": "Type of action",
+    "publicCible": "Target audience",
+    "territoires": "Territories",
+    "publics": "Audiences",
+    "themes": "Topics",
+    "socialNetworks": "Social networks",
+    "accessibility": "Access / parking",
+    "provisionResources": "Resources available",
+    "contact": "Primary contact",
+    "documents": "Documents",
+    "note": "Remarks"
+  },
   "ProfileMap": {
     "title": "Location",
     "mapPlaceholder": "Map to be implemented",
@@ -82,6 +100,7 @@
     "member": "Member",
     "admin": "Administrator",
     "leaveOrganization": "Leave organization",
+    "deleteOrganization": "Delete this page",
     "unfollowDialog": {
       "title": "Unfollow this organization",
       "description": "Are you sure you want to unfollow this organization? You will no longer receive its updates.",
@@ -138,6 +157,13 @@
       "description": "Are you sure you want to stop participating in this event? You will no longer receive event updates.",
       "cancel": "Cancel",
       "confirm": "Stop participating"
+    },
+    "deleteEvent": "Delete",
+    "deleteEventDialog": {
+      "title": "Delete this event?",
+      "description": "“{{name}}” will be deleted for everyone, along with its attendees and links. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently"
     },
     "membershipPending": "Request pending",
     "contributorPending": "Request pending",
@@ -212,7 +238,13 @@
     "openSince": "Open since",
     "register": "Register",
     "comingSoon": "Coming soon",
-    "sectionLabel": "{{name}} Section"
+    "sectionLabel": "{{name}} Section",
+    "deleteDialog": {
+      "title": "Permanently delete this page?",
+      "description": "The page will be deleted from Communecter, not just from this site: it will disappear for everyone, along with its information. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently"
+    }
   },
   "ProfileMembers": {
     "title": "Members",
@@ -355,7 +387,17 @@
       "description": "Reject {{name}}'s request?",
       "cancel": "Cancel",
       "confirm": "Reject"
-    }
+    },
+    "rolesLabel": "Roles in the organisation",
+    "rolesPlaceholder": "Add a role (press Enter)…",
+    "rolesHint": "Free text — e.g. “Parenting coordinator, Arrageois”.",
+    "manageRoles": "Manage roles"
+  },
+  "ManageRolesDialog": {
+    "title": "Manage roles",
+    "description": "{{name}}'s roles — the full list replaces the current roles.",
+    "save": "Save",
+    "saving": "Saving…"
   },
   "MemberManagementDialog": {
     "title": "Member Management",
@@ -632,6 +674,16 @@
     "cancel": "Cancel",
     "confirmLeave": "Leave"
   },
+  "PendingInvitationModal": {
+    "title": "Pending invitation",
+    "titleAdmin": "Admin invitation",
+    "descriptionOrganization": "You have been invited to join the organization {{name}}.",
+    "descriptionProject": "You have been invited to join the project {{name}}.",
+    "descriptionOrganizationAdmin": "You have been invited to administer the organization {{name}}.",
+    "descriptionProjectAdmin": "You have been invited to administer the project {{name}}.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
   "toast": {
     "relationship": {
       "followSuccess": "User followed successfully",
@@ -700,7 +752,9 @@
       "inviteAdminSuccess": "Admin invitation sent to {{name}}",
       "inviteAdminError": "Unable to send admin invitation to {{name}}",
       "emailInviteSuccess": "{{count}} email invitation(s) sent",
-      "emailInviteError": "Unable to send email invitations"
+      "emailInviteError": "Unable to send email invitations",
+      "setRolesSuccess": "{{name}}'s roles updated",
+      "setRolesError": "Unable to update {{name}}'s roles"
     },
     "comment": {
       "addSuccess": "Comment added successfully",
@@ -779,6 +833,10 @@
       "poiSuccess": "Location created successfully",
       "poiError": "Failed to create location"
     },
+    "element": {
+      "deleteEventSuccess": "Event deleted",
+      "deleteEventError": "Unable to delete the event"
+    },
     "gallery": {
       "addSuccess": "Image added to gallery",
       "addError": "Failed to add image",
@@ -796,6 +854,13 @@
     "title": "Edit profile",
     "profileImage": "Profile picture",
     "bannerImage": "Banner",
+    "imageFormat": {
+      "original": "Original",
+      "wide": "16:9",
+      "panorama": "3:1",
+      "classic": "4:3",
+      "square": "Square"
+    },
     "changeImage": "Change",
     "changeBanner": "Change banner",
     "changeAvatar": "Change avatar",
@@ -979,6 +1044,14 @@
         "opens": "Start",
         "closes": "End",
         "noDaysSelected": "Select days to define the schedule"
+      },
+      "periodStart": {
+        "label": "Period start",
+        "placeholder": "Select the period start"
+      },
+      "periodEnd": {
+        "label": "Period end",
+        "placeholder": "Select the period end"
       }
     }
   },
@@ -1265,6 +1338,12 @@
     "address": {
       "required": "Complete address required: city, postal code and street"
     },
+    "annee": {
+      "invalid": "Enter a 4-digit year, for example 2022"
+    },
+    "documentOuLien": {
+      "required": "Attach a document or provide a link"
+    },
     "minLength": "Too short",
     "maxLength": "Too long",
     "min": "Value too small",
@@ -1314,13 +1393,13 @@
     "meetingRoomsPlural": "meeting rooms",
     "workstations": "workstation",
     "workstationsPlural": "workstations",
-    "accommodation": "room",
-    "accommodationPlural": "rooms",
+    "accommodation": "accommodation space",
+    "accommodationPlural": "accommodation spaces",
     "reservationSpace": "Book a space",
     "reservationNote": "Book your space directly online",
     "contact": "Contact",
     "fax": "Fax",
-    "tools": "Signpost to resources",
+    "tools": "Direct access to the place's tools",
     "editTools": "Edit links",
     "toolsEmpty": "No links added yet.",
     "toolsModal": {
@@ -1423,5 +1502,118 @@
   "AuthRequired": {
     "title": "Sign in to continue",
     "description": "A new listing is tied to your account, so you can edit and complete it later."
+  },
+  "CardTeamMember": {
+    "territoryNews": "Territory news"
+  },
+  "MyPlacesSection": {
+    "title": "My places",
+    "loginRequired": "Log in to see your third places.",
+    "empty": "You aren't a member of any third place yet.",
+    "emptyHint": "Join a third place from its page to find it here.",
+    "needPlaceFirst": "Join a third place first to see its content here.",
+    "emptyNews": "No news from your third places yet.",
+    "emptyAgenda": "No upcoming event linked to your third places yet.",
+    "emptyAgendaOngoing": "No ongoing event linked to your third places.",
+    "emptyAgendaPast": "No past event linked to your third places.",
+    "emptyProjects": "No project linked to your third places yet.",
+    "tabs": {
+      "places": "My third places",
+      "news": "News",
+      "agenda": "Agenda",
+      "projects": "Projects"
+    }
+  },
+  "EntityDuplicates": {
+    "title_one": "A record with a similar name already exists",
+    "title_other": "{{count}} records with a similar name already exist",
+    "titleStrong_one": "A record with the same name already exists at this postal code",
+    "titleStrong_other": "{{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
+    "description": "Check that it is not yours before continuing. You can carry on with the creation.",
+    "error": "The search for existing records failed. You can carry on with the creation.",
+    "placeUnknown": "Municipality not provided",
+    "hint": {
+      "sameNameSamePostalCode": "Same name, same postal code",
+      "sameName": "Same name",
+      "samePostalCode": "Same postal code"
+    },
+    "preview": "Preview",
+    "open": "Open the record",
+    "newTab": "(new tab)",
+    "more_one": "and one more record with a similar name",
+    "more_other": "and {{count}} more records with a similar name",
+    "confirm": {
+      "title": "This record may already exist",
+      "description": "“{{name}}” already exists ({{place}}), with the same name and the same postal code. Create a new record anyway?",
+      "create": "Create anyway",
+      "cancel": "Back to the form"
+    },
+    "titleMany": "More than {{count}} records with a similar name already exist",
+    "titleStrongMany": "More than {{count}} records with a similar name already exist, at least one of them with the same name at the same postal code",
+    "moreMany": "and other records with a similar name, not shown"
+  },
+  "StructuresTab": {
+    "title": "My organizations",
+    "intro": "The organizations you manage and their activity slots, published or not. A new slot is published once the site team has validated it.",
+    "loadError": "Your organizations could not be loaded.",
+    "retry": "Try again",
+    "emptyTitle": "You don't manage any organization",
+    "emptyDescription": "To manage all of an organization's slots, you need to be one of its administrators. Register your organization, or ask one of its administrators to add you.",
+    "add": "Add a slot",
+    "addFor": "Add a slot to {{structure}}",
+    "addTitle": "Add a slot — {{structure}}",
+    "added": "Slot added. It will be published once validated.",
+    "viewProfile": "View profile",
+    "viewProfileFor": "View profile: {{structure}}",
+    "slotsError": "The slots of {{structure}} could not be loaded.",
+    "noSlots": "No slot for this organization yet.",
+    "slotsLabel": "Slots of {{structure}}",
+    "openSlot": "View the details of slot {{title}}",
+    "untitled": "Untitled slot",
+    "noSchedule": "No schedule given",
+    "moreSchedules": "+{{count}}",
+    "weekDays": "Days: {{days}}",
+    "noDays": "No days given",
+    "counts": {
+      "pending_one": "{{count}} pending",
+      "pending_other": "{{count}} pending",
+      "inProgress_one": "{{count}} in progress",
+      "inProgress_other": "{{count}} in progress",
+      "validated_one": "{{count}} validated",
+      "validated_other": "{{count}} validated",
+      "refused_one": "{{count}} refused",
+      "refused_other": "{{count}} refused"
+    },
+    "loading": "Loading your organizations…",
+    "retryFor": "Try again: slots of {{structure}}",
+    "addLoading": "Opening the form…",
+    "moreSchedulesSr_one": "and {{count}} more time",
+    "moreSchedulesSr_other": "and {{count}} more times",
+    "summary": {
+      "none": "No slot",
+      "partial_one": "{{count}}+ slot",
+      "partial_other": "{{count}}+ slots"
+    },
+    "structureStatus": {
+      "pending": "Awaiting approval",
+      "refused": "Not approved"
+    },
+    "structureStatusHelp": {
+      "pending": "This organization doesn't appear in the site's listings yet. It will once the site team has approved it.",
+      "refused": "The site team didn't approve this organization, so it doesn't appear in the site's listings. Contact the site team to find out why."
+    },
+    "submitted": {
+      "title": "My other slots",
+      "titleAlone": "My slots",
+      "help": "Slots you submitted for an organization you don't manage, or with no organization, whatever their status.",
+      "label": "Slots submitted outside your organizations",
+      "labelAlone": "Slots you submitted",
+      "structureSr_one": "Organization: {{structures}}",
+      "structureSr_other": "Organizations: {{structures}}",
+      "noStructure": "No organization",
+      "unnamedStructure": "Unnamed organization",
+      "loadError": "The slots you submitted could not be loaded.",
+      "retryFor": "Try again to load the slots you submitted"
+    }
   }
 }

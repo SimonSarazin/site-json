@@ -27,6 +27,8 @@ src/.tmp-site-theme.css
 *.sln
 *.sw?
 commentaire/
+# Review des MR (scripts/mr-review.ts) : worktrees, notes, cache GitLab
+.mr-review/
 tsconfig.app.tsbuildinfo
 tsconfig.node.tsbuildinfo
 CLAUDE.md

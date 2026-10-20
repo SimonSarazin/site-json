@@ -63,8 +63,12 @@ export function buildObservatoryBaseParams(
  * vit dans `serverData` (règle maison, comme toutes les cartes search) — on
  * le prend BRUT, sans schéma métier : seuls les champs déclarés en
  * dimensions sont lus (coercions tolérantes au moment de la lecture).
+ *
+ * Exporté : `ObservatoryPanel` reçoit des résultats déjà chargés par la
+ * section HÔTE (searchProStatic) et doit appliquer exactement la même
+ * convention — sans quoi deux lectures du même document divergeraient.
  */
-function toItems(results: readonly SearchEntity[]): {
+export function toItems(results: readonly SearchEntity[]): {
   items: ObservatoryItem[];
   entities: SearchEntity[];
 } {

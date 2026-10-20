@@ -115,7 +115,7 @@ Doublons fonctionnels assumés : (`coerce:dateYMD` vs `coerce:dateYMDfromISO`), 
 # 2. Clés domaine par préfixe
 
 Toutes les clés sont enregistrées dans **deux familles de registres** distincts :
-- **Registre `transforms`** (`formEngine/engine/transforms.ts:20` `registerTransform`) — codecs read/write de champ + coercions ; clés `coerce:`, `pf:`, `tl:`, `geo:`/`geoPosition:`, `address:`/`social:`/`openingHours:`/`monthYear:`/`enumOrOther:`/`multiCsv:`.
+- **Registre `transforms`** (`formEngine/engine/transforms.ts:20` `registerTransform`) — codecs read/write de champ + coercions ; clés `coerce:`, `pf:`, `tl:`, `geo:`/`geoPosition:`, `address:`/`social:`/`openingHours:`/`monthYear:`/`enumOrOther:`/`multiCsv:`/`fixedTags:`.
 - **Registre `validate`** (`transforms.ts:57` `registerValidate`) — validators cross-champ (clés SANS préfixe).
 - **Registre `options`** (`transforms.ts:79` `registerOptions`) — sources d'options dynamiques (`tl:years`).
 - **Registres `specRegistries`** (`specRegistries.ts`) — fns de spec de modale costum : `registerScopeFn` (75), `registerDefaultsFn` (51), `registerPayloadFn` (63), `registerSlot` (87), `registerExistingUrlFn` (111), `registerCleanValuesFn` (135), `registerInvalidateFn` (147). Clés `tl:`, `poi:`, `image:`, `cleanValues:`, `invalidate:`, + ids de slot SANS préfixe.
@@ -170,6 +170,8 @@ Toutes les clés sont enregistrées dans **deux familles de registres** distinct
 | **enumOrOther:write** | sharedCodecs.ts:164 | {value,other}→valeur serveur | tl/schema:73 | partagé paramétré |
 | **multiCsv:read** | sharedCodecs.ts:172 | CSV→{items[],other} | tl/schema:74 (typePlace) | partagé paramétré |
 | **multiCsv:write** | sharedCodecs.ts:181 | {items[],other}→CSV | tl/schema:74 | partagé paramétré |
+| **fixedTags:read** | sharedCodecs.ts | tags serveur→{[field]: tags libres} (moins `fixed[]`) | rezo-sante-reunion `costumForms.rezo-sante-lieu` (`serializeGroups.tags`) | partagé paramétré |
+| **fixedTags:write** | sharedCodecs.ts | {[field]}→tags serveur, `fixed[]` en tête, dédoublonné | idem | partagé paramétré |
 | **geo:write** | geoTransforms.ts:34 | champs→GeoCoordinates (lat/lng STRING), lié à localityId | editProfilePayload.ts:117 (GEO_FIELDS), tl/schema:122, poi/schema:38 | partagé (toutes entités à adresse) |
 | **geoPosition:write** | geoTransforms.ts:35 | champs→GeoJSON Point (coords NUMBER) | editProfilePayload.ts:118, tl/schema:123, poi/schema:39 | partagé |
 | **image:profilUrl** | sharedFns.ts:12 (registerExistingUrlFn) | URL image existante (medium>image>thumb) | tl/schema:169, poi/schema:142 (`existingUrlFrom`) | partagé (costum) |

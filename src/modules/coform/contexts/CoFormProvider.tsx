@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { CoFormContext, type CoFormContextType, type CoFormStepState } from "./CoFormContext";
 import type { CoFormData, SubFormData, AllStepsData, AddedOptionsMap } from "../types";
 import { parseCoFormFields, denormalizeAnswerData, extractFinderLinks, type FinderLinksMap } from "../utils/formParser";
+import { completedStepIds } from "../utils/stepsNav";
 import { useCoFormDraft } from "../hooks/useCoFormDraft";
 
 interface CoFormProviderProps {
@@ -23,8 +24,26 @@ interface CoFormProviderProps {
   baseUpdatedAt?: number | null;
   /** ID du formulaire — clé de draft localStorage. */
   formId?: string;
+  /**
+   * Périmètre rendu quand ce n'est pas le formulaire entier (`stepKey`) — entre
+   * dans la clé du brouillon. Cf. `useCoFormDraft`.
+   */
+  draftScope?: string | null;
+  /**
+   * Élément auquel la réponse est rattachée (lieu, projet…) — entre dans la clé
+   * du brouillon, pour qu'une saisie faite depuis un élément ne soit pas
+   * proposée sur un autre. Cf. `useCoFormDraft`.
+   */
+  elementId?: string | null;
+  elementType?: string | null;
   /** Active la persistance du draft. Défaut : true. */
   enableDraft?: boolean;
+  /**
+   * Ref vers le rejet explicite du brouillon (`discardDraft`), pour un parent
+   * qui n'est pas sous le contexte — `CoFormModal` via `SmartCoForm` /
+   * `MultiStepCoForm`. Même patron que `submitRef` côté `DynamicCoForm`.
+   */
+  discardDraftRef?: React.RefObject<(() => void) | null>;
 }
 
 /**
@@ -47,7 +66,11 @@ export function CoFormProvider({
   userId,
   baseUpdatedAt,
   formId,
+  draftScope,
+  elementId,
+  elementType,
   enableDraft = true,
+  discardDraftRef,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
 
@@ -71,14 +94,19 @@ export function CoFormProvider({
     return idx >= 0 ? idx : 0;
   }, [initialStepKey, subFormsFields]);
 
-  const [stepState, setStepState] = useState<CoFormStepState>({
+  // Amorçage UNIQUE (initialisateur paresseux) : ces deux champs ne suivent pas
+  // `defaultValues` ensuite. En édition, une étape déjà renseignée doit se voir
+  // « complétée » dès l'ouverture, sinon l'en-tête annonce « à faire » sur une
+  // réponse entièrement saisie. Les appelants montent le provider une fois le
+  // formulaire chargé (cf. `CoFormPage`), donc `defaultValues` est là au montage.
+  const [stepState, setStepState] = useState<CoFormStepState>(() => ({
     currentStepIndex: initialStepIndex,
     stepsData: defaultValues ?? {},
-    completedSteps: [],
+    completedSteps: completedStepIds(subFormsFields, defaultValues),
     errorSteps: [],
     submittingStep: null,
     addedOptions: {},
-  });
+  }));
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -95,17 +123,36 @@ export function CoFormProvider({
     staleDraftInfo,
     saveDraft,
     discardDraft: discardDraftRaw,
+    purgeDraft,
     acknowledgeStale,
+    acknowledgeRestored,
   } = useCoFormDraft({
     formId,
     userId,
     answerId,
+    scope: draftScope,
+    elementId,
+    elementType,
     baseUpdatedAt,
     disabled: !enableDraft,
   });
 
+  // État initial, capturé au montage. Sert de garde « rien n'a encore bougé » :
+  // `setStepState` n'est appelé que sur action (navigation, saisie, restauration,
+  // reset), donc tant que la référence est celle-ci, l'utilisateur n'a rien fait.
+  const initialStepStateRef = useRef(stepState);
+
   // Auto-save du draft à chaque changement de stepState (debounce interne).
+  //
+  // La garde d'identité est l'équivalent du `if (!isDirty) return` du chemin
+  // single-step (`DynamicCoForm`). Sans elle, le simple montage déclenche une
+  // écriture : ouvrir un formulaire puis le refermer sans rien saisir laisserait
+  // un brouillon, et la bannière « Brouillon trouvé » s'afficherait à la session
+  // suivante alors qu'il n'y a rien à restaurer. Inoffensif tant que le brouillon
+  // était réservé aux pages ; en modale, où ouvrir-fermer est le geste courant,
+  // ce serait du bruit à chaque passage.
   useEffect(() => {
+    if (stepState === initialStepStateRef.current) return;
     saveDraft({
       data: stepState.stepsData,
       currentStepIndex: stepState.currentStepIndex,
@@ -114,6 +161,19 @@ export function CoFormProvider({
     });
   }, [stepState, saveDraft]);
 
+  // Reprendre n'est pas jeter : on masque la bannière, l'auto-save ci-dessus
+  // réécrit aussitôt (le `stepState` vient de changer, la garde d'identité passe).
+  // Supprimer ici laissait une fenêtre où plus rien n'existait — et, sur le
+  // chemin single-step où l'auto-save est gardé par `isDirty`, une perte sèche.
+  //
+  // `draftRestoreCount` : `stepState` ne pilote que l'ÉTAT du wizard. Le
+  // formulaire réellement rendu est l'instance react-hook-form de
+  // `useCoFormStep`, qui ne se réinitialise que sur changement d'index — et
+  // un brouillon repris sur l'étape courante ne change pas l'index. Sans ce
+  // second déclencheur, « Reprendre » ne changeait rien à l'écran, puis
+  // « Suivant » soumettait les valeurs jamais restaurées et l'auto-save
+  // persistait aussitôt ce brouillon amputé de l'étape reprise.
+  const [draftRestoreCount, setDraftRestoreCount] = useState(0);
   const restoreDraft = useCallback(() => {
     if (!restorableDraft) return;
     setStepState((prev) => ({
@@ -123,12 +183,22 @@ export function CoFormProvider({
       completedSteps: restorableDraft.completedSteps,
       addedOptions: restorableDraft.addedOptions,
     }));
-    discardDraftRaw();
-  }, [restorableDraft, discardDraftRaw]);
+    setDraftRestoreCount((n) => n + 1);
+    acknowledgeRestored();
+  }, [restorableDraft, acknowledgeRestored]);
 
   const discardDraft = useCallback(() => {
     discardDraftRaw();
   }, [discardDraftRaw]);
+
+  // Exposer le rejet explicite hors du contexte (« Abandonner » de la modale).
+  useEffect(() => {
+    if (!discardDraftRef) return;
+    discardDraftRef.current = discardDraft;
+    return () => {
+      discardDraftRef.current = null;
+    };
+  }, [discardDraftRef, discardDraft]);
 
   const acknowledgeStaleDraft = useCallback(() => {
     acknowledgeStale();
@@ -176,6 +246,36 @@ export function CoFormProvider({
       ...prev,
       stepsData: newStepsData,
     }));
+  }, []);
+
+  // Étape dont la validation a échoué : le drapeau survit au changement d'étape.
+  const markStepInvalid = useCallback((subFormId: string, invalid: boolean) => {
+    setStepState((prev) => {
+      const flagged = prev.errorSteps.includes(subFormId);
+      if (flagged === invalid) return prev;
+      return {
+        ...prev,
+        errorSteps: invalid
+          ? [...prev.errorSteps, subFormId]
+          : prev.errorSteps.filter((id) => id !== subFormId),
+      };
+    });
+  }, []);
+
+  // Lecture non périmée de `stepsData` (cf. `CoFormContext.getStepsData`).
+  const getStepsData = useCallback(() => stepsDataRef.current, []);
+
+  const setStepCompleted = useCallback((subFormId: string, completed: boolean) => {
+    setStepState((prev) => {
+      const already = prev.completedSteps.includes(subFormId);
+      if (already === completed) return prev;
+      return {
+        ...prev,
+        completedSteps: completed
+          ? [...prev.completedSteps, subFormId]
+          : prev.completedSteps.filter((id) => id !== subFormId),
+      };
+    });
   }, []);
 
   // Sauvegarde des options ajoutées pour un champ
@@ -272,6 +372,16 @@ export function CoFormProvider({
           hasAddedOptions ? stepState.addedOptions : undefined,
           hasLinks ? links : undefined
         );
+
+        // Le serveur a la donnée : le brouillon n'a plus lieu d'être — comme
+        // `DynamicCoForm.handleFormSubmit` sur le chemin mono-étape. C'était
+        // le SEUL chemin sans purge : l'auto-save armé par le `submitStep`
+        // qui précède (et le flush au démontage, quand la modale se ferme sur
+        // le succès) réécrivait l'instantané d'AVANT l'enregistrement, que la
+        // bannière « Brouillon trouvé » reproposait ensuite pendant 30 jours.
+        // `purgeDraft` jette aussi le payload en attente, donc rien ne le
+        // ressuscite. Un échec (throw ci-dessus) le conserve, à dessein.
+        purgeDraft();
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Erreur lors de la soumission finale"));
@@ -279,7 +389,7 @@ export function CoFormProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, userId]);
+  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, userId, purgeDraft]);
 
   // Réinitialisation
   const resetForm = useCallback(() => {
@@ -313,10 +423,14 @@ export function CoFormProvider({
       error,
       restorableDraft: restorableDraftMeta,
       staleDraftInfo,
+      draftRestoreCount,
       goToNextStep,
       goToPreviousStep,
       goToStep,
       saveStepData,
+      markStepInvalid,
+      setStepCompleted,
+      getStepsData,
       saveAddedOptions,
       submitStepData,
       submitAllData,
@@ -338,10 +452,14 @@ export function CoFormProvider({
       error,
       restorableDraftMeta,
       staleDraftInfo,
+      draftRestoreCount,
       goToNextStep,
       goToPreviousStep,
       goToStep,
       saveStepData,
+      markStepInvalid,
+      setStepCompleted,
+      getStepsData,
       saveAddedOptions,
       submitStepData,
       submitAllData,

@@ -64,8 +64,13 @@
         "missingProjectSide": "Cannot restore: this milestone is missing from projects.oceco.milestones (project side).",
         "missingAnswerSide": "Cannot restore: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
       },
+      "incompleteForDelete": {
+        "missingProjectSide": "Cannot delete: this milestone is missing from projects.oceco.milestones (project side).",
+        "missingAnswerSide": "Cannot delete: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
+      },
       "cannotCloseWithOpenActions": "Cannot close: all actions must be completed first.",
       "cannotDeleteIfFunded": "Cannot delete: this milestone is already funded.",
+      "cannotDeleteWithoutEnvelope": "Cannot delete from this page: this milestone's actions are not readable here, and they must be deleted along with it. Open the commun from the call it was submitted to.",
       "noIndexForDelete": "No valid index found to delete this milestone.",
       "actionIdMissing": "Some milestone actions have no valid ID.",
       "deleteActionUnavailable": "Action delete unavailable: missing apiClient.",
@@ -82,7 +87,8 @@
     },
     "orgPicker": {
       "searchPlaceholder": "Search an organization...",
-      "selectPlaceholder": "Choose an organization...",
+      "listLabel": "Contributing organization",
+      "noMatch": "No organization matches “{{query}}”",
       "notAdminTitle": "You are not admin of any organization",
       "notAdminHelp": "To contribute as an organization, you must be an administrator"
     },
@@ -90,7 +96,6 @@
     "stripe": {
       "title": "Stripe",
       "description": "Enter card details directly",
-      "missingConfig": "Missing configuration",
       "formLabel": "Card details (Stripe)"
     },
     "helloasso": {
@@ -103,7 +108,7 @@
         "li1": "You will be redirected to the HelloAsso website",
         "li2": "Payments are secured through HelloAsso",
         "li3": "You will receive an email confirmation",
-        "li4": "Close the popup after payment to return",
+        "li4": "Once the payment is complete, close the HelloAsso window: funding is recorded automatically",
         "li5": "Funding is recorded only after actual payment confirmation"
       }
     },
@@ -120,37 +125,49 @@
       "project": "project"
     },
     "selectMethodPlaceholder": "Select a payment method",
+    "paymentMethodsLoading": "Loading payment methods…",
+    "noPaymentMethod": "No payment method is configured for this campaign.",
+    "missingAnswer": "Contribution unavailable: no funding record is linked to this resource.",
+    "nothingToPay": "Nothing to pay: the amount is zero.",
     "successScreen": {
       "title": "Payment successful",
       "subtitle": "Returning to home page...",
       "returnButton": "Return now"
     },
-    "verifying": {
-      "title": "Verifying...",
-      "subtitle": "Confirming your HelloAsso payment",
-      "hint": "This may take a few seconds"
-    },
     "waiting": {
-      "title": "Waiting for HelloAsso callback...",
-      "subtitle": "Complete the payment in the popup to continue.",
-      "hint": "Funding will be recorded only after actual callback."
+      "title": "Waiting for HelloAsso...",
+      "subtitle": "Complete the payment in the HelloAsso window, then come back to this page. If you closed it without paying, click Cancel.",
+      "hint": "Funding is recorded as soon as HelloAsso confirms the payment.",
+      "cancel": "Cancel",
+      "checking": "Checking the payment...",
+      "stopWaiting": "Stop waiting"
+    },
+    "recordingFailed": {
+      "title": "Payment received, contribution not recorded",
+      "description": "Your payment (ref. {{reference}}) went through, but recording it failed. Try again; if it still fails, send this reference to the fundraiser's organizer.",
+      "inProgress": "This payment is already being recorded. Try again in a moment.",
+      "retry": "Retry recording",
+      "close": "Close"
+    },
+    "paymentUnconfirmed": {
+      "title": "Payment not confirmed",
+      "description": "We did not receive the payment response: your card may have been charged. Do not pay again. “Check payment” resumes this same payment without ever charging twice; if it went through, it will be recorded, even if you close this window.",
+      "inProgress": "The payment is being processed. Check again in a moment.",
+      "retry": "Check payment",
+      "close": "Close"
     },
     "toasts": {
       "thankYou": {
         "title": "Thank you for your contribution!",
         "description": "Returning to home page..."
       },
-      "paymentAcceptedIncomplete": {
-        "title": "Payment accepted but save incomplete",
-        "fallbackDescription": "Error saving funding records"
-      },
       "paymentInterrupted": {
         "title": "Payment interrupted",
         "description": "HelloAsso payment was not confirmed."
       },
-      "paymentFailed": {
-        "title": "Payment failed",
-        "fallbackDescription": "Payment failed"
+      "paymentUnverified": {
+        "title": "Payment not verified",
+        "description": "The HelloAsso payment (ref. {{reference}}) could not be confirmed. If it went through, it will be recorded automatically; otherwise, send this reference to the fundraiser's organizer."
       },
       "stripeError": {
         "title": "Error",
@@ -158,24 +175,20 @@
       },
       "paymentInProgress": {
         "title": "Payment in progress",
-        "description": "Complete the payment in the HelloAsso popup. Validation after actual callback."
+        "description": "Complete the payment in the HelloAsso popup. Funding is recorded once HelloAsso confirms it."
       },
       "paymentError": {
         "title": "Payment error",
         "fallback": "HelloAsso error"
-      },
-      "stripeMissing": {
-        "title": "Missing Stripe configuration",
-        "fallbackDescription": "Invalid Stripe public key."
       }
     },
     "errors": {
       "fundingEnvelopeUnavailable": "entity.fundingEnvelope is unavailable",
-      "noContextId": "contextId not found for fundingEnvelope",
-      "saveFailed": "Unable to save funding records",
       "noRedirectUrl": "No HelloAsso redirect URL returned by fundingEnvelope",
       "popupFailed": "HelloAsso popup could not be opened",
-      "stripeUnavailable": "Stripe unavailable: configure VITE_STRIPE_PUBLIC_KEY"
+      "paymentRejected": "The payment did not go through.",
+      "statusInvalid": "Incomplete HelloAsso verification response: the server may be out of date.",
+      "statusTimeout": "The payment check is not responding."
     },
     "helloAssoConfigErrors": {
       "amountInvalid": "Amount must be greater than 0",
@@ -355,6 +368,7 @@
       "apiClientUnavailable": "API client unavailable.",
       "projectNotFoundForAction": "Project not found for action creation.",
       "noMilestoneSelected": "No milestone selected.",
+      "actionFormInvalid": "The form could not be submitted. Please check the fields, or reload the page if the problem persists.",
       "actionNameRequired": "Action name is required.",
       "invalidCredits": "Credits amount must be greater than or equal to 0.",
       "invalidDates": "Dates must be in dd/MM/yyyy format and end date must be greater than or equal to start date.",
@@ -387,6 +401,10 @@
         "deleteAction": "You must be logged in to delete an action.",
         "completeAction": "You must be logged in to complete an action.",
         "candidate": "You must be logged in to apply."
+      },
+      "createMilestone": {
+        "title": "Creation impossible",
+        "description": "Incomplete API context (project/answer)."
       },
       "restoreImpossible": {
         "title": "Restoration impossible",
@@ -526,6 +544,8 @@
       "loadingResources_proposition": "Loading proposals...",
       "noResource": "No project available for this organization",
       "noResource_proposition": "No proposal available for this organization",
+      "resourceOutOfScope": "This project cannot be funded from this page: its cagnotte belongs to another context.",
+      "resourceOutOfScope_proposition": "This common cannot be funded from this page: its cagnotte belongs to another context.",
       "selectResourcePlaceholder": "Select a project...",
       "selectResourcePlaceholder_proposition": "Select a proposal...",
       "setAsMainCagnotte": "Set as main cagnotte",
@@ -593,7 +613,11 @@
           "for": "For",
           "totalSelectedLabel": "Total selected",
           "PaySelected": "Pay my selection",
-          "return": "Return to crowdfunding"
+          "return": "Return to crowdfunding",
+          "tabs": {
+            "pledges": "Pledges to pay",
+            "payments": "Payments"
+          }
         },
         "payment": {
           "title": "Pledge payment"
@@ -729,9 +753,7 @@
       "cardElementMissing": "Card element unavailable",
       "cardValidationFailed": "Card validation error",
       "paymentMethodFailed": "Unable to create payment method",
-      "paymentFallback": "Payment error",
-      "stripeNotInitialized": "Stripe is not initialized",
-      "amountMustBePositive": "Amount must be greater than 0"
+      "paymentFallback": "Payment error"
     },
     "stripeErrors": {
       "card_declined": "Your card was declined. Please check your information.",
@@ -744,14 +766,6 @@
       "invalid_expiry_year": "The expiry year is invalid.",
       "invalid_number": "The card number is invalid.",
       "default": "An error occurred during payment. Please try again."
-    },
-    "configErrors": {
-      "amountInvalid": "Amount must be greater than 0",
-      "amountTooHigh": "Amount cannot exceed €99,999",
-      "projectNameRequired": "Project name is required",
-      "projectIdRequired": "Project ID is required",
-      "milestoneRequired": "At least one milestone must be selected",
-      "contributorTypeRequired": "Contributor type must be specified"
     },
     "cardValid": "Card is valid, ready to pay",
     "actions": {
@@ -787,6 +801,53 @@
     "payform": {
       "selectedPledge": "selected pledge",
       "selectedPledge_plural": "selected pledges"
+    }
+  },
+  "HeaderButtons": {
+    "piggyBank": {
+      "aria": "Participatory funding",
+      "tooltip": "Open the participatory funding"
+    },
+    "pledge": {
+      "aria": "View pledges",
+      "tooltip": "My pledges to pay and my payments"
+    }
+  },
+  "PaymentsPanel": {
+    "scope": {
+      "all": "All Stripe and HelloAsso payments received by the fundraiser.",
+      "mine": "Your Stripe and HelloAsso payments to the fundraiser."
+    },
+    "description": "“To reconcile” lists the payments collected whose recording did not complete: “Retry” records them again, without charging again.",
+    "tabs": {
+      "attention": "To reconcile",
+      "all": "History"
+    },
+    "columns": {
+      "date": "Date",
+      "payer": "Payer",
+      "amount": "Amount",
+      "provider": "Method",
+      "status": "Status",
+      "reference": "Reference"
+    },
+    "status": {
+      "settled": "Recorded",
+      "unrecorded": "Collected, not recorded",
+      "settling": "Recording in progress",
+      "pending": "Awaiting payment",
+      "expired": "Not paid",
+      "unknown": "Unknown"
+    },
+    "retry": "Retry recording",
+    "loading": "Loading payments…",
+    "emptyAttention": "No payment to reconcile.",
+    "emptyAll": "No payment yet.",
+    "inProgress": "This payment is already being recorded. Try again in a moment.",
+    "notPaid": "The provider does not confirm this payment.",
+    "toasts": {
+      "recorded": "Payment recorded",
+      "notRecorded": "Payment not recorded"
     }
   },
   "PaymentReceivedScreen": {

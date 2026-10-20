@@ -1,11 +1,13 @@
 /**
  * Préflight du PÉRIMÈTRE des modales costum — QUEL formulaire s'ouvre, et SUR QUOI.
  *
- * Deux volets, deux dangers symétriques :
+ * Trois volets :
  *  · ÉDITION (`profiles.<type>.editModals[]`) — une route trop LARGE ouvre un formulaire costum sur
  *    des entités étrangères ;
  *  · CRÉATION (`admin.tabs[].sections[].create`) — un `inherit` AMBIGU (plusieurs forms costum du
- *    même `entityType`) laisse le choix à un départage qui doit rester déterministe.
+ *    même `entityType`) laisse le choix à un départage qui doit rester déterministe ;
+ *  · FINDER (`coform.finderAddNew`) — une déclaration qui ne désigne aucune modale ouvrable retire
+ *    le bouton « Ajouter » du finder, sans rien à l'écran (en fin de fichier).
  *
  * ── volet ÉDITION ──
  *
@@ -27,6 +29,7 @@ import { describe, test, expect, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { resolveCreateModal, type CostumFormDocLike } from "@/modules/admin/sections/resourceHelpers";
+import { isOpenableAddModal, type CostumFormRef } from "@/modules/profil/components/add/addModals";
 import type { AdminResourceSection } from "@/modules/admin/schema";
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
@@ -178,3 +181,49 @@ describe("Préflight — création costum : aucun `inherit` ambigu dans le parc"
     });
   }
 });
+
+/**
+ * Volet FINDER. `coform.finderAddNew` range sous des clés LIBRES (une question, un type) la modale
+ * d'ajout d'un finder coform. Le resolveur (`resolveFinderAddNewModal`) REFUSE une valeur qui ne
+ * désigne aucune modale ouvrable : le finder perd alors son bouton « Ajouter », et rien ne le dit à
+ * l'écran (un avertissement de console, en développement seulement). Le schéma n'en contrôle que le
+ * préfixe — `add-ca` passe —, et `audit:config` n'est bloquant que pour les archétypes.
+ *
+ * Le test appelle le VRAI prédicat du resolveur sur chaque déclaration du parc.
+ */
+describe("Préflight — finder coform : toute déclaration `coform.finderAddNew` désigne une modale qui s'ouvre", () => {
+  test("témoin : le prédicat refuse une faute de frappe, une modale d'édition, un formulaire absent du site", () => {
+    const costumForms = { cae: { id: "cae", entityType: "organizations" } };
+    expect(isOpenableAddModal("add-cae", costumForms)).toBe(true);
+    expect(isOpenableAddModal("add-organization", costumForms)).toBe(true);
+    expect(isOpenableAddModal("add-ca", costumForms)).toBe(false);
+    expect(isOpenableAddModal("edit-cae", costumForms)).toBe(false);
+    expect(isOpenableAddModal("add-tiers-lieux", costumForms)).toBe(false);
+  });
+
+  const configs = [...new Set(sites.map((site) => site.config))];
+  for (const fichier of configs) {
+    const configPath = path.join(PROJECT_ROOT, fichier);
+    if (!fs.existsSync(configPath)) continue;
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8")) as {
+      costumForms?: Record<string, CostumFormRef>;
+      coform?: { finderAddNew?: Record<string, unknown> };
+    };
+    const declarations = Object.entries(config.coform?.finderAddNew ?? {});
+    if (!declarations.length) continue;
+
+    test(fichier, () => {
+      const mortes = declarations
+        .filter(([, modale]) => !(typeof modale === "string" && isOpenableAddModal(modale, config.costumForms)))
+        .map(([cle, modale]) => `${fichier} · coform.finderAddNew.${cle} → ${JSON.stringify(modale)}`);
+
+      expect(
+        mortes,
+        `Déclaration(s) qui ne désignent aucune modale d'ajout : le finder n'aura pas de bouton « Ajouter ».\n` +
+          `Valeurs admises : une modale standard (add-organization, add-project, add-event, add-poi)\n` +
+          `ou « add-<id> », <id> étant l'« id » d'un document de « costumForms » de CE site.`,
+      ).toEqual([]);
+    });
+  }
+});
+

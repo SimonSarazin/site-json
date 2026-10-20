@@ -1,13 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Action, ActionItemNormalized } from '@communecter/cocolight-api-client';
+import type { Action, ActionItemNormalized, EntityTypes } from '@communecter/cocolight-api-client';
 import { useCocolight } from '@/hooks/useCocolight';
 import { CAGNOTTE_QUERY_KEYS } from '@/modules/cagnotte/constants/queryKeys';
 import { getProfileSlugFromLocation } from '@/lib/fundingProjectUtils';
+import { readFinancerPaymentState, toDisplayPaymentStatus } from '@/modules/cagnotte/utils/financerPayment';
 import {
   asRecord,
   getEntityId,
   getNonEmptyRecord,
   getServerData,
+  normalizeActionStatus,
+  normalizeEntityType,
+  normalizeTags,
+  resolveActionAuthorId,
   toArray,
   toArrayOrValues,
   toNumber,
@@ -32,7 +37,6 @@ export type {
   FundingEnvelopeNormalizedData,
 } from '@/modules/cagnotte/types';
 import type {
-  FundingActionStatus,
   FundingPaymentStatus,
   FundingContributor,
   FundingTransaction,
@@ -59,16 +63,8 @@ const EMPTY_RESULT: FundingEnvelopeNormalizedData = {
   paymentMethods: null,
 };
 
-function normalizeEntityType(type: string | undefined): string {
-  const lowered = (type || '').toLowerCase();
-  if (lowered.includes('organization')) return 'organizations';
-  if (lowered.includes('project')) return 'projects';
-  if (lowered.includes('citoyen') || lowered.includes('user')) return 'citoyens';
-  return lowered;
-}
-
 function extractPaymentMethods(...sources: unknown[]): FundingPaymentMethods | null {
-  const merged: Record<string, string> = {};
+  const merged: Record<string, string | boolean> = {};
 
   sources.forEach((source) => {
     const record = getNonEmptyRecord(source);
@@ -77,6 +73,9 @@ function extractPaymentMethods(...sources: unknown[]): FundingPaymentMethods | n
     Object.entries(record).forEach(([key, value]) => {
       if (typeof value === 'string' && value.trim()) {
         merged[key] = value.trim();
+      } else if (typeof value === 'boolean') {
+        // Indicateurs `stripe` / `helloasso` : moyen configuré pour l'entité.
+        merged[key] = value;
       }
     });
   });
@@ -112,19 +111,13 @@ function getTimestamp(value: unknown): number | undefined {
   return undefined;
 }
 
-function normalizeActionStatus(value: unknown): FundingActionStatus {
-  const status = toString(value).toLowerCase();
-  if (status === 'done') return 'done';
-  if (status === 'todo' || status === 'disabled') return 'todo';
-  return 'todo';
-}
-
-function normalizePaymentStatus(value: unknown): FundingPaymentStatus {
-  const status = toString(value).toLowerCase();
-  if (status === 'pending' || status === 'paid' || status === 'failed' || status === 'refunded') {
-    return status;
-  }
-  return 'paid';
+/**
+ * Statut d'affichage d'une ligne, dérivé de son bloc `payment`. Ne jamais le lire sur
+ * `financer.status`, qui est le statut de l'ENGAGEMENT (`"pending"` à la création), ni le
+ * faire défaut à `paid`, ce qui compterait payé un financement inconnu.
+ */
+function normalizePaymentStatus(financer: UnknownRecord): FundingPaymentStatus {
+  return toDisplayPaymentStatus(readFinancerPaymentState(financer).status);
 }
 
 function getNameFromLinks(links: UnknownRecord, id: string, type?: string): string {
@@ -282,6 +275,8 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
             getAvatarFromLinks(links, financerId, financerType) ||
             undefined;
 
+          const paymentState = readFinancerPaymentState(financer);
+
           return {
             id: `${milestoneId}-${depenseIndex}-${financerIndex}`,
             financerName,
@@ -290,10 +285,15 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
             financerAvatar,
             amount: toNumber(financer.amount),
             date: getTimestamp(financer.date) || getTimestamp(depense.date) || Date.now(),
-            paymentStatus: normalizePaymentStatus(financer.paymentStatus || financer.status),
+            paymentStatus: normalizePaymentStatus(financer),
             transactionId: toString(financer.transactionId) || financerId || `TX-${milestoneId}-${depenseIndex}-${financerIndex}`,
             fundingType: toString(financer.fundingType) || undefined,
-            fundingIndex: financerIndex
+            fundingIndex: financerIndex,
+            // Le ciblage d'un versement passe par `finkey`, pas par la position.
+            finkey: toString(financer.finkey) || undefined,
+            paidAmount: paymentState.paidAmount,
+            pendingAmount: paymentState.pendingAmount,
+            payment: financer.payment
           };
         });
       });
@@ -315,8 +315,8 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
             status: normalizeActionStatus(sd.status),
             date_start: getTimestamp(startDate),
             date_end: getTimestamp(endDate),
-            // Dédup : bug backend connu (array_merge avec soi-même côté PHP) qui duplique les tags.
-            tags: Array.from(new Set(toArray<string>(sd.tags).filter((tag) => tag.length > 0))),
+            tags: normalizeTags(sd.tags),
+            authorId: resolveActionAuthorId(sd),
             contributors: extractActionContributors(sd, links),
             ...(entity ? { entity } : {}),
           };
@@ -376,8 +376,7 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
       answerId: getEntityId(projectData) || toString(projectData.answer) || undefined,
       name: toString(projectData.name) || toString(projectData.titre) || 'Projet sans nom',
       description: toString(projectData.shortDescription) || toString(projectData.description) || toString(projectData.description),
-      // Dédup : bug backend connu (array_merge avec soi-même côté PHP) qui duplique les tags.
-      tags: Array.from(new Set(toArray<string>(projectData.tags || projectRow.tags).filter((tag) => tag.length > 0))),
+      tags: normalizeTags(projectData.tags || projectRow.tags),
       totalCouts: toNumber(projectData.totalCouts) || totalCostFromMilestones,
       totalFinancement: toNumber(projectData.totalFinancement) || totalFundingFromMilestones,
       userFinancement: toNumber(projectData.userFinancement),
@@ -520,11 +519,30 @@ export function mergeEnvelopePayloads(envelopeData: unknown, formData: unknown):
   };
 }
 
-export function useFundingEnvelope(idProjet?: string, opts?: { enabled?: boolean }) {
+/**
+ * @param idProjet - ressource ciblée (`selectedProject` forcé côté normalisation)
+ * @param opts.enabled - désactive la query (défaut `true`)
+ * @param opts.hostEntity - entité SUR laquelle interroger l'enveloppe. Défaut : l'entité
+ *   du site (`useCocolight().entity`). Le périmètre d'une enveloppe est celui de l'entité
+ *   appelante, PAS un paramètre de requête (cf. le commentaire dans `queryFn`) : pour lire
+ *   le financement d'une ressource qui vit sous un AUTRE contexte (ex. un commun AAC déposé
+ *   sur l'appel d'une autre organisation, cf. `useCommunFundingHost`), il faut appeler
+ *   `fundingEnvelope()` sur l'hôte de CE contexte-là.
+ */
+export function useFundingEnvelope(
+  idProjet?: string,
+  opts?: { enabled?: boolean; hostEntity?: EntityTypes | null }
+) {
   const { entity, contextId, contextType, me } = useCocolight();
 
-  const entityId = contextId || entity?.id || '';
-  const effectiveContextType = normalizeEntityType(contextType || entity?.getEntityType?.());
+  // `contextId`/`contextType` du provider décrivent le SITE : ils ne valent que pour
+  // l'hôte par défaut. Dès qu'un hôte explicite est fourni, tout doit venir de lui —
+  // sinon la query key mentirait sur le périmètre réellement interrogé.
+  const host = opts?.hostEntity ?? entity;
+  const entityId = opts?.hostEntity ? (host?.id || '') : (contextId || entity?.id || '');
+  const effectiveContextType = normalizeEntityType(
+    opts?.hostEntity ? host?.getEntityType?.() : (contextType || entity?.getEntityType?.())
+  );
   const profileSlug = getProfileSlugFromLocation();
 
   const normalizedProjectId = toString(idProjet);
@@ -532,17 +550,15 @@ export function useFundingEnvelope(idProjet?: string, opts?: { enabled?: boolean
   return useQuery<FundingEnvelopeNormalizedData>({
     queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE(entityId, effectiveContextType, normalizedProjectId, profileSlug, me?.id ?? null),
     queryFn: async () => {
-      const entityRecord = entity as unknown as UnknownRecord;
+      const entityRecord = host as unknown as UnknownRecord;
 
-      if (!entity || !entityId || !effectiveContextType || typeof entityRecord.fundingEnvelope !== 'function') {
+      if (!host || !entityId || !effectiveContextType || typeof entityRecord.fundingEnvelope !== 'function') {
         return EMPTY_RESULT;
       }
 
       try {
         const fundingEnvelope = entityRecord.fundingEnvelope as (payload: UnknownRecord) => Promise<unknown>;
-        const rawEnvelope = await fundingEnvelope.call(entity, {
-          contextId: entityId,
-          contextType: effectiveContextType,
+        const rawEnvelope = await fundingEnvelope.call(host, {
           action: 'getEnvelopeData',
         });
 
@@ -557,9 +573,7 @@ export function useFundingEnvelope(idProjet?: string, opts?: { enabled?: boolean
         // et ne peuvent de toute façon pas contribuer sans être connectés.
         if (formId && me?.id) {
           try {
-            const rawFormData = await fundingEnvelope.call(entity, {
-              contextId: entityId,
-              contextType: effectiveContextType,
+            const rawFormData = await fundingEnvelope.call(host, {
               formId,
               financerId: me.id,
               financerType: 'citoyens',
@@ -589,7 +603,7 @@ export function useFundingEnvelope(idProjet?: string, opts?: { enabled?: boolean
     //  - `me?.id` : `getFormData` (qui enrichit `projects[].totalFinancement`)
     //    nécessite un `financerId`. Sans `me`, la requête tombe en fallback
     //    `getEnvelopeData` qui ne calcule pas les totaux.
-    enabled: (opts?.enabled ?? true) && typeof window !== 'undefined' && Boolean(entity && entityId && effectiveContextType && me?.id),
+    enabled: (opts?.enabled ?? true) && typeof window !== 'undefined' && Boolean(host && entityId && effectiveContextType && me?.id),
     staleTime: 2 * 60 * 1000,
   });
 }

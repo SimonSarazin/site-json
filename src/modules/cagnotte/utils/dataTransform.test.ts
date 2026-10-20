@@ -1,9 +1,23 @@
 import { describe, expect, it } from "vitest";
+import type { CagnotteFundableItem } from "../types";
+// Import croisé assumé, réservé au test : on rejoue les VRAIS gestes de
+// `MilestoneListField` (coform) pour couvrir la chaîne réelle, pas une liste
+// fabriquée à la main.
+import {
+  normalizeDepenseValue,
+  removeDepense,
+  setDepenseOpen,
+  updateDepense,
+  type DepenseEntry,
+} from "@/modules/coform/utils/depense";
 import {
   asRecord,
+  buildItemsFromRawDepenses,
+  buildResourceFromAnswer,
   getEntityId,
   getNonEmptyRecord,
   getServerData,
+  normalizeActionStatus,
   normalizeIdOrNull,
   readEntityPreferences,
   toArray,
@@ -12,6 +26,8 @@ import {
   toSafeInt,
   toString,
 } from "./dataTransform";
+import { readFinancerPaymentState } from "./financerPayment";
+import { normalizeFundingEnvelope } from "../hooks/useFundingEnvelope";
 
 describe("asRecord", () => {
   it("retourne {} pour null/undefined/primitives", () => {
@@ -122,6 +138,22 @@ describe("toString", () => {
     expect(toString(null)).toBe("");
     expect(toString({ foo: "bar" })).toBe("");
     expect(toString(undefined)).toBe("");
+  });
+});
+
+describe("normalizeActionStatus", () => {
+  it("ne rend que `todo` ou `done` — `done` quelle que soit la casse", () => {
+    expect(normalizeActionStatus("done")).toBe("done");
+    expect(normalizeActionStatus("Done")).toBe("done");
+    expect(normalizeActionStatus("todo")).toBe("todo");
+  });
+
+  it("tout statut inconnu, `disabled` compris, vaut `todo` — jamais verrouillé par erreur", () => {
+    expect(normalizeActionStatus("disabled")).toBe("todo");
+    expect(normalizeActionStatus("archived")).toBe("todo");
+    expect(normalizeActionStatus(undefined)).toBe("todo");
+    expect(normalizeActionStatus(null)).toBe("todo");
+    expect(normalizeActionStatus(42)).toBe("todo");
   });
 });
 
@@ -258,5 +290,456 @@ describe("toSafeInt", () => {
     expect(toSafeInt(undefined)).toBe(0);
     expect(toSafeInt("")).toBe(0);
     expect(toSafeInt("not a number")).toBe(0);
+  });
+});
+
+describe("buildResourceFromAnswer", () => {
+  const answer = {
+    id: "answer-1",
+    project: { id: "proj-1", name: "Projet du commun" },
+    answers: {
+      aapStep1: {
+        titre: "Mon commun",
+        depense: [
+          { poste: "Palier 1", priceInt: 1000, milestone: "m1", financer: [{ id: "u1", name: "Alice", amount: 250 }] },
+          { poste: "Palier 2", priceInt: 500, milestone: "m2" },
+        ],
+      },
+    },
+  };
+
+  it("dérive projet, titre, paliers et totaux depuis la réponse", () => {
+    const resource = buildResourceFromAnswer(answer);
+    expect(resource).not.toBeNull();
+    expect(resource!.id).toBe("answer-1");
+    expect(resource!.answerId).toBe("answer-1");
+    expect(resource!.projectId).toBe("proj-1");
+    expect(resource!.name).toBe("Mon commun");
+    expect(resource!.items).toHaveLength(2);
+    expect(resource!.resourceTotalAmount).toBe(1500);
+    expect(resource!.resourceFinancedAmount).toBe(250);
+  });
+
+  it("accepte un depense[] sérialisé en objet (pollution Mongo)", () => {
+    const pollue = {
+      ...answer,
+      answers: { aapStep1: { ...answer.answers.aapStep1, depense: { 0: { poste: "Palier 1", priceInt: 1000 } } } },
+    };
+    expect(buildResourceFromAnswer(pollue)!.items).toHaveLength(1);
+  });
+
+  it("exclut les paliers clôturés des totaux, sans les retirer de la liste", () => {
+    const avecClos = {
+      ...answer,
+      answers: {
+        aapStep1: {
+          depense: [
+            { poste: "Ouvert", priceInt: 100 },
+            { poste: "Clos", priceInt: 900, include: false },
+          ],
+        },
+      },
+    };
+    const resource = buildResourceFromAnswer(avecClos)!;
+    expect(resource.items).toHaveLength(2);
+    expect(resource.resourceTotalAmount).toBe(100);
+  });
+
+  it("reste exploitable sans projet ni dépense — c'est ce qui distingue la phase proposition", () => {
+    const resource = buildResourceFromAnswer({ id: "answer-2", answers: {} })!;
+    expect(resource.projectId).toBeUndefined();
+    expect(resource.items).toEqual([]);
+    expect(resource.resourceTotalAmount).toBe(0);
+  });
+
+  it("retourne null sans identifiant de réponse — rien à financer", () => {
+    expect(buildResourceFromAnswer({ answers: {} })).toBeNull();
+    expect(buildResourceFromAnswer(null)).toBeNull();
+  });
+
+  /**
+   * `depense` à clés creuses : la densification jette les clés et la dépense `"3"` passe en
+   * position `1`. Le serveur indexant par la clé, la ressource la garde à côté de la position.
+   */
+  it("garde la CLÉ du document, pas seulement la position, sur un depense à clés creuses", () => {
+    const creux = {
+      id: "answer-4",
+      answers: {
+        aapStep1: {
+          depense: {
+            "0": { poste: "Palier A", priceInt: 100 },
+            "3": { poste: "Palier D", priceInt: 400 },
+          },
+        },
+      },
+    };
+    const items = buildResourceFromAnswer(creux)!.items;
+    expect(items.map((i) => i.depenseIndex)).toEqual([0, 1]);
+    expect(items.map((i) => i.depenseKey)).toEqual(["0", "3"]);
+  });
+
+  it("lit l'étape demandée quand le commun n'utilise pas aapStep1", () => {
+    const autreEtape = { id: "answer-3", answers: { etapeX: { titre: "Ailleurs", depense: [{ poste: "P", priceInt: 7 }] } } };
+    expect(buildResourceFromAnswer(autreEtape, "etapeX")!.resourceTotalAmount).toBe(7);
+    expect(buildResourceFromAnswer(autreEtape)!.items).toEqual([]);
+  });
+});
+
+describe("buildResourceFromAnswer — financeurs servis en objet keyé par id", () => {
+  it("somme les montants au lieu de compter un financeur fantôme à 0 (forme Mongo)", () => {
+    // Régression C8 (MR 53) : `toArray` emballait l'objet entier en UN financeur
+    // sans `id` ni `amount` — financement à zéro, cofinanceur fantôme.
+    const answer = {
+      id: "answer-4",
+      answers: {
+        aapStep1: {
+          depense: [
+            {
+              poste: "Dev",
+              price: 1000,
+              financer: {
+                u1: { id: "u1", name: "Alice", amount: 250 },
+                u2: { id: "u2", name: "Bob", amount: 100 },
+              },
+            },
+          ],
+        },
+      },
+    };
+    const resource = buildResourceFromAnswer(answer)!;
+    expect(resource.resourceFinancedAmount).toBe(350);
+    expect(resource.items[0].allFunding.map((f) => f.financerId)).toEqual(["u1", "u2"]);
+  });
+});
+
+/**
+ * Le repli hors enveloppe est le chemin COURANT d'un AAC : y figer `paymentStatus` afficherait
+ * payée toute ligne, promesse pure comprise. Le statut vient du bloc `payment`, avec repli sur
+ * `fundingType`.
+ */
+describe("buildResourceFromAnswer — statut de paiement des financeurs bruts", () => {
+  const answerAvec = (financer: unknown) => ({
+    id: "answer-5",
+    answers: { aapStep1: { depense: [{ poste: "Dev", price: 1000, financer: [financer] }] } },
+  });
+
+  it("n'annonce plus « payé » sur une promesse sans versement", () => {
+    const resource = buildResourceFromAnswer(answerAvec({ id: "u1", name: "Alice", amount: 250 }))!;
+
+    expect(resource.items[0].allFunding[0].paymentStatus).toBe("pending");
+  });
+
+  it("dit « partiel » quand une part seulement est validée", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({
+        id: "u1",
+        name: "Alice",
+        amount: 1000,
+        finkey: "a-w171hEa1bvz9",
+        payment: { logs: [{ amount: 500, confirmation: "validated" }] },
+      }),
+    )!;
+    const [fund] = resource.items[0].allFunding;
+
+    expect(fund.paymentStatus).toBe("partial");
+    expect(fund.paidAmount).toBe(500);
+    expect(fund.finkey).toBe("a-w171hEa1bvz9");
+  });
+
+  it("dit « payé » quand le versement validé couvre l'engagement", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({
+        id: "u1",
+        amount: 300,
+        payment: { logs: [{ amount: 300, confirmation: "validated" }] },
+      }),
+    )!;
+
+    expect(resource.items[0].allFunding[0].paymentStatus).toBe("paid");
+  });
+
+  it("conserve le repli legacy `fundingType: \"prepaid\"`", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({ id: "u1", amount: 300, fundingType: "prepaid" }),
+    )!;
+
+    expect(resource.items[0].allFunding[0].paymentStatus).toBe("paid");
+  });
+
+  it("garde le bloc `payment` : une relecture de la ligne produite reste canonique", () => {
+    const resource = buildResourceFromAnswer(
+      answerAvec({
+        id: "u1",
+        amount: 300,
+        payment: { logs: [{ amount: 300, confirmation: "validated" }] },
+      }),
+    )!;
+
+    const state = readFinancerPaymentState(resource.items[0].allFunding[0]);
+    expect(state).toMatchObject({ isLegacy: false, status: "payed", paidAmount: 300 });
+  });
+});
+
+describe("normalizeFundingEnvelope — bloc `payment` des financeurs", () => {
+  it("garde le bloc `payment` sur la transaction produite", () => {
+    const envelope = {
+      projects: [
+        {
+          id: "answer-5",
+          project: { id: "project-5" },
+          depenses: [
+            {
+              milestone: "m1",
+              price: 300,
+              financer: [
+                { id: "u1", amount: 300, payment: { logs: [{ amount: 300, confirmation: "validated" }] } },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const { projects } = normalizeFundingEnvelope(envelope);
+    const fund = projects[0].milestones[0].transactions[0];
+
+    expect(readFinancerPaymentState(fund)).toMatchObject({ isLegacy: false, status: "payed", paidAmount: 300 });
+  });
+});
+
+describe("normalizeFundingEnvelope — moyens de paiement de l'entité", () => {
+  it("garde les indicateurs `stripe` / `helloasso` de `getEnvelopeData` avec la clé publique", () => {
+    const { paymentMethods } = normalizeFundingEnvelope({
+      projects: [],
+      paymentMethods: { stripe: false, helloasso: true, stripePublicKey: "pk_test_x" },
+    });
+
+    expect(paymentMethods).toEqual({ stripe: false, helloasso: true, stripePublicKey: "pk_test_x" });
+  });
+
+  it("les reporte sur le projet sélectionné", () => {
+    const { selectedProject, paymentMethods } = normalizeFundingEnvelope(
+      {
+        projects: [{ id: "answer-1", project: { id: "project-1" } }],
+        paymentMethods: { stripe: true, helloasso: false },
+      },
+      undefined,
+      undefined,
+      "project-1",
+    );
+
+    expect(selectedProject?.paymentMethods).toMatchObject({ stripe: true, helloasso: false });
+    expect(paymentMethods).toMatchObject({ stripe: true, helloasso: false });
+  });
+});
+
+/**
+ * Régression 1.3 (MR 53) : dans `MilestoneListField`, `rawDepenses` est la valeur
+ * react-hook-form — déjà modifiée par le geste — et `enrichedItems` la photo
+ * serveur (`targetResource.items`), figée jusqu'à la soumission. Retourner l'item
+ * enrichi tel quel faisait « gagner » le serveur sur la saisie : ligne supprimée
+ * toujours affichée, palier clôturé resté « open », montant édité perdu — et, par
+ * cascade, « Modifier » ouvrait la modale sur une autre ligne.
+ *
+ * Les gestes sont rejoués avec les VRAIS helpers du champ (`removeDepense`,
+ * `setDepenseOpen`, `updateDepense`, `normalizeDepenseValue`) pour que le test
+ * couvre la chaîne réelle, pas une liste fabriquée à la main.
+ */
+describe("buildItemsFromRawDepenses — la ligne brute (saisie) prime sur la photo serveur", () => {
+  function serverItem(
+    depenseIndex: number,
+    name: string,
+    price: number,
+    milestoneId: string,
+    extra: Partial<CagnotteFundableItem> = {},
+  ): CagnotteFundableItem {
+    return {
+      fromType: "depense",
+      itemId: String(depenseIndex),
+      milestoneId,
+      depenseIndex,
+      name,
+      description: "",
+      price,
+      status: "open",
+      actions: [],
+      funding: [],
+      currentFunding: 0,
+      unpaidFunding: 0,
+      userPledge: 0,
+      allFunding: [],
+      ...extra,
+    };
+  }
+
+  // Photo serveur : [0] Développement 5 000 € (ms-a), [1] Hébergement 300 € (ms-b).
+  const server = (): CagnotteFundableItem[] => [
+    serverItem(0, "Développement", 5000, "ms-a"),
+    serverItem(1, "Hébergement", 300, "ms-b"),
+  ];
+
+  const localInitial = (): DepenseEntry[] => [
+    { poste: "Développement", price: 5000, milestone: "ms-a" },
+    { poste: "Hébergement", price: 300, milestone: "ms-b" },
+  ];
+
+  it("suppression locale de la ligne 0 → seule la survivante reste, appariée par milestoneId", () => {
+    const local = removeDepense(localInitial(), 0);
+    const enriched = server();
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), enriched);
+
+    expect(items.map((i) => i.name)).toEqual(["Hébergement"]);
+    expect(items[0].milestoneId).toBe("ms-b");
+    // L'item retourné n'est plus l'objet serveur tel quel…
+    expect(items[0]).not.toBe(enriched[0]);
+    expect(items[0]).not.toBe(enriched[1]);
+    // … et son index est l'index LOCAL, celui que `list[item.depenseIndex]` relit.
+    expect(items[0].depenseIndex).toBe(0);
+    expect(items[0].itemId).toBe("0");
+  });
+
+  it("clôture locale (include:false) → le palier passe en « close »", () => {
+    const local = setDepenseOpen(localInitial(), 0, false);
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items[0].status).toBe("close");
+    expect(items[1].status).toBe("open");
+  });
+
+  it("montant édité localement à 7 000 → price 7 000, pas l'ancien montant serveur", () => {
+    const local = updateDepense(localInitial(), 0, { price: 7000 });
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items[0].price).toBe(7000);
+  });
+
+  it("libellé et description édités localement sont ceux affichés", () => {
+    const local = updateDepense(localInitial(), 1, { poste: "Hébergement mutualisé", description: "Serveur partagé" });
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items[1].name).toBe("Hébergement mutualisé");
+    expect(items[1].description).toBe("Serveur partagé");
+  });
+
+  it("ajout local d'une 3e ligne → toute la liste reflète le local", () => {
+    const local: DepenseEntry[] = [...localInitial(), { poste: "Formation", price: 900, milestone: "ms-c" }];
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    expect(items.map((i) => i.name)).toEqual(["Développement", "Hébergement", "Formation"]);
+    expect(items.map((i) => i.depenseIndex)).toEqual([0, 1, 2]);
+  });
+
+  /**
+   * Sans clés fournies, aucune n'est inventée : sur une liste éditée LOCALEMENT, les
+   * positions ne sont plus celles du document, et une clé fausse viserait une autre
+   * dépense à l'écriture. C'est le contrat de `MilestoneListField`.
+   */
+  it("n'invente aucune clé de dépense quand l'appelant n'en fournit pas", () => {
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(localInitial()), server());
+    expect(items.every((i) => i.depenseKey === undefined)).toBe(true);
+  });
+
+  it("cascade « Modifier » : l'item affiché et la ligne relue par `list[depenseIndex]` sont la même", () => {
+    // Avant : affiché « Développement » (item serveur 0), édité « Hébergement »
+    // (list[0] local) — valider écrasait la survivante.
+    const local = removeDepense(localInitial(), 0);
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), server());
+    const affiche = items[0];
+    const valeursInitiales = { name: String(local[affiche.depenseIndex]?.poste ?? "") };
+    expect(affiche.name).toBe("Hébergement");
+    expect(valeursInitiales.name).toBe("Hébergement");
+  });
+
+  it("de l'enrichi apparié, on ne reprend que les actions et les agrégats de financement", () => {
+    const enriched = server();
+    const actions = [{ id: "act-1", name: "Installer" }] as unknown as CagnotteFundableItem["actions"];
+    const allFunding = [
+      { id: "u1", financerName: "Alice", financerId: "u1", amount: 250, date: 1, paymentStatus: "paid", transactionId: "t1" },
+    ] as CagnotteFundableItem["allFunding"];
+    enriched[1] = serverItem(1, "Hébergement", 300, "ms-b", {
+      actions,
+      allFunding,
+      funding: allFunding,
+      currentFunding: 250,
+      unpaidFunding: 250,
+      userPledge: 250,
+    });
+
+    // Après suppression de la ligne 0, la survivante (ms-b) est en position 0.
+    const local = updateDepense(removeDepense(localInitial(), 0), 0, { price: 7000 });
+    const [item] = buildItemsFromRawDepenses(normalizeDepenseValue(local), enriched);
+
+    expect(item.actions).toBe(actions);
+    expect(item.allFunding).toBe(allFunding);
+    expect(item.funding).toBe(allFunding);
+    expect(item.currentFunding).toBe(250);
+    expect(item.unpaidFunding).toBe(250);
+    expect(item.userPledge).toBe(250);
+    // … tandis que les champs édités restent ceux de la saisie.
+    expect(item.price).toBe(7000);
+    expect(item.name).toBe("Hébergement");
+    expect(item.depenseIndex).toBe(0);
+  });
+
+  it("une ligne sans milestone n'est jamais appariée par position", () => {
+    // L'item serveur 0 (ms-a) était retourné pour TOUTE ligne locale en position 0.
+    const local: DepenseEntry[] = [{ poste: "Sans palier", price: 10 }];
+    const enriched = server();
+    enriched[0] = serverItem(0, "Développement", 5000, "ms-a", { currentFunding: 999 });
+    const [item] = buildItemsFromRawDepenses(normalizeDepenseValue(local), enriched);
+    expect(item.name).toBe("Sans palier");
+    expect(item.price).toBe(10);
+    expect(item.milestoneId).toBe("");
+    expect(item.currentFunding).toBe(0);
+  });
+
+  it("neutre pour des dépenses SERVEUR (fiche AAC) : brut et enrichi décrivent la même ligne", () => {
+    // `CommunFinancingSection` / `CommunFinancingCard` / `CommunCofinancersTable`
+    // passent `answers.<step>.depense` du document (clé `price`, jamais `priceInt`)
+    // et les items de l'enveloppe : la fusion doit rendre exactement l'enrichi,
+    // à l'identité d'objet près.
+    const actions = [{ id: "act-1" }] as unknown as CagnotteFundableItem["actions"];
+    const enriched = [
+      serverItem(0, "Développement", 5000, "ms-a", { actions, currentFunding: 250 }),
+      serverItem(1, "Hébergement", 300, "ms-b"),
+    ];
+    const document = [
+      { poste: "Développement", price: 5000, milestone: "ms-a", financer: [{ id: "u1", amount: 250 }] },
+      { poste: "Hébergement", price: 300, milestone: "ms-b", include: true },
+    ];
+    const items = buildItemsFromRawDepenses(document, enriched);
+    expect(items).toHaveLength(2);
+    items.forEach((item, i) => {
+      expect(item.name).toBe(enriched[i].name);
+      expect(item.price).toBe(enriched[i].price);
+      expect(item.status).toBe(enriched[i].status);
+      expect(item.milestoneId).toBe(enriched[i].milestoneId);
+      expect(item.depenseIndex).toBe(enriched[i].depenseIndex);
+      expect(item.itemId).toBe(enriched[i].itemId);
+      expect(item.actions).toBe(enriched[i].actions);
+      expect(item.currentFunding).toBe(enriched[i].currentFunding);
+    });
+  });
+
+  it("sans item enrichi : financeurs en objet keyé par id → montants sommés, pas de financeur fantôme", () => {
+    // Régression C8 (MR 53), même famille que C7 côté adaptateur.
+    const raw = [
+      {
+        poste: "Dev",
+        price: 100,
+        financer: {
+          u1: { id: "u1", name: "Alice", amount: 250 },
+          u2: { id: "u2", name: "Bob", amount: 100 },
+        },
+      },
+    ];
+    const [item] = buildItemsFromRawDepenses(raw, []);
+    expect(item.currentFunding).toBe(350);
+    expect(item.allFunding.map((f) => f.financerId)).toEqual(["u1", "u2"]);
+    expect(item.allFunding.map((f) => f.amount)).toEqual([250, 100]);
+  });
+
+  it("contrôle : sans enrichi, la saisie locale est reflétée telle quelle", () => {
+    const local = updateDepense(setDepenseOpen(removeDepense(localInitial(), 0), 0, false), 0, { price: 7000 });
+    const items = buildItemsFromRawDepenses(normalizeDepenseValue(local), []);
+    expect(items.map((i) => i.name)).toEqual(["Hébergement"]);
+    expect(items[0].status).toBe("close");
+    expect(items[0].price).toBe(7000);
   });
 });

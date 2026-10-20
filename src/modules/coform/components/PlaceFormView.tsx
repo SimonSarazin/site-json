@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SmartCoForm } from "./SmartCoForm";
 import { getSharedFinderInfo } from "../utils/formParser";
+import type { PlaceKind } from "../utils/finderFilters";
 import { useElementSummary } from "../hooks/useElementSummary";
 import type { CoFormData, CoFormAccessInfo, AllStepsData } from "../types";
 
@@ -44,6 +45,7 @@ interface PlaceFormViewProps {
    * Dialog : le `<title>` de la page hôte ne doit pas être écrasé par la modale.
    */
   hidePageChrome?: boolean;
+  placeKind?: PlaceKind;
 }
 
 /**
@@ -60,6 +62,7 @@ export function PlaceFormView({
   onDirtyChange,
   onAfterSubmit,
   hidePageChrome = false,
+  placeKind,
 }: PlaceFormViewProps) {
   const t = useT("modules/coform");
   const navigate = useNavigate();
@@ -140,13 +143,13 @@ export function PlaceFormView({
   // Pas de finder partagé → form mal configuré pour la vue par lieu.
   if (!sharedFinderInfo) {
     return (
-      <div className="space-y-4 max-w-3xl mx-auto p-6">
+      <div className="space-y-4 max-w-5xl mx-auto p-6">
         <Button variant="ghost" size="sm" onClick={handleBackToList} className="gap-1">
           <ChevronLeft className="h-4 w-4" />
           {t("coform.placeView.actions.back")}
         </Button>
         <p className="text-sm text-muted-foreground italic">
-          {t("coform.placeView.empty.notApplicable")}
+          {t("coform.placeView.empty.notApplicable", undefined, { context: placeKind })}
         </p>
       </div>
     );
@@ -159,13 +162,13 @@ export function PlaceFormView({
         ? "coform.placeView.guard.notAuthorized"
         : "coform.placeView.guard.pendingValidation";
     return (
-      <div className="space-y-4 max-w-3xl mx-auto p-6">
+      <div className="space-y-4 max-w-5xl mx-auto p-6">
         <Button variant="ghost" size="sm" onClick={handleBackToList} className="gap-1">
           <ChevronLeft className="h-4 w-4" />
           {t("coform.placeView.actions.back")}
         </Button>
         <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4">
-          <p className="text-sm text-destructive">{t(reasonKey)}</p>
+          <p className="text-sm text-destructive">{t(reasonKey, undefined, { context: placeKind })}</p>
         </div>
       </div>
     );
@@ -203,6 +206,15 @@ export function PlaceFormView({
         formData={formData}
         defaultValues={defaultValues}
         answerId={access?.existingAnswerId ?? undefined}
+        // Le lieu est l'ÉLÉMENT de la réponse : il entre dans la clé du brouillon
+        // (cf. `useCoFormDraft`). Sans lui, la saisie faite sur `…/place/A` était
+        // proposée sur `…/place/B`, et « Reprendre » l'emportait sur le finder
+        // verrouillé juste en dessous — la salle de B se rattachait à A. Même
+        // type que la requête d'accès (`CoFormPlacePage` / `ToolsAnswerDialog`
+        // interrogent avec `"organizations"`) : même lieu ⇒ même clé, quel que
+        // soit le point d'entrée.
+        elementId={placeId}
+        elementType="organizations"
         lockedFields={[sharedFinderInfo.fieldName]}
         readOnly={readOnly}
         existingAnswerMeta={access?.existingAnswerMeta ?? null}

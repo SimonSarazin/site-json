@@ -8,10 +8,12 @@ export const AGENDA_QUERY_KEYS = {
   CLOCK: (windowMonths: number) => ["agenda", "clock", windowMonths] as const,
   CALENDAR: (p: { scope?: string; rangeStart: string; rangeEnd: string; type?: string; name?: string; base?: string }) =>
     ["agenda", "calendar", p.scope ?? "", p.rangeStart, p.rangeEnd, p.type ?? "", p.name ?? "", p.base ?? ""] as const,
-  LIST: (p: { scope?: string; type?: string; name?: string; base?: string }) =>
-    ["agenda", "list", p.scope ?? "", p.type ?? "", p.name ?? "", p.base ?? ""] as const,
+  /** `bounds` = signature `from`/`to`/`order`/`recurrency` (`agendaBoundsSig`) : le flux « prochains » et
+   *  le flux « passés » ont chacun leur cache ; une nouvelle ancre `from` = une nouvelle clé. */
+  LIST: (p: { scope?: string; type?: string; name?: string; base?: string; bounds?: string }) =>
+    ["agenda", "list", p.scope ?? "", p.type ?? "", p.name ?? "", p.base ?? "", p.bounds ?? ""] as const,
   /** Préfixe d'invalidation : toutes les queries calendrier (à-venir + grille), toutes plages/scopes. */
   CALENDAR_PREFIX: () => ["agenda", "calendar"] as const,
-  /** Préfixe d'invalidation : toutes les queries liste (passés), tous scopes. */
+  /** Préfixe d'invalidation : toutes les queries liste (prochains ET passés), tous scopes. */
   LIST_PREFIX: () => ["agenda", "list"] as const,
 };

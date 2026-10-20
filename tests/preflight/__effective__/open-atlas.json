@@ -1,0 +1,103 @@
+{
+  "site": "open-atlas",
+  "slug": "openAtlas",
+  "addMenus": {},
+  "editModals": {},
+  "adminResources": {},
+  "pages": {
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "notSourceKey": true,
+        "defaultTypes": [
+          "citoyens"
+        ],
+        "defaultFilters": {
+          "links.memberOf.555eba56c655675cdd65bf19": {
+            "$exists": true
+          },
+          "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+            "$exists": false
+          },
+          "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+            "$exists": false
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "address",
+          "tags",
+          "geo",
+          "geoPosition"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    },
+    "/communaute/searchProStatic#1": {
+      "baseParams": {
+        "notSourceKey": true,
+        "defaultTypes": [
+          "NGO",
+          "LocalBusiness",
+          "Group",
+          "GovernmentOrganization",
+          "Cooperative"
+        ],
+        "defaultFilters": {
+          "links.memberOf.555eba56c655675cdd65bf19": {
+            "$exists": true
+          },
+          "links.memberOf.555eba56c655675cdd65bf19.toBeValidated": {
+            "$exists": false
+          },
+          "links.memberOf.555eba56c655675cdd65bf19.isInviting": {
+            "$exists": false
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "address",
+          "tags",
+          "geo",
+          "geoPosition"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "address.addressLocality",
+          "tags"
+        ],
+        "indexStepList": 24
+      }
+    }
+  },
+  "referencement": {},
+  "membership": {},
+  "profileRelated": {}
+}

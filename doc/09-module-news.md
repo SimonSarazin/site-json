@@ -471,7 +471,7 @@ Modales React Hook Form + Zod. Champs :
 
 `forms/FileUploadProgress.tsx` — Barre de progression visuelle pour les uploads en cours.
 
-`forms/ImageCropDialog.tsx` — Dialog de recadrage basé sur `react-easy-crop`. Génère un canvas crop et retourne le blob de l'image recadrée.
+`forms/ImageCropDialog.tsx` — Dialog de recadrage basé sur `react-easy-crop`. Génère un canvas crop et retourne le blob de l'image recadrée. Options : `aspect` (ratio fixe, défaut 16/9) ; `aspectOptions` (sélecteur de format au-dessus du cadre, `value` = ratio ou `"original"` pour celui de la photo — la 1ʳᵉ option est active à l'ouverture ; absent = ratio fixe, sans sélecteur) ; `onUseOriginal` (bouton « Utiliser l'image entière », l'appelant reprend la photo sans rognage ; reçoit ses dimensions réelles, lues par le recadreur — bouton inactif tant qu'elles ne sont pas connues, et le dialogue se ferme dès le clic). Format, ratio, cadrage et zone découpée sont remis à zéro à chaque nouvelle `imageUrl` ou réouverture.
 
 ### Commentaires
 

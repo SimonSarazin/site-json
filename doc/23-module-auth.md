@@ -51,7 +51,7 @@ personnaliser textes, header/footer et SEO via la section `config.auth`.
 ```
 src/modules/auth/
   module.config.ts          { name: "auth", type: "core", enabled: true }
-  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 12 routes (11 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
+  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 11 routes (10 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
   index.ts                  barrel (composants, contexte, hooks, sections, schema…)
   i18n.ts                   addResourceBundle("fr"/"en", "modules/auth", …, true, true)
   i18n/{fr,en}.json
@@ -86,6 +86,8 @@ src/modules/auth/
     ValidateInvitationPage.tsx   passerelle d'invitation → inscription
     AcceptInvitationPage.tsx     réponse Accepter/Refuser d'une invitation par e-mail
     JoinByLinkPage.tsx           lien d'adhésion partageable (connect/ref/:ref)
+  lib/
+    reponseParMail.ts       lecture du lien Accepter/Refuser (lireSegment, lireReponse) + charge utile (chargeReponseParMail)
   sections/
     LoginFormSection.tsx
     RegisterFormSection.tsx
@@ -166,6 +168,36 @@ openLogin({ initialMode: "register" });
 Lève `Error("useAuthModal doit être utilisé sous <AuthModalProvider>")` si
 appelé hors du provider.
 
+### Rejouer l'intention après connexion
+
+`onSuccess` rend la main **avant** que `me` n'ait été propagé : y exécuter directement l'action
+verrait encore la session anonyme. Le patron est donc en deux temps — mémoriser l'intention dans
+`onSuccess`, la rejouer dans un effet qui attend l'arrivée de la session :
+
+```tsx
+const [postLoginIntent, setPostLoginIntent] = useState<Intent | null>(null);
+
+const requireConnected = (intent: Intent): boolean => {
+  if (me?.isConnected) return true;
+  openLogin({ onSuccess: () => setPostLoginIntent(intent) });
+  return false;
+};
+
+useEffect(() => {
+  if (!postLoginIntent || !me?.isConnected) return;
+  setPostLoginIntent(null);          // consommée UNE fois
+  run(postLoginIntent);
+}, [postLoginIntent, me?.isConnected]);
+```
+
+> **Cas du déclencheur non contrôlé.** Quand l'action est un `DialogTrigger` **non contrôlé** — la
+> modale de financement de la fiche commun AAC, par exemple — il n'y a pas d'état à rétablir : on
+> rejoue le **clic** sur le bouton (`ref.current?.click()`), dont le garde laisse alors passer
+> l'ouverture. C'est la seule variante à connaître ; tout le reste du patron est identique.
+>
+> Corollaire : un état optimiste recalculé pour le nouveau `me` dans le **même** commit n'est pas
+> encore lisible dans l'effet — relire le sens d'une bascule **à la source**, pas dans l'état local.
+
 ### Consommateurs actuels
 
 | Consommateur | Usage |
@@ -176,13 +208,14 @@ appelé hors du provider.
 | `ActionButtonGroup` (profil) | `openLogin()` pour adhérer/suivre |
 | `CardProfile` (search) | `openLogin()` pour suivre/contacter/ajouter |
 | `GatedPageNotice` | `openLogin()` **une seule fois** sur une page gardée en mode `prompt` face à un anonyme |
+| `CommunFinancingCard` (AAC) | `openLogin({ onSuccess })` pour « Financer ce commun » et les CTA de réaction, avec **rejeu de l'intention** après connexion (cf. ci-dessus) |
 
 ## Routes fournies par le module
 
 `routes.tsx` exporte une `ModuleRouteFactory` injectée par la découverte de
 modules (`src/lib/modules.ts` → `src/lib/buildRoutes.tsx`). La factory reçoit
 `(_queryClient, config)` — elle lit donc la config du site pour monter (ou non)
-une de ses routes. `src/modules/auth/routes.tsx:32-72` déclare :
+une de ses routes. `src/modules/auth/routes.tsx:32-80` déclare :
 
 | path | page | rôle |
 |---|---|---|
@@ -193,11 +226,38 @@ une de ses routes. `src/modules/auth/routes.tsx:32-72` déclare :
 | `validate/:user/:validationKey?` | `ActivateAccountPage` | activation de compte (liens du backend Node) |
 | `co2/person/activate/user/:user/validationKey/:validationKey` (+ forme avec splat `/*`) | `ActivateAccountPage` | mêmes liens, forme LEGACY Yii — le splat absorbe les suffixes `/costum/true`, `/redirect/…` |
 | `co2/person/validateinvitation/user/:user/validationKey/:validationKey` (+ splat `/*`) | `ValidateInvitationPage` | passerelle d'invitation vers l'inscription (compte *pending*) |
-| `co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/answer/:answer` (+ splat `/*`) | `AcceptInvitationPage` | réponse Accepter/Refuser d'une invitation reçue par e-mail |
+| `co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*` | `AcceptInvitationPage` | réponse Accepter/Refuser reçue par e-mail : à une invitation, ou à une **demande** d'adhésion/d'administration (voir ci-dessous) |
 | `co2/link/connect/ref/:ref` | `JoinByLinkPage` | lien d'adhésion partageable (`costum.invitationLink`) |
 
 Les deux formes (moderne et legacy) sont servies pour que les e-mails **déjà
 envoyés** restent valides quand le domaine d'un costum pointe sur site-json.
+
+**Lien Accepter/Refuser (`AcceptInvitationPage`).** Tout ce qui suit `targetId` est
+absorbé par un seul splat : les gabarits de mail y collent leurs suffixes dans un
+ordre non garanti (`/costum/true`, `/costumSlug/<slug>`, `/redirect/…`, `/answer/…`).
+La page relit chaque valeur par le segment qui la précède (`lireSegment`,
+`lib/reponseParMail.ts`). Le même lien sert deux mails :
+
+- `invitation.php` : l'invité répond à une invitation (flag `isInviting`) ;
+- `askToBecome.php` : un administrateur tranche la **demande** de quelqu'un d'autre. Le
+  lien porte en plus `/linkOption/<isAdminPending|toBeValidated>/key/<signature>`. La
+  page relaie ces deux champs à `VALIDATE_INVITATION_BY_MAIL` (`chargeReponseParMail`) :
+  sans `linkOption`, le backend répond à une invitation, ne trouve pas `isInviting` et
+  n'écrit rien. Un `linkOption` hors de ces deux valeurs n'est pas transmis. Les
+  libellés passent en « demande ».
+
+L'appel passe par `apiClient.callEndpoint` et non par
+`userApi.validateInvitationByMail`, qui ne transmet que `userId`/`targetType`/
+`targetId`/`answer`. À rebasculer quand le contrat du SDK déclarera `linkOption` et
+`key`. L'action n'est déclenchée qu'**au clic**, jamais au montage, pour qu'un scanner
+anti-spam ne réponde pas à la place du destinataire.
+
+**Après une acceptation**, la page rafraîchit le compte connecté (`me.refresh()`, non bloquant :
+la réponse est déjà enregistrée) — sans cela, le menu d'actions de la fiche proposerait encore
+« Accepter / Refuser » — et le bouton « Continuer » mène à la **fiche de la cible**
+(`/profil/<slug>`, même destination que la redirection du backend pour un costum `site-json`). Le
+lien ne portant que l'id, le slug est relu sur la fiche (`cheminFicheCible`, `lib/ficheCible.ts` :
+organisations, projets, événements, POI). Refus, ou fiche introuvable : retour à l'accueil.
 
 Ces paths sont montés en enfants de `/`. Les pages auth ne doivent donc **pas**
 être déclarées dans `config.pages` — sinon elles entreraient en collision avec

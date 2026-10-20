@@ -1,4 +1,4 @@
-import { Lightbulb, MapPin } from "lucide-react";
+import { Lightbulb, MapPin, Users, Building2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
-import { collectChipValues, decorateTags } from "../../lib/colorBy";
+import { decorateItemTags } from "../../lib/colorBy";
+import { getEntryId } from "../../lib/searchMapSelection";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { shortenTag } from "@/helpers/shortenTag";
@@ -19,9 +20,11 @@ export default function CardDefault({
     showDescription: false,
     showAddress: true,
   },
+  list,
 }: SearchCardProps) {
   const t = useT("modules/search");
   const data = useItem(item);
+  const linkedLabel = list?.linkedLabels?.[getEntryId(item) ?? ""];
 
   const {
     name,
@@ -29,7 +32,9 @@ export default function CardDefault({
     shortDescription,
     tags = [],
     image,
+    collection,
     countProjects = 0,
+    countContributors = 0,
   } = data;
 
   // Initiales du nom (max 3 caractères)
@@ -49,11 +54,7 @@ export default function CardDefault({
   // `tagColors.paths` ajoute les valeurs de champs serverData aux chips : la
   // taxonomie de parent62 vit dans `territoires`/`publics`/`themes`, pas dans `tags`.
   const displayTags = useMemo(
-    () =>
-      decorateTags(
-        collectChipValues(tags, item?.serverData, card.tagColors),
-        card.tagColors
-      ),
+    () => decorateItemTags(tags, item?.serverData, card.tagColors),
     [tags, item?.serverData, card.tagColors]
   );
 
@@ -82,6 +83,13 @@ export default function CardDefault({
               {name}
             </h3>
 
+            {linkedLabel && (
+              <div className="flex items-center text-xs text-muted-foreground mb-1 truncate">
+                <Building2 className="h-3 w-3 mr-1 flex-shrink-0" aria-hidden="true" />
+                {linkedLabel}
+              </div>
+            )}
+
             {card.showAddress && address?.addressLocality && (
               <div className="flex items-center text-sm text-muted-foreground mb-2 truncate">
                 <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
@@ -95,11 +103,24 @@ export default function CardDefault({
               </p>
             )}
 
+            {/* Un projet ne porte pas de sous-projets : « 0 projets » n'y informe de rien,
+                ce sont ses contributeurs qui comptent. */}
             <div className="flex items-center space-x-1 mb-3">
-              <Lightbulb className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">
-                {countProjects} {t("projets")}
-              </span>
+              {collection === "projects" ? (
+                <>
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("CardDefault.contributorCount", undefined, { count: countContributors })}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Lightbulb className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("CardDefault.projectCount", undefined, { count: countProjects })}
+                  </span>
+                </>
+              )}
             </div>
 
             {displayTags.length > 0 && (

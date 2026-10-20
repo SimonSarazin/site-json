@@ -1,6 +1,6 @@
 import { useTheme } from "next-themes";
 
-import { renderMarkdown } from "@/helpers/renderMarkdown";
+import { ProseContent } from "@/components/shared/ProseContent";
 import { useClientModule } from "@/hooks/useClientModule";
 
 interface MarkdownEditorProps {
@@ -69,16 +69,11 @@ export function MarkdownEditor({ value, onChange, height = 200, preview = "edit"
         preview={preview}
         commands={toolbar}
         extraCommands={extraToolbar}
-        // Aperçu SANITISÉ, identique au rendu public de l'article (helpers/renderMarkdown = markdown-it +
-        // DOMPurify via lib/sanitize). Évite le rendu rehype non assaini par défaut de la lib, et garantit un
-        // WYSIWYG fidèle à ce qui sera publié.
+        // Aperçu SANITISÉ, identique au rendu public de l'article (`ArticleBody` : `ProseContent` en markdown
+        // forcé, HTML brut accepté puis assaini par le profil strict). Évite le rendu rehype non assaini par
+        // défaut de la lib, et garantit un WYSIWYG fidèle à ce qui sera publié — tableau HTML compris.
         components={{
-          preview: (source) => (
-            <div
-              className="wmde-markdown"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(String(source ?? ""), {}) }}
-            />
-          ),
+          preview: (source) => <ProseContent text={String(source ?? "")} forceMarkdown className="wmde-markdown" />,
         }}
         // overflow={false} : l'éditeur gère le scroll du <body> pour son plein écran via un useEffect SANS
         // cleanup au démontage (Toolbar : `document.body.style.overflow = ...`). Dans une modale, à la

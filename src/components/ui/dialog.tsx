@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { stopSubmitAtPortal } from "@/lib/portalSubmit"
 
 function Dialog({
   ...props
@@ -52,6 +53,7 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onSubmit,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
@@ -68,6 +70,8 @@ function DialogContent({
           className
         )}
         {...props}
+        // Le `submit` d'un formulaire du dialogue ne remonte pas à celui qui l'a ouvert (cf. `stopSubmitAtPortal`).
+        onSubmit={stopSubmitAtPortal(onSubmit)}
       >
         {children}
         {showCloseButton && (

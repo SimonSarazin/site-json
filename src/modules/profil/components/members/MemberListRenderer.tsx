@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,9 @@ import {
 import { Users, Check, X, MoreVertical } from "lucide-react";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { useAdminActions } from "../../actions";
+import { rolesDuMembre } from "../../lib/memberRoles";
 import { LoadingState, EmptyState, UserListItem } from "../shared";
+import { ManageRolesDialog } from "./ManageRolesDialog";
 
 interface MemberListRendererProps {
   members: (User | Organization)[];
@@ -47,9 +50,13 @@ export function MemberListRenderer({
 }: MemberListRendererProps) {
   const t = useT("modules/profil");
   const { getUserStatusBadge } = useUserStatusBadge();
+  // Membre dont on édite les rôles — `null` = `ManageRolesDialog` fermé. État local à CETTE liste :
+  // `MemberManagementDialog` monte trois `MemberListRenderer` (pending/all/admins), chacune indépendante.
+  const [rolesTarget, setRolesTarget] = useState<User | null>(null);
   const { getUserActionButtons } = useAdminActions(
     entity,
-    showConfirmation || (() => {})
+    showConfirmation || (() => {}),
+    (user) => setRolesTarget(user),
   );
 
   // État de chargement
@@ -165,28 +172,63 @@ export function MemberListRenderer({
     );
   };
 
-  return (
-    <div className="space-y-3">
-      {members.map((member: User | Organization, index: number) => (
-        <UserListItem
-          key={member.id}
-          ref={index === members.length - 1 ? lastItemRef : undefined}
-          user={member}
-          subtitle={member.serverData?.email}
-          variant="card"
-          badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
-          actions={renderMemberActions(member)}
-        />
-      ))}
+  /** Rôles du membre DANS cette entité — texte libre, descriptif : aucun droit n'en découle
+   *  (les permissions viennent d'`isAdmin`, rendu par `getUserStatusBadge`). Rien à afficher
+   *  tant que personne ne les a saisis, ce qui est le cas par défaut. */
+  const renderRoles = (member: User | Organization) => {
+    const roles = rolesDuMembre(
+      member.serverData?.links as Record<string, unknown> | undefined,
+      entity?.id,
+      entity?.serverData?.links as Record<string, unknown> | undefined,
+      member.id,
+    );
+    if (roles.length === 0) return null;
+    return (
+      <div className="mt-1 flex flex-wrap gap-1">
+        {roles.map((role) => (
+          <span
+            key={role}
+            className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+          >
+            {role}
+          </span>
+        ))}
+      </div>
+    );
+  };
 
-      {/* Indicateur de chargement pour le scroll infini */}
-      {isFetchingNextPage && (
-        <LoadingState
-          variant="spinner"
-          size="sm"
-          message={t("ProfileMembers.loadingMore")}
-        />
-      )}
-    </div>
+  return (
+    <>
+      <div className="space-y-3">
+        {members.map((member: User | Organization, index: number) => (
+          <UserListItem
+            key={member.id}
+            ref={index === members.length - 1 ? lastItemRef : undefined}
+            user={member}
+            subtitle={member.serverData?.email}
+            variant="card"
+            extra={renderRoles(member)}
+            badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
+            actions={renderMemberActions(member)}
+          />
+        ))}
+
+        {/* Indicateur de chargement pour le scroll infini */}
+        {isFetchingNextPage && (
+          <LoadingState
+            variant="spinner"
+            size="sm"
+            message={t("ProfileMembers.loadingMore")}
+          />
+        )}
+      </div>
+
+      <ManageRolesDialog
+        entity={entity}
+        member={rolesTarget}
+        open={rolesTarget !== null}
+        onOpenChange={(open) => { if (!open) setRolesTarget(null); }}
+      />
+    </>
   );
 }

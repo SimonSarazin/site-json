@@ -68,12 +68,14 @@ export function useCoFormStep(options: UseCoFormStepOptions = {}): UseCoFormStep
     mode: "onBlur",
   });
 
-  // Réinitialiser le formulaire quand on change d'étape
-  // useForm ne réagit pas aux changements de defaultValues après le premier rendu
+  // Réinitialiser le formulaire quand on change d'étape — ET quand un brouillon
+  // vient d'être repris (`draftRestoreCount`) : la reprise peut viser l'étape
+  // déjà affichée, dont l'index ne bouge pas. `useForm` ne réagit pas aux
+  // changements de `defaultValues` après le premier rendu.
   useEffect(() => {
     form.reset(defaults);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveStepIndex]);
+  }, [effectiveStepIndex, coform.draftRestoreCount]);
 
   // États dérivés
   const isSubmitting = coform.stepState.submittingStep === subFormId;

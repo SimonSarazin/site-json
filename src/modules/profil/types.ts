@@ -1,3 +1,4 @@
+import type { InfiniteEntityQueryParams } from "@/hooks/useInfiniteEntityQuery";
 /**
  * Types centralisés pour le module profil
  *
@@ -17,7 +18,7 @@ import type { Organization, Project, Event, Poi } from "@communecter/cocolight-a
  */
 export interface EntityAction {
   id: string;
-  type: "follow" | "unfollow" | "friend" | "unfriend" | "join" | "leave" | "pending" | "accept" | "reject";
+  type: "follow" | "unfollow" | "friend" | "unfriend" | "join" | "leave" | "pending" | "accept" | "reject" | "delete";
   label: string;
   icon: React.ReactNode;
   variant: "default" | "outline" | "destructive";
@@ -31,6 +32,17 @@ export interface EntityAction {
   isPending?: boolean;
   disabled?: boolean;
   show: boolean;
+}
+
+/**
+ * Actions qu'une SECTION autorise en plus des actions ordinaires — posées en config, jamais par
+ * défaut : la suppression d'une fiche est définitive et sort l'élément de tout le réseau.
+ */
+export interface EntityActionsOptions {
+  /** Propose « Supprimer » aux ADMINISTRATEURS de la fiche. Défaut `false`. */
+  allowDelete?: boolean;
+  /** Où aller une fois la fiche supprimée (sa page n'existe plus). Défaut `/`. */
+  deleteRedirectPath?: string;
 }
 
 /**
@@ -117,10 +129,9 @@ export interface MemberQueryOptions {
 /**
  * Paramètres de pagination pour les requêtes de membres
  */
-export interface MemberQueryParams {
-  indexStep?: number;
-  search?: string;
-}
+// Même forme que le hook générique (`filters`/`fields` compris, SDK ≥ 1.0.194) : une seule
+// déclaration, la garde « non vide » vivant dans `useInfiniteEntityQuery`.
+export type MemberQueryParams = InfiniteEntityQueryParams;
 
 /**
  * Paramètres pour la requête d'amis

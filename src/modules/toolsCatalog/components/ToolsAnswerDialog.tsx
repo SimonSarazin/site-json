@@ -24,12 +24,16 @@ import { useCoFormQuery } from "@/modules/coform/hooks/useCoFormQuery";
 import { PlacesListView } from "@/modules/coform/components/PlacesListView";
 import { PlaceFormView } from "@/modules/coform/components/PlaceFormView";
 import { TOOLS_CATALOG_QUERY_KEYS } from "../constants/queryKeys";
+import type { ToolsCatalogSectionProps } from "../schema";
 
 interface ToolsAnswerDialogProps {
   /** Form d'usage auquel on répond (celui du catalogue). */
   formId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  placeKind?: ToolsCatalogSectionProps["placeKind"];
+  /** Surcharge du périmètre des lieux (cf. `toolsCatalog.props.placeSourceKeys`). */
+  placeSourceKeys?: ToolsCatalogSectionProps["placeSourceKeys"];
 }
 
 /**
@@ -44,7 +48,13 @@ interface ToolsAnswerDialogProps {
  * voies de fermeture du Dialog (Échap, clic overlay) sont interceptées ici via
  * `onDirtyChange`, comme le fait `CoFormModal`.
  */
-export default function ToolsAnswerDialog({ formId, open, onOpenChange }: ToolsAnswerDialogProps) {
+export default function ToolsAnswerDialog({
+  formId,
+  open,
+  onOpenChange,
+  placeKind,
+  placeSourceKeys,
+}: ToolsAnswerDialogProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/toolsCatalog");
   const tc = useT("modules/coform");
@@ -117,10 +127,10 @@ export default function ToolsAnswerDialog({ formId, open, onOpenChange }: ToolsA
       </AlertDialog>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-4xl">
+        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-6xl">
           <DialogHeader>
             <DialogTitle>{t("answerButton")}</DialogTitle>
-            <DialogDescription className="sr-only">{t("answerDialogDescription")}</DialogDescription>
+            <DialogDescription className="sr-only">{t("answerDialogDescription", undefined, { context: placeKind })}</DialogDescription>
           </DialogHeader>
 
           <div className="-mx-6 flex-1 overflow-y-auto px-6">
@@ -145,6 +155,7 @@ export default function ToolsAnswerDialog({ formId, open, onOpenChange }: ToolsA
                 onDirtyChange={setFormDirty}
                 onAfterSubmit={handleAfterSubmit}
                 hidePageChrome
+                placeKind={placeKind}
               />
             ) : (
               <PlacesListView
@@ -152,6 +163,8 @@ export default function ToolsAnswerDialog({ formId, open, onOpenChange }: ToolsA
                 formId={formId}
                 onOpenPlace={setPlaceId}
                 hidePageChrome
+                placeKind={placeKind}
+                placeSourceKeys={placeSourceKeys}
               />
             )}
           </div>

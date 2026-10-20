@@ -28,9 +28,8 @@ import { SelectObject } from "@/components/ui/select-objet";
 import { useT } from "@/hooks/useT";
 import { useCommunList } from "../hooks/useCommunList";
 import { useToolEnrichmentMutation } from "../hooks/useToolEnrichmentMutation";
+import { isCommunLink, replaceCommunId } from "../utils/communLink";
 import { ToolImage } from "./ToolImage";
-
-const COMMUN_ANCHOR = /#detail-un-commun\.communId\.[0-9a-fA-F]{24}/;
 
 interface ToolEditDialogProps {
   tool: ToolCatalogItem;
@@ -121,11 +120,11 @@ export function ToolEditDialog({
   const urlToolChange = useMemo(() => {
     if (communId === initialCommunId) return undefined;
     if (communId === "") return "";
-    // Base existante d'abord : elle porte le bon domaine pour ce costum.
-    const existing = tool.urlTool && COMMUN_ANCHOR.test(tool.urlTool) ? tool.urlTool : "";
-    if (existing) {
-      return existing.replace(COMMUN_ANCHOR, `#detail-un-commun.communId.${communId}`);
-    }
+    // Base existante d'abord : elle porte la forme ET le domaine sous lesquels cet
+    // outil a été enrichi — ancre legacy ou route de fiche site-json, on ne le sait
+    // pas ici et on n'a pas à le savoir. `replaceCommunId` repointe sans convertir.
+    const repointe = tool.urlTool ? replaceCommunId(tool.urlTool, communId) : null;
+    if (repointe) return repointe;
     // Ni base réutilisable ni gabarit configuré : on ne touche PAS à `urlTool`.
     // Y écrire "" (ce que produirait un `?? ""`) effacerait le lien au moment même
     // où l'admin rattache un commun.
@@ -140,7 +139,7 @@ export function ToolEditDialog({
    * enregistrer sans effet.
    */
   const canAttachCommun = useMemo(
-    () => (!!tool.urlTool && COMMUN_ANCHOR.test(tool.urlTool)) || !!communUrlTemplate,
+    () => isCommunLink(tool.urlTool) || !!communUrlTemplate,
     [tool.urlTool, communUrlTemplate],
   );
 

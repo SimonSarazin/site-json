@@ -60,3 +60,34 @@ describe("renderSection — titre orphelin", () => {
     expect(queryByText("Titre fantôme")).toBeNull();
   });
 });
+
+/**
+ * `$slot:` — l'entrée est rendue à la place déclarée, et son enveloppe porte `empty:hidden` : un
+ * slot qui ne rend rien (inerte en édition, rien à signaler) ne doit pas laisser de cellule vide
+ * dans la grille.
+ */
+describe("renderSection — $slot", () => {
+  const withSlot: SectionDescriptor = {
+    id: "info",
+    label: "Infos",
+    groups: [{ columns: 1, fields: ["legalStatus", "$slot:duplicates"] }],
+  } as SectionDescriptor;
+
+  it("rend le nœud du slot APRÈS le champ qui le précède", () => {
+    const props = { ...p, renderSlot: (id: string) => <span data-testid={`slot-${id}`} /> } as unknown as LayoutProps;
+    const { container, getByTestId } = render(<>{renderSection(withSlot, props, {})}</>);
+    const cells = Array.from(container.querySelectorAll(".grid > div"));
+    expect(cells).toHaveLength(2);
+    expect(cells[0].contains(getByTestId("field-legalStatus"))).toBe(true);
+    expect(cells[1].contains(getByTestId("slot-duplicates"))).toBe(true);
+  });
+
+  it("l'enveloppe d'un slot vide est masquable (empty:hidden), pas celle d'un champ", () => {
+    const { container } = render(<>{renderSection(withSlot, p, {})}</>);
+    const cells = Array.from(container.querySelectorAll(".grid > div"));
+    expect(cells[0].className).not.toContain("empty:hidden");
+    expect(cells[1].className).toContain("empty:hidden");
+    expect(cells[1].childElementCount).toBe(0);
+  });
+});
+

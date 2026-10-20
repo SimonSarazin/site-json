@@ -14,7 +14,7 @@ import type { z } from "zod";
 import type { QueryKey } from "@tanstack/react-query";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { FormDescriptor } from "@/modules/formEngine";
-import type { EntityModalCtx } from "./entityModalSpec";
+import type { EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
 
 type Values = Record<string, unknown>;
 
@@ -82,7 +82,10 @@ export function getScopeFn(key: string): ScopeFn | undefined {
 }
 
 // ── Slots UI (id → composant, reçoit le ctx) ──────────────────────────────────
-export type SlotFn = (ctx: EntityModalCtx) => ReactNode;
+/** `spec` : la spec du formulaire qui monte le slot — un slot GÉNÉRIQUE y lit ses paramètres (ex.
+ *  `spec.duplicateCheck`). Optionnel : les slots métier l'ignorent. ⚠ Appelée dans un `useMemo`
+ *  d'`EntityFormModal` : AUCUN hook ici, les hooks vivent dans le composant créé. */
+export type SlotFn = (ctx: EntityModalCtx, spec?: EntityModalSpec) => ReactNode;
 const slotFns = new Map<string, SlotFn>();
 export function registerSlotFn(id: string, fn: SlotFn): void {
   slotFns.set(id, fn);

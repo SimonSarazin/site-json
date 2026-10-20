@@ -1,13 +1,8 @@
 import type { AdminResourceSection } from "../schema";
-import { formatDateLong } from "@/helpers/formatDate";
-
-/** entityType (collection plurielle) → clé de modale d'ajout STANDARD (ModalRegistry). */
-const ADD_MODAL_BY_TYPE: Record<string, string> = {
-  organizations: "add-organization",
-  projects: "add-project",
-  events: "add-event",
-  poi: "add-poi",
-};
+import type { LocalizedString } from "@/types/locale-schema";
+import { formatDateLong, resolveEventStartDate } from "@/helpers/formatDate";
+import { formatRecurrenceLabel, type Translate } from "@/modules/search/lib/openingHoursDays";
+import { STANDARD_ADD_MODAL_BY_TYPE } from "@/modules/profil/components/add/addModals";
 
 /** Sous-ensemble utile d'un doc `config.costumForms` (résolution du form costum du site). */
 export interface CostumFormDocLike {
@@ -44,6 +39,16 @@ function identiteCompatible(identity: Record<string, unknown> | undefined, filte
 }
 
 /**
+ * Id du form CoForm dont le bouton « Créer » de la resource ouvre la saisie d'une RÉPONSE
+ * (`create: { "coform": "<formId>" }`, resources `answers`) — `null` pour toute autre forme de
+ * `create`. Exclusif avec `resolveCreateModal` : l'un ou l'autre porte le bouton, jamais les deux.
+ */
+export function createCoformId(section: AdminResourceSection): string | null {
+  const create = section.create;
+  return create && typeof create === "object" ? create.coform : null;
+}
+
+/**
  * Résout la clé de modale de CRÉATION d'une resource — le CHOIX costum/standard appartient à la
  * config (`create`) :
  *  - `false` → pas de création ;
@@ -65,7 +70,7 @@ function identiteCompatible(identity: Record<string, unknown> | undefined, filte
  * Le pas 3 remplace un `docs[0]` qui faisait dépendre le formulaire ouvert de l'ORDRE DES CLÉS
  * dans le JSON : réordonner `costumForms` — geste cosmétique, qu'aucun test ne surveille — changeait
  * silencieusement la modale d'ajout de l'admin. Refuser de choisir aligne aussi cette fonction sur
- * son jumeau public `costumCreateKey` (AddEntityDropdown), qui rendait déjà `null` sur ambiguïté :
+ * son jumeau public `costumCreateKey` (l'« Ajouter » d'un profil), qui rendait déjà `null` sur ambiguïté :
  * la MÊME décision était prise différemment des deux côtés pour une même config.
  */
 export function resolveCreateModal(
@@ -75,7 +80,9 @@ export function resolveCreateModal(
 ): string | null {
   const create = section.create ?? "inherit";
   if (create === false) return null;
-  const standard = ADD_MODAL_BY_TYPE[section.entityType] ?? null;
+  // Création par CoFormModal (`{coform}`) : pas une modale d'entité — cf. `createCoformId`.
+  if (typeof create === "object") return null;
+  const standard = STANDARD_ADD_MODAL_BY_TYPE[section.entityType] ?? null;
   if (create === "standard") return standard;
   if (typeof create === "string" && create !== "inherit") return create;
 
@@ -121,12 +128,71 @@ export function resolveEditModal(section: AdminResourceSection): { enabled: bool
   return { enabled: true, modalName: null }; // inherit → résolution publique
 }
 
+/** Tons de badge d'un STATUT — MÊMES tokens `bg-badge-*` que les badges des cartes publiques
+ *  (`getStatusStyle`, search/lib/coformAnswer) : modération (`statusField`), reprise de réponses
+ *  (`answerCopy`) et annuaire racontent un état avec les mêmes couleurs. */
+export const STATUS_TONE_CLASS: Record<string, string> = {
+  positive: "bg-badge-valid text-primary-foreground",
+  pending: "bg-badge-waiting text-primary-foreground",
+  progress: "bg-badge-in-progress text-primary-foreground",
+  negative: "bg-badge-refused text-primary-foreground",
+};
+
+/** Colonne de table admin, forme longue (la forme courte `"path"` est normalisée en `{ path }`). */
+export interface AdminColumn {
+  path: string;
+  label?: LocalizedString;
+  type?: "text" | "audio";
+  sortable?: boolean;
+}
+
+/**
+ * Normalise `columns` (config `AdminColumnsSchema` : chaîne brute ou objet) vers la forme longue —
+ * même règle pour les sections resource, reference et answerCopy. `defaults` quand la config n'en
+ * déclare pas.
+ */
+export function normalizeColumns(
+  columns: ReadonlyArray<string | AdminColumn> | undefined,
+  defaults: ReadonlyArray<string | AdminColumn>,
+): AdminColumn[] {
+  return (columns ?? defaults).map((c) => (typeof c === "string" ? { path: c } : { ...c }));
+}
+
 /** Lit un chemin pointé (ex. `"address.city"`) dans un objet. */
 export function getPath(obj: unknown, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, key) => {
     if (acc && typeof acc === "object") return (acc as Record<string, unknown>)[key];
     return undefined;
   }, obj);
+}
+
+/**
+ * Valeur d'une colonne, pour une ligne de la table. Cas général : `getPath` brut. Colonne `startDate` :
+ * repli sur `resolveEventStartDate` (`startDateSort`/`startDateSortFormat`) pour un événement ponctuel
+ * SANS `startDate` propre — ignoré pour les autres types d'entités (n'ont ni l'un ni l'autre champ).
+ * Un récurrent, lui, n'a JAMAIS ces deux champs ici : l'admin liste via `searchCostum` (endpoint
+ * générique), qui ne calcule ces occurrences que côté `searchEventsCostum`/l'agenda — cf.
+ * `formatColumnCell`, qui prend le relais pour ce cas précis.
+ */
+export function getColumnValue(obj: unknown, path: string): unknown {
+  if (path === "startDate" && obj && typeof obj === "object") {
+    return resolveEventStartDate(obj as Record<string, unknown>);
+  }
+  return getPath(obj, path);
+}
+
+/** Média audio d'une ligne (`medias[]` : `{ type: "audio", url }`). */
+function isAudioMedia(media: unknown): media is { type: "audio"; url?: unknown } {
+  return !!media && typeof media === "object" && (media as { type?: unknown }).type === "audio";
+}
+
+/**
+ * Source du lecteur d'une cellule `audio` : URL directe, ou 1er `medias[]` de type audio de la
+ * ligne — `undefined` sans fichier lisible (la cellule affiche alors « — » et ne retient aucun clic).
+ */
+export function audioSrc(value: unknown): string | undefined {
+  const url = Array.isArray(value) ? value.find(isAudioMedia)?.url : value;
+  return typeof url === "string" && url !== "" ? url : undefined;
 }
 
 /** Lit un champ de statut (mode `statusField`) : chemin complet d'abord, puis la clé FEUILLE à plat.
@@ -164,4 +230,21 @@ export function formatCell(value: unknown): string {
     if (typeof long === "string") return formatDateLong(Number(long));
   }
   return "";
+}
+
+/**
+ * Cellule complète (valeur + formatage) d'une ligne. Colonne `startDate`, event RÉCURRENT (aucune
+ * date résolue par `getColumnValue` — cf. sa doc) : repli sur le libellé de récurrence (« Chaque
+ * vendredi », `formatRecurrenceLabel`) à partir de `recurrency`/`openingHours` — CES champs-là sont
+ * bien projetés par l'admin (`champsAdmin` dans `AdminResourceTable.tsx`), contrairement à une
+ * occurrence calculée. `t` : `useT("modules/search")` (namespace des clés `days.*`/`card.event.*`).
+ */
+export function formatColumnCell(data: unknown, path: string, t: Translate): string {
+  const value = getColumnValue(data, path);
+  if (path === "startDate" && value == null && data && typeof data === "object") {
+    const sd = data as Record<string, unknown>;
+    const label = formatRecurrenceLabel(sd.recurrency, sd.openingHours, t);
+    if (label) return label;
+  }
+  return formatCell(value);
 }

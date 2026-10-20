@@ -45,6 +45,8 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
       successKey: "toast.add.poiSuccess", errorKey: "toast.add.poiError", errorContext: "EntityFormModal · ADD_POI",
     });
     expect(mut.inject).toMatchObject({ parent: null });
+    // Sous-type du form (`costumForms.equipements-sportifs.subType`) relayé à la CRÉATION.
+    expect(mut.subType).toBe("recoveryCenter");
     // STAMP costum : type "recoveryCenter" posé au CREATE via inject.extraFields (plus dans le descripteur).
     expect(mut.inject?.extraFields).toEqual({ type: "recoveryCenter" });
     // defaults add = createEmptyDefaults(scope, equipementsSportifsDescriptor)
@@ -66,6 +68,7 @@ describe("résolveur — spec poi-équipement (parité avec l'ex-config)", () =>
     });
     expect(mut.target).toBe(entity);
     expect(mut.costumSlug).toBeUndefined();
+    expect(mut.subType).toBeUndefined(); // édition : jamais de ciblage de sous-type
     // STAMP non-effaçant : le payload d'édition n'émet PAS `type` (ni l'inject, create-only) → clé ABSENTE
     // → Object.assign(entity.data, payload) ne touche pas le `type` existant (préservé, jamais $unset).
     const editForm = { ...createEmptyDefaults(scope, equipementsSportifsDescriptor), name: "Equip X" } as unknown as Record<string, unknown>;

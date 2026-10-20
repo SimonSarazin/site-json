@@ -24,9 +24,11 @@ import { GenericForm, configToDescriptor, formDescriptorToConfig, type FormDescr
 import "./registerWidgets"; // side-effect : enregistre les widgets DOMAINE (location/finder/tags/image/…) AVANT le 1er rendu
 import "./registerSpecFns"; // side-effect : enregistre descripteurs + fns costum (par clé) AVANT le 1er rendu d'une spec
 import { useUnsavedGuard } from "./useUnsavedGuard";
+import { useDuplicateSubmitGuard } from "./useDuplicateSubmitGuard";
 import { useEntityMutation, type EntityMutationSpec } from "../hooks/useEntityMutation";
 import { specToConfig } from "./resolveModalSpec";
-import type { EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
+import { applyCreateDefaults } from "./createDefaults";
+import type { DuplicateCheckSpec, EntityModalCtx, EntityModalSpec } from "./entityModalSpec";
 
 export type { EntityModalCtx };
 
@@ -67,6 +69,8 @@ export interface EntityModalConfig {
   resolveScope?: (carrier: EntityTypes | null | undefined) => unknown;
   // ── slots (UI custom : doublons/parentInfo) ──
   slots?: (ctx: EntityModalCtx) => Record<string, ReactNode>;
+  // ── détection de doublons à la création : paramètres de la garde de soumission (et du slot générique) ──
+  duplicateCheck?: DuplicateCheckSpec;
   // ── nettoyage des valeurs avant submit (ex. URLs vides) ──
   cleanValues?: (values: FieldValues) => FieldValues;
   // ── WRITE : construit le spec useEntityMutation (mode-aware, runtime). ──
@@ -83,9 +87,17 @@ export interface EntityFormModalProps {
   mode?: "add" | "edit";
   entity?: EntityTypes | null;
   parent?: EntityTypes | null;
+  /** Valeurs semées en mode AJOUT, par-dessus les défauts du descripteur (cf. `createDefaults.ts`). */
+  createDefaults?: Record<string, unknown>;
+  /**
+   * Création lancée depuis un autre parcours (ex. le bouton « Ajouter » d'un finder coform) : reçoit
+   * l'entité créée, et la modale ne redirige PAS vers sa fiche — l'appelant garde la main, sans quoi
+   * la saisie en cours serait abandonnée.
+   */
+  onCreated?: (entity: EntityTypes) => void;
 }
 
-export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent }: EntityFormModalProps): ReactNode {
+export function EntityFormModal({ config: configProp, spec, open, onOpenChange, mode = "add", entity, parent, createDefaults, onCreated }: EntityFormModalProps): ReactNode {
   const config = useMemo(() => configProp ?? specToConfig(spec as EntityModalSpec), [configProp, spec]);
   const t = useT("modules/profil");
   const tr = (k: I18n) => t(k); // résout clé i18n OU LocalizedString inline (useT route selon le type)
@@ -104,7 +116,16 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   // connecté : useEntityBySlugQuery renvoie `me` (jamais re-instancié, l'invalidation react-query
   // re-renvoie la même référence). Sans ce dep, le seed du PREMIER rendu restait figé et la
   // modale ré-ouvrait sur l'ANCIENNE adresse après un save pourtant réussi (save() → refresh()).
-  const defaultValues = useMemo(() => config.buildDefaults(ctx), [config, effMode, entity, scope, open]); // eslint-disable-line react-hooks/exhaustive-deps
+  // `createDefaults` n'est semé qu'en AJOUT : en édition le seed vient de l'entité, et l'écraser par
+  // une valeur d'onglet réécrirait une fiche existante à l'insu de l'admin.
+  const defaultValues = useMemo(
+    () => applyCreateDefaults(
+      config.buildDefaults(ctx),
+      effMode === "add" ? createDefaults : undefined,
+      Object.keys(descriptor.fields),
+    ),
+    [config, effMode, entity, scope, open, createDefaults, descriptor], // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const schema = useMemo(() => config.getSchema?.(ctx), [config, effMode, entity]); // eslint-disable-line react-hooks/exhaustive-deps
   // Listes de valeurs du costum PORTEUR (cf. `costumListsOf` pour les deux emplacements et leur
   // histoire). Ne sont exploitables comme options QUE les listes STATIQUES : une déclaration
@@ -131,14 +152,24 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   }, [isEdit, entity, config, parent, scope]); // eslint-disable-line react-hooks/exhaustive-deps
   const slots = useMemo(() => config.slots?.(ctx), [config, effMode, entity, parent, scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const mutation = useEntityMutation(config.buildSpec(ctx));
+  const mutationSpec = config.buildSpec(ctx);
+  const mutation = useEntityMutation(onCreated ? { ...mutationSpec, navigateOnSuccess: false } : mutationSpec);
   const guard = useUnsavedGuard(onOpenChange);
+  // Création seulement : en édition l'entité existe, il n'y a rien à confirmer.
+  const duplicateGuard = useDuplicateSubmitGuard(effMode === "add" ? config.duplicateCheck : undefined, open);
 
-  const onSubmit = async (values: FieldValues) => {
-    const cleaned = config.cleanValues ? config.cleanValues(values) : values;
-    await mutation.mutateAsync(cleaned as Record<string, unknown>);
+  const commit = async (cleaned: FieldValues) => {
+    const { entity: created } = await mutation.mutateAsync(cleaned as Record<string, unknown>);
     config.afterSubmit?.(ctx, cleaned);
     onOpenChange(false);
+    if (effMode === "add" && created) onCreated?.(created);
+  };
+  const onSubmit = async (values: FieldValues) => {
+    const cleaned = config.cleanValues ? config.cleanValues(values) : values;
+    // Doublon quasi certain → la garde ouvre sa confirmation et relancera `commit` elle-même.
+    // Un `return` simple, jamais une exception : le formulaire la re-propagerait en rejet non géré.
+    if (await duplicateGuard.intercept(cleaned, () => commit(cleaned))) return;
+    await commit(cleaned);
   };
 
   const titleKey = isEdit ? config.title.edit : config.title.add;
@@ -177,7 +208,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
             t={tr}
             submitLabel={tr(submitLabel)}
             texts={texts}
-            submitting={mutation.isPending}
+            submitting={mutation.isPending || duplicateGuard.checking}
             onDirtyChange={guard.setDirty}
             onCancel={() => guard.guardedOpenChange(false)}
             listsOptions={listsOptions}
@@ -187,6 +218,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
         </DialogContent>
       </Dialog>
       {guard.confirmDialog}
+      {duplicateGuard.confirmDialog}
     </>
   );
 }

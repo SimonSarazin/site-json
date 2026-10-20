@@ -5,6 +5,7 @@
 import { useMemo } from "react";
 import type { User, Organization } from "@communecter/cocolight-api-client";
 import { useUserOrganizations } from "@/modules/profil/hooks/useMembershipQuery";
+import { validatedAdminLinkFilters } from "@/modules/profil/lib/adminLinks";
 
 export interface AdminOrganization {
   id: string;
@@ -19,33 +20,28 @@ export interface UseUserAdminOrganizationsParams {
   search?: string;
 }
 
-export function useUserAdminOrganizations(
+export interface UseUserAdminOrganizationsResult {
+  organizations: AdminOrganization[];
+  /** Vrai tant que la première page n'est pas arrivée — à distinguer d'une liste vide. */
+  isLoading: boolean;
+}
+
+export function useUserAdminOrganizationsQuery(
   currentUser: User | null,
   params?: UseUserAdminOrganizationsParams
-): AdminOrganization[] {
+): UseUserAdminOrganizationsResult {
   const userId = currentUser?.id ?? "";
 
-  const filters = useMemo(
-    () =>
-      userId
-        ? {
-            [`links.members.${userId}`]: { $exists: true },
-            [`links.members.${userId}.isAdmin`]: true,
-            [`links.members.${userId}.isAdminPending`]: { $exists: false },
-            [`links.members.${userId}.toBeValidated`]: { $exists: false },
-            [`links.members.${userId}.isInviting`]: { $exists: false },
-          }
-        : undefined,
-    [userId]
-  );
+  // Pas de mémo : la clé de requête est comparée par VALEUR, un nouvel objet de filtres ne la change pas.
+  const filters = userId ? validatedAdminLinkFilters(userId) : undefined;
 
-  const { organizations } = useUserOrganizations(currentUser, {
+  const { organizations, isLoading } = useUserOrganizations(currentUser, {
     indexStep: 100,
     search: params?.search,
     filters,
   });
 
-  return useMemo(
+  const adminOrganizations = useMemo(
     () =>
       organizations.map((org: Organization): AdminOrganization => ({
         id: org.id ?? "",
@@ -56,4 +52,16 @@ export function useUserAdminOrganizations(
       })),
     [organizations]
   );
+
+  return useMemo(
+    () => ({ organizations: adminOrganizations, isLoading }),
+    [adminOrganizations, isLoading]
+  );
+}
+
+export function useUserAdminOrganizations(
+  currentUser: User | null,
+  params?: UseUserAdminOrganizationsParams
+): AdminOrganization[] {
+  return useUserAdminOrganizationsQuery(currentUser, params).organizations;
 }

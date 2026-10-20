@@ -7,7 +7,6 @@
 - [Configuration](#configuration)
   - [Variables d'environnement](#variables-denvironnement)
     - [Variables principales (serveurs dev et prod)](#variables-principales-serveurs-dev-et-prod)
-    - [Variables HelloAsso (module cagnotte)](#variables-helloasso-module-cagnotte)
     - [Variables injectées dans `window.__ENV__`](#variables-injectées-dans-window__env__)
   - [Résolution de configuration en 3 niveaux](#résolution-de-configuration-en-3-niveaux)
     - [En développement (`dev-server.js`)](#en-développement-dev-serverjs)
@@ -49,28 +48,11 @@ La configuration de SiteForge se fait principalement via :
 | `SITE_CSS_CONTENT` | Contenu CSS complet inline (build-time). Priorité maximale pour la résolution CSS. | — |
 | `SITE_CSS_PATH` | Chemin vers un fichier CSS personnalisé (build-time). Prioritaire sur le lookup `sites.json`. | — |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | Domaines distants autorisés pour l'optimisation d'images, séparés par des virgules. | `localhost,127.0.0.1` + hostname de `VITE_BASE_URL_BACKEND` |
+| `PUBLIC_BASE_URL` | Repli du domaine public de `robots.txt` et `sitemap.xml`, après `VITE_SITE_PUBLIC_URL` et `SITE_PUBLIC_URL`. Sans aucune des trois : l'hôte de la requête. | — |
 
 > **En production**, au moins `SITE_CONFIG_JSON` **ou** `SITE_CONFIG_PATH` doit être défini — sinon le serveur arrête le démarrage avec une erreur explicite.
 
-### Variables HelloAsso (module cagnotte)
-
-Ces variables sont utilisées par `server/api/helloasso-checkout.js` pour le module de financement collaboratif :
-
-| Variable | Description | Valeur par défaut |
-| -------- | ----------- | ----------------- |
-| `HELLOASSO_CLIENT_ID` | Client ID OAuth HelloAsso. | — |
-| `HELLOASSO_CLIENT_SECRET` | Client Secret OAuth HelloAsso. | — |
-| `HELLOASSO_ORGANIZATION_SLUG` | Slug de l'organisation HelloAsso (côté serveur). | — |
-| `HELLOASSO_ORGANIZATION_ID` | ID de l'organisation HelloAsso. | — |
-| `HELLOASSO_PUBLIC_BASE_URL` | URL publique de l'API HelloAsso. | — |
-| `HELLOASSO_OAUTH_TOKEN_URL` | URL du endpoint OAuth pour obtenir les tokens. | — |
-| `HELLOASSO_DEV_MODE` | Active le mode développement HelloAsso (sandbox). | — |
-| `VITE_HELLOASSO_ORGANIZATION_SLUG` | Slug de l'organisation HelloAsso (côté client, `import.meta.env`). | — |
-| `APP_BASE_URL` | URL de base de l'application (utilisée pour les callbacks HelloAsso). | — |
-| `PUBLIC_BASE_URL` | URL publique de base pour les redirections. | — |
-| `NGROK_URL` | URL ngrok pour les webhooks en développement local. | — |
-| `VITE_PUBLIC_BASE_URL` | URL publique exposée côté client (`import.meta.env`). | — |
-| `VITE_NGROK_URL` | URL ngrok exposée côté client (`import.meta.env`). | — |
+> **Paiements (module cagnotte)** : aucune variable côté site-json. Les clés Stripe et HelloAsso se configurent par entité dans Communecter (collection `paymentMethods`) ; le backend crée, vérifie et enregistre les paiements (cf. [Module Cagnotte](18-module-cagnotte.md#services-de-paiement)).
 
 ### Variables injectées dans `window.__ENV__`
 
@@ -90,7 +72,7 @@ Ces variables sont utilisées par `server/api/helloasso-checkout.js` pour le mod
 
 > **Ajouter une variable destinée au navigateur** : la déclarer dans `RuntimeEnv` **et** l'ajouter à l'objet `window.__ENV__` de `server/prod-server.js` **et** à sa condition d'émission, **et** à `server/dev-server.js`. Omettre l'injection donne une variable visible du SSR (`process.env`) mais pas du client — asymétrie qu'aucun typage ne signale, et que le dev masque puisque `import.meta.env` y prend le relais. `tests/preflight/runtime-env.test.ts` verrouille les quatre maillons. Pour qu'elle soit en plus posable par site, l'ajouter à `CONSTANTES` ou `SECRETES` de `scripts/lib/deploy-config.ts` : le champ `env` de `sites.json` n'est consulté que pour les clés de ces deux listes.
 
-> **`VITE_COSTUM_FORCE_LIVE`** : drapeau de dépannage. À `"true"`, la lib ignore ses schémas costum bundlés et ne résout que par `getcostumjson` — utile quand l'artefact publié devient plus vieux que la base et masque des champs réels. Coûteux : plus de démarrage à froid, contexte costum nu tant que le préchargement n'a pas répondu. Se pose par site via le champ `env` de `sites.json`, sans reconstruire l'image.
+> **`VITE_COSTUM_FORCE_LIVE`** : drapeau de dépannage. À `"true"`, la lib ignore ses schémas costum bundlés et ne résout que par `getcostumjson` — utile quand l'artefact publié devient plus vieux que la base et masque des champs réels. Coûteux : plus de démarrage à froid, contexte costum nu tant que le préchargement n'a pas répondu — et `get()` ne précharge que le costum de la PROVENANCE d'une fiche (`source.key`). À l'édition par un formulaire costum, `pinSchemaCostumScope` charge donc le costum du FORMULAIRE (`loadCostumScope`), cf. [08 — `schemaCostumSlug`](08-module-profil.md). Se pose par site via le champ `env` de `sites.json`, sans reconstruire l'image.
 
 La fonction utilitaire `readEnv` centralise la lecture avec priorité `window.__ENV__` > `process.env` > `import.meta.env` :
 

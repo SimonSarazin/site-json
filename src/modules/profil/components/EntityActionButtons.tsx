@@ -1,10 +1,13 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useEntityActions } from "../actions";
+import type { EntityActionsOptions } from "../types";
 import { SeparateButtonsLayout } from "./action-buttons/SeparateButtonsLayout";
 import { StatusDropdownLayout } from "./action-buttons/StatusDropdownLayout";
 
 interface EntityActionButtonsProps {
   entity: EntityTypes | null;
+  /** Actions ouvertes par la section hôte (suppression de la fiche) — cf. `EntityActionsOptions`. */
+  options?: EntityActionsOptions;
 }
 
 /**
@@ -20,8 +23,8 @@ interface EntityActionButtonsProps {
  *
  * @param entity - L'entité concernée (User, Organization, Project, Event)
  */
-export function EntityActionButtons({ entity }: EntityActionButtonsProps) {
-  const actionsConfig = useEntityActions(entity);
+export function EntityActionButtons({ entity, options }: EntityActionButtonsProps) {
+  const actionsConfig = useEntityActions(entity, options);
 
   if (!actionsConfig) return null;
 

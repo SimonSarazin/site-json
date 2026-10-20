@@ -49,10 +49,14 @@ registerWidget("tags", (p) => <TagsWidget p={p} />);
 
 // valueSelect : sélection d'une ou plusieurs VALEURS d'une liste du costum, saisie libre facultative.
 // Sans rapport avec les tags — vise `territoires`, `auteurs`, `legalStatus`… `widgetProps` :
-// `list` (défaut : le nom du champ), `costumSlug`, `multiple` (défaut true), `min`, `max`, `creatable`.
+// `list` (défaut : le nom du champ ; une CHAÎNE ou un TABLEAU de noms, fusionnés — cas d'un champ
+// alimenté depuis plusieurs collections), `costumSlug`, `multiple` (défaut true), `min`, `max`,
+// `creatable` (défaut true). Un champ n'ÉCRIT jamais dans `costum.lists` : une valeur libre vit sur la
+// fiche et remonte aux suivants par la recette `distinct`, une fois la fiche modérée (cf. docstring
+// `ValueSelectField`).
 registerWidget("valueSelect", (p) => <ValueSelectField control={control(p.form)} name={fname(p.field.name)} label={lbl(p)}
   options={p.options?.map((o) => o.value)}
-  list={p.field.widgetProps?.list as string | undefined}
+  list={p.field.widgetProps?.list as string | string[] | undefined}
   costumSlug={p.field.widgetProps?.costumSlug as string | undefined}
   multiple={(p.field.widgetProps?.multiple as boolean) ?? true}
   min={p.field.widgetProps?.min as number | undefined}
@@ -82,6 +86,7 @@ registerWidget("image", (p) => (
         onRemoveExisting={() => p.form.setValue(fname("_imageDeleted"), true)}
         aspect={(p.field.widgetProps?.aspect as number) ?? 1}
         shape={p.field.widgetProps?.shape as "square" | "circle" | undefined}
+        allowOriginal={p.field.widgetProps?.allowOriginal === true}
         label={lbl(p)}
         hint={p.field.info ? p.t(p.field.info) : undefined}
       />
@@ -166,6 +171,6 @@ registerWidget("finder", (p) => (
 ));
 
 // composites edit-profil (gèrent leurs champs via le form).
-registerWidget("eventDates", (p) => <Suspense fallback={<WidgetFallback />}><EditEventDatesTab form={p.form} /></Suspense>);
+registerWidget("eventDates", (p) => <Suspense fallback={<WidgetFallback />}><EditEventDatesTab form={p.form} datesWhenRecurrent={p.field.widgetProps?.datesWhenRecurrent as boolean | undefined} /></Suspense>);
 registerWidget("editSocial", (p) => <Suspense fallback={<WidgetFallback />}><EditSocialTab form={p.form} /></Suspense>);
 registerWidget("editSchedule", (p) => <Suspense fallback={<WidgetFallback />}><EditScheduleTab form={p.form} /></Suspense>);

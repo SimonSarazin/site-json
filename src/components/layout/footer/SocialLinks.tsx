@@ -1,20 +1,7 @@
-import type { ComponentType } from "react";
-import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube, Mail, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 import NavLink from "../NavLink";
 import { cn } from "@/lib/utils";
-
-/** Map plateforme → icône lucide, consolidée (auparavant dupliquée/divergente
- * entre FooterRich et FooterSidebarColumns). Plateforme inconnue → `Globe`. */
-const SOCIAL_ICONS: Record<string, ComponentType<{ className?: string }>> = {
-  github: Github,
-  twitter: Twitter,
-  x: Twitter,
-  linkedin: Linkedin,
-  facebook: Facebook,
-  instagram: Instagram,
-  youtube: Youtube,
-  mail: Mail,
-};
+import { SOCIAL_ICONS } from "./socialIcons";
 
 const DEFAULT_ITEM_CLASS =
   "inline-flex items-center justify-center rounded-md size-9 text-muted-foreground transition-colors hover:text-primary hover:bg-muted";

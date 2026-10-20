@@ -1,11 +1,29 @@
 import { describe, it, expect, vi } from "vitest";
 import type { AdminResourceSection } from "../schema";
-import { resolveCreateModal, resolveEditModal, getPath, formatCell, readStatusValue } from "./resourceHelpers";
+import { audioSrc, createCoformId, resolveCreateModal, resolveEditModal, getPath, getColumnValue, formatCell, formatColumnCell, readStatusValue } from "./resourceHelpers";
 
 /** Section resource minimale — cast : create/edit sont posés par les défauts zod à la validation. */
 function section(over: Record<string, unknown> = {}): AdminResourceSection {
   return { type: "resource", entityType: "organizations", ...over } as AdminResourceSection;
 }
+
+describe("createCoformId / create:{coform} — création d'une RÉPONSE CoForm, pas d'une entité", () => {
+  const FORM = "6a85af345d898a57cb49f029";
+
+  it("create:{coform} → resolveCreateModal rend null (aucune modale d'entité) et createCoformId l'id", () => {
+    // Les deux sont exclusifs : un seul des deux porte le bouton « Créer » de la table.
+    const sec = section({ entityType: "answers", create: { coform: FORM } });
+    expect(resolveCreateModal(sec)).toBeNull();
+    expect(createCoformId(sec)).toBe(FORM);
+  });
+
+  it("toute autre forme de create → createCoformId null", () => {
+    expect(createCoformId(section({ create: false }))).toBeNull();
+    expect(createCoformId(section({ create: "inherit" }))).toBeNull();
+    expect(createCoformId(section({ create: "add-mon-form" }))).toBeNull();
+    expect(createCoformId(section())).toBeNull();
+  });
+});
 
 describe("resolveCreateModal — choix costum/standard piloté par la config", () => {
   it("create:false → null (pas de création)", () => {
@@ -186,6 +204,54 @@ describe("getPath — lecture d'un chemin pointé", () => {
   });
 });
 
+describe("getColumnValue — colonne startDate : repli vers l'occurrence d'un récurrent", () => {
+  it("colonne autre que startDate → identique à getPath", () => {
+    expect(getColumnValue({ name: "Foo" }, "name")).toBe("Foo");
+  });
+
+  it("ponctuel : startDate déjà présent → inchangé", () => {
+    const d = new Date("2026-08-14T09:00:00Z");
+    expect(getColumnValue({ startDate: d }, "startDate")).toBe(d);
+  });
+
+  it("récurrent : pas de startDate → repli sur startDateSortFormat", () => {
+    const value = getColumnValue(
+      { startDateSort: { date: "2026-08-14 09:00:00.000000" }, startDateSortFormat: "2026-08-14T09:00:00+0200" },
+      "startDate",
+    );
+    expect((value as Date).toISOString()).toBe("2026-08-14T07:00:00.000Z");
+  });
+
+  it("ni l'un ni l'autre (autre type d'entité) → null", () => {
+    expect(getColumnValue({ name: "Foo" }, "startDate")).toBeNull();
+  });
+});
+
+/** `t` factice fr, fidèle aux clés réelles (`modules/search/i18n/fr.json`). */
+const tFr = (key: string, _fallback?: string, params?: Record<string, unknown>) => {
+  const dict: Record<string, string> = { "days.wednesday": "Mercredi", "card.event.recurringAnd": "et" };
+  return key === "card.event.recurring" ? `Chaque ${params?.days ?? ""}` : (dict[key] ?? key);
+};
+
+describe("formatColumnCell — cellule startDate, avec repli récurrent (admin : searchCostum ne calcule pas d'occurrence)", () => {
+  it("colonne autre que startDate → identique à formatCell(getColumnValue(...))", () => {
+    expect(formatColumnCell({ name: "Foo" }, "name", tFr)).toBe("Foo");
+  });
+
+  it("ponctuel : startDate présent → date formatée normalement", () => {
+    expect(formatColumnCell({ startDate: new Date("2026-08-14T09:00:00Z") }, "startDate", tFr)).toContain("2026");
+  });
+
+  it("récurrent : ni startDate ni startDateSort/Format (cas réel admin) → libellé de récurrence", () => {
+    const row = { recurrency: true, openingHours: [{ dayOfWeek: "We", hours: [{ opens: "08:00", closes: "19:00" }] }] };
+    expect(formatColumnCell(row, "startDate", tFr)).toBe("Chaque mercredi");
+  });
+
+  it("ni date ni récurrence exploitable → tiret (comme avant), pas de crash", () => {
+    expect(formatColumnCell({ name: "Foo" }, "startDate", tFr)).toBe("—");
+  });
+});
+
 describe("formatCell — rendu texte d'une cellule", () => {
   it("string et number → tels quels", () => {
     expect(formatCell("Foo")).toBe("Foo");
@@ -247,5 +313,18 @@ describe("readStatusValue — chemin Mongo imbriqué, repli clé feuille à plat
   it("champ absent des deux shapes → undefined (badge « Non renseigné »)", () => {
     expect(readStatusValue({ name: "x" }, FIELD)).toBeUndefined();
     expect(readStatusValue(undefined, FIELD)).toBeUndefined();
+  });
+});
+
+describe("audioSrc — source du lecteur d'une cellule `audio`", () => {
+  it("URL directe, ou 1er média de type audio de la ligne", () => {
+    expect(audioSrc("https://exemple.re/a.mp3")).toBe("https://exemple.re/a.mp3");
+    expect(audioSrc([{ type: "image", url: "i.jpg" }, { type: "audio", url: "a.mp3" }, { type: "audio", url: "b.mp3" }])).toBe("a.mp3");
+  });
+
+  it("rien de lisible → undefined : la cellule affiche « — » et ne retient pas le clic de la ligne", () => {
+    for (const value of [undefined, null, "", [], [{ type: "image", url: "i.jpg" }], [{ type: "audio" }], [{ type: "audio", url: 3 }], { url: "a.mp3" }]) {
+      expect(audioSrc(value), JSON.stringify(value)).toBeUndefined();
+    }
   });
 });

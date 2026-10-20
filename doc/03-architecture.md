@@ -442,8 +442,8 @@ export const routes: ModuleRouteFactory = (queryClient?: QueryClient, config?: S
       return await queryClient.ensureQueryData({
         queryKey: ["element-about", slug],
         queryFn: async () => {
-          const { organization } = await initApi({ baseURL: getBaseUrl() });
-          return organization.entityBySlug(slug);
+          const { entity } = await ensureInitApi(queryClient); // init partagée de la requête (cocolightInitQuery)
+          return entity.entityBySlug(slug);
         }
       });
     }
@@ -868,7 +868,7 @@ Exporte une seule fonction `render(req, res, cfg, onHead, closingTags)`. Appelé
 3. `buildRoutes(cfg, queryClient)` — construit l'arbre de routes React Router avec loaders SSR
 4. `handler.query(new Request(absUrl))` — exécute les loaders pour la requête courante
 5. Redirection : si le loader retourne une `Response`, la requête HTTP est redirigée immédiatement
-6. `queryClient.ensureQueryData({ queryKey: ["cocolight-init"] })` — init de l'API Cocolight avant le rendu
+6. `ensureInitApi(queryClient)` — init de l'API Cocolight avant le rendu, sous l'entrée `["cocolight-init"]` partagée avec les loaders de l'étape 4 (s'ils l'ont déjà créée, elle est retrouvée : une seule init par requête)
 7. Stockage des données sérialisables dans `cocolight-data` (exclut les instances de classe non-sérialisables)
 8. `dehydrate(queryClient)` — exporte l'état React Query (sans `cocolight-init`)
 9. `preloadAll()` — précharge tous les lazy chunks (vite-preload) pour le rendu SSR
@@ -1200,7 +1200,8 @@ introduite.
 
 | Fichier | Fonction | Description |
 |---|---|---|
-| `sanitize.ts` | `sanitize(html)` | Nettoie du HTML arbitraire via `isomorphic-dompurify` (SSR + client) |
+| `sanitize.ts` | `sanitize(html)` | Nettoie du HTML arbitraire via `isomorphic-dompurify` (SSR + client), **profil DOMPurify par défaut** — celui que `server/utils/normalizeSiteConfig.js` applique aux champs HTML de la config au boot (idempotence SSR/client). Pour du HTML rédigé par un **admin** — sections `html`, `content`…, et la **définition** d'un formulaire coform (`field.info`, titres et descriptions de section), via `<ProseContent source="formDefinition">` : retire scripts, handlers et URLs `javascript:`, mais **conserve** `style`, `class`, `<form>`, `<input>`, `<svg>` |
+| `sanitize.ts` | `sanitizeProse(html)` | Profil **restreint**, pour la prose saisie par **n'importe quel utilisateur** (réponse coform, description d'un commun) — c'est le **défaut** de `ProseContent`, le profil se choisit sur la SOURCE du texte (prop `source`), pas sur le composant. HTML seul (ni SVG ni MathML), contrôles de formulaire et `<dialog>` interdits, `style`/`class`/`id` et `data-*` retirés : sans quoi un `<div style="position:fixed;inset:0">` + `<form action="https://evil">` dessine un **faux écran de connexion** plein écran servi depuis le domaine du site, sans le moindre script |
 | `imageUtils.ts` | `buildOptimizedUrl(src, { w, h, q, f })` | Construit une URL `/img?url=...` pour le middleware d'optimisation. Bypass SVG, data URIs et blob |
 
 ### Routing et état

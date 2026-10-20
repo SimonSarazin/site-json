@@ -8,7 +8,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useT } from "@/hooks/useT";
 import getDateFnsLocale from "@/dateFns";
 import useItem from "../../hooks/useItem";
-import { collectChipValues, decorateTags } from "../../lib/colorBy";
+import { decorateItemTags } from "../../lib/colorBy";
 import { shortenTag } from "@/helpers/shortenTag";
 import { SearchCardProps } from "../../schema";
 
@@ -28,10 +28,8 @@ export default function CardEventTimeline({ item, onClick, card = {} }: SearchCa
   const locale = getDateFnsLocale();
   const showImage = Boolean(image) && !imageFailed;
 
-  const chips = decorateTags(
-    collectChipValues(tags, item?.serverData as Record<string, unknown> | undefined, card.tagColors),
-    card.tagColors,
-  ).slice(0, card.tagLimit ?? 1);
+  const chips = decorateItemTags(tags, item?.serverData as Record<string, unknown> | undefined, card.tagColors)
+    .slice(0, card.tagLimit ?? 1);
 
   return (
     <Card

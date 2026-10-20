@@ -35,7 +35,7 @@ export { default as StripePaymentForm } from "./components/StripePaymentForm";
 // Hooks publics
 export { useFundingEnvelope } from "./hooks/useFundingEnvelope";
 export { useProjectModalCagnotte } from "./hooks/useProjectModalCagnotte";
-export { useUserAdminOrganizations } from "./hooks/useUserAdminOrganizations";
+export { useUserAdminOrganizations, useUserAdminOrganizationsQuery } from "./hooks/useUserAdminOrganizations";
 export { useSaveCagnotteContribution } from "./hooks/useSaveCagnotteContribution";
 export { useCagnottePermissions } from "./hooks/useCagnottePermissions";
 export { useCagnotteContext, useCagnotteContextSafe } from "./hooks/useCagnotteContext";

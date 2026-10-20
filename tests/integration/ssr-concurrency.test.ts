@@ -15,8 +15,8 @@ const mixedRoutes = [...configRoutes, "/page-inexistante"];
 
 // ————————————————————————————————————————————————————————————
 // Helper: extract window.__REACT_QUERY_STATE__ from HTML
-// The server uses serialize-javascript (not JSON.stringify),
-// so we parse it with new Function() to handle undefined values.
+// The server injects `serializeSsrState` output (JSON escaped like
+// serialize-javascript); parsed with new Function() to stay tolerant.
 // ————————————————————————————————————————————————————————————
 
 function extractReactQueryState(html: string): unknown | null {

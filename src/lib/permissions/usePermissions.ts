@@ -4,8 +4,10 @@
 import { useMemo } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import type { PermissionContext } from "./types";
 import { getCalculator } from "./registry";
+import { isCostumHostAdmin } from "./isCostumHostAdmin";
 
 /**
  * Hook pour calculer les permissions des namespaces demandés
@@ -36,7 +38,7 @@ export function usePermissions<T extends Record<string, unknown>>(
   // `carrier.isAdmin()` SANS checkHierarchy = admin DIRECT du host — même définition que le siteAdmin canonique
   // (adminEntry.resolveAdminAccessLevel) et que le backend isCostumAdmin (isElementAdmin du host, sans récursion).
   const costumHost = carrier as { isAdmin?: () => boolean; slug?: string } | null;
-  const isCostumAdmin = costumHost?.isAdmin?.() ?? false;
+  const isCostumAdmin = isCostumHostAdmin(costumHost);
   const costumSlug = costumHost?.slug ?? undefined;
 
   // Si l'utilisateur est admin du costum ET que l'entité affichée appartient à ce costum (source.keys ∋ slug),
@@ -51,6 +53,13 @@ export function usePermissions<T extends Record<string, unknown>>(
     const inCostum = !!src && typeof src === "object" && (src.key === costumSlug || keyList.includes(costumSlug));
     if (inCostum) (entity as { setCostumAdminAuthorized?: (v?: boolean) => void }).setCostumAdminAuthorized?.();
   }
+
+  // Les calculateurs lisent les LIENS (`me.links` pour membre/invité/admin, ceux de l'entité pour la
+  // hiérarchie). Après accepter/refuser une invitation, rejoindre ou quitter, le SDK rafraîchit ces
+  // objets EN PLACE (`userContext.refresh()`) : `me` et `entity` gardent la même référence, et sans
+  // ces dépendances le menu d'actions resterait sur l'ancien état jusqu'au rechargement de la page.
+  const meLinks = useReactiveProperty((me as { serverData?: Record<string, unknown> } | null)?.serverData, "links");
+  const entityLinks = useReactiveProperty((entity as { serverData?: Record<string, unknown> } | null)?.serverData, "links");
 
   return useMemo(() => {
     const context: PermissionContext = { entity, me, isCostumAdmin, costumSlug, data };
@@ -67,5 +76,7 @@ export function usePermissions<T extends Record<string, unknown>>(
     }
 
     return result as T;
-  }, [entity, me, isCostumAdmin, costumSlug, data, namespaces]);
+    // `meLinks`/`entityLinks` ne sont pas lus ici : ils signalent un changement EN PLACE de `me`/`entity`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dépendances de signal volontaires
+  }, [entity, me, meLinks, entityLinks, isCostumAdmin, costumSlug, data, namespaces]);
 }

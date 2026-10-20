@@ -6,7 +6,14 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { runEntityMutation, type EntityMutationSpec } from "./useEntityMutation";
+import { runEntityMutation, CITOYEN_CREATE_UNSUPPORTED, type EntityMutationSpec } from "./useEntityMutation";
+
+// Mode costum LIVE (`VITE_COSTUM_FORCE_LIVE`) piloté par test ; désactivé par défaut.
+const costumLive = vi.hoisted(() => ({ actif: false }));
+vi.mock("@/lib/constant/common", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/constant/common")>()),
+  getCostumForceLive: () => costumLive.actif,
+}));
 import type { SpecStamp } from "../forms/entityModalSpec";
 import { buildParentReference, buildOrganizerReference } from "./mutationUtils";
 // side-effect : enregistre pf:* / poi:* / tl:* + fournit les builders de référence.
@@ -37,14 +44,17 @@ const buildAddPoiPayload = (d: Data) => buildPayload({ descriptor: addPoiDescrip
  * retournée par le save.
  */
 function makeSdk(opts: { sansUpdateField?: boolean; serverData?: Data } = {}) {
-  const calls: Array<{ scope: string; method: string; payload: Data }> = [];
+  // `argc`/`opts` : le 2e argument (options de création d'un scope costum, ex. `{ subType }`) et le
+  // NOMBRE d'arguments reçus — « sans sous-type, l'appel est inchangé » se vérifie sur argc === 1.
+  const calls: Array<{ scope: string; method: string; payload: Data; argc: number; opts?: unknown }> = [];
   const updates: Array<{ field: string; value: unknown }> = [];
   let saves = 0;
   const target = (scope: string) => {
     const t: Record<string, unknown> = {};
     for (const m of ["organization", "project", "event", "poi"]) {
-      t[m] = async (payload: Data) => {
-        calls.push({ scope, method: m, payload });
+      t[m] = async (...args: unknown[]) => {
+        const [payload, createOpts] = args as [Data, unknown];
+        calls.push({ scope, method: m, payload, argc: args.length, ...(args.length > 1 ? { opts: createOpts } : {}) });
         return {
           save: async () => { saves += 1; },
           slug: "new-slug",
@@ -79,12 +89,23 @@ function makeEditable(serverData: Data = { name: "X" }) {
  * Faux draft éditable dont le proxy REJETTE les champs hors liste blanche — réplique du
  * `[DraftProxy]` de la lib, dont la liste est celle du costum de PROVENANCE (`source.key`) et
  * non celle du site. `setCostumScope(slug, {pinSchema:true})` ouvre les champs de `slug`.
+ *
+ * `froid` réplique la lib en FORCE_LIVE quand son cache live n'a pas (ou plus) ce costum :
+ * `setCostumScope` (synchrone) épingle alors un contexte NU qui n'ouvre rien, tant que
+ * `loadCostumScope(slug)` ne l'a pas chargé. `loads` trace ces chargements, `ordre` l'enchaînement.
  */
-function makeEditableAvecListeBlanche(autorises: string[], champsCostum: Record<string, string[]>) {
+function makeEditableAvecListeBlanche(
+  autorises: string[],
+  champsCostum: Record<string, string[]>,
+  opts: { froid?: boolean; loadEchoue?: boolean } = {},
+) {
   const scopes: Array<{ slug: string; opts?: { pinSchema?: boolean } }> = [];
+  const loads: string[] = [];
+  const ordre: string[] = [];
+  const charges = new Set<string>();
   let permis = new Set(autorises);
   const e = {
-    saves: 0, slug: "edited", serverData: { name: "X" }, scopes,
+    saves: 0, slug: "edited", serverData: { name: "X" }, scopes, loads, ordre,
     data: new Proxy({} as Data, {
       set: (cible, prop, valeur) => {
         if (typeof prop !== "string") return false;
@@ -93,10 +114,19 @@ function makeEditableAvecListeBlanche(autorises: string[], champsCostum: Record<
         return true;
       },
     }),
-    setCostumScope: (slug: string, opts?: { pinSchema?: boolean }) => {
-      scopes.push({ slug, opts });
+    loadCostumScope: async (slug: string) => {
+      loads.push(slug);
+      ordre.push(`load:${slug}`);
+      if (opts.loadEchoue) throw new Error("réseau indisponible");
+      charges.add(slug);
+      return true;
+    },
+    setCostumScope: (slug: string, o?: { pinSchema?: boolean }) => {
+      scopes.push({ slug, opts: o });
+      ordre.push(`pin:${slug}`);
       // Sans `pinSchema`, la lib ne pose que le scope d'ADMINISTRATION : le schéma ne bouge pas.
-      if (opts?.pinSchema) permis = new Set([...permis, ...(champsCostum[slug] ?? [])]);
+      // Cache froid : contexte NU, l'épingle n'ouvre aucun champ.
+      if (o?.pinSchema && (!opts.froid || charges.has(slug))) permis = new Set([...permis, ...(champsCostum[slug] ?? [])]);
     },
     save: async () => { e.saves += 1; },
   };
@@ -125,6 +155,36 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     expect(sdk.calls[0].payload).toEqual(expected);
     expect(sdk.getSaves()).toBe(1);
     expect((entity as { slug?: string }).slug).toBe("new-slug");
+  });
+
+  it("CREATE : la modération a priori ne vise QUE les non-admins du site", async () => {
+    const values = { name: "Event", url: "", tags: [], shortDescription: "" };
+    const spec: EntityMutationSpec = {
+      ...base, mode: "add", entityType: "organizations",
+      buildPayload: (d) => buildProfileUpdateData("organizations", d),
+      inject: { extraFieldsUnlessCostumAdmin: { preferences: { toBeValidated: true } } },
+    };
+
+    // Visiteur ou membre simple : la fiche part en attente de validation.
+    const visiteur = makeSdk();
+    await runEntityMutation(spec, values, {
+      me: visiteur.me,
+      contextEntity: { isAdmin: () => false } as unknown as EntityTypes,
+    });
+    expect(visiteur.calls[0].payload).toMatchObject({ preferences: { toBeValidated: true } });
+
+    // Admin du site : publication directe.
+    const admin = makeSdk();
+    await runEntityMutation(spec, values, {
+      me: admin.me,
+      contextEntity: { isAdmin: () => true } as unknown as EntityTypes,
+    });
+    expect(admin.calls[0].payload).not.toHaveProperty("preferences");
+
+    // Porteur pas encore chargé : on ne dispense jamais par défaut.
+    const sansPorteur = makeSdk();
+    await runEntityMutation(spec, values, { me: sansPorteur.me });
+    expect(sansPorteur.calls[0].payload).toMatchObject({ preferences: { toBeValidated: true } });
   });
 
   it("CREATE projet : parent injecté (buildParentReference)", async () => {
@@ -318,6 +378,110 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
       expect(editable.scopes).toEqual([]);
     });
 
+    /**
+     * Régression : formulaire citoyen SSBE (`typepro`), lib en FORCE_LIVE. `api.me()` ne charge pas le
+     * costum de sa provenance, donc au moment d'éditer le cache live est vide : `setCostumScope` seul
+     * épinglait un contexte NU → `[DraftProxy] Le champ "typepro" n'est pas autorisé.` (reproduit avec
+     * la lib 1.0.198 contre le legacy). Le chargement live doit précéder l'épingle.
+     */
+    it("cache live froid : loadCostumScope AVANT l'épingle → le champ costum passe", async () => {
+      costumLive.actif = true;
+      try {
+        const editable = makeEditableAvecListeBlanche(["name"], { sportSanteBienetre: ["typepro", "othersTypepro"] }, { froid: true });
+        await runEntityMutation(
+          { ...specEdit(editable, "sportSanteBienetre"), entityType: "citoyens" },
+          { name: "Moi", typepro: "Éducateur(ice) Sportif(ive)" },
+          { me: null },
+        );
+        expect(editable.ordre).toEqual(["load:sportSanteBienetre", "pin:sportSanteBienetre"]);
+        expect(editable.data).toMatchObject({ typepro: "Éducateur(ice) Sportif(ive)" });
+        expect(editable.saves).toBe(1);
+      } finally {
+        costumLive.actif = false;
+      }
+    });
+
+    it("chargement live en échec : non bloquant, l'épingle est quand même posée (erreur de champ si cache froid)", async () => {
+      costumLive.actif = true;
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      try {
+        const chaud = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { loadEchoue: true });
+        await runEntityMutation(specEdit(chaud, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null });
+        expect(chaud.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+        expect(chaud.saves).toBe(1);
+        const froid = makeEditableAvecListeBlanche(["name"], CHAMPS_COSTUM, { froid: true, loadEchoue: true });
+        await expect(
+          runEntityMutation(specEdit(froid, "navigatorDesTierslieux"), { name: "L", holderOrganization: "S" }, { me: null }),
+        ).rejects.toThrow(/n'est pas autorisé/);
+        warn.mockRestore();
+      } finally {
+        costumLive.actif = false;
+      }
+    });
+
+    /**
+     * Costum LIVE : `get()` ne précharge que le costum de la PROVENANCE ; celui du formulaire reste
+     * froid et `setCostumScope` épinglait un contexte NU (aucun champ). Le formulaire charge alors le
+     * costum en live (`loadCostumScope`).
+     */
+    describe("costum LIVE (VITE_COSTUM_FORCE_LIVE)", () => {
+      const avecChargementLive = (resultat: "ok" | "rien" | "erreur") => {
+        const editable = makeEditableAvecListeBlanche(["name"], {}, { froid: true });
+        const charges: string[] = [];
+        Object.assign(editable, {
+          loadCostumScope: async (slug: string) => {
+            charges.push(slug);
+            if (resultat === "erreur") throw new Error("réseau");
+            if (resultat === "rien") return false;
+            // Le costum live ouvre ses champs (ce que fait la lib après digestion du typeObj).
+            const ouvert = makeEditableAvecListeBlanche(["name", ...CHAMPS_COSTUM.navigatorDesTierslieux], {});
+            Object.defineProperty(editable, "data", { value: ouvert.data });
+            return true;
+          },
+        });
+        return { editable, charges };
+      };
+
+      it("charge le costum en live avant l'écriture, puis épingle : le champ costum passe", async () => {
+        costumLive.actif = true;
+        try {
+          const { editable, charges } = avecChargementLive("ok");
+          await runEntityMutation(
+            specEdit(editable, "navigatorDesTierslieux"),
+            { name: "Le lieu", holderOrganization: "SCIC Machin" },
+            { me: null },
+          );
+          expect(charges).toEqual(["navigatorDesTierslieux"]);
+          expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+          expect(editable.data).toMatchObject({ holderOrganization: "SCIC Machin" });
+        } finally {
+          costumLive.actif = false;
+        }
+      });
+
+      it("chargement live sans résultat ou en échec : non bloquant, l'épingle est posée quand même", async () => {
+        costumLive.actif = true;
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+        try {
+          for (const cas of ["rien", "erreur"] as const) {
+            const { editable } = avecChargementLive(cas);
+            await runEntityMutation(specEdit(editable, "navigatorDesTierslieux"), { name: "Le lieu" }, { me: null });
+            expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+          }
+        } finally {
+          costumLive.actif = false;
+          warn.mockRestore();
+        }
+      });
+
+      it("hors mode live : aucun chargement live (registre bundlé, comportement inchangé)", async () => {
+        const { editable, charges } = avecChargementLive("ok");
+        await runEntityMutation(specEdit(editable, "navigatorDesTierslieux"), { name: "Le lieu" }, { me: null });
+        expect(charges).toEqual([]);
+        expect(editable.scopes).toEqual([{ slug: "navigatorDesTierslieux", opts: { pinSchema: true } }]);
+      });
+    });
+
     it("entité sans setCostumScope (ancienne instance / faux SDK) : pas d'appel, pas de crash", async () => {
       const editable = makeEditable();
       await runEntityMutation(specEdit(editable, "navigatorDesTierslieux"), { name: "Le lieu" }, { me: null });
@@ -335,6 +499,101 @@ describe("runEntityMutation — parité avec les hooks bespoke", () => {
     await runEntityMutation(spec, { name: "X", _imageDeleted: true }, { me: null });
     expect(editable.saves).toBe(1);
     expect(editable.removes).toBe(1);
+  });
+});
+
+/**
+ * Sous-type costum CIBLÉ à la création (`spec.subType` → 2e argument du SDK).
+ *
+ * Le SDK choisit la variante costum (schéma + presets) d'une création : sans ciblage, celle de la clé
+ * de BASE de la collection (CAE : `organizations`, vide) ; avec `{ subType }`, celle du sous-type
+ * (CAE : `organizationsTls`, presets `tags:"CAE"`/`role:"admin"`). Le relais n'a de sens que sur un
+ * SCOPE COSTUM : `me`/un parent (BaseEntity) ne connaissent pas ce 2e argument.
+ */
+/**
+ * Un citoyen ne se CRÉE pas par cette voie (docs/33 §2 : il naît par l'inscription ; `element/save`
+ * citoyens est une mise à jour seule). L'ancien mapping `SDK_METHOD.citoyens = "organization"` aurait
+ * fait naître une ORGANISATION d'un formulaire citoyen ouvert en mode ajout — en silence.
+ */
+describe("runEntityMutation — création de citoyen refusée AVANT tout appel SDK", () => {
+  const specAdd = (): EntityMutationSpec => ({ ...base, mode: "add", entityType: "citoyens", buildPayload: (d) => d });
+
+  it("cible directe (me) : erreur explicite, aucune méthode SDK appelée, aucun save", async () => {
+    const sdk = makeSdk();
+    await expect(runEntityMutation(specAdd(), { name: "Jean" }, { me: sdk.me })).rejects.toThrow(CITOYEN_CREATE_UNSUPPORTED);
+    expect(sdk.calls).toEqual([]);
+    expect(sdk.getSaves()).toBe(0);
+  });
+
+  it("scope costum AMBIANT ou EXPLICITE : refusé de la même façon (jamais `me.costum(slug).organization`)", async () => {
+    const sdk = makeSdk();
+    await expect(runEntityMutation({ ...specAdd(), costumSlug: "sportSanteBienetre" }, { name: "Jean" }, { me: sdk.me }))
+      .rejects.toThrow(/création de citoyen non supportée/);
+    await expect(runEntityMutation(specAdd(), { name: "Jean" }, { me: sdk.me, contextEntity: fakeRef }))
+      .rejects.toThrow(/création de citoyen non supportée/);
+    expect(sdk.calls).toEqual([]);
+  });
+
+  it("l'ÉDITION d'un citoyen reste possible (chemin submitEntityEdit inchangé)", async () => {
+    const editable = makeEditable();
+    await runEntityMutation(
+      { ...base, mode: "edit", entityType: "citoyens", target: editable as unknown as EntityTypes, buildPayload: (d) => d },
+      { name: "Jean", typepro: "Médecins" },
+      { me: null },
+    );
+    expect(editable.saves).toBe(1);
+    expect(editable.data).toEqual({ name: "Jean", typepro: "Médecins" });
+  });
+});
+
+describe("runEntityMutation — sous-type costum ciblé (subType)", () => {
+  const caePorteur = { id: "ctx", getEntityType: () => "organizations", serverData: { slug: "federationDesCae" } } as unknown as EntityTypes;
+  const specOrga = (over: Partial<EntityMutationSpec> = {}): EntityMutationSpec => ({
+    ...base, mode: "add", entityType: "organizations", buildPayload: (d) => d, ...over,
+  });
+
+  it("costum AMBIANT + subType : `{ subType }` part en 2e argument, payload intact", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specOrga({ subType: "organizationsTls" }), { name: "Ma CAE" }, { me: sdk.me, contextEntity: caePorteur });
+    expect(sdk.calls).toHaveLength(1);
+    expect(sdk.calls[0]).toMatchObject({ scope: "costum:federationDesCae", method: "organization", argc: 2, opts: { subType: "organizationsTls" } });
+    expect(sdk.calls[0].payload).toEqual({ name: "Ma CAE" }); // jamais dans le payload (rien n'est envoyé au serveur)
+  });
+
+  it("costumSlug EXPLICITE + subType : relayé aussi", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specOrga({ entityType: "poi", costumSlug: "institutBleu", subType: "financement" }), { name: "F" }, { me: sdk.me });
+    expect(sdk.calls[0]).toMatchObject({ scope: "costum:institutBleu", method: "poi", argc: 2, opts: { subType: "financement" } });
+  });
+
+  it("SANS subType : appel STRICTEMENT inchangé (un seul argument), ambiant comme explicite", async () => {
+    const ambiant = makeSdk();
+    await runEntityMutation(specOrga(), { name: "Org" }, { me: ambiant.me, contextEntity: caePorteur });
+    expect(ambiant.calls[0]).toMatchObject({ scope: "costum:federationDesCae", argc: 1 });
+    expect(ambiant.calls[0]).not.toHaveProperty("opts");
+
+    const explicite = makeSdk();
+    await runEntityMutation(specOrga({ costumSlug: "federationDesCae" }), { name: "Org" }, { me: explicite.me });
+    expect(explicite.calls[0]).toMatchObject({ scope: "costum:federationDesCae", argc: 1 });
+  });
+
+  it("cible DIRECTE (aucun costum) : subType JAMAIS relayé à `me`/au parent", async () => {
+    const sdk = makeSdk();
+    await runEntityMutation(specOrga({ subType: "organizationsTls" }), { name: "Org" }, { me: sdk.me });
+    expect(sdk.calls[0]).toMatchObject({ scope: "me", method: "organization", argc: 1 });
+  });
+
+  it("ÉDITION : subType inerte (aucune création SDK, save du draft seul)", async () => {
+    const sdk = makeSdk();
+    const editable = makeEditable();
+    await runEntityMutation(
+      specOrga({ mode: "edit", target: editable as unknown as EntityTypes, subType: "organizationsTls" }),
+      { name: "Ma CAE" },
+      { me: sdk.me, contextEntity: caePorteur },
+    );
+    expect(sdk.calls).toEqual([]);
+    expect(editable.saves).toBe(1);
+    expect(editable.data).toEqual({ name: "Ma CAE" });
   });
 });
 

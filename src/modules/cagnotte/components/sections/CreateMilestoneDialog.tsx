@@ -81,12 +81,11 @@ export default function CreateMilestoneDialog({
     // Validations contextuelles non exprimables en Zod statique (dépendent de props).
     if (!isConnected) return setRootError('CreateMilestoneDialog.errors.notConnected');
     if (!api) return setRootError('CreateMilestoneDialog.errors.noApiClient');
-    if (!selectedProjectId) return setRootError('CreateMilestoneDialog.errors.noProject');
     if (!answerId) return setRootError('CreateMilestoneDialog.errors.noAnswer');
     if (!currentUserId) return setRootError('CreateMilestoneDialog.errors.noUser');
 
     form.clearErrors('root');
-    const milestoneId = generateMilestoneId(existingMilestoneIds);
+    const milestoneId = selectedProjectId ? generateMilestoneId(existingMilestoneIds) : '';
 
     createMilestoneMutation.mutate(
       {
@@ -127,7 +126,13 @@ export default function CreateMilestoneDialog({
           <DialogTitle className="text-xl font-display">{t('CreateMilestoneDialog.title')}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onValid)} className="contents">
+        <form
+          onSubmit={(e) => {
+            e.stopPropagation();
+            form.handleSubmit(onValid)(e);
+          }}
+          className="contents"
+        >
           <div className="space-y-4 px-6 py-5">
             <div className="space-y-2">
               <Label htmlFor={`${inputIdPrefix}-name`}>{t('CreateMilestoneDialog.fields.name')}</Label>

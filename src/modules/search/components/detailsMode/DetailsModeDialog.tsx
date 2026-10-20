@@ -26,16 +26,34 @@ const DIALOG_MAX_WIDTH: Record<string, string> = {
  * `preview.type` (cf. `Preview.tsx`), indépendamment de la carte. `p-0` :
  * chaque `Preview*` borne sa propre hauteur/scroll (en-tête figé + corps).
  */
-export default function DetailsModeDialog({ openDetails, setOpenDetails, item, preview, list }: DetailsModeProps) {
+export default function DetailsModeDialog({ openDetails, setOpenDetails, item, preview, list, onEdited }: DetailsModeProps) {
     const t = useT("modules/search");
     const maxWidth = DIALOG_MAX_WIDTH[preview?.width ?? "5xl"] ?? "sm:max-w-5xl";
 
     return (
         <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-          <DialogContent aria-describedby={undefined} className={cn("p-0 gap-0 max-h-[90vh] overflow-hidden", maxWidth)}>
+          {/* Pastille de contraste sous la croix. En `p-0`, plusieurs previews ouvrent sur une BANNIÈRE
+              d'image pleine largeur (`resource`, `testimonial`) : la croix de `DialogContent`, posée en
+              `absolute top-4 right-4` sans fond ni ombre et à `opacity-70`, se retrouve alors sur une
+              photo arbitraire — illisible sur une photo sombre en thème clair, et inversement (WCAG
+              1.4.11, contraste d'un contrôle). Le fond est posé ICI, dans la coque, plutôt que dans
+              chaque preview : c'est la coque qui pose la croix.
+              `z-20` : une preview qui poserait sa PROPRE pastille en `absolute` dans ce coin passerait
+              sinon devant la croix (même ancêtre positionné, aucun z-index côté croix) et la rendrait
+              inatteignable au clic. */}
+          <DialogContent
+            aria-describedby={undefined}
+            className={cn(
+              "p-0 gap-0 max-h-[90vh] overflow-hidden",
+              "[&>[data-slot=dialog-close]]:z-20 [&>[data-slot=dialog-close]]:rounded-full [&>[data-slot=dialog-close]]:bg-background/80",
+              "[&>[data-slot=dialog-close]]:p-1.5 [&>[data-slot=dialog-close]]:opacity-100",
+              "[&>[data-slot=dialog-close]]:backdrop-blur-sm [&>[data-slot=dialog-close]]:shadow-sm",
+              maxWidth,
+            )}
+          >
             <DialogTitle className="sr-only">{t("Aperçu")}</DialogTitle>
             {item && (
-              <Preview item={item} preview={preview} list={list} onClose={() => setOpenDetails(false)} />
+              <Preview item={item} preview={preview} list={list} onClose={() => setOpenDetails(false)} onEdited={onEdited} />
             )}
           </DialogContent>
         </Dialog>

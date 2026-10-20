@@ -24,6 +24,8 @@ export interface NavItem {
   label: Record<string, string>;
   path?: string;
   children?: NavItem[];
+  /** Icône seule dans la barre : le libellé est le nom accessible, pas un texte affiché. */
+  iconOnly?: boolean;
 }
 
 export interface SiteConfig {

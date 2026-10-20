@@ -21,7 +21,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useUnsavedChangesWarning } from "@/modules/coform/hooks/useUnsavedChangesWarning";
 
 import { downloadCsv } from "../lib/downloadCsv";
-import { ensureCostumScope } from "../lib/ensureCostumScope";
+import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import { useCostumImportMapping } from "../hooks/useCostumImportMapping";
 import { shapeImportRow } from "../lib/shapeImportRow";
 import type { AdminImportSection, AdminSection } from "../schema";

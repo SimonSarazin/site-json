@@ -11,6 +11,7 @@
 import { check } from "@/modules/formEngine/engine/conditional";
 import type { Predicate, FormValues } from "@/modules/formEngine/types";
 import getValueByPath from "@/helpers/getValueByPath";
+import { toStringArray } from "@/helpers/toStringArray";
 
 /** Bloc `source` d'un document (`{insertOrign, key, keys}`), non typé côté SDK. */
 function sourceOf(item: unknown): { key?: unknown; keys?: unknown } | undefined {
@@ -74,6 +75,10 @@ export function entityMatchData(item: unknown): FormValues {
       (item as { getEntityType?: () => string } | undefined)?.getEntityType?.(),
     sourceKey: getSourceKey(item),
     sourceKeys: getSourceKeys(item),
+    // `tags` : même objet à trous possible que `source.keys` — un `contains`/`.includes()` sur un
+    // objet ne matche jamais, et la route d'édition d'un lieu (`{tags: "lieux-sante"}`) ouvrirait le
+    // mauvais formulaire. Absent → reste absent (les ops `empty`/`notEmpty` gardent leur sens).
+    ...(serverData.tags !== undefined ? { tags: toStringArray(serverData.tags) } : {}),
   };
   return new Proxy(base, {
     get: (target, prop) =>

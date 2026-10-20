@@ -1,8 +1,12 @@
 import { PiggyBank } from "lucide-react";
 import CagnotteDialog from "./CagnotteDialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useFundingEnvelope } from "../hooks/useFundingEnvelope";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import "@/modules/cagnotte/i18n";
 
 /**
  * Bouton "piggy-bank" affiché dans le header d'un site (ex. `HeaderTransparentScroll`).
@@ -28,6 +32,8 @@ import { useReactiveProperty } from "@/hooks/useReactiveProperty";
  */
 export function PiggyBankHeaderButton() {
   const { entity, me } = useCocolight();
+  useLoadNamespace("modules/cagnotte");
+  const t = useT("modules/cagnotte");
 
   // `useReactiveProperty` réagit aux mutations live de l'admin sur `preferences`
   // (cf. CagnotteDialog → setProjectModalId). L'accès passe par `entity.serverData`
@@ -49,21 +55,31 @@ export function PiggyBankHeaderButton() {
 
   const refresh = async () => { await refetch(); };
 
+  // Imbrication : `Tooltip` > `CagnotteDialog` (son `DialogTrigger asChild`) >
+  // `TooltipTrigger asChild` > `<button>`. Les deux triggers passent par `Slot`, qui fusionne
+  // props et ref jusqu'au bouton. `TooltipContent` reste sous le root, pour son contexte.
   return (
-    <CagnotteDialog
-      totalAmount={piggyAmount}
-      defaultResourceId={projectModalId || targetProject?.id || undefined}
-      onRefresh={refresh}
-    >
-      <button
-        key={piggyAmount}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
-        aria-label="Cagnotte participative"
+    <Tooltip>
+      <CagnotteDialog
+        totalAmount={piggyAmount}
+        defaultResourceId={projectModalId || targetProject?.id || undefined}
+        onRefresh={refresh}
       >
-        <PiggyBank className="w-5 h-5 group-hover:scale-110 transition-transform" />
-        <span className="font-semibold text-sm">{piggyAmount.toLocaleString("fr-FR")} €</span>
-      </button>
-    </CagnotteDialog>
+        <TooltipTrigger asChild>
+          <button
+            key={piggyAmount}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
+            aria-label={String(t("HeaderButtons.piggyBank.aria", "Cagnotte participative"))}
+          >
+            <PiggyBank className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <span className="font-semibold text-sm">{piggyAmount.toLocaleString("fr-FR")} €</span>
+          </button>
+        </TooltipTrigger>
+      </CagnotteDialog>
+      <TooltipContent>
+        <p>{t("HeaderButtons.piggyBank.tooltip", "Ouvrir la cagnotte participative")}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

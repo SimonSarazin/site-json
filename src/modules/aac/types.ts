@@ -1,0 +1,279 @@
+/**
+ * Contrat de données du module AAC (Appel à Communs) — source de vérité LOCALE.
+ *
+ * Le SDK type `answers` en `Record<string, unknown>` : le contrat AAP/oceco
+ * (aapStepN, depense[], financer[], campagne…) n'est typé nulle part côté SDK.
+ *
+ * Plusieurs formes ci-dessous sont RÉSERVÉES — déclarées, jamais construites, à confirmer sur
+ * données réelles ; la clé de référence CAMPAGNE en fait partie.
+ *
+ * `financer[]`, lui, est tranché : format canonique du serveur (`line`, `status`, `finkey`,
+ * `payment{…}`), dont il est l'unique auteur. `fundingType` et `paymentStatus` ne subsistent
+ * qu'en lecture seule, pour les documents antérieurs.
+ *
+ * On RÉUTILISE les types financiers de cagnotte (ne pas redéfinir).
+ */
+import type {
+  FundingMilestone,
+  FundingAction,
+  FundingPaymentStatus,
+} from "@/modules/cagnotte/types";
+
+export type { FundingMilestone, FundingAction, FundingPaymentStatus };
+
+// ── Le commun & son budget ───────────────────────────────────────────────────
+
+/** État d'un commun. NB : `status` legacy = TABLEAU append-only (verbes empilés). */
+export type CommunState = "cree" | "pending" | "valide";
+
+/**
+ * Nature de l'ENTITÉ financeuse : le nom de la COLLECTION Mongo au pluriel, tel que le serveur
+ * l'écrit (`Aap::addFinancerEngagement` résout en cascade). Un projet peut y figurer, mais il
+ * reçoit du financement, il n'en accorde pas.
+ */
+export type FinancerEntityType = "citoyens" | "organizations" | "projects";
+
+/**
+ * Nature du FINANCEMENT. LEGACY, lecture seule : `prepaid` marquait « payé » avant le bloc
+ * `payment` et n'est plus jamais écrit. Seul le repli de `readFinancerPaymentState` le lit,
+ * pour les lignes antérieures — aucune migration prévue, ce repli est permanent.
+ *
+ * Le « porteur » (doublonnage) est un `fundingType`, PAS un type d'entité :
+ * un doublonnage = une 2ᵉ entrée `financer` SÉPARÉE (jamais fusionnée).
+ */
+export type FundingType = "prepaid" | "porteur" | (string & {});
+
+/**
+ * Le bloc de paiement d'une ligne, tenu par le serveur (`Aap::recomputeFinancerPayment`) : ne
+ * jamais l'écrire côté client. Il peut être absent (ligne legacy) ou réduit à `{ logs: [] }`
+ * (engagement tout juste créé) — le lire par `readFinancerPaymentState`, jamais en direct.
+ */
+export interface FinancerPaymentLog {
+  invoiceId?: string;
+  financerId?: string;
+  financerName?: string;
+  finkey?: string;
+  amount?: number;
+  /** `manual` | `stripe` | `helloasso`. */
+  type?: string;
+  date?: unknown;
+  confirmation?: "pending" | "validated";
+  paidBy?: string;
+  validatedAt?: unknown;
+  validatedBy?: string;
+}
+
+export interface FinancerPayment {
+  logs?: FinancerPaymentLog[];
+  /** Somme des logs `validated` — le seul montant réellement acquis. */
+  paidAmount?: number;
+  /** Somme des logs en attente de validation du porteur. */
+  pendingAmount?: number;
+  /** `payed` (sic) est la valeur écrite par le serveur — jamais `paid`. */
+  status?: "unpaid" | "partial" | "payed";
+}
+
+/** Une entrée de financement (`depense.financer[]`), au format canonique du serveur. */
+export interface Financer {
+  amount: number;
+  date?: string;
+  user?: string;
+  id?: string;
+  name?: string;
+  /** Collection de l'entité financeuse (`citoyens` | `organizations` | `projects`). */
+  type?: FinancerEntityType;
+  /** Ligne budgétaire ; le serveur la pose à `""` à la création. */
+  line?: string;
+  /**
+   * Statut de l'ENGAGEMENT (`pending` à la création), à ne pas confondre avec
+   * `payment.status`, qui est le statut du PAIEMENT. Deux axes distincts.
+   */
+  status?: "pending" | (string & {});
+  /** Clé stable de CETTE ligne, générée par le serveur — le seul ciblage fiable. */
+  finkey?: string;
+  /** Bloc de paiement tenu par le serveur. Absent sur les lignes legacy. */
+  payment?: FinancerPayment;
+  /** LEGACY, lecture seule — cf. `FundingType`. */
+  fundingType?: FundingType;
+  /** LEGACY, lecture seule : précédait `payment.status`. */
+  paymentStatus?: FundingPaymentStatus;
+  // ── RÉSERVÉ (GATE) — absent des données actuelles ──
+  /** Réf de la campagne portée par le financement (à confirmer au GATE). */
+  campaign?: string;
+}
+
+/** Une dépense/objectif finançable (`answers.<depenseStepKey>.depense[]`). */
+export interface Depense {
+  poste?: string;
+  price?: number;
+  targetAmount?: number;
+  /** Id du milestone oceco lié (correspondance 1:1 dépense↔milestone). */
+  milestone?: string;
+  financer?: Financer[];
+  // ── RÉSERVÉ (GATE) — logs stockés DANS la dépense (source observatoire) ──
+  paiements?: unknown[];
+  historique?: AacLog[];
+  [key: string]: unknown;
+}
+
+/** Un commun = une réponse Coform (document `answers`). */
+export interface Commun {
+  id: string;
+  form: string;
+  /** `answers.aapStepN.<key>` — non typé (dépend du form). */
+  answers?: Record<string, Record<string, unknown>>;
+  /** ⚠️ legacy : TABLEAU append-only de verbes d'état. */
+  status?: string[];
+  context?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+// ── Entités NET-NEW réservées (déclarées, NON construites au socle) ───────────
+
+export type CampagneType = "simple" | "doublonnage";
+export type PaymentProvider = "stripe" | "helloasso";
+
+export interface CampagneDates {
+  debut?: string;
+  fin?: string;
+  /** Gate : pas de financement avant cette date. */
+  debutCofinancement?: string;
+  /** Gate : pas de paiement avant cette date. */
+  ouverturePaiement?: string;
+}
+
+/** Campagne de cofinancement — isole communs/financements/paniers/stats. */
+export interface Campagne {
+  id: string;
+  name?: string;
+  type?: CampagneType;
+  dates?: CampagneDates;
+  /** Budget disponible pour le doublonnage (porteur). */
+  montantDisponibleDoublonnage?: number;
+  /** Organisation porteuse. */
+  porteur?: string;
+  provider?: PaymentProvider;
+  activee?: boolean;
+}
+
+/** Ligne de panier de cofinancement. */
+export interface PanierLigne {
+  commun: string;
+  depenseIndex?: number;
+  campagne?: string;
+  organisation?: string;
+  financeur?: string;
+  montant: number;
+}
+
+/** Panier scopé par (user, organisation représentée, campagne). */
+export interface Panier {
+  user?: string;
+  organisation?: string;
+  campagne?: string;
+  lignes: PanierLigne[];
+}
+
+/** Log métier (audit + observatoire) — stocké dans `depense.historique`. */
+export interface AacLog {
+  champ?: string;
+  avant?: unknown;
+  apres?: unknown;
+  quand?: string | number;
+}
+
+// ── Config résolue (sortie du résolveur AacConfig) ────────────────────────────
+
+/** Provenance des critères d'évaluation retenus par le résolveur. */
+export type AacCriteriaSource = "formParent" | "config" | "none";
+
+export interface AacCriterion {
+  label: string;
+  /** Coefficient de pondération (legacy parfois string → coercé number). */
+  coeff: number;
+  note?: number;
+  /** fieldKey d'aapStep1 pour le champ selection 2D (si mappé). */
+  fieldKey?: string;
+}
+
+export interface AacStep {
+  /** Clé de l'étape (ex : "aapStep1"). */
+  key: string;
+  /** Libellé de l'étape. */
+  name?: string;
+  /** Rôles autorisés à éditer (params.<step>.canEdit, CSV → array). */
+  canEdit: string[];
+  /** Rôles autorisés à lire. */
+  canRead: string[];
+  haveEditingRules?: boolean;
+  haveReadingRules?: boolean;
+  /** Étape masquée en mode standalone. */
+  masquageStandalone?: boolean;
+}
+
+/** Rôles fonctionnels résolus par dispatch (4 vs 5 steps) + scan de type. */
+export interface AacStepRoles {
+  depenseStepKey: string | null;
+  evalStepKey: string | null;
+  /**
+   * `evalStepKey` quand l'étape a été TROUVÉE par scan (question `choose`/`decide`, de vote ou
+   * grille `tpls.forms.aap.evaluation`), `null` quand elle n'est qu'une POSITION (dispatch 4 vs 5
+   * étapes). Seule une étape trouvée est masquée à l'auteur : sur un AAP sans vote, la position
+   * désignerait une étape ordinaire. Jamais l'étape de dépôt (`depenseStepKey`), exclue du scan.
+   */
+  evalStepKeyFound: string | null;
+  financementStepKey: string | null;
+  suiviStepKey: string | null;
+}
+
+/**
+ * Portes d'accès / options — les clés RACINE du form que le legacy lit
+ * réellement, coercées en booléen (`"true"` accepté, comme
+ * `filter_var(FILTER_VALIDATE_BOOLEAN)` côté PHP).
+ *
+ * Pas de `standalone` (mode de requête, pas une option), pas d'`annuaire` (nom
+ * de vue), pas de `coRemuneration` (n'a jamais existé) : un gate dérivé d'une
+ * clé fantôme vaut toujours `false` et éteint ce qu'il garde.
+ */
+export interface AacGates {
+  active: boolean;
+  onlyMemberAccess: boolean;
+  oneAnswerPerPers: boolean;
+  canReadOtherAnswers: boolean;
+  showAnswers: boolean;
+  /**
+   * Gate MAÎTRE du financement — `form.coremu`, posé par la préconfiguration
+   * « Système de coremuneration » d'`aap.js` (`Form::switchcoremu`). OFF ⇒ le
+   * legacy masque l'onglet Contributions à tout le monde
+   * (`detailProposal.php:105`) ; ici, aucun bloc financement sur la fiche.
+   */
+  coremu: boolean;
+  /**
+   * « Avoir le lien suffit pour répondre » (`form.anyOnewithLinkCanAnswer`) :
+   * un utilisateur CONNECTÉ peut lire et modifier une réponse sans lien au
+   * contexte de l'appel (`IndexAction.php:237`, sous `session['userId']`).
+   * Ce n'est PAS un dépôt sans connexion.
+   */
+  anyOnewithLinkCanAnswer: boolean;
+}
+
+/**
+ * Sortie normalisée du résolveur — objet unique typé.
+ * ⚠️ À ne pas confondre avec `AacConfig` (schema.ts) = le bloc DÉCLARÉ dans
+ * `config.aac` du site (qui ne porte que le `formId`).
+ */
+export interface AacResolvedConfig {
+  formId: string;
+  /** Id du doc aapConfig (`form.config`). */
+  configId: string | null;
+  aapType: string | null;
+  steps: AacStep[];
+  roles: AacStepRoles;
+  criteria: AacCriterion[];
+  /** Source des critères retenus (surcharge locale vs config). */
+  criteriaSource: AacCriteriaSource;
+  gates: AacGates;
+  /** Campagnes déclarées sur l'aapConfig (isolent communs/financements/paniers). */
+  campaigns: Campagne[];
+  typeCoFinancer: string | null;
+}

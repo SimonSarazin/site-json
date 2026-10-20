@@ -99,6 +99,7 @@ function DynamicModalButton({
                 onOpenChange={setIsModalOpen}
                 parent={entity}
                 formConfig={button.formConfig}
+                createDefaults={button.createDefaults}
             />
         </>
     );

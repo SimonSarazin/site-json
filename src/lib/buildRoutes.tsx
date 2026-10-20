@@ -5,12 +5,6 @@ import RootLayout from "@/RootLayout";
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import { discoverModules, getModuleRoutes, getModuleRoutesSync } from "./modules";
-import {
-  prefetchSearchResults,
-  findFiltersSections,
-  prefetchFilterSection,
-  prefetchFiltersByPath,
-} from "@/modules/search/prefetch";
 import type { FiltersByPathOptions } from "@/modules/search/hooks/useFiltersByPath";
 import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
 import { observatoryPrefetchParams } from "@/modules/observatoire/prefetch";
@@ -108,6 +102,11 @@ async function buildRoutesAsync(
     loader: async ({ request }: LoaderFunctionArgs) => {
       // Si pas de queryClient, skip le pré-chargement (côté client)
       if (!queryClient) return null;
+
+      // Chargé ICI, pas en tête de module : ce loader ne tourne que côté serveur, et le module
+      // prefetch porte le mémo serveur des facettes (`facetCache`/`ssrMemo`) — statique, il partait
+      // dans le bundle client pour ne jamais servir.
+      const { prefetchSearchResults, prefetchFilterSection, prefetchFiltersByPath, findFiltersSections } = await import("@/modules/search/prefetch");
 
       // Parser les paramètres URL pour SearchPro
       const url = new URL(request.url);

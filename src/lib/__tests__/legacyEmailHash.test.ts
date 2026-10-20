@@ -43,6 +43,15 @@ describe("parseLegacyHash — formes réelles des templates legacy", () => {
     });
   });
 
+  it("pied de page de TOUS les e-mails : #settings.redirect → réglages du compte connecté", () => {
+    // footer.php:87 — « pour ne plus recevoir ces e-mails, cliquez ici ». Mesuré en rejeu réel :
+    // présent dans l'inscription, l'invitation et le mot de passe oublié.
+    expect(parseLegacyHash("#settings.redirect")).toEqual({ kind: "settings" });
+    expect(parseLegacyHash("settings.redirect")).toEqual({ kind: "settings" });
+    expect(parseLegacyHash("#settings.redirect.notifications")).toEqual({ kind: "settings" });
+    expect(parseLegacyHash("#settingsX")).toBeNull();
+  });
+
   it("#@slug → profil par slug, sans appel réseau", () => {
     expect(parseLegacyHash("#@mon-tiers-lieu")).toEqual({ kind: "slug", slug: "mon-tiers-lieu" });
     expect(parseLegacyHash("#@monTiersLieu_2")).toEqual({ kind: "slug", slug: "monTiersLieu_2" });
@@ -104,5 +113,19 @@ describe("parseLegacyHash — suffixes legacy sur #@slug", () => {
       .toEqual({ kind: "slug", slug: "ctenat" });
     expect(parseLegacyHash("#@LaReunionDesTiersLieux.view.forms.dir.answer.61b97f68979c940b441f90d7"))
       .toEqual({ kind: "slug", slug: "LaReunionDesTiersLieux" });
+  });
+});
+
+describe("parseLegacyHash — fiche d'un commun de l'AAC legacy", () => {
+  it("#detail-un-commun.communId.<id> → aacCommun (lien imprimé de la Fédération des CAE)", () => {
+    expect(parseLegacyHash("#detail-un-commun.communId.6a3e8d99d571dc339040e6bf"))
+      .toEqual({ kind: "aacCommun", id: "6a3e8d99d571dc339040e6bf" });
+  });
+
+  it("id absent, malformé ou suffixe inconnu → ignoré", () => {
+    for (const h of ["#detail-un-commun", "#detail-un-commun.communId.", "#detail-un-commun.communId.xyz",
+      `#detail-un-commun.communId.${ID}.autre`, `#detail-un-commun.id.${ID}`]) {
+      expect(parseLegacyHash(h)).toBeNull();
+    }
   });
 });

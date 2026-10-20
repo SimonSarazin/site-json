@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
+import { buildFinderDefaultValues, finderFieldName } from "@/modules/coform/utils/finderPrefill";
 import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 import {
     MapPin,
@@ -38,6 +39,7 @@ import { getServerUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
 import { type Answer } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+import { compteRessources } from "./compteRessources";
 import { useMultiEvalData } from "@/modules/coform/hooks/useMultiEvalData";
 import { MultiEvalRadarTabs } from "@/modules/coform/components/MultiEvalRadarTabs";
 import { OurToolsEditDialog } from "./OurToolsEditDialog";
@@ -74,11 +76,6 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             }));
     }, [toolsRaw]);
 
-    const getNestedValue = (obj: Record<string, unknown>, path: string): unknown =>
-        path.split('.').reduce<unknown>((current, key) => {
-            if (current === null || typeof current !== "object") return undefined;
-            return (current as Record<string, unknown>)[key];
-        }, obj);
     // Champs supplémentaires via serverData
     const fax = useReactiveProperty<string>(entity.serverData, "fax") ?? null;
     const externalLink = z.string().nullable().parse(parsedTools.find(t => t.key === "reservation")?.items[0]?.url ?? null);
@@ -95,85 +92,20 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     const mastodon = (useReactiveProperty<string>(entity.serverData, "mastodon") ?? socialNetwork.mastodon) ?? null;
     const telegram = (useReactiveProperty<string>(entity.serverData, "telegram") ?? socialNetwork.telegram) ?? null;
     const discord = (useReactiveProperty<string>(entity.serverData, "discord") ?? socialNetwork.discord) ?? null;
-    const roomCount = useMemo(() => {
-        const roomPath = section.roomPath?.place ?? section.roomPath?.roomPath;
-        const type = section.roomPath?.type ?? "single";
-        if (!roomPath) return 0;
-        const roomId = section.roomPath?.id;
-        if (!roomId) return 0;
-        const roomData = _answersByForms?.find((item) => item.id === roomId);
-        let count = 0;
-        if (type === "array") {
-            roomData?.answers.forEach((answer) => {
-                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, roomPath);
-                if (Array.isArray(value)) {
-                    count += value.length - 1;
-                }
-            })
-        }else if(type === "single"){
-            roomData?.answers.forEach((answer) => {
-                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, roomPath);
-                if(value && isNaN(Number(value)) === false){
-                    count += Number(value);
-                }
-            })
-        }
-        return count;
-    }, [section.roomPath, _answersByForms])
-    const coworkCount = useMemo(() => {
-        const coworkPath = section.coworkingPath?.place ?? section.coworkingPath?.coworkPath;
-        const type = section.coworkingPath?.type ?? "single";
-        if (!coworkPath) return 0;
-        const coworkId = section.coworkingPath?.id;
-        if (!coworkId) return 0;
-        const coworkData = _answersByForms?.find((item) => item.id === coworkId);
-        let count = 0;
-        if (type === "array") {
-            coworkData?.answers.forEach((answer) => {
-                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, coworkPath);
-                if (Array.isArray(value)) {
-                    count += value.length - 1;
-                }
-            })
-        }else if(type === "single"){
-            coworkData?.answers.forEach((answer) => {
-                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, coworkPath);
-                if(value && isNaN(Number(value)) === false){
-                    count += Number(value);
-                }
-            })
-        }else if(type === "answer"){
-            count = (coworkData?.answers as Answer[] | undefined)?.length ?? 0;
-        }
-        return count;
-    }, [section.coworkingPath, _answersByForms])
-    const bedCount = useMemo(() => {
-        const bedPath = section.bedRoomPath?.place ?? section.bedRoomPath?.bedRoomPath;
-        const type = section.bedRoomPath?.type ?? "single";
-        if (!bedPath) return 0;
-        const bedId = section.bedRoomPath?.id;
-        if (!bedId) return 0;
-        const bedData = _answersByForms?.find((item) => item.id === bedId);
-        let count = 0;
-        if (type === "array") {
-            bedData?.answers.forEach((answer) => {
-                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, bedPath);
-                if (Array.isArray(value)) {
-                    count += value.length - 1;
-                }
-            })
-        }else if(type === "single"){
-            bedData?.answers.forEach((answer) => {
-                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, bedPath);
-                if(value && isNaN(Number(value)) === false){
-                    count += Number(value);
-                }
-            })
-        }else if(type === "answer"){
-            count = (bedData?.answers as Answer[] | undefined)?.length ?? 0;
-        }
-        return count;
-    }, [section.bedRoomPath, _answersByForms])
+    // Les trois compteurs lisent la MÊME logique, pilotée par `type` en config (cf. compteRessources) :
+    // `single` additionne une capacité saisie, `array` compte des lignes, `answer` compte des offres.
+    const roomCount = useMemo(
+        () => compteRessources(section.roomPath, _answersByForms),
+        [section.roomPath, _answersByForms],
+    );
+    const coworkCount = useMemo(
+        () => compteRessources(section.coworkingPath, _answersByForms),
+        [section.coworkingPath, _answersByForms],
+    );
+    const bedCount = useMemo(
+        () => compteRessources(section.bedRoomPath, _answersByForms),
+        [section.bedRoomPath, _answersByForms],
+    );
 
     // ─── Évaluation du lieu ───────────────────────────────────────────────────
     // On identifie le formulaire d'évaluation via la catégorie `"evaluation"`
@@ -281,26 +213,17 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             if (isNewAnswer) {
                 // Nouvelle réponse : pré-remplir le finder
                 if (finder) {
-                    const entityId = entity.id as string;
-                    const entityValue: Record<string, unknown> = {
-                        [entityId]: {
-                            id: entityId,
-                            type: entity.serverData.collection,
-                            name: entity.serverData.name,
-                        },
-                    };
-                    const pathWithoutPrefix = finder.startsWith("answers.")
-                        ? finder.slice("answers.".length)
-                        : finder;
-                    defaultValues = pathWithoutPrefix
-                        .split(".")
-                        .reduceRight<Record<string, unknown>>((acc, part) => ({ [part]: acc }), entityValue) as AllStepsData;
+                    defaultValues = buildFinderDefaultValues(finder, {
+                        id: entity.id as string,
+                        type: entity.serverData.collection,
+                        name: entity.serverData.name,
+                    });
                 }
             } else {
                 // Réponse existante : utiliser les données sauvegardées
                 defaultValues = answer.serverData?.answers as AllStepsData | undefined;
             }
-            const finderFieldName = finder ? finder.split(".").pop() : undefined;
+            const lockedFinder = finder ? finderFieldName(finder) : undefined;
             // L'entity du profil EST le lieu lié à la réponse partagée. On
             // pousse son id+type au backend via elementId/elementType pour que
             // `Coform::getFormAccessInfo` entre en mode "par élément" et
@@ -313,7 +236,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                 formId,
                 answerId: answer._serverData?.id ?? answer.id,
                 defaultValues,
-                lockedFields: finderFieldName ? [finderFieldName] : undefined,
+                lockedFields: lockedFinder ? [lockedFinder] : undefined,
                 elementId: entity.id as string,
                 elementType: entityCollection,
             });

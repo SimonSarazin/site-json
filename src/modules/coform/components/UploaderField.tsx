@@ -9,7 +9,7 @@ import { useT } from "@/hooks/useT";
 import "../i18n/i18n";
 import type { FormFieldMapping, UploaderValue, UploaderLegacyValue, ImageUploadValue, ExistingUploadFile } from "../types";
 import { useCoFormAnswerFiles } from "../hooks/useCoFormAnswerFiles";
-import { FieldError, HintText } from "./FormFields";
+import { FieldError, FieldLabel, HintText } from "./FormFields";
 
 // Formats par défaut élargis pour supporter images + documents courants
 const DEFAULT_UPLOAD_FORMATS = [
@@ -225,13 +225,7 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      <label
-        htmlFor={field.name}
-        className={cn("block text-sm font-medium", hasError && "text-destructive")}
-      >
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </label>
+      <FieldLabel field={field} htmlFor={field.name} hasError={hasError} />
 
       {field.info && <HintText text={field.info} />}
 

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { toRelativeImageUrl } from "./toRelativeImageUrl";
+import Cocolight from "@communecter/cocolight-api-client";
+import { toRelativeImageUrl, withRelativeImageUrls } from "./toRelativeImageUrl";
 
 describe("toRelativeImageUrl", () => {
   beforeEach(() => {
@@ -92,5 +93,52 @@ describe("toRelativeImageUrl", () => {
       const result = toRelativeImageUrl("not-an-url-but-not-empty");
       expect(result).toBeDefined();
     });
+  });
+});
+
+/**
+ * Une entrée relue par le SDK (vignettes rendues absolues) remise dans sa forme STOCKÉE, avant
+ * toute écriture qui la « conserve telle quelle » (`links.canEdit`, cf. `addToLinks`).
+ */
+describe("withRelativeImageUrls", () => {
+  it("rend relatifs les champs image que le SDK absolutise, et eux seuls", () => {
+    expect(
+      withRelativeImageUrls({
+        name: "A",
+        type: "citoyens",
+        profilThumbImageUrl: "http://co.example/assets/a.png",
+        url: "https://site.example/page",
+      })
+    ).toEqual({ name: "A", type: "citoyens", profilThumbImageUrl: "/assets/a.png", url: "https://site.example/page" });
+  });
+
+  it("laisse intacts un chemin déjà relatif, une chaîne vide et une valeur non textuelle", () => {
+    expect(withRelativeImageUrls({ profilThumbImageUrl: "/a.png", image: "", logo: null })).toEqual({
+      profilThumbImageUrl: "/a.png",
+      image: "",
+      logo: null,
+    });
+  });
+
+  it("ne modifie pas l'entrée reçue", () => {
+    const entry = { profilThumbImageUrl: "http://co.example/a.png" };
+    withRelativeImageUrls(entry);
+    expect(entry.profilThumbImageUrl).toBe("http://co.example/a.png");
+  });
+});
+
+/**
+ * La liste des champs à remettre en relatif recopie `ApiClient._imageFields` du SDK, qui est privé :
+ * elle peut dériver sans bruit. Ce test l'épingle sur la liste RÉELLE du paquet installé — tout
+ * champ que le SDK rendrait absolu doit redevenir relatif.
+ */
+describe("withRelativeImageUrls ⇄ SDK", () => {
+  it("défait la normalisation de CHAQUE champ image du SDK", () => {
+    const client = new Cocolight.ApiClient({ baseURL: "http://localhost" } as never);
+    const champs = [...(client as unknown as { _imageFields: Set<string> })._imageFields];
+    expect(champs.length).toBeGreaterThan(0);
+    const entree = Object.fromEntries(champs.map((c) => [c, `http://localhost/${c}.png`]));
+    const attendu = Object.fromEntries(champs.map((c) => [c, `/${c}.png`]));
+    expect(withRelativeImageUrls(entree)).toEqual(attendu);
   });
 });

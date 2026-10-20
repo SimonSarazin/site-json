@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { cn } from "@/lib/utils";
+import { accentStyle } from "@/lib/accentStyle";
+import { sectionBadgeClass } from "@/components/sections/sectionBadge";
+import { sectionMaxWidthClass } from "@/components/sections/sectionWidth";
 import { useArticleFeed } from "../hooks/useArticleFeed";
 import { normalizeArticleResult, articleHref } from "../lib/articleLink";
 import type { ArticleTeaserSectionProps } from "../schema";
@@ -41,12 +44,13 @@ interface TeaserCardProps {
   href: string;
   ctaLabel: string;
   accentColor?: string;
+  accentTextColor?: string;
 }
 
-function TeaserCard({ article, href, ctaLabel, accentColor }: TeaserCardProps) {
+function TeaserCard({ article, href, ctaLabel, accentColor, accentTextColor }: TeaserCardProps) {
   const image = article.profilMediumImageUrl || article.profilImageUrl;
-  // Même couple fond fixe/texte blanc fixe que le CTA de `FeaturedCarouselSlide` (accentColor config-driven).
-  const accentStyle = accentColor ? { backgroundColor: accentColor, color: "#fff" } : undefined;
+  // Fond et encre de l'accent, pilotés par la config (cf. `accentStyle`).
+  const styleAccent = accentStyle(accentColor, accentTextColor);
   return (
     <Link
       to={href}
@@ -69,7 +73,7 @@ function TeaserCard({ article, href, ctaLabel, accentColor }: TeaserCardProps) {
           padding gauche (`pl-8`) fait démarrer le LABEL exactement au même niveau que le titre (`left-24`
           + `pl-8` = 8rem = position du texte, cf. gap-4 après la photo w-28). */}
       <span
-        style={accentStyle}
+        style={styleAccent}
         className={cn(
           "absolute bottom-2 left-24 z-0 inline-flex w-max items-center gap-1 rounded-full py-1.5 pr-4 pl-8 text-xs font-semibold shadow-md transition-opacity group-hover:opacity-90",
           !accentColor && "bg-primary text-primary-foreground",
@@ -108,7 +112,14 @@ function Teaser({ props }: { props: ArticleTeaserSectionProps }) {
   return (
     <div className="grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
       {items.map((a, i) => (
-        <TeaserCard key={a.id ?? i} article={a} href={articleHref(a, BASE)} ctaLabel={ctaLabel} accentColor={props.accentColor} />
+        <TeaserCard
+          key={a.id ?? i}
+          article={a}
+          href={articleHref(a, BASE)}
+          ctaLabel={ctaLabel}
+          accentColor={props.accentColor}
+          accentTextColor={props.accentTextColor}
+        />
       ))}
     </div>
   );
@@ -117,23 +128,23 @@ function Teaser({ props }: { props: ArticleTeaserSectionProps }) {
 export default function ArticleTeaser({ id, props }: { id?: string; props: ArticleTeaserSectionProps }) {
   const t = useT("modules/blog");
   const hydrated = useHydrated();
-  const { background, accentColor } = props;
+  const { background, accentColor, accentTextColor } = props;
   // Même patron que `FeaturedCarouselSection` : fond FIXE (config-driven) → texte blanc fixe, jamais
   // `text-foreground` (qui s'inverserait en mode clair/sombre). Sans `background`, repli sur le thème.
   const sectionStyle = background ? { backgroundColor: background } : undefined;
   const sectionClassName = background ? "text-white" : "bg-foreground text-background";
-  const accentStyle = accentColor ? { backgroundColor: accentColor, color: "#fff" } : undefined;
+  const styleAccent = accentStyle(accentColor, accentTextColor);
   const viewAllHref = props.viewAllHref ?? BASE;
   const viewAllLabel = props.viewAllLabel ? t(props.viewAllLabel) : t("teaser.viewAll");
 
   return (
     <section id={id} style={sectionStyle} className={cn("py-16 px-4", sectionClassName)}>
-      <div className="container mx-auto max-w-4xl">
+      <div className={cn("container mx-auto", sectionMaxWidthClass(props.maxWidth, "max-w-4xl"))}>
         <h2 className="mb-10">
           <Badge
             variant={accentColor ? undefined : "secondary"}
-            style={accentStyle}
-            className="rounded-none border-none -rotate-4 px-4 py-1.5 shadow-md text-2xl md:text-3xl font-serif"
+            style={styleAccent}
+            className={sectionBadgeClass(props.headlineStyle)}
           >
             {t(props.headline)}
           </Badge>

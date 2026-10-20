@@ -7,7 +7,10 @@ import path from "node:path";
  *
  * STRICT (bloquant) sur chaque namespace :
  *  - parité des clés `fr` ↔ `en` (clé manquante d'un côté = trad non ajoutée),
- *  - aucune valeur de traduction vide.
+ *  - aucune valeur de traduction vide,
+ *  - aucun `{{placeholder}}` interpolé deux fois dans une même valeur — la
+ *    marque du pluriel écrite en second placeholder (« {{count}} commun{{count}} »
+ *    rendait « 3 commun3 ») ; le pluriel se déclare en `_one` / `_other`.
  *
  * Découverte automatique des namespaces (dossiers `i18n/` avec `fr.json`+`en.json`).
  */
@@ -31,6 +34,24 @@ function emptyValuePaths(obj: Record<string, unknown>, prefix = ""): string[] {
     const key = prefix ? `${prefix}.${k}` : k;
     if (v && typeof v === "object" && !Array.isArray(v)) out.push(...emptyValuePaths(v as Record<string, unknown>, key));
     else if (v === "") out.push(key);
+  }
+  return out;
+}
+
+/** Chemins des valeurs qui interpolent un même `{{placeholder}}` plus d'une fois. */
+function duplicatedPlaceholderPaths(obj: Record<string, unknown>, prefix = ""): string[] {
+  const out: string[] = [];
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      out.push(...duplicatedPlaceholderPaths(v as Record<string, unknown>, key));
+    } else if (typeof v === "string") {
+      const seen = new Set<string>();
+      for (const m of v.match(/\{\{\s*[\w.]+\s*\}\}/g) ?? []) {
+        if (seen.has(m)) out.push(`${key} (${m})`);
+        seen.add(m);
+      }
+    }
   }
   return out;
 }
@@ -76,6 +97,17 @@ describe("Preflight — Fichiers i18n", () => {
           ...emptyValuePaths(en).map((k) => `en:${k}`),
         ];
         expect(empties, `Valeur(s) i18n vide(s): ${empties.join(", ")}`).toHaveLength(0);
+      });
+
+      test("aucun placeholder interpolé deux fois dans une même valeur", () => {
+        const doubles = [
+          ...duplicatedPlaceholderPaths(fr).map((k) => `fr:${k}`),
+          ...duplicatedPlaceholderPaths(en).map((k) => `en:${k}`),
+        ];
+        expect(
+          doubles,
+          `Placeholder répété dans une valeur (pluriel ? déclarer \`_one\` / \`_other\`): ${doubles.join(", ")}`,
+        ).toHaveLength(0);
       });
     });
   }

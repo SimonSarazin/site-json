@@ -125,7 +125,17 @@ export function FinderElementCard({
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect?.(element)}
-            aria-label={`${isSelected ? "Désélectionner" : "Sélectionner"} ${element.name}`}
+            // Le clic de la case ne remonte pas à la carte, comme pour « Modifier » et « Supprimer » :
+            // sinon `onCheckedChange` PUIS le `onClick` de la carte basculaient deux fois — rien de
+            // sélectionné, à la souris comme au clavier (Espace), la carte n'étant pas focalisable.
+            onClick={(e) => e.stopPropagation()}
+            aria-label={String(
+              t(
+                isSelected ? "coform.finder.elementCard.deselectAria" : "coform.finder.elementCard.selectAria",
+                undefined,
+                { name: element.name }
+              )
+            )}
           />
         </div>
       )}

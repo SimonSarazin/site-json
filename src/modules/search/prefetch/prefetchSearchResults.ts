@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { getBaseUrl } from "@/lib/constant/common";
-import { initApi } from "@/lib/apiClient";
+import { ensureInitApi } from "@/lib/cocolightInitQuery";
 import { SEARCH_QUERY_KEYS, type SearchQueryKeyParams } from "../constants/queryKeys";
 import { buildSearchPayload, type SearchBaseParamsInput } from "../lib/buildSearchPayload";
 import { expandCostumSubType, type CostumFormSubTypeLike } from "../lib/costumSubType";
@@ -34,9 +33,10 @@ export async function prefetchSearchResults(
   // `useSearchQuery` et calcule sa queryKey sur les baseParams EXPANSÉS : sans le miroir SSR, la clé
   // préchargée ne matcherait pas (refetch à l'hydratation) et surtout la page servie mélangerait les
   // sous-types (costumSubType est inconnu de buildSearchPayload → aucun filtre). L'expansion exige le
-  // slug du porteur → initApi est hissé AVANT le calcul de la clé (en SSR chaque requête a son
-  // queryClient : queryFn s'exécutait de toute façon, le hissage est neutre).
-  const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+  // slug du porteur → l'init API est hissée AVANT le calcul de la clé (en SSR chaque requête a son
+  // queryClient : queryFn s'exécutait de toute façon, le hissage est neutre). Elle est PARTAGÉE
+  // avec entry-server et les autres loaders de la requête (`cocolightInitQuery`).
+  const { entity, api } = await ensureInitApi(queryClient);
   const baseParamsExpanses = expandCostumSubType(
     params.baseParams as { costumSubType?: string; defaultFilters?: Record<string, unknown> } | undefined,
     opts?.costumForms,

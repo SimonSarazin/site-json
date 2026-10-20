@@ -828,6 +828,7 @@ export default function PreviewPoiAmenities({ item, preview, onClose }: PreviewP
                 <Suspense fallback={<Skeleton className="h-40 w-full rounded-2xl" />}>
                   <PreviewReservations
                     resourceId={poiEntity.id}
+                    resourceName={poi.name}
                     conf={preview.reservations}
                   />
                 </Suspense>

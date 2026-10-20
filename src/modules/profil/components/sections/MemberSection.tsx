@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { useSectionEntity } from "@/hooks/useSectionEntity";
 import { EntityMembers } from "../members/EntityMembers";
 import type { MemberSectionProps } from "../../schema";
@@ -18,7 +19,7 @@ export default function MemberSection({ id, props }: MemberSectionComponentProps
   const { entity } = useSectionEntity({ slug: props.slug });
 
   return (
-    <div id={id}>
+    <div id={id} className={cn(props.className)}>
       <EntityMembers
         entity={entity}
         title={props.title}
@@ -27,6 +28,15 @@ export default function MemberSection({ id, props }: MemberSectionComponentProps
         showCard={props.showCard}
         search={props.search}
         card={props.card}
+        roles={props.roles}
+        filters={props.filters}
+        fields={props.fields}
+        hideWhenEmpty={props.hideWhenEmpty}
+        footerText={props.footerText}
+        cardText={props.cardText}
+        showTabs={props.showTabs}
+        showTitle={props.showTitle}
+        showInviteButton={props.showInvite}
       />
     </div>
   );

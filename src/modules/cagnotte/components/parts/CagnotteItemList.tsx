@@ -1,6 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { CagnotteFundableItem, CagnotteTypeConfig } from "../../types";
@@ -16,6 +17,11 @@ interface CagnotteMilestoneListProps {
   cagnotteConfig: CagnotteTypeConfig;
   /** Pour personalisation des textes à afficher pour certain groupe d'organisation */
   context: string;
+  /**
+   * Vrai tant que l'enveloppe est en vol : sans lui, le `return null` sur liste vide rend
+   * « en cours de chargement » indistinguable de « aucun palier ».
+   */
+  isLoading?: boolean;
 }
 
 /**
@@ -28,12 +34,42 @@ export function CagnotteItemList({
   activeItemIds,
   onItemClick,
   cagnotteConfig,
-  context
+  context,
+  isLoading = false
 }: CagnotteMilestoneListProps) {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
 
-  if (items === undefined || items.length === 0) return null;
+  const isEmpty = items === undefined || items.length === 0;
+
+  if (isEmpty && isLoading) {
+    return (
+      <div className="space-y-3" aria-busy="true">
+        <p className="text-sm font-medium text-foreground">
+          {t("CagnotteDialog.labels.itemsTitle", undefined, { context: cagnotteConfig.selectorType+context })}
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {[0, 1].map((index) => (
+            <div key={index} className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
+              <div className="flex items-start gap-2">
+                <Skeleton className="w-6 h-6 rounded shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isEmpty) return null;
 
   return (
     <div className="space-y-3">

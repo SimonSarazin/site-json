@@ -45,6 +45,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { SiteConfig } from "../src/types/site-schema";
+import { isOpenableAddModal, type CostumFormRef } from "../src/modules/profil/components/add/addModals";
 import { moduleRoutePrefixes } from "./lib/module-routes";
 import {
   builtinModalNames,
@@ -277,8 +278,29 @@ for (const cf of configs) {
       // occurrences), qui dénoteraient toutes en référence morte. D'où le garde sur `type`.
       const clesModales =
         rec.type === "resource" ? ["modal", "editModal", "addModal", "create", "edit"] : ["modal", "editModal", "addModal"];
-      for (const key of clesModales) {
-        const v = rec[key];
+      // `coform.finderAddNew` (question ou type → modale d'ajout d'un finder) : des modales rangées sous
+      // des clés LIBRES, que la liste ci-dessus ne peut pas nommer. Là, le contrôle est CELUI du
+      // resolveur (`isOpenableAddModal`) — plus étroit que la règle générale, qui tient pour valides
+      // les costums TS : au runtime seuls les `costumForms` du site sont enregistrés, et le resolveur
+      // refuse le reste (le finder n'a alors plus de bouton « Ajouter »).
+      const surFinder = p.join(".") === "coform.finderAddNew";
+      if (surFinder) {
+        for (const [key, v] of Object.entries(rec)) {
+          if (v === undefined || v === null || v === "") continue;
+          if (typeof v === "string" && isOpenableAddModal(v, raw.costumForms as Record<string, CostumFormRef> | undefined)) continue;
+          const ecrit = typeof v === "string" ? v : JSON.stringify(v);
+          findings.push({
+            category: "ref-morte",
+            path: `${p.join(".")}.${key}`,
+            message: `modale « ${ecrit} » : ni modale d'ajout standard ni \`add-<id>\` d'un costumForms du site — le finder n'a plus de bouton « Ajouter »`,
+            severity: "warn",
+            fixability: "proposer",
+            value: ecrit,
+          });
+        }
+      }
+      const refsModales: [string, unknown][] = surFinder ? [] : clesModales.map((k) => [k, rec[k]]);
+      for (const [key, v] of refsModales) {
         if (typeof v !== "string" || !v || BUILTIN_MODALS.has(v)) continue;
         // Sentinelles de résolution, pas des clés de modale (cf. AdminFormRefSchema).
         if ((key === "create" || key === "edit") && (v === "inherit" || v === "standard")) continue;

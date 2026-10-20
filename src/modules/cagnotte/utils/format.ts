@@ -22,6 +22,11 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
+/** Arrondi au centime, sans bruit flottant. */
+export function roundToCents(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 /**
  * Retourne les initiales d'un nom (max 2 lettres, majuscules) pour un avatar fallback.
  *

@@ -9,7 +9,7 @@
  * Toast succès/erreur géré automatiquement par `useMutationWithToast` (via factory).
  */
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2, Plus } from "lucide-react";
 import type { Project } from "@communecter/cocolight-api-client";
@@ -145,6 +145,18 @@ export function ActionCreateDialog({
     );
   };
 
+  const onInvalid = (errors: FieldErrors<ActionCreateFormData>) => {
+    const hasVisibleError = (["name", "credits", "startDate", "endDate"] as const).some(
+      (field) => errors[field],
+    );
+    if (!hasVisibleError) {
+      form.setError("root", {
+        type: "validation",
+        message: String(t("ActionsSection.errors.actionFormInvalid")),
+      });
+    }
+  };
+
   // Champs watch (pour DatePickerInput / TagsInput / Select qui ne supportent pas `register`)
   const status = form.watch("status");
   const tags = form.watch("tags");
@@ -175,7 +187,7 @@ export function ActionCreateDialog({
           </div>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onValid)} className="contents">
+        <form onSubmit={form.handleSubmit(onValid, onInvalid)} className="contents">
           <div className="space-y-4 px-6 py-5">
             <div className="space-y-2">
               <Label htmlFor="new-action-name">

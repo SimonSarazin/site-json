@@ -2,10 +2,13 @@
  * Fns de spec COMMUNES aux costums (registre `specRegistries`, pas des transforms) — l'import (side-effect)
  * enregistre les clés partagées. Pendant de `sharedCodecs` mais pour les fns de modale (existingUrl, …).
  */
+import { createElement, Suspense } from "react";
+import { lazy } from "vite-preload";
 import type { QueryKey } from "@tanstack/react-query";
-import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, type InvalidateFn } from "../specRegistries";
+import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, registerSlotFn, registerAfterSubmitFn, type InvalidateFn } from "../specRegistries";
 import { PROFIL_QUERY_KEYS } from "../../constants";
-import { SEARCH_QUERY_KEYS } from "@/modules/search/constants";
+import { reloadOnSlugChange } from "../../lib/reloadOnSlugChange";
+import { SEARCH_QUERY_KEYS, SEARCH_STAT_COUNT_PREFIX } from "@/modules/search/constants";
 import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
 import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
 
@@ -39,9 +42,14 @@ const USER_LIST_BUILDERS: Record<string, (slug: string) => QueryKey> = {
  * invalidate GÉNÉRIQUE PARAMÉTRÉ (clé `invalidate:standard`). params : `userList` (clé de USER_LIST_BUILDERS,
  * invalidée pour le parent/me en CRÉATION), `searchKeys` (préfixes de recherche à rafraîchir, 2 modes),
  * `parentAboutOnAdd` (rafraîchir l'about du parent en création). Édition → about de l'entité. Ex-poi/tl:invalidate.
+ * Les chiffres des tuiles de stat (`SEARCH_STAT_COUNT_PREFIX`) suivent TOUJOURS : leurs périmètres vivent
+ * dans les sections, pas dans les `searchKeys` du formulaire.
  */
 const standardInvalidate: InvalidateFn = (ctx, params) => {
-  const searchKeys = ((params?.searchKeys as string[] | undefined) ?? []).map((k) => SEARCH_QUERY_KEYS.RESULTS_PREFIX(k));
+  const searchKeys = [
+    ...((params?.searchKeys as string[] | undefined) ?? []).map((k) => SEARCH_QUERY_KEYS.RESULTS_PREFIX(k)),
+    SEARCH_QUERY_KEYS.RESULTS_PREFIX(SEARCH_STAT_COUNT_PREFIX),
+  ];
   if (ctx.mode === "edit") {
     return [...(ctx.entity?.slug ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(ctx.entity.slug)] : []), ...searchKeys];
   }
@@ -78,3 +86,33 @@ registerInvalidateFn("invalidate:event", (ctx, params) => [
   AGENDA_QUERY_KEYS.CALENDAR_PREFIX(),
   AGENDA_QUERY_KEYS.LIST_PREFIX(),
 ]);
+
+
+/**
+ * afterSubmit GÉNÉRIQUE (clé `afterSubmit:reloadOnSlugChange`) : en ÉDITION, si le `slug` soumis diffère
+ * de celui de l'entité, réécrit l'URL courante et recharge — même effet que `editProfileConfig.afterSubmit`
+ * (modale de profil standard, même helper `lib/reloadOnSlugChange`), rendu disponible aux formulaires costum qui exposent le slug (ex. le
+ * formulaire citoyen : le slug est le nom d'utilisateur, donc le chemin `/profil/<slug>` du profil ouvert).
+ * Inerte en création et hors navigateur.
+ */
+registerAfterSubmitFn("afterSubmit:reloadOnSlugChange", (ctx, values) => {
+  if (ctx.mode !== "edit") return;
+  reloadOnSlugChange(ctx.entity?.slug, values.slug);
+});
+
+// Chargé à la demande : le slot ne sert qu'aux formulaires qui déclarent `duplicateCheck`, et en
+// création seulement — les autres ne paient rien. Constante de module (pas dans la SlotFn) : un
+// `lazy()` recréé à chaque appel remonterait le composant à chaque rendu.
+const EntityDuplicatesSlot = lazy(() => import("../EntityDuplicatesSlot"));
+
+/**
+ * Slot GÉNÉRIQUE « doublons à la création » (clé `slot:entityDuplicates`) — enregistré ICI, dans le
+ * barrel commun, pour être disponible à tout formulaire costum 100 % config. Paramètres : bloc
+ * `duplicateCheck` de la spec. Inerte (rend `null`) en édition et sans bloc déclaré. La frontière
+ * Suspense est propre au slot : celle du moteur entoure tout le formulaire.
+ */
+registerSlotFn("slot:entityDuplicates", (ctx, spec) =>
+  ctx.mode === "add" && spec?.duplicateCheck
+    ? createElement(Suspense, { fallback: null }, createElement(EntityDuplicatesSlot, { params: spec.duplicateCheck }))
+    : null,
+);

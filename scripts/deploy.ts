@@ -7,6 +7,12 @@
  * contre-pied — aucune automatisation implicite, on nomme ce qu'on déploie
  * (« tout » se nomme --all), et les déploiements s'enchaînent un par un.
  *
+ * Depuis 2026-09-16 le parc ne clone plus GitLab (429 sur les clones, cf.
+ * `BUILD_DEFAUT`) mais son MIROIR GitHub privé, via une App GitHub. GitLab
+ * reste la source de vérité : `reference()` vise toujours `origin/main`, et
+ * deux contrôles nouveaux tiennent l'écart — `status` signale un miroir en
+ * retard, `push` refuse de partir dessus.
+ *
  * La correspondance slug ↔ application ↔ domaine vit dans `sites.json`
  * (champs `coolifyApp` et `domain`). Le token, lui, reste dans le contexte du
  * CLI Coolify (`~/.config/coolify/config.json`) et n'entre jamais dans le dépôt.
@@ -38,7 +44,9 @@ import {
   deployApplication,
   resoudrePlacement,
   getApplication,
+  githubAppParNom,
   indexByName,
+  listGithubApps,
   lastSuccessfulDeployment,
   loadContext,
   listEnvs,
@@ -50,7 +58,7 @@ import {
   type CoolifyDeployment,
 } from "./lib/coolify";
 import { analyserArgv } from "./lib/deploy-cli";
-import { buildDuSite, cibleDnsDuServeur, masquer, variablesAttendues } from "./lib/deploy-config";
+import { BUILD_DEFAUT, buildDuSite, cibleDnsDuServeur, masquer, variablesAttendues } from "./lib/deploy-config";
 import { executerParSite } from "./lib/deploy-lot";
 import { impact } from "./lib/deploy-scope";
 import { atteintLaMemeCible, resoudre as resoudreDns } from "./lib/dns";
@@ -142,6 +150,103 @@ function retard(sha: string | null, refSha: string): number | null {
   return Number(git("rev-list", "--count", `${sha}..${refSha}`));
 }
 
+/* ── Miroir ───────────────────────────────────────────────────────────────── */
+
+export interface EtatMiroir {
+  /** Le remote local qui pointe le dépôt bâti par Coolify. */
+  remote: string | null;
+  sha: string | null;
+  /** Commits de la référence que le miroir n'a pas encore. */
+  retard: number | null;
+  /** Pourquoi l'état n'a pas pu être établi — jamais une erreur, une info. */
+  indetermine?: string;
+}
+
+/**
+ * Le miroir que Coolify bâtit est-il à jour vis-à-vis de la référence ?
+ *
+ * POURQUOI — depuis 2026-09-16, la vérité est `origin/main` (GitLab) mais
+ * Coolify clone le MIROIR GitHub. Déployer ne publie donc pas ce que dit
+ * `reference()`, mais ce que le miroir contient. Sans ce contrôle, `status`
+ * annonce « à jour » un site dont Coolify a bâti un commit plus ancien, et
+ * `push` publie du vieux code en silence. C'est le seul mode de panne que
+ * l'architecture de miroir ajoute — il mérite son contrôle.
+ *
+ * INDÉTERMINÉ N'EST PAS UN ÉCHEC : dépôt privé sans credentials, réseau coupé,
+ * remote absent. L'outil le dit et continue — se bloquer sur une vérification
+ * facultative serait pire que le risque couvert. `GIT_TERMINAL_PROMPT=0` est
+ * indispensable : sans lui, `ls-remote` sur un dépôt privé ATTEND un mot de
+ * passe, et la commande se fige au lieu de rendre la main.
+ */
+function etatDuMiroir(depot: string, branche: string, refSha: string): EtatMiroir {
+  // Pas d'URL : source publique, Coolify clone la même chose que nous.
+  if (/^https?:\/\//.test(depot) || depot.includes("@")) {
+    return { remote: null, sha: null, retard: null, indetermine: "source publique : pas de miroir" };
+  }
+  let remotes: string[];
+  try {
+    remotes = git("remote").split("\n").filter(Boolean);
+  } catch {
+    return { remote: null, sha: null, retard: null, indetermine: "git remote illisible" };
+  }
+  // `owner/repo` doit se retrouver dans l'URL du remote, quelle que soit sa
+  // forme (https://github.com/owner/repo(.git) ou git@github.com:owner/repo).
+  const remote = remotes.find((r) => {
+    try {
+      const url = git("remote", "get-url", r);
+      return url.replace(/\.git$/, "").endsWith(`/${depot}`) || url.replace(/\.git$/, "").endsWith(`:${depot}`);
+    } catch {
+      return false;
+    }
+  });
+  if (!remote) {
+    return {
+      remote: null, sha: null, retard: null,
+      indetermine: `aucun remote local ne pointe ${depot} (git remote add <nom> …)`,
+    };
+  }
+  // Le miroir est PRIVÉ : sans credentials, `ls-remote` échoue. On tente le
+  // nu d'abord (poste correctement configuré, CI avec un token dans l'URL),
+  // puis le helper de `gh` s'il est installé et authentifié — sans écrire dans
+  // la config git de la machine, et sans en faire une dépendance dure : si les
+  // deux échouent, l'état reste « non vérifié » et rien ne bloque.
+  const tentatives: string[][] = [
+    ["ls-remote", remote, branche],
+    ["-c", "credential.helper=!gh auth git-credential", "ls-remote", remote, branche],
+  ];
+  let sha = "";
+  let echec = "";
+  for (const args of tentatives) {
+    try {
+      sha = execFileSync("git", args, {
+        cwd: ROOT, encoding: "utf-8", timeout: 30_000,
+        env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+        stdio: ["ignore", "pipe", "ignore"],
+      }).split(/\s/)[0];
+      if (sha) break;
+    } catch (e) {
+      echec = (e as Error).message.split("\n")[0];
+    }
+  }
+  if (!sha && echec) {
+    return { remote, sha: null, retard: null, indetermine: `${remote} injoignable (${echec})` };
+  }
+  if (!sha) return { remote, sha: null, retard: null, indetermine: `branche ${branche} absente de ${remote}` };
+  return { remote, sha, retard: retard(sha, refSha) };
+}
+
+/** Une ligne lisible pour `status` et `push`. */
+function ligneMiroir(m: EtatMiroir, refRev: string): string {
+  if (m.indetermine) return `· miroir : non vérifié — ${m.indetermine}`;
+  if (m.retard === null) return `· miroir ${m.remote} @ ${(m.sha ?? "").slice(0, 8)} — position indéterminable`;
+  if (m.retard === 0) return `· miroir ${m.remote} @ ${(m.sha ?? "").slice(0, 8)} — en phase avec ${refRev}`;
+  return (
+    `⚠ miroir ${m.remote} @ ${(m.sha ?? "").slice(0, 8)} — ${m.retard} commit(s) DE RETARD sur ${refRev}.\n` +
+    `  Coolify bâtit ce miroir : déployer publierait ce commit, pas ${refRev}.\n` +
+    `  Pousser d'abord :  git push ${m.remote} HEAD:${"main"}`
+  );
+}
+
 /* ── Caches process ───────────────────────────────────────────────────────── */
 
 /**
@@ -180,6 +285,8 @@ function analyser(
   app: CoolifyApp | undefined,
   dernier: CoolifyDeployment | undefined,
   refSha: string,
+  /** id → nom des Apps GitHub de l'instance, pour nommer la source constatée. */
+  sourcesGithub: Map<number, string> = new Map(),
 ): Ligne {
   const ecarts: string[] = [];
   const domaines = asList(site.domain);
@@ -196,6 +303,29 @@ function analyser(
   const reel = app.fqdn ?? "";
   if (normaliserFqdn(reel) !== normaliserFqdn(attendu)) {
     ecarts.push(`domaine : sites.json dit "${attendu}", Coolify sert "${reel || "(aucun)"}"`);
+  }
+
+  // Conformité du BUILD — dépôt, branche, source. Ce contrôle manquait : quand
+  // parent62 est passé en App GitHub depuis l'UI, l'écart est resté invisible à
+  // l'outil, qui continuait d'affirmer que tout le parc clonait GitLab. Une
+  // source ne se rattrape pas par PATCH (422) : la voir tôt est la seule
+  // protection.
+  const build = buildDuSite(site);
+  if (app.git_repository !== build.depot) {
+    ecarts.push(`dépôt : attendu "${build.depot}", Coolify clone "${app.git_repository}"`);
+  }
+  if (app.git_branch !== build.branche) {
+    ecarts.push(`branche : attendue "${build.branche}", Coolify bâtit "${app.git_branch}"`);
+  }
+  const sourceReelle =
+    app.source_id == null ? null : (sourcesGithub.get(app.source_id) ?? `#${app.source_id}`);
+  if (build.githubApp && sourceReelle !== build.githubApp) {
+    ecarts.push(
+      `source : attendue l'App GitHub "${build.githubApp}", Coolify utilise ` +
+        (sourceReelle ? `"${sourceReelle}"` : "un dépôt public"),
+    );
+  } else if (!build.githubApp && sourceReelle) {
+    ecarts.push(`source : dépôt public attendu, Coolify utilise l'App GitHub "${sourceReelle}"`);
   }
 
   // Le commit déployé vient de l'historique, pas de `git_commit_sha` : ce
@@ -226,13 +356,18 @@ async function status(ctx: CoolifyContext): Promise<number> {
   const index = await indexApplications(ctx);
 
   const ref = reference();
+  // Un seul GET pour tout le parc : sans lui, une source ne se nommerait que
+  // par son id numérique, illisible dans un écart.
+  const sourcesGithub = new Map((await listGithubApps(ctx)).map((a) => [a.id, a.name]));
   const lignes = await Promise.all(
     cibles.map(async (s) => {
       const app = index.get(s.coolifyApp as string);
       const dernier = app ? await lastSuccessfulDeployment(ctx, app.uuid) : undefined;
-      return analyser(s, app, dernier, ref.sha);
+      return analyser(s, app, dernier, ref.sha, sourcesGithub);
     }),
   );
+  // Le miroir est commun au parc tant que les sites partagent leur `build`.
+  const miroir = etatDuMiroir(BUILD_DEFAUT.depot, BUILD_DEFAUT.branche, ref.sha);
   const sansApp = sites.filter((s) => !s.coolifyApp).map((s) => s.slug);
 
   // Applications qui ressemblent au parc mais que sites.json ne déclare pas.
@@ -243,7 +378,11 @@ async function status(ctx: CoolifyContext): Promise<number> {
 
   if (JSON_OUT) {
     console.log(
-      JSON.stringify({ instance: ctx.name, ref: ref.rev, refSha: ref.sha, sites: lignes, sansApp, orphelines }, null, 2),
+      JSON.stringify(
+        { instance: ctx.name, ref: ref.rev, refSha: ref.sha, miroir, sites: lignes, sansApp, orphelines },
+        null,
+        2,
+      ),
     );
   } else {
     console.log(`Instance : ${ctx.name} (${ctx.fqdn})`);
@@ -281,11 +420,15 @@ async function status(ctx: CoolifyContext): Promise<number> {
           ` Coolify bâtit ${ref.rev} : les commits non poussés ne partiront pas.`,
       );
     }
-    if (sansApp.length) console.log(`\n· ${sansApp.length} site(s) sans application : ${sansApp.join(", ")}`);
+    console.log(`\n${ligneMiroir(miroir, ref.rev)}`);
+    if (sansApp.length) console.log(`· ${sansApp.length} site(s) sans application : ${sansApp.join(", ")}`);
     if (orphelines.length) console.log(`· application(s) non déclarée(s) dans sites.json : ${orphelines.join(", ")}`);
   }
 
-  return lignes.some((x) => x.ecarts.length > 0) ? 1 : 0;
+  // Un miroir en retard est un écart du parc, pas une remarque : tant qu'il
+  // dure, aucun déploiement ne peut publier la référence.
+  const miroirEnRetard = (miroir.retard ?? 0) > 0;
+  return lignes.some((x) => x.ecarts.length > 0) || miroirEnRetard ? 1 : 0;
 }
 
 /* ── lock ─────────────────────────────────────────────────────────────────── */
@@ -295,16 +438,20 @@ async function status(ctx: CoolifyContext): Promise<number> {
  *
  * POURQUOI — Coolify ne filtre les webhooks que sur (dépôt, branche). Nos N
  * applications partagent les deux : un seul push les mettrait TOUTES en file. Et
- * `is_auto_deploy_enabled` vaut `true` par défaut à la création. Aucun webhook
- * n'existe aujourd'hui côté GitLab, mais rien n'empêche qu'on en ajoute un ; ce
- * verrou fait que ce jour-là, rien ne partira tout seul.
+ * `is_auto_deploy_enabled` vaut `true` par défaut à la création. Ce n'était
+ * qu'hypothétique tant que le parc clonait GitLab, où aucun webhook n'existe ;
+ * depuis la bascule sur l'App GitHub (2026-09-16), le webhook est livré AVEC la
+ * source — un push sur le miroir suffirait à mettre les N en file.
  *
- * L'API 4.1.1 ne renvoie pas le sous-objet `settings` : on ne peut pas relire la
- * valeur pour confirmer. Le contrôle se fait dans l'UI, onglet Advanced.
+ * ⚠ Le sens : `lock` COUPE, donc pose `false` ; `--unlock` remet `true`.
+ * L'inverse a tourné jusqu'au 2026-09-16 (`const cible = !unlock`) — la
+ * commande annonçait « couper » et ACTIVAIT — parce que le code renonçait à
+ * relire le réglage. `GET /applications/{uuid}` renvoie `settings` depuis la
+ * 4.3.x : on vérifie désormais, et un PATCH sans effet devient un échec.
  */
 async function lock(ctx: CoolifyContext): Promise<number> {
   const unlock = cmd.bool("--unlock");
-  const cible = !unlock;
+  const cible = unlock;
   const cibles = sitesDeployables();
   const index = await indexApplications(ctx);
 
@@ -326,7 +473,17 @@ async function lock(ctx: CoolifyContext): Promise<number> {
   const bilan = await executerParSite(
     aTraiter.map((x) => x.site.slug),
     async (slug) => {
-      await patchApplication(ctx, apps.get(slug)!.uuid, { is_auto_deploy_enabled: cible });
+      const uuid = apps.get(slug)!.uuid;
+      await patchApplication(ctx, uuid, { is_auto_deploy_enabled: cible });
+      // Relecture — c'est le contrôle qui manquait. L'API répond 200 à un PATCH
+      // qu'elle n'applique pas ; sans cette vérification, le verrou s'annonce
+      // « ✓ 13/13 » sans rien avoir coupé.
+      const apres = (await getApplication(ctx, uuid)).settings?.is_auto_deploy_enabled;
+      if (apres !== cible) {
+        throw new CoolifyError(
+          `réglage non appliqué : is_auto_deploy_enabled vaut ${String(apres)}, ${String(cible)} attendu.`,
+        );
+      }
     },
     {
       failFast: cmd.bool("--fail-fast"),
@@ -334,7 +491,9 @@ async function lock(ctx: CoolifyContext): Promise<number> {
       reprise: () => `npm run deploy:lock -- --yes${unlock ? " --unlock" : ""}`,
     },
   );
-  console.log(`L'API 4.1.1 ne renvoie pas ce réglage : vérifier dans l'UI Coolify, onglet Advanced.`);
+  if (bilan.code === 0) {
+    console.log(`Vérifié par relecture : is_auto_deploy_enabled = ${String(cible)} sur ${aTraiter.length} application(s).`);
+  }
   return bilan.code;
 }
 
@@ -507,6 +666,19 @@ async function push(ctx: CoolifyContext): Promise<number> {
   if (local !== ref.sha) {
     console.log(`⚠ HEAD local (${local.slice(0, 8)}) n'est pas ${ref.rev} : les commits non poussés ne partiront pas.`);
   }
+
+  // GARDE DU MIROIR — Coolify ne bâtit pas `ref`, il bâtit le dépôt de l'appli.
+  // Déployer alors que le miroir est en retard publierait un vieux commit en
+  // annonçant un succès : c'est le seul cas où l'outil doit refuser de partir.
+  // Un état INDÉTERMINÉ (dépôt privé sans credentials, réseau) n'arrête rien —
+  // on le dit, et on continue.
+  const miroir = etatDuMiroir(BUILD_DEFAUT.depot, BUILD_DEFAUT.branche, ref.sha);
+  console.log(ligneMiroir(miroir, ref.rev));
+  if ((miroir.retard ?? 0) > 0) {
+    console.error(`\n✗ Rien n'a été déclenché : le miroir doit d'abord recevoir ${ref.rev}.`);
+    return 1;
+  }
+
   console.log(`À déployer, dans l'ordre (${cibles.length}) :`);
   for (const c of cibles) console.log(`  ${c.slug.padEnd(24)} ${c.nom}`);
 
@@ -1034,9 +1206,15 @@ async function create(ctx: CoolifyContext): Promise<number> {
   });
 
   const { variables, manquantes } = variablesAttendues(site);
+  const build = buildDuSite(site);
+  // La source est résolue AVANT le plan : une App inconnue doit faire échouer
+  // le dry-run, pas la création. Et c'est un NOM qu'on résout, pas un uuid
+  // versionné — même principe que `coolifyApp`.
+  const appGithub = build.githubApp ? await githubAppParNom(ctx, build.githubApp) : null;
+
   console.log(`Créer ${site.coolifyApp} pour ${slug}\n`);
   console.log(`  placement    ${placement.origine}`);
-  const build = buildDuSite(site);
+  console.log(`  source       ${appGithub ? `App GitHub "${appGithub.name}"` : "dépôt public"}`);
   console.log(`  dépôt        ${build.depot} @ ${build.branche}`);
   console.log(`  build        ${build.buildPack}, port ${build.port}`);
   console.log(`  domaine      ${coolifyDomains(site)}`);
@@ -1058,34 +1236,61 @@ async function create(ctx: CoolifyContext): Promise<number> {
   console.log(`\n[1/4] DNS ✓ ${site.domain} → ${cibleDns}`);
 
   // 2. Application, sans instant_deploy : les variables ne sont pas encore là.
-  const cree = await createApplication(ctx, {
-    project_uuid: placement.projectUuid,
-    server_uuid: placement.serverUuid,
-    environment_name: placement.environmentName,
-    git_repository: build.depot,
-    git_branch: build.branche,
-    build_pack: build.buildPack,
-    ports_exposes: build.port,
-    name: site.coolifyApp,
-    domains: coolifyDomains(site),
-  });
-  // L'API de CRÉATION de Coolify tronque une URL GitLab hors github.com (mesuré sur
-  // site-json-rezo-sante-reunion, 2026-08-06 : `git_repository` stocké « pixelhumain/site-json.git »
-  // → le déployeur tente un ls-remote SSH sans hôte et échoue). Le PATCH, lui, stocke l'URL
-  // VERBATIM (c'est la correction manuelle qui a débloqué le premier déploiement) — d'où cette
-  // repasse systématique : relire, re-poser le dépôt si Coolify l'a réécrit, re-vérifier.
+  //
+  // La ROUTE porte la source (cf. `createApplication`), et c'est le seul moment
+  // où on peut la choisir : `PATCH` refuse `github_app_uuid`, `source_id`,
+  // `source_type` et `source_uuid` en 422. Une application créée avec la
+  // mauvaise source ne se répare que dans l'UI.
+  const cree = await createApplication(
+    ctx,
+    {
+      project_uuid: placement.projectUuid,
+      server_uuid: placement.serverUuid,
+      environment_name: placement.environmentName,
+      ...(appGithub ? { github_app_uuid: appGithub.uuid } : {}),
+      git_repository: build.depot,
+      git_branch: build.branche,
+      build_pack: build.buildPack,
+      ports_exposes: build.port,
+      name: site.coolifyApp,
+      domains: coolifyDomains(site),
+    },
+    appGithub ? "private-github-app" : "public",
+  );
+
+  // Relecture, sans tentative de correction. L'ancienne version re-PATCHait le
+  // dépôt parce que la création tronquait les URLs GitLab hors github.com
+  // (mesuré sur site-json-rezo-sante-reunion, 2026-08-06). En source GitHub App
+  // le dépôt s'écrit `owner/repo` : il n'y a plus rien à tronquer, et re-poser
+  // une URL complète y serait justement la faute. On vérifie donc, et on
+  // renvoie la main plutôt que de bricoler.
   const stockee = await getApplication(ctx, cree.uuid);
-  if (stockee.git_repository !== build.depot) {
-    await patchApplication(ctx, cree.uuid, { git_repository: build.depot });
-    const apres = (await getApplication(ctx, cree.uuid)).git_repository;
-    if (apres !== build.depot) {
-      console.error(`  ✗ dépôt toujours incorrect après correction : ${JSON.stringify(apres)} — à corriger dans Coolify avant de déployer.`);
-      return 1;
-    }
-    console.log(`[2/4] application ✓ ${cree.uuid} (dépôt corrigé : la création l'avait réécrit en ${JSON.stringify(stockee.git_repository)})`);
-  } else {
-    console.log(`[2/4] application ✓ ${cree.uuid}`);
+  const ecarts = [
+    stockee.git_repository !== build.depot
+      ? `dépôt ${JSON.stringify(stockee.git_repository)} au lieu de ${JSON.stringify(build.depot)}`
+      : null,
+    appGithub && stockee.source_id !== appGithub.id
+      ? `source ${String(stockee.source_id)} au lieu de ${appGithub.id} ("${appGithub.name}")`
+      : null,
+  ].filter(Boolean);
+  if (ecarts.length) {
+    console.error(`  ✗ application créée mais non conforme : ${ecarts.join(", ")}.`);
+    console.error(`    La source n'est pas modifiable par l'API — corriger dans l'UI Coolify avant de déployer.`);
+    return 1;
   }
+
+  // Une application NAÎT avec `is_auto_deploy_enabled: true`. Inoffensif tant
+  // que la source était un dépôt GitLab sans webhook ; depuis la bascule sur
+  // l'App GitHub, le webhook vient AVEC la source — une application créée et
+  // laissée telle quelle partirait au prochain push sur le miroir, avant même
+  // d'avoir ses variables. On coupe donc ici, au plus tôt, et on vérifie.
+  await patchApplication(ctx, cree.uuid, { is_auto_deploy_enabled: false });
+  const auto = (await getApplication(ctx, cree.uuid)).settings?.is_auto_deploy_enabled;
+  if (auto !== false) {
+    console.error(`  ✗ auto-déploiement toujours actif (${String(auto)}) — le couper dans l'UI avant de continuer.`);
+    return 1;
+  }
+  console.log(`[2/4] application ✓ ${cree.uuid} (auto-déploiement coupé)`);
 
   // 3. Variables, avant tout déploiement.
   for (const v of variables) {

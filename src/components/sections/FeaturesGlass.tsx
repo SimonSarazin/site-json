@@ -2,6 +2,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { type FeaturesGlassProps } from "@/types/site-schema";
 import { Card } from "@/components/ui/card";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { iconColorClass } from "./iconColorClass";
 
 interface FeaturesGlassSectionProps {
     id?: string;
@@ -12,20 +13,6 @@ export function FeaturesGlass({ id, props }: FeaturesGlassSectionProps) {
     const { t } = useLocalization();
     const variant = props.variant || "primary";
     const isAccent = variant === "accent";
-
-    const getColorClass = (color?: string) => {
-        switch (color) {
-            case "accent":
-                return "text-accent";
-            case "chart-2":
-                return "text-chart-2";
-            case "chart-3":
-                return "text-chart-3";
-            case "primary":
-            default:
-                return "text-primary";
-        }
-    };
 
     const cardClasses = isAccent
         ? "p-6 bg-card/40 backdrop-blur-sm border-border/50 hover:bg-card/60 transition-all duration-300 hover:shadow-lg animate-fade-in-up group"
@@ -72,7 +59,7 @@ export function FeaturesGlass({ id, props }: FeaturesGlassSectionProps) {
                             >
                                 <DynamicIcon
                                     name={feature.icon as IconName}
-                                    className={`w-12 h-12 mb-4 ${getColorClass(feature.color)} group-hover:scale-110 transition-transform duration-300`}
+                                    className={`w-12 h-12 mb-4 ${iconColorClass(feature.color)} group-hover:scale-110 transition-transform duration-300`}
                                 />
                                 <h3 className="text-xl font-semibold mb-3 text-foreground">
                                     {t(feature.title)}

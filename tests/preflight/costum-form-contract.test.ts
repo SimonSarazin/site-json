@@ -172,4 +172,30 @@ describe("préflight — forms costum vs contrat de l'artefact", () => {
     const perimees = [...DETTE_CONNUE].filter((c) => !encoreEnEcart.has(c));
     expect(perimees, "entrées de DETTE_CONNUE dont l'écart a disparu — les retirer").toEqual([]);
   });
+
+  it("tout champ `finder` émis déclare `write: \"entityRef:write\"`", () => {
+    // Un `finder` porte une RÉFÉRENCE d'entité (`parent`/`organizer`). Relue, elle est ENRICHIE
+    // (`about` : `_id`/`slug`/`profilThumbImageUrl` ; SDK : `id`) ; envoyée, le contrat n'accepte que
+    // `{<id>: {type, name}}` (`additionalProperties:false`). Sans codec, l'édition renvoyait l'objet
+    // enrichi : 400 AJV sur saintpaul-event (e2e 02/10). La projection se déclare PAR CHAMP — pas en
+    // défaut du widget (`WIDGET_DEFAULTS`), cf. la règle de `compileCostumSchema.ts` (l.97-104) : un
+    // défaut de widget déborderait sur les champs cœur. C'est donc cette garde qui la rappelle.
+    // `readOnly` : jamais émis (fieldPipeline), rien à projeter.
+    const manquants: string[] = [];
+    let finders = 0;
+    for (const { site, cfg } of SITES) {
+      const forms = (cfg.costumForms ?? {}) as Record<string, Record<string, unknown>>;
+      for (const [formId, form] of Object.entries(forms)) {
+        for (const [champ, def] of Object.entries((form.fields ?? {}) as Record<string, Record<string, unknown>>)) {
+          if (def.widget !== "finder") continue;
+          finders++;
+          if (def.readOnly || def.write === "entityRef:write") continue;
+          manquants.push(`${site.replace("config.prod.", "").replace(".json", "")} · ${formId}.${champ} `
+            + `(write=${def.write === undefined ? "∅" : String(def.write)})`);
+        }
+      }
+    }
+    expect(finders, "garde-fou : la garde voit bien des champs finder").toBeGreaterThan(0);
+    expect(manquants, "champ finder sans `write: \"entityRef:write\"` — ajouter aussi `read: \"entityRef:read\"`").toEqual([]);
+  });
 });

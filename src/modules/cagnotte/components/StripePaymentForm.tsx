@@ -14,7 +14,8 @@ import { getStripeErrorMessageKey } from "@/modules/cagnotte/services/stripeServ
 
 interface StripePaymentFormProps {
     amount: number;
-    onSuccess: (paymentData: Record<string, unknown>) => void;
+    /** Attendu avant de réactiver le bouton (débit serveur en cours). */
+    onSuccess: (paymentData: Record<string, unknown>) => void | Promise<void>;
     onError: (error: Error) => void;
 }
 
@@ -98,7 +99,6 @@ const StripePaymentForm = ({ amount, onSuccess, onError }: StripePaymentFormProp
             }
 
             const paymentData = {
-                transactionId: `stripe_sim_${Date.now()}`,
                 stripePaymentMethodId: paymentMethod.id,
                 stripeCardBrand: paymentMethod.card?.brand || "unknown",
                 stripeCardLast4: paymentMethod.card?.last4 || "****",
@@ -112,7 +112,7 @@ const StripePaymentForm = ({ amount, onSuccess, onError }: StripePaymentFormProp
                 brand: paymentMethod.card?.brand || "bancaire",
                 last4: paymentMethod.card?.last4 || "****",
             });
-            onSuccess(paymentData);
+            await onSuccess(paymentData);
         } catch (err) {
             const errorMsg = err instanceof Error ? err.message : String(t("StripePaymentForm.errors.paymentFallback"));
             console.error("Erreur paiement:", errorMsg);

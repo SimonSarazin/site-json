@@ -4,6 +4,7 @@ import { useLocation } from "react-router";
 import { SiteHeader } from "./layout/SiteHeader";
 import { SiteFooter } from "./layout/SiteFooter";
 import { SectionRenderer } from "./sections/SectionRenderer";
+import { pageAccentVars } from "@/lib/pageAccent";
 import { useSite } from "@/hooks/useSite";
 import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
@@ -88,7 +89,7 @@ function getLayoutClasses(layout: string) {
       <div className={`min-h-screen flex flex-col ${getLayoutClasses(layout)}`}>
         {!currentPage.hideHeader && <SiteHeader />}
 
-         <main id="main" role="main" className="flex-1">
+         <main id="main" role="main" className="flex-1" style={pageAccentVars(currentPage.accent)}>
           {/* key={pathname} : remonte les page-providers (PageFilters) à chaque
               changement de page config. Sans ça, React Router réutilise la même
               instance <SiteRenderer/> entre deux pages config (ex. /lieux ↔

@@ -1,68 +1,28 @@
-/**
- * Service de vérification du statut de paiement HelloAsso via backend
- * Le frontend ne contacte plus directement l'API HelloAsso.
- */
+import type { UnknownRecord } from "@/modules/cagnotte/utils/dataTransform";
 
-/**
- * Interroge le backend pour obtenir le statut d'un checkout-intent
- */
-export const verifyHelloAssoCheckoutStatus = async (
-  checkoutIntentId: string
-): Promise<{
-  isValid: boolean;
-  status: "success" | "pending" | "failed" | "error";
-  checkoutData?: Record<string, unknown>;
-  error?: string;
-}> => {
-  try {
-    const response = await fetch(
-      `/api/helloasso/checkout-status/${encodeURIComponent(checkoutIntentId)}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+export interface HelloAssoStatus {
+  /** HelloAsso a joint une commande au checkout. */
+  paid: boolean;
+  /** Le serveur a enregistré le paiement (engagements et versements). */
+  recorded: boolean;
+  /** Un autre appel règle la facture en ce moment : réinterroger. */
+  inProgress: boolean;
+  orderId?: string;
+  recordError?: string;
+}
 
-    const contentType = response.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      const rawBody = await response.text();
-      console.error("Reponse non JSON depuis checkout-status:", rawBody.slice(0, 300));
-      return {
-        isValid: false,
-        status: "error",
-        error: `Reponse invalide du serveur (HTTP ${response.status})`,
-      };
-    }
-
-    const data = (await response.json()) as {
-      isValid?: boolean;
-      status?: "success" | "pending" | "failed" | "error";
-      checkoutData?: Record<string, unknown>;
-      error?: string;
-    };
-
-    if (!response.ok) {
-      return {
-        isValid: false,
-        status: "error",
-        error: data.error || `API error: ${response.status}`,
-      };
-    }
-
-    return {
-      isValid: Boolean(data.isValid),
-      status: data.status || "error",
-      checkoutData: data.checkoutData,
-      error: data.error,
-    };
-  } catch (error) {
-    console.error("Erreur verification statut checkout:", error);
-    return {
-      isValid: false,
-      status: "error",
-      error: error instanceof Error ? error.message : "Verification failed",
-    };
-  }
+/** Statut lu dans la réponse de `helloassoStatus` ; `null` si elle est incomplète, à traiter comme une erreur. */
+export const readHelloAssoStatus = (response: UnknownRecord): HelloAssoStatus | null => {
+  if (typeof response.paid !== "boolean") return null;
+  if (response.paid && typeof response.recorded !== "boolean") return null;
+  const orderId = response.orderId;
+  const hasOrderId = typeof orderId === "number" || (typeof orderId === "string" && orderId !== "");
+  const recordError = typeof response.recordError === "string" && response.recordError !== "" ? response.recordError : undefined;
+  return {
+    paid: response.paid,
+    recorded: response.recorded === true,
+    inProgress: response.inProgress === true,
+    ...(hasOrderId ? { orderId: String(orderId) } : {}),
+    ...(recordError ? { recordError } : {}),
+  };
 };

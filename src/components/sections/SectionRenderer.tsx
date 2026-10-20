@@ -56,6 +56,7 @@ const LazySections: {
   banner: lazy(() => import("./BannerSection")),
   map: lazy(() => import("./MapSection")),
   "map-bubbles": lazy(() => import("./MapBubbles")),
+  "map-shapes": lazy(() => import("./MapShapes")),
   newsletter: lazy(() => import("./NewsletterSection")),
   contactForm: lazy(() => import("./ContactFormSection")),
   comparison: lazy(() => import("./ComparisonSection")),
@@ -77,6 +78,7 @@ const LazySections: {
   thematics: lazy(() => import("@/modules/search/sections/ThematicsSection")),
   filters: lazy(() => import("@/modules/search/sections/FiltersSection")),
   searchHeader: lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
+  "coform-resource-directory": lazy(() => import("@/modules/search/sections/CoformResourceDirectorySection")),
   "featured-carousel": lazy(() => import("@/modules/search/sections/FeaturedCarouselSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
@@ -86,6 +88,8 @@ const LazySections: {
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
   toolsCatalog: lazy(() => import("@/modules/toolsCatalog/sections/ToolsCatalogSection")),
+  "aac-directory": lazy(() => import("@/modules/aac/sections/AacDirectorySection")),
+  "aac-highlight": lazy(() => import("@/modules/aac/sections/AacHighlightSection")),
   actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
   finance: lazy(() => import("@/modules/cagnotte/components/sections/FinanceSection")),
   "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),
@@ -96,6 +100,7 @@ const LazySections: {
   articleFeed: lazy(() => import("@/modules/blog/sections/ArticleFeed")),
   articleReader: lazy(() => import("@/modules/blog/sections/ArticleReaderSection")),
   articleTeaser: lazy(() => import("@/modules/blog/sections/ArticleTeaser")),
+  "my-places": lazy(() => import("@/modules/profil/sections/MyPlacesSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

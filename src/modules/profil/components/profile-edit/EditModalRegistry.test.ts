@@ -152,3 +152,49 @@ describe("resolveEditModalName — prédicat `when` (périmètre costum)", () =>
     expect(resolveEditModalName(ent("organizations", { slug: "x" }), config)).toBe("edit-profile");
   });
 });
+
+/**
+ * `userContext` : la seule condition qui regarde le VISITEUR. Le formulaire costum d'un citoyen
+ * (docs/33 : droit = soi-même) ne doit s'ouvrir que sur SON profil — un super-admin ouvrant le profil
+ * d'un tiers reçoit le générique, et sans compte connu (SSR, non connecté) jamais le costum.
+ */
+describe("resolveEditModalName — condition `userContext` (visiteur)", () => {
+  const SSBE = "sportSanteBienetre";
+  const config = cfg({
+    citoyens: {
+      editModals: [{
+        editModal: "edit-sport-sante-bienetre-citoyen",
+        userContext: "own",
+        when: { or: [
+          { field: "sourceKeys", op: "contains", value: SSBE },
+          { field: "reference.costum", op: "contains", value: SSBE },
+        ] },
+      }],
+    },
+  });
+  const citoyen = (slug: string, sourceKey = SSBE) =>
+    ({ getEntityType: () => "citoyens", slug, serverData: { slug, source: { key: sourceKey, keys: [sourceKey] } } }) as unknown as EntityTypes;
+
+  it("propriétaire + provenance du costum → form costum", () => {
+    expect(resolveEditModalName(citoyen("judi"), config, { me: { slug: "judi" } })).toBe("edit-sport-sante-bienetre-citoyen");
+  });
+
+  it("tiers (super-admin) sur le même profil → générique", () => {
+    expect(resolveEditModalName(citoyen("judi"), config, { me: { slug: "admin" } })).toBe("edit-profile");
+  });
+
+  it("sans visiteur connu (ctx absent / me null) → générique, jamais le costum", () => {
+    expect(resolveEditModalName(citoyen("judi"), config)).toBe("edit-profile");
+    expect(resolveEditModalName(citoyen("judi"), config, { me: null })).toBe("edit-profile");
+  });
+
+  it("propriétaire mais citoyen venu d'AILLEURS → générique (le `when` borne toujours)", () => {
+    expect(resolveEditModalName(citoyen("judi", "autreCostum"), config, { me: { slug: "judi" } })).toBe("edit-profile");
+  });
+
+  it("`other` : la route ne vaut que pour un tiers", () => {
+    const autre = cfg({ citoyens: { editModals: [{ editModal: "edit-tiers", userContext: "other" }] } });
+    expect(resolveEditModalName(citoyen("judi"), autre, { me: { slug: "judi" } })).toBe("edit-profile");
+    expect(resolveEditModalName(citoyen("judi"), autre, { me: { slug: "visiteur" } })).toBe("edit-tiers");
+  });
+});

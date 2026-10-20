@@ -9,13 +9,19 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { useSite } from "@/hooks/useSite";
 import { Pledge } from "@/modules/cagnotte/types";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
+import { totalARegler } from "@/modules/cagnotte/utils/commande";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import "@/modules/cagnotte/i18n";
 import {isUser} from "@/lib/getTypedEntity.ts";
 import type {User} from "@communecter/cocolight-api-client";
 const PromessesDialog = React.lazy(() => import("./PromessesDialog"));
 
 export function PledgeHeaderButton() {
     const { entity, me } = useCocolight();
+    useLoadNamespace("modules/cagnotte");
+    const t = useT("modules/cagnotte");
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
     const orgsIds = useMemo(() => userAdminOrganizations?.map((o) => o.id) || [], [userAdminOrganizations]);
@@ -44,25 +50,33 @@ export function PledgeHeaderButton() {
     // calcule du tableau complet des promesses (pour la modale)
     const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
 
-    // calcule la somme totale des promesses pour le bouton
-    const totalPledgesAmount = useMemo<number>(() => {
-        return computedPledges.reduce((sum, pledge) => sum + toSafeInt(pledge.fundingAmount), 0);
-    }, [computedPledges]);
+    // Total à régler, affiché sur le bouton.
+    const totalPledgesAmount = useMemo(() => totalARegler(computedPledges), [computedPledges]);
 
-    if (!me?.id || totalPledgesAmount === 0) return null;
-    
+    // Visible même sans reste à régler : la modale donne aussi accès aux paiements.
+    if (!me?.id) return null;
+
     return (
         <>
-            <button
-                onClick={() => setOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/20 hover:bg-secondary/30 text-secondary-foreground transition-all group"
-                aria-label="Voir les promesses"
-            >
-                <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="font-semibold text-sm">
-                    {totalPledgesAmount.toLocaleString("fr-FR")} €
-                </span>
-            </button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={() => setOpen(true)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/20 hover:bg-secondary/30 text-secondary-foreground transition-all group"
+                        aria-label={String(t("HeaderButtons.pledge.aria", "Voir les promesses"))}
+                    >
+                        <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        {totalPledgesAmount > 0 && (
+                            <span className="font-semibold text-sm">
+                                {totalPledgesAmount.toLocaleString("fr-FR")} €
+                            </span>
+                        )}
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{t("HeaderButtons.pledge.tooltip", "Mes promesses à régler et mes paiements")}</p>
+                </TooltipContent>
+            </Tooltip>
 
             {open && (
                 <Suspense fallback={null}>

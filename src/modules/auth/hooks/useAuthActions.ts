@@ -2,6 +2,12 @@ import { useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
+/** Fiche de l'utilisateur connecté (`/profil/<slug>`), `null` tant que son slug est inconnu. */
+export function profileUrlOf(me: { serverData?: { slug?: string } } | null | undefined): string | null {
+  const slug = me?.serverData?.slug;
+  return slug ? `/profil/${slug}` : null;
+}
+
 /**
  * Logique d'authentification partagée (état + actions), indépendante de l'UI.
  * Source unique de vérité pour : qui est connecté, la déconnexion, l'URL de
@@ -33,10 +39,8 @@ export function useAuthActions() {
     }
   };
 
-  // URL du profil de l'utilisateur courant (résolue par slug) ; repli neutre.
-  const profileUrl = me?.serverData?.slug
-    ? `/profil/${me.serverData.slug}`
-    : "/profile";
+  // URL du profil de l'utilisateur courant ; repli neutre tant que le slug est inconnu.
+  const profileUrl = profileUrlOf(me) ?? "/profile";
 
   return { me, isConnected, logout, profileUrl, name, avatarUrl, email };
 }

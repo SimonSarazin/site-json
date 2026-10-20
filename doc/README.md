@@ -25,11 +25,13 @@
 | Module ampli (amplification) | [Module Ampli](22-module-ampli.md) |
 | Module interop (Discourse/Mediawiki) | [Module Interop](20-module-interop.md) |
 | Module CoForm (formulaires dynamiques) | [Module CoForm](21-module-coform.md) — voir aussi `src/modules/coform/README.md` |
+| Module AAC (Appel à Communs) | [Module AAC](34-module-aac.md) — annuaire des communs (`aac-directory`/`aac-highlight`, `/aac`), fiche d'un commun (financement si `coremu`, paliers et actions, contributeurs), dépôt et édition CoForm, droits, endpoint `directoryproposal` ; pièges & roadmap (campagnes, panier, doublonnage) |
 | Module auth (connexion/inscription/SSO) | [Module Auth](23-module-auth.md) |
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
 | Composants média (audio/galerie/fichiers) | [Media Components](33-media-components.md) |
 | Restreindre l'accès à une page (`page.auth`) | [Gardes de page](34-gardes-de-page.md) |
 | Rattacher une fiche à un costum / à un formulaire (référencement, sous-types, routage d'édition) | [Rattachement et référencement](35-rattachement-et-referencement.md) |
+| Donner une autre interface à l'annuaire / la fiche AAC (variantes, maquette projets.re) | [RFC Variantes d'interface AAC](36-rfc-variantes-interface-aac.md) — usage : [Module AAC §3.4](34-module-aac.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
 | Module admin (back-office /admin config-driven) | [Module Admin](30-module-admin.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |

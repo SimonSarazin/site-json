@@ -24,6 +24,9 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization"
+  },
   "editModals": {
     "organizations": {
       "vierge": "edit-profile",

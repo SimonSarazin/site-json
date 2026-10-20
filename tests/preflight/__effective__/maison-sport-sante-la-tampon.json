@@ -21,7 +21,22 @@
       }
     }
   },
+  "finderAddNew": {
+    "organizations": "add-organization",
+    "poi": "add-poi"
+  },
   "editModals": {
+    "citoyens": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-ekilibre-citoyen",
+          "native": "edit-ekilibre-citoyen",
+          "horsPerimetre": "edit-profile",
+          "nativeVuParUnTiers": "edit-profile"
+        }
+      ]
+    },
     "organizations": {
       "vierge": "edit-profile",
       "routes": [
@@ -136,6 +151,9 @@
         "defaultFilters": {
           "form": "6a85af345d898a57cb49f029",
           "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdn1jcq445i0mb9bap7": "Validé"
+        },
+        "defaultSortBy": {
+          "created": -1
         },
         "searchBy": [
           "answers.associationEkilibre19082026_1327_0.associationEkilibre19082026_1327_0mdegc9sgox76p87n27",
@@ -258,6 +276,18 @@
         "defaultSortBy": {
           "created": -1
         }
+      }
+    }
+  },
+  "contributions": {
+    "/creneaux/searchProStatic": {
+      "ajout": {
+        "coform": "6a85af345d898a57cb49f029",
+        "adminOnly": false
+      },
+      "modifier": true,
+      "ficheStructure": {
+        "audience": "all"
       }
     }
   },

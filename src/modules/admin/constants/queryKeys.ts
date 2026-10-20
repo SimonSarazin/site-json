@@ -3,8 +3,9 @@
  * `modules/search/constants/queryKeys.ts`).
  *
  * Producteurs : DashboardSection, AdminModerationSection, AdminResourceTable,
- *   AdminReferenceSection (ces deux derniers via `useSearchQuery` : seul le PREFIX est
- *   fourni ici, le reste de la clé est composé par SEARCH_QUERY_KEYS.RESULTS).
+ *   AdminReferenceSection, AdminAnswerCopySection (ces trois derniers via `useSearchQuery` /
+ *   `useSearchAllResults` : seul le PREFIX est fourni ici, le reste de la clé est composé par
+ *   SEARCH_QUERY_KEYS.RESULTS).
  * Consommateurs invalidants : AdminModerationSection (vote → MODERATION), à terme le
  *   dashboard après mutation (STATS/MODERATION_COUNT).
  */
@@ -34,4 +35,8 @@ export const ADMIN_QUERY_KEYS = {
   REFERENCE_SEARCH_PREFIX: (entityType: string) => `admin-ref-search-${entityType}`,
   /** Référencement : liste des référencés. */
   REFERENCE_LISTED_PREFIX: (entityType: string) => `admin-ref-listed-${entityType}`,
+  /** Reprise de réponses : candidates du form SOURCE (infinite scroll). */
+  ANSWER_COPY_SOURCE_PREFIX: (sourceForm: string) => `admin-answer-copy-source-${sourceForm}`,
+  /** Reprise de réponses : réponses du form CIBLE, chargées EN ENTIER (index `copiedFrom` + empreintes). */
+  ANSWER_COPY_TARGET_PREFIX: (targetForm: string) => `admin-answer-copy-target-${targetForm}`,
 } as const;

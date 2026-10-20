@@ -23,7 +23,7 @@ coform/
 │   └── CoFormProvider.tsx       # Provider : état multi-étapes, soumissions, navigation, stepsDataRef
 ├── hooks/
 │   ├── useCoForm.tsx            # Accès au contexte CoForm (+ variante optionnelle)
-│   ├── useCoFormNavigation.tsx  # Navigation : next(), previous(), goTo(), progressPercent
+│   ├── useCoFormNavigation.tsx  # Navigation : next(), previous(), goTo(), completedSteps
 │   ├── useCoFormQuery.tsx       # React Query : chargement formulaire, soumissions, chargement réponse
 │   └── useCoFormStep.tsx        # Hook par étape : react-hook-form configuré avec Zod + reset on step change
 ├── i18n/
@@ -106,7 +106,7 @@ Le `CoFormProvider` gère :
 |---|---|
 | `useCoForm()` | Accès au contexte CoForm |
 | `useCoFormStep()` | Config react-hook-form + Zod pour l'étape courante |
-| `useCoFormNavigation()` | `next()`, `previous()`, `goTo()`, `progressPercent` |
+| `useCoFormNavigation()` | `next()`, `previous()`, `goTo()`, `completedSteps`, `canGoNext`, `canGoPrevious` |
 | `useCoFormQuery({ formId })` | Charge le formulaire + access info via React Query |
 | `useCoFormAnswerQuery({ formId, answerId })` | Charge une réponse existante |
 | `useCoFormStepMutation({ formId })` | Sauvegarde locale par étape |
@@ -212,7 +212,7 @@ t("coform.navigation.next"); // → "Suivant"
 t("coform.answer.submittedAt", undefined, { date: "..." }); // → "Soumis le ..."
 ```
 
-Groupes de clés : `steps`, `navigation`, `progress`, `validation`, `status`, `errors`, `banner`, `answer`, `thankYou`, `access`.
+Groupes de clés : `steps`, `navigation`, `validation`, `status`, `errors`, `banner`, `answer`, `thankYou`, `access`.
 
 ## Constantes
 

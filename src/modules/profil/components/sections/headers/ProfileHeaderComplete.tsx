@@ -13,6 +13,7 @@ import { DynamicEditModal } from "../../profile-edit/EditModalRegistry";
 import { ProfileImageUpload } from "../../profile-edit/ProfileImageUpload";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
+import { DeleteEntityButton } from "../../action-buttons/DeleteEntityButton";
 import { isUser } from "@/lib/getTypedEntity";
 import type { ProfileHeaderSection } from "../../../schema";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -113,7 +114,9 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                     src={effectiveLogoUrl}
                     alt={entityName}
                     width={160}
-                    className="w-full h-full object-cover"
+                    // `contain` : la photo de profil s'affiche ENTIÈRE (logo compris), sur le fond `bg-card`
+                    // du rond — un `cover` rognait les logos larges.
+                    className="w-full h-full object-contain"
                     onError={() => setImageError(true)}
                   />
                 ) : (
@@ -167,7 +170,13 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                 <ButtonGroup>
                 
                 {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
-                <EntityActionButtons entity={entity} />
+                <EntityActionButtons
+                  entity={entity}
+                  options={{
+                    allowDelete: section.showDeleteButton === true,
+                    deleteRedirectPath: section.deleteRedirectPath,
+                  }}
+                />
 
                 {canEditProfile && (
                   <Button
@@ -178,6 +187,9 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                     <span className="hidden sm:inline">{t("ProfileTemplateDefault.editProfile")}</span>
                   </Button>
                 )}
+
+                {/* Suppression définitive (événements) — même droit que l'édition, confirmation obligatoire. */}
+                <DeleteEntityButton entity={entity} compactLabel />
 
 
                 {/* Dropdown pour créer des entités */}

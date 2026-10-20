@@ -36,8 +36,21 @@ const nonNegativeAmountSchema = z
   .min(0, "validation.amount.nonNegative")
   .finite("validation.amount.invalid");
 
-/** Identifiant Mongo 24 chars hexa (utilisé pour milestoneId, projectId, etc.). */
+/** Identifiant Mongo 24 chars hexa (projectId, financerId, etc. — jamais un `uniqid()` backend). */
 const mongoIdSchema = z.string().regex(/^[a-f0-9]{24}$/, "validation.id.format");
+
+/**
+ * Identifiant d'un milestone (`project.oceco.milestones[].milestoneId`). **Aucun
+ * format garanti** en pratique :
+ *  - client `generateMilestoneId()` → 24 chars hexa ;
+ *  - backend `Answer::generateMilestonneFromDepense()` → `uniqid()` PHP, 13 hexa ;
+ *  - données legacy → chaînes libres non-hexa (ex. `w6BvkaCwsHoNLXovy`).
+ *
+ * La vraie validation est ailleurs : `Project.hasMilestone()` (SDK — appartenance
+ * à `oceco.milestones[]`) + le backend. Ici on garantit uniquement « non vide » :
+ * tout pattern plus strict rejetait des ids légitimes
+ * */
+const milestoneIdSchema = z.string().trim().min(1, "validation.id.format");
 
 // ============================================================================
 // MILESTONE
@@ -93,7 +106,7 @@ export const actionCreateFormSchema = z
     name: z.string().trim().min(1, "validation.action.nameRequired"),
     credits: nonNegativeAmountSchema,
     status: actionStatusSchema,
-    milestoneId: mongoIdSchema,
+    milestoneId: milestoneIdSchema,
     tags: z.array(z.string()).max(10, "validation.action.tagsMax"),
     contributors: z.array(selectMemberValueSchema),
     startDate: frenchDateOrEmptySchema,
@@ -159,7 +172,7 @@ export type ActionEditFormData = z.infer<typeof actionEditFormSchema>;
  * côté composant car dépendant des données runtime, pas exprimable en Zod statique).
  */
 const milestoneAllocationSchema = z.object({
-  milestoneId: mongoIdSchema,
+  milestoneId: milestoneIdSchema,
   amount: nonNegativeAmountSchema,
 });
 

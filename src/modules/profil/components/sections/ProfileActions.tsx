@@ -5,6 +5,7 @@ import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { EntityActionButtons } from "../EntityActionButtons";
 import { DynamicEditModal } from "../profile-edit/EditModalRegistry";
 import { AddEntityDropdown } from "../action-buttons/AddEntityDropdown";
+import { DeleteEntityButton } from "../action-buttons/DeleteEntityButton";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import type { ProfileActionsSection } from "../../schema";
@@ -61,6 +62,9 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
             {t("ProfileTemplateDefault.editProfile")}
           </Button>
         )}
+
+        {/* Suppression définitive (événements) — même droit que l'édition, confirmation obligatoire. */}
+        {showEditButton && <DeleteEntityButton entity={entity} />}
 
         {/* Boutons d'action d'entité (Follow, Friend, Membership, etc.) */}
         {showEntityActions && <EntityActionButtons entity={entity} />}

@@ -62,6 +62,16 @@ export const useRequestToJoin = createEntityMutation({
   i18n: {
     successKey: "toast.relationship.memberRequestSent",
     errorKey: "toast.relationship.memberRequestError",
+    byType: {
+      project: {
+        successKey: "toast.relationship.contributorRequestSent",
+        errorKey: "toast.relationship.contributorRequestError",
+      },
+      event: {
+        successKey: "toast.relationship.participationSuccess",
+        errorKey: "toast.relationship.participationError",
+      },
+    },
   },
   invalidate: (entity, me) => [
     PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
@@ -104,6 +114,16 @@ export const useLeaveEntity = createEntityMutation({
   i18n: {
     successKey: "toast.relationship.memberLeftSuccess",
     errorKey: "toast.relationship.memberLeftError",
+    byType: {
+      project: {
+        successKey: "toast.relationship.projectLeftSuccess",
+        errorKey: "toast.relationship.projectLeftError",
+      },
+      event: {
+        successKey: "toast.relationship.participationLeftSuccess",
+        errorKey: "toast.relationship.participationLeftError",
+      },
+    },
   },
   invalidate: (entity, me) => [
     PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),

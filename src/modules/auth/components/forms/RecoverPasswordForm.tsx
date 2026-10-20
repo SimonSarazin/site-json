@@ -10,6 +10,7 @@ import { useSite } from "@/hooks/useSite";
 import "@/modules/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
+import { applySiteCostum } from "@/lib/siteCostum";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
@@ -29,7 +30,7 @@ export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPassword
   const [emailSent, setEmailSent]   = useState<boolean>(false);
 
   const navigate                     = useNavigate();
-  const { userApi, loading, me }     = useCocolight();
+  const { userApi, loading, me, apiClient, contextId, contextType } = useCocolight();
   
   const { loaded }                   = useLoadNamespace("modules/auth");
   const t                            = useT("modules/auth");
@@ -89,6 +90,19 @@ export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPassword
     setLoad(true);
 
     try {
+      // Contexte costum du site pour l'e-mail de récupération (sujet, logo, expéditeur, et surtout
+      // le domaine du lien : `costum.host` et non l'hôte du legacy).
+      //
+      // Il ne se passe PAS en paramètre : `recoverPassword(email)` n'en prend pas — ni dans la version
+      // publiée, ni dans la source — et se contente d'appeler `PASSWORD_RECOVERY`. Le trio voyage donc
+      // par l'identité costum portée par le CLIENT, que l'ApiClient injecte lui-même sur cet endpoint
+      // (le contrat y déclare `costumSlug`). Passer un argument surnuméraire serait inerte aujourd'hui
+      // et risqué demain (une future signature pourrait donner un tout autre sens à ce 2e paramètre).
+      //
+      // On repose l'identité juste avant l'appel parce que ce formulaire s'ouvre AVANT toute connexion :
+      // c'est le moment de la vie de l'appli où la résolution réseau de l'entité porteuse a le plus de
+      // chances de ne pas avoir encore rendu `contextId`/`contextType`. Idempotent, synchrone.
+      applySiteCostum(apiClient, { contextId, contextType });
       const response = await userApi.recoverPassword(email);
 
       if (response.result) {

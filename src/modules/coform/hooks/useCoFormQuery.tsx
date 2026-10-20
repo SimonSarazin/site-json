@@ -72,14 +72,19 @@ export function useCoFormQuery({
   elementId,
   elementType,
 }: UseCoFormQueryOptions): UseCoFormQueryReturn {
-  const { api, loading } = useCocolight();
+  const { api, loading, me } = useCocolight();
   const isReady = !loading && !!api;
   const hasElement = !!elementId && !!elementType;
 
+  // `access` est calculé POUR L'UTILISATEUR COURANT : la clé doit porter son
+  // identité, sinon l'entrée préchargée en SSR (anonyme) est resservie à un
+  // connecté pendant 5 minutes. Cf. `COFORM_QUERY_KEYS.FORM`.
+  const userScope = me?.id ?? null;
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: hasElement
-      ? ([...COFORM_QUERY_KEYS.FORM(formId), "element", elementType, elementId] as const)
-      : COFORM_QUERY_KEYS.FORM(formId),
+      ? ([...COFORM_QUERY_KEYS.FORM(formId, userScope), "element", elementType, elementId] as const)
+      : COFORM_QUERY_KEYS.FORM(formId, userScope),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 
