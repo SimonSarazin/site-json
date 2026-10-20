@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
@@ -17,6 +16,13 @@ interface StatusDropdownLayoutProps {
   statusLabel: string;
   statusIcon: React.ReactNode;
   statusVariant: "default" | "outline";
+  /**
+   * Action à confirmer dès l'arrivée, portée par l'URL (`?participer`) — choisie par l'appelant,
+   * qui seul sait quelle entité et quelle action elle vise. Ouverte tant qu'elle est fournie :
+   * c'est `onUrlActionDone` (appelé à la fermeture, confirmée ou non) qui retire le paramètre.
+   */
+  urlAction?: EntityAction | null;
+  onUrlActionDone?: () => void;
 }
 
 /**
@@ -28,28 +34,19 @@ export function StatusDropdownLayout({
   statusLabel,
   statusIcon,
   statusVariant,
+  urlAction = null,
+  onUrlActionDone,
 }: StatusDropdownLayoutProps) {
   const [confirmationAction, setConfirmationAction] = useState<EntityAction | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const wantsToJoin = searchParams.has("participer");
-  const joinAction = actions.find((a) => a.type === "join" && a.show);
-
-  // Lien « ?participer » (extension WordPress, partage) : ouvre directement la confirmation de
-  // participation, une seule fois. Sans action disponible (non connecté, déjà participant), rien.
-  useEffect(() => {
-    if (!wantsToJoin || !joinAction) return;
-    setConfirmationAction(joinAction);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete("participer");
-        return next;
-      },
-      { replace: true },
-    );
-  }, [wantsToJoin, joinAction, setSearchParams]);
+  // L'ouverture est DÉRIVÉE (clic de l'utilisateur, sinon URL), jamais posée par un effet.
+  const openAction = confirmationAction ?? urlAction;
 
   if (actions.length === 0) return null;
+
+  const closeConfirmation = () => {
+    setConfirmationAction(null);
+    if (urlAction) onUrlActionDone?.();
+  };
 
   const handleActionClick = (action: EntityAction) => {
     if (action.requiresConfirmation) {
@@ -59,9 +56,11 @@ export function StatusDropdownLayout({
     }
   };
 
+  // Pas de `closeConfirmation()` ici : `AlertDialogAction` referme le dialogue de lui-même, et
+  // c'est `onOpenChange(false)` qui consomme l'intention URL — une seule fois.
   const handleConfirm = () => {
-    if (confirmationAction) {
-      confirmationAction.onClick();
+    if (openAction) {
+      openAction.onClick();
       setConfirmationAction(null);
     }
   };
@@ -165,16 +164,16 @@ export function StatusDropdownLayout({
       </DropdownMenu>
 
       {/* Dialogue de confirmation */}
-      {confirmationAction && (
+      {openAction && (
         <ConfirmationDialog
-          open={!!confirmationAction}
-          onOpenChange={(open) => !open && setConfirmationAction(null)}
-          title={confirmationAction.confirmationTitle || ""}
-          description={confirmationAction.confirmationDescription || ""}
-          confirmLabel={confirmationAction.confirmationConfirm || "Confirmer"}
-          cancelLabel={confirmationAction.confirmationCancel || "Annuler"}
+          open
+          onOpenChange={(open) => !open && closeConfirmation()}
+          title={openAction.confirmationTitle || ""}
+          description={openAction.confirmationDescription || ""}
+          confirmLabel={openAction.confirmationConfirm || "Confirmer"}
+          cancelLabel={openAction.confirmationCancel || "Annuler"}
           onConfirm={handleConfirm}
-          isDestructive={confirmationAction.isDestructive}
+          isDestructive={openAction.isDestructive}
         />
       )}
     </>
