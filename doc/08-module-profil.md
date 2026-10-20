@@ -1753,6 +1753,12 @@ Règles, posées par `hooks/useUrlIntent.ts` (`useUrlIntent`, `useProfilePageInt
   portent aussi « devenir membre » d'une organisation ou « devenir administrateur ».
 - **Dérivé, pas posé par un effet.** L'état « ouvert » vaut `clicUtilisateur ?? intentionUrl` au rendu ;
   `react-hooks/set-state-in-effect` est en erreur dans ce dépôt.
+- **Création depuis le lien : fermer, puis rediriger.** Avec `?ajouter`, `AddEntityDropdown` passe
+  `onCreated` à la modale (qui ne redirige alors pas elle-même) : la fermeture retire le paramètre de
+  l'URL du lieu, puis on navigue vers la fiche créée — qui n'hérite ainsi d'aucun paramètre du lien.
+- **Une instance par page.** Les composants qui lisent l'intention sont partagés ; une config qui
+  monterait deux fois le même (en-tête avec actions **et** section `profile-actions`) ouvrirait deux
+  dialogues sur la même intention. Aucune config ne le fait aujourd'hui ; ne pas l'introduire.
 
 Câblage : `EntityActionButtons` choisit l'action et la passe à `StatusDropdownLayout` (`urlAction`,
 `onUrlActionDone`) ; `AddEntityDropdown` lit `?ajouter` lui-même. Tests : `hooks/useUrlIntent.test.tsx`,
