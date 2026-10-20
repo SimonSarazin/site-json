@@ -323,9 +323,11 @@ function FinancingExpenseRow(props: FinancingMilestoneProps) {
                     />
                 </span>
             </button>
-            {/* Le bouton de discussion de la ligne, sous l'en-tête — un bouton ne s'imbrique pas dans un autre. */}
+            {/* Le bouton de discussion de la ligne, sous l'en-tête — un bouton ne s'imbrique pas dans un autre.
+                `empty:hidden` — le bouton rend `null` quand il n'a rien à montrer : l'emplacement
+                s'efface, au lieu de laisser sa marge sous la ligne. */}
             {props.discussion ? (
-                <div className="flex justify-end pb-2" data-milestone-discussion-slot>
+                <div className="flex justify-end pb-2 empty:hidden" data-milestone-discussion-slot>
                     {props.discussion}
                 </div>
             ) : null}

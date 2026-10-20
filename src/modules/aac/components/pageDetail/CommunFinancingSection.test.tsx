@@ -328,4 +328,28 @@ describe("CommunFinancingSection — le bouton de discussion d'un palier", () =>
       expect(emplacement.className).toContain("empty:hidden");
     }
   });
+
+  it("rendu `list` : le bouton se pose sous la ligne, HORS du bouton qui la déplie", () => {
+    monter({ layout: "list" });
+    const discuter = screen.getByText("discuter:Local");
+    expect(bascule("Local").contains(discuter)).toBe(false);
+    expect(discuter.closest("[data-milestone-discussion-slot]")!.previousElementSibling).toBe(bascule("Local"));
+  });
+
+  /**
+   * L'interface editorial passe TOUJOURS un élément : c'est le bouton qui décide, au rendu, s'il a
+   * quelque chose à montrer (`CommunMilestoneDiscussionButton` rend `null` sans fil, ou sans message
+   * ni session). L'emplacement est alors vide dans le DOM ; sans `empty:hidden`, il laissait sa marge
+   * sous chaque ligne de dépense.
+   */
+  it("rendu `list` : un bouton qui ne rend rien laisse un emplacement VIDE, qui s'efface", () => {
+    const Rien = () => null;
+    monter({ layout: "list", renderMilestoneDiscussion: () => <Rien /> });
+    const emplacements = [...document.querySelectorAll("[data-milestone-discussion-slot]")];
+    expect(emplacements).toHaveLength(2);
+    for (const emplacement of emplacements) {
+      expect(emplacement.childNodes).toHaveLength(0);
+      expect(emplacement.className).toContain("empty:hidden");
+    }
+  });
 });
