@@ -250,7 +250,12 @@ runner(`forms costum — add + edit e2e (mode ${MODE})`, () => {
   }, 120_000);
 
   for (const { site, id, doc } of tousLesForms()) {
-    it(`${site}/${id}`, async () => {
+    // Collections en ÉDITION SEULE : un formulaire citoyen ne crée jamais de citoyen (useEntityMutation lève
+    // CITOYEN_CREATE_UNSUPPORTED avant tout appel SDK, la lib refuse User._add). Cette campagne joue
+    // ADD puis EDIT : elle échouerait par construction. L'édition citoyen est prouvée de bout en bout,
+    // lib réelle contre legacy ET Node, par cocolight-backend tools/parity/mutation/lib-citoyens.mts.
+    const editionSeule = String(doc.collection ?? doc.entityType) === "citoyens";
+    (editionSeule ? it.skip : it)(`${site}/${id}${editionSeule ? " (édition seule — cf. lib-citoyens.mts)" : ""}`, async () => {
       const coll = String(doc.collection ?? doc.entityType);
       const slug = String(doc.costumSlug ?? "");
       const nom = `ZZ E2E ${site} ${id} ${TAG}`;

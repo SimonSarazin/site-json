@@ -39,6 +39,8 @@ const CONFIG_FILE: Record<string, string> = {
   "saintpaul-event": "config.prod.saint-paul-sport.json",
   "sport-sante-bienetre-recovery-center": "config.prod.sport-sante-bien-etre.json",
   "sport-sante-bienetre-session-formation": "config.prod.sport-sante-bien-etre.json",
+  "sport-sante-bienetre-citoyen": "config.prod.sport-sante-bien-etre.json",
+  "ekilibre-citoyen": "config.prod.maison-sport-sante-la-tampon.json",
 };
 
 /** Document costum BRUT (JSON config), tel que servi au runtime via `window.__CONFIG__.costumForms`. */

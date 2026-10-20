@@ -1628,10 +1628,13 @@
         "description": "answers.aapStep1.description",
         "tags": "answers.aapStep1.tags",
         "depense": "answers.aapStep1.depense"
-      }
+      },
+      "defaultCardVariant": "editorial",
+      "defaultShellVariant": "editorial"
     },
     "detail": {
-      "gallery": "aapStep1.image"
+      "gallery": "aapStep1.image",
+      "pageVariant": "editorial"
     }
   }
 }

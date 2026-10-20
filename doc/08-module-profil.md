@@ -1309,10 +1309,13 @@ PROVENANCE de la fiche (`source.key`). Quand la fiche vient d'ailleurs — cas d
 tiers-lieux.org a `source.key: "laRosee"`, `"franceTierslieux"`… —, le costum du FORMULAIRE n'est jamais
 chargé, `setCostumScope` épingle un contexte NU (aucun champ) et l'enregistrement rejette
 `holderOrganization` (59 lieux sur 59 mesurés). Dans ce mode, `pinSchemaCostumScope` appelle d'abord
-`entity.loadCostumScope(slug)` (charge le costum du formulaire en live, cache de session, puis épingle). S'il
-échoue ou ne rend rien, rien n'est épinglé : `setCostumScope` n'épinglerait en live que ce même contexte nu.
-La provenance gouverne alors le schéma — ce qui suffit quand elle EST le costum du formulaire. Une fiche dont la provenance
-EST le costum du formulaire (parent62) ne dépendait pas de ce chargement. Hors mode live : inchangé.
+`entity.loadCostumScope(slug)` (charge le costum du FORMULAIRE en live, dédupliqué par la lib dans le TTL
+du cache, 5 min), PUIS `setCostumScope(slug, { pinSchema: true })` dans tous les cas : lui seul passe
+`serverData.type` et garde la variante du sous-type de l'entité (`loadCostumScope` résout par slug et
+collection). Un échec du chargement est non bloquant : l'épingle est posée quand même, et si le cache est
+resté froid, l'enregistrement échoue sur l'erreur de champ. Même cause sur le formulaire citoyen SSBE
+(`typepro` refusé). Une fiche dont la provenance EST le costum du formulaire (parent62) ne dépendait pas de
+ce chargement. Hors mode live : inchangé (registre bundlé, aucun appel réseau).
 
 ---
 

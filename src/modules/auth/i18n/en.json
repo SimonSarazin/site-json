@@ -90,5 +90,8 @@
   "Vérification de votre accès…": "Checking your access…",
   "Cette page est réservée. Connectez-vous pour y accéder.": "This page is restricted. Sign in to access it.",
   "Votre compte n'a pas les droits nécessaires pour voir cette page.": "Your account does not have the required permissions to view this page.",
-  "Cette page est réservée.": "This page is restricted."
+  "Cette page est réservée.": "This page is restricted.",
+  "Votre compte a été créé. Vous pourrez vous connecter dès que vous aurez validé votre adresse e-mail (un message vient de vous être envoyé).": "Your account has been created. You will be able to sign in once you have confirmed your email address (a message has just been sent to you).",
+  "Le champ « {{field}} » est requis": "The field “{{field}}” is required",
+  "Sélectionnez une option": "Select an option"
 }
