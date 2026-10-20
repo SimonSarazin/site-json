@@ -1,3 +1,5 @@
+import { fitWithin } from "@/utils/imageUtils";
+
 /**
  * Côté plafond du carré, en px. Sans plafond, une photo 4000×3000 donnait un PNG 4000×4000 de
  * plusieurs dizaines de Mo (au-delà des 10 Mo de `DEFAULT_IMAGE_VALIDATION_CONFIG` et des limites
@@ -18,9 +20,8 @@ export function squarePlacement(
   height: number,
   maxSide = MAX_SQUARE_SIDE,
 ): { size: number; x: number; y: number; width: number; height: number } {
-  const scale = Math.min(1, maxSide / Math.max(width, height));
-  const w = Math.round(width * scale);
-  const h = Math.round(height * scale);
+  // Même règle que `compressImage` (plus grand côté sous `maxSide`, jamais agrandie) : `fitWithin`.
+  const { width: w, height: h } = fitWithin(width, height, maxSide);
   const size = Math.max(w, h);
   return { size, x: Math.round((size - w) / 2), y: Math.round((size - h) / 2), width: w, height: h };
 }

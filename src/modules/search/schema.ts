@@ -182,8 +182,10 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
    *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
    * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
    * d'organisation et ne rend jamais rien.
+   *  - `parentId` : la liste porte des documents RATTACHÉS aux éléments liés (ressources de
+   *    l'annuaire, rattachées à leur lieu porteur) → `parentId: {$in: orgaNameArray}`.
    */
-  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
+  filterTarget: z.enum(["answers", "linkedElements", "parentId"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
@@ -215,8 +217,10 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
    *    ex. `/creneaux`) → prédicat sur le chemin de la réponse (cf. `answerFilterClause`).
    * Sans ce réglage, une facette posée sur une liste d'answers filtre par id
    * d'organisation et ne rend jamais rien.
+   *  - `parentId` : la liste porte des documents RATTACHÉS aux éléments liés (ressources de
+   *    l'annuaire, rattachées à leur lieu porteur) → `parentId: {$in: orgaNameArray}`.
    */
-  filterTarget: z.enum(["answers", "linkedElements"]).optional(),
+  filterTarget: z.enum(["answers", "linkedElements", "parentId"]).optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */

@@ -5721,6 +5721,85 @@
         "fr": "Accédez à la communauté Sport Santé Bien-être",
         "en": "Access the Sport Health Wellness community"
       }
+    },
+    "register": {
+      "title": {
+        "fr": "Créer un compte",
+        "en": "Create an account"
+      },
+      "mode": "single_step_register",
+      "fields": [
+        {
+          "name": "typepro",
+          "label": {
+            "fr": "Profession",
+            "en": "Profession"
+          },
+          "widget": "select",
+          "required": true,
+          "placeholder": {
+            "fr": "Choisir votre profession",
+            "en": "Choose your profession"
+          },
+          "options": [
+            {
+              "value": "Éducateur(ice) Sportif(ive)",
+              "label": {
+                "fr": "Éducateur(ice) Sportif(ive)",
+                "en": "Sports educator"
+              }
+            },
+            {
+              "value": "Enseignant(e) en APA",
+              "label": {
+                "fr": "Enseignant(e) en APA",
+                "en": "Adapted physical activity teacher"
+              }
+            },
+            {
+              "value": "Médecins",
+              "label": {
+                "fr": "Médecins",
+                "en": "Physicians"
+              }
+            },
+            {
+              "value": "Autre professionnels de Santé",
+              "label": {
+                "fr": "Autre professionnels de Santé",
+                "en": "Other health professionals"
+              }
+            },
+            {
+              "value": "Dirigeant Associatif",
+              "label": {
+                "fr": "Dirigeant Associatif",
+                "en": "Association leader"
+              }
+            },
+            {
+              "value": "autres",
+              "label": {
+                "fr": "Autres à préciser",
+                "en": "Other (please specify)"
+              }
+            }
+          ]
+        },
+        {
+          "name": "othersTypepro",
+          "label": {
+            "fr": "Précisez votre profession",
+            "en": "Please specify your profession"
+          },
+          "widget": "text",
+          "required": true,
+          "showIf": {
+            "field": "typepro",
+            "equals": "autres"
+          }
+        }
+      ]
     }
   },
   "blog": {
@@ -5895,6 +5974,26 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-sport-sante-bienetre-citoyen",
+          "userContext": "own",
+          "when": {
+            "or": [
+              {
+                "field": "sourceKeys",
+                "op": "contains",
+                "value": "sportSanteBienetre"
+              },
+              {
+                "field": "reference.costum",
+                "op": "contains",
+                "value": "sportSanteBienetre"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -5927,6 +6026,32 @@
                 },
                 {
                   "type": "profile-about"
+                },
+                {
+                  "type": "profile-fields",
+                  "title": {
+                    "fr": "Profil professionnel",
+                    "en": "Professional profile"
+                  },
+                  "variant": "card",
+                  "fields": [
+                    {
+                      "field": "typepro",
+                      "label": {
+                        "fr": "Profession",
+                        "en": "Profession"
+                      },
+                      "icon": "briefcase"
+                    },
+                    {
+                      "field": "othersTypepro",
+                      "label": {
+                        "fr": "Précision",
+                        "en": "Details"
+                      },
+                      "icon": "briefcase"
+                    }
+                  ]
                 },
                 {
                   "type": "profile-organizer"
@@ -6816,6 +6941,426 @@
     "fgColor": "#000000"
   },
   "costumForms": {
+    "sport-sante-bienetre-citoyen": {
+      "id": "sport-sante-bienetre-citoyen",
+      "entityType": "citoyens",
+      "collection": "citoyens",
+      "costumSlug": "sportSanteBienetre",
+      "icon": "user",
+      "layout": {
+        "kind": "tabs"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        },
+        "social": {
+          "serverKey": "socialNetwork",
+          "read": "social:readFlat",
+          "write": "coerce:orEmpty",
+          "groupReadOnly": true
+        }
+      },
+      "chrome": {
+        "title": {
+          "edit": {
+            "fr": "Modifier mon profil",
+            "en": "Edit my profile"
+          }
+        },
+        "submitLabel": {
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "sections": [
+        {
+          "id": "identity",
+          "label": {
+            "fr": "Identité",
+            "en": "Identity"
+          },
+          "icon": "user",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "slug",
+                "birthDate",
+                "shortDescription",
+                "description",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pro",
+          "label": {
+            "fr": "Profil professionnel",
+            "en": "Professional profile"
+          },
+          "icon": "briefcase",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "typepro",
+                "othersTypepro"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Coordonnées",
+            "en": "Contact details"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "email",
+                "mobile",
+                "fixe",
+                "url"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          },
+          "icon": "share-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "_social",
+                "github",
+                "gitlab",
+                "facebook",
+                "twitter",
+                "instagram",
+                "diaspora",
+                "mastodon",
+                "telegram",
+                "signal"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom complet",
+            "en": "Full name"
+          }
+        },
+        "slug": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom d'utilisateur",
+            "en": "Username"
+          },
+          "info": {
+            "fr": "Identifiant de votre page de profil (lettres, chiffres, sans espace).",
+            "en": "Your profile page identifier (letters, digits, no spaces)."
+          }
+        },
+        "birthDate": {
+          "widget": "date",
+          "read": "coerce:dateYMDutc",
+          "label": {
+            "fr": "Date de naissance",
+            "en": "Birth date"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "widgetProps": {
+            "rows": 2
+          },
+          "label": {
+            "fr": "En quelques mots",
+            "en": "In a few words"
+          }
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Présentation",
+            "en": "About you"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Keywords"
+          }
+        },
+        "typepro": {
+          "widget": "select",
+          "label": {
+            "fr": "Profession",
+            "en": "Profession"
+          },
+          "placeholder": {
+            "fr": "Choisir votre profession",
+            "en": "Choose your profession"
+          },
+          "enum": [
+            {
+              "value": "Éducateur(ice) Sportif(ive)",
+              "label": {
+                "fr": "Éducateur(ice) Sportif(ive)",
+                "en": "Sports educator"
+              }
+            },
+            {
+              "value": "Enseignant(e) en APA",
+              "label": {
+                "fr": "Enseignant(e) en APA",
+                "en": "Adapted physical activity teacher"
+              }
+            },
+            {
+              "value": "Médecins",
+              "label": {
+                "fr": "Médecins",
+                "en": "Physicians"
+              }
+            },
+            {
+              "value": "Autre professionnels de Santé",
+              "label": {
+                "fr": "Autre professionnels de Santé",
+                "en": "Other health professionals"
+              }
+            },
+            {
+              "value": "Dirigeant Associatif",
+              "label": {
+                "fr": "Dirigeant Associatif",
+                "en": "Association leader"
+              }
+            },
+            {
+              "value": "autres",
+              "label": {
+                "fr": "Autres à préciser",
+                "en": "Other (please specify)"
+              }
+            }
+          ]
+        },
+        "othersTypepro": {
+          "widget": "text",
+          "label": {
+            "fr": "Précisez votre profession",
+            "en": "Please specify your profession"
+          },
+          "visibleIf": {
+            "field": "typepro",
+            "op": "eq",
+            "value": "autres"
+          },
+          "requiredIf": {
+            "field": "typepro",
+            "op": "eq",
+            "value": "autres"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Adresse e-mail",
+            "en": "Email address"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          }
+        },
+        "mobile": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone mobile",
+            "en": "Mobile phone"
+          }
+        },
+        "fixe": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone fixe",
+            "en": "Landline"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          },
+          "widgetProps": {
+            "inputType": "url"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "_social": {
+          "type": "object",
+          "widget": "editSocial",
+          "label": "",
+          "renderOnly": true
+        },
+        "github": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "github",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "gitlab": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "gitlab",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "facebook": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "facebook",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "twitter": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "twitter",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "instagram": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "instagram",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "diaspora": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "diaspora",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "mastodon": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "mastodon",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "telegram": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "telegram",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "signal": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "signal",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        }
+      },
+      "afterSubmit": "afterSubmit:reloadOnSlugChange",
+      "mutation": {
+        "entityType": "citoyens",
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.profile.updateSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.profile.updateError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_CITOYEN",
+          "edit": "EntityFormModal · EDIT_CITOYEN"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard"
+        }
+      }
+    },
     "sport-sante-bienetre-ressource": {
       "id": "sport-sante-bienetre-ressource",
       "entityType": "poi",

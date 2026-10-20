@@ -55,39 +55,40 @@ export function matchesCapacity(capacity: { min: number; max: number } | null, r
   });
 }
 
-/** Zones cochées dans un groupe `scopeList` (`{ id, type: "level3" }`) — lues dans `searchByFields`. */
-export function selectedZones(
-  searchByFields: Record<string, SearchByFieldValue> | undefined,
-): Array<{ id: string; level: string }> {
-  const zones: Array<{ id: string; level: string }> = [];
+/** Ids des zones cochées dans un groupe `scopeList` (`{ id, type: "level3" }`) — lus dans `searchByFields`. */
+export function selectedZones(searchByFields: Record<string, SearchByFieldValue> | undefined): string[] {
+  const ids: string[] = [];
   for (const { type, value } of Object.values(searchByFields ?? {})) {
     if (type !== "scopeList" || !value || typeof value !== "object" || Array.isArray(value)) continue;
-    const { id, type: level } = value as { id?: unknown; type?: unknown };
-    if (typeof id === "string" && typeof level === "string") zones.push({ id, level });
+    const { id } = value as { id?: unknown };
+    if (typeof id === "string") ids.push(id);
   }
-  return zones;
-}
-
-/** Le lieu porteur est-il dans UNE des zones cochées ? Aucune zone → vrai ; lieu inconnu → faux. */
-export function matchesZones(
-  zonesOfParent: Partial<Record<string, string>> | undefined,
-  zones: ReadonlyArray<{ id: string; level: string }>,
-): boolean {
-  if (zones.length === 0) return true;
-  if (!zonesOfParent) return false;
-  return zones.some((z) => zonesOfParent[z.level] === z.id);
+  return ids;
 }
 
 /**
- * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `_id` du groupe
- * `filtersByPath`) — et non dans `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau
- * coché SANS lieu membre y disparaîtrait et le filtre avec. `null` = aucun réseau coché ; `[]` = des
- * réseaux cochés, mais aucun lieu membre.
+ * Le lieu porteur est-il dans UNE des zones cochées ? Aucune zone → vrai ; lieu inconnu → faux.
+ * L'id coché est cherché parmi TOUTES les zones de l'adresse, quel qu'en soit le niveau : dans les
+ * DOM (RE, GP, MQ, YT, GF), une même zone sert de pays, de région et de département — une adresse qui
+ * ne la porte que sous `level1` ne serait pas reconnue par une option de `level3`.
+ */
+export function matchesZones(zonesOfParent: readonly string[] | undefined, zoneIds: readonly string[]): boolean {
+  if (zoneIds.length === 0) return true;
+  if (!zonesOfParent) return false;
+  return zoneIds.some((id) => zonesOfParent.includes(id));
+}
+
+/**
+ * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `parentId` du groupe
+ * `filtersByPath` en `filterTarget: "parentId"`, champ propre à cette cible : aucun autre groupe ne
+ * l'écrit) — et non dans `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau coché SANS
+ * lieu membre y disparaîtrait et le filtre avec. `null` = aucun réseau coché ; `[]` = des réseaux
+ * cochés, mais aucun lieu membre.
  */
 export function thematicParentIds(searchByFields: Record<string, SearchByFieldValue> | undefined): string[] | null {
   let ids: string[] | null = null;
   for (const { field, type, value } of Object.values(searchByFields ?? {})) {
-    if (field !== "_id" || type || !Array.isArray(value)) continue;
+    if (field !== "parentId" || type || !Array.isArray(value)) continue;
     ids = [...new Set([...(ids ?? []), ...value])];
   }
   return ids;

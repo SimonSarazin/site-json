@@ -145,6 +145,14 @@ export const AAC_QUERY_KEYS = {
     ["aac-commun-contributors", projectId] as const,
   COMMUN_CONTRIBUTORS_PREFIX: () => ["aac-commun-contributors"] as const,
 
+  // Événements du PROJET d'un commun (organisateur ou participant), un flux par
+  // `bucket` (à venir / passés). `userId` en dernier : la recherche agenda filtre
+  // selon la session (événements privés).
+  // Producteur : useCommunProjectEvents
+  COMMUN_EVENTS: (projectId: string | null, bucket: "upcoming" | "past", userId: string | null = null) =>
+    ["aac-commun-events", projectId, bucket, userId] as const,
+  COMMUN_EVENTS_PREFIX: () => ["aac-commun-events"] as const,
+
   // État user-scopé d'un commun (mes votes/éval/financements/vu), ISOLÉ PAR
   // CAMPAGNE, `userId` en DERNIER segment.
   // Producteur : (à venir) useMyCommunState

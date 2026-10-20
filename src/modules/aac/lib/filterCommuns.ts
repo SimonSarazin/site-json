@@ -3,8 +3,8 @@
  *
  * Depuis la bascule sur `directoryproposal`, ces prédicats ne servent plus qu'au
  * **chemin balayage** du transport : celui qu'on emprunte quand au moins un
- * filtre n'est pas exprimable côté serveur (`usage`, `usageSub`, `maturity` —
- * cf. `aacQueryParams`).
+ * filtre n'est pas exprimable côté serveur (`usage`, `usageSub`, `maturity`,
+ * `commune` — cf. `aacQueryParams`).
  *
  * ⚠️ Ne PAS y voir un doublon du filtrage serveur : c'est `splitAacFilters` qui
  * garantit qu'un filtre déjà appliqué au serveur n'arrive pas ici. Les
@@ -116,6 +116,9 @@ export function filterCommuns(
       matchesQuery(card, filters.q) &&
       matchesAnyOf(card.tags, filters.tags) &&
       matchesAnyOf(card.maturity ? [card.maturity] : [], filters.maturity) &&
+      // La commune se compare comme un tag : par son NOM, replié (accents et
+      // casse). Une réponse sans adresse ne matche aucune commune retenue.
+      matchesAnyOf(card.address?.locality ? [card.address.locality] : [], filters.commune) &&
       matchesUsage(card, filters.usage) &&
       matchesUsageSub(card, filters.usageSub, filters.usage)
   );

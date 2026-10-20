@@ -44,7 +44,10 @@ function costumModalThunk(modalName: string): (() => Promise<{ default: Componen
   if (!m) return undefined;
   const id = m[1];
   return () => Promise.all([import("../../forms/EntityFormModal"), import("../../forms/costum/registerCostumForms")]).then(([mod, reg]) => {
-    const spec = reg.getCostumModalSpec(id);
+    const resolved = reg.getCostumModalSpec(id);
+    // Un citoyen ne se crée que par l'inscription (`assertCreatable` dans useEntityMutation) : son
+    // formulaire costum n'existe qu'en édition, la modale d'AJOUT ne doit jamais s'ouvrir.
+    const spec = resolved?.mutation?.entityType === "citoyens" ? undefined : resolved;
     return {
       default: (props: ModalProps) =>
         spec ? <mod.EntityFormModal spec={spec} open={props.open} onOpenChange={props.onOpenChange} mode="add" parent={props.parent} createDefaults={props.createDefaults} onCreated={props.onCreated} /> : null,
