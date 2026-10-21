@@ -23,7 +23,7 @@ Les faits volatils se LISENT à l'usage, ils ne sont pas écrits ici :
 | **Choix en cours dans une config** (listes figées, chaîne de rattachement…) — pose la question, ne juge pas | `npm run config:besoins -- <config>` · `-- --diff` en revue |
 | **Depuis quand une clé existe, et qui l'a adoptée** | `npm run config:changelog key <nom>` · `since <config>` pour ce qui a bougé depuis |
 | **Ce qui est possible et peu connu** (mécanismes jamais exercés, ou par un seul site — avec son nom) | `npm run config:changelog candidates` |
-| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (155 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
+| **Composition de props réelle** d'une section / d'un header / d'un footer | `.design-sync/previews/<Composant>.tsx` (154 stories versionnées) — chemin exact imprimé en tête de `config:schema section:<type>`, et `◆` dans le catalogue `sections` |
 | **Recette de composition de PAGE** (gabarit = une page réelle d'archétype) | `npm run config:example -- --recipe <id>` — imprime la page complète, prête à adapter |
 | Forme exacte d'une section | `npm run config:schema section:<type>` (ex. `section:pricing`) |
 | Forme de `header`/`footer`/`theme`/`meta`/`auth`/`page`/`profiles`/`integrations`/`commandPalette` | `npm run config:schema <bloc>` |
@@ -386,6 +386,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` (dont entrée « Kanban » plateforme via `auth.menu.kanban`, admins du costum) | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
 | `notification` | cloche header, section `notifications` | `header.utilities.notifications` | notifications backend |
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
+| `comment` | fil de discussion générique (toutes entités commentables) + panneau « Discussions » | route `/discussions`, paramètre d'URL `discussion=<type>:<id>[:<path>]` | commentaires backend ; enum `GET_COMMENTS`/`ADD_COMMENTS` élargi aux 10 types |
 | `ampli` | routes `/ampli` (liste des amplis) + `/ampli/:slug` (onglets home/community/stats/news), montées seulement si `config.ampli` est posé | `"ampli": true` — rien d'autre : les amplis sont lus dans `costum.ampli` du porteur. la forme tableau historique a été RETIRÉE du schéma : une config restée dessus n'active aucun ampli | entrées `costum.ampli.<slug>` côté Co, AVEC `coform` (ObjectId du formulaire) et `path.name`/`path.address` — sans `coform`, l'ampli s'affiche « en préparation ». Un admin du costum peut aussi créer/supprimer un ampli DEPUIS `/ampli` (le serveur fabrique alors le formulaire) — cf. doc/22 |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
 | `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table **et/ou liste en split view**, filtres) — ou `searchProStatic.observatory`, le même tableau de bord EMBARQUÉ dans une section search | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` ; `layout:"split"` + `list` pour les KPI en bandeau puis la liste à gauche et les graphes à droite (desktop ; mobile → empilé ; `table` éventuelle SOUS les deux colonnes), `rowAction` au niveau section pour la liste (repli `table.rowAction` — seul lu par la table : une page qui garde sa table l'y laisse) | données indexées (sourceKey + type) |
@@ -398,7 +399,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 ## Design system (voir le rendu réel avant de choisir)
 
 - **`.design-sync/previews/` — la ressource la plus utile, et elle est dans git** :
-  155 stories portant des compositions de props RÉELLES (valeurs plausibles,
+  154 stories portant des compositions de props RÉELLES (valeurs plausibles,
   commentaire d'usage : « Usage réel : home de Rézo la mer »). Le JSON Schema
   donne la FORME, la story donne la COMPOSITION — **44 des 80 sections** en ont
   une (les 36 sans sont surtout data-driven : search\*, agenda, cagnotte, blog,

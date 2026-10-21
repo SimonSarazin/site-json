@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 import { ProseContent } from "@/components/shared/ProseContent";
 import { Check, ChevronDown, ChevronsUpDown } from "lucide-react";
@@ -31,7 +31,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import type { FormFieldMapping } from "../types";
+import { QuestionDiscussionContext } from "../contexts/QuestionDiscussionContext";
 import { MarkdownEditor } from "./MarkdownEditor";
+import { QuestionDiscussionButton } from "./QuestionDiscussionButton";
 
 // `ProseContent` a été sorti dans `@/components/shared` : les fiches AAC
 // affichent en lecture les mêmes valeurs que les champs saisissent, et une
@@ -117,6 +119,11 @@ export function FieldError({ name, message }: { name: string; message: string | 
  * rien) : on rend alors une `<div>`, que le contrôle référence par
  * `aria-labelledby={id}`. C'est le cas de tous les champs composites dont le
  * contrôle n'est pas un input focusable (liste de cases, bouton de modale…).
+ *
+ * **Discussion** : une question ouverte aux commentaires (`activeComments`), dans un
+ * formulaire qui édite une réponse enregistrée (`FormQuestionDiscussions`), reçoit À CÔTÉ
+ * de son libellé le bouton qui ouvre sa discussion — hors du `<label>`, dont un clic
+ * donnerait le focus au champ. Sans hôte ni drapeau, le libellé est rendu seul, comme avant.
  */
 export function FieldLabel({
   field,
@@ -125,7 +132,7 @@ export function FieldLabel({
   hasError,
   className,
 }: {
-  field: Pick<FormFieldMapping, "label" | "isRequired">;
+  field: Pick<FormFieldMapping, "label" | "isRequired"> & Partial<Pick<FormFieldMapping, "name" | "componentType" | "activeComments">>;
   /** Id de l'input ciblé. Fourni → `<label for>` ; absent → `<div>`. */
   htmlFor?: string;
   /** Id du libellé, à référencer via `aria-labelledby` côté contrôle. */
@@ -134,6 +141,7 @@ export function FieldLabel({
   className?: string;
 }) {
   const t = useT("modules/coform");
+  const discussion = useContext(QuestionDiscussionContext);
   if (!field.label) return null;
 
   const content = (
@@ -162,17 +170,25 @@ export function FieldLabel({
     className,
   );
 
-  if (htmlFor) {
-    return (
-      <Label id={id} htmlFor={htmlFor} className={classes}>
-        {content}
-      </Label>
-    );
-  }
-
-  return (
+  const libelle = htmlFor ? (
+    <Label id={id} htmlFor={htmlFor} className={classes}>
+      {content}
+    </Label>
+  ) : (
     <div id={id} className={classes}>
       {content}
+    </div>
+  );
+
+  if (!field.activeComments || discussion === null || !field.name || !field.componentType) return libelle;
+  return (
+    <div className="flex items-start justify-between gap-2" data-question-label>
+      {libelle}
+      <QuestionDiscussionButton
+        answerId={discussion}
+        field={{ label: field.label, name: field.name, componentType: field.componentType, activeComments: field.activeComments }}
+        className="-my-1"
+      />
     </div>
   );
 }

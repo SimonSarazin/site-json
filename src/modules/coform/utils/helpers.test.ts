@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
+import Cocolight from "@communecter/cocolight-api-client";
 import {
   convertBootstrapWidth,
   extractMongoId,
   formatTimestamp,
   generateFieldId,
+  hasAnswerContent,
+  isNotFoundError,
   isStepComplete,
   mergeStepsData,
   pickProfileImageUrl,
@@ -190,5 +193,42 @@ describe("pickProfileImageUrl", () => {
     expect(pickProfileImageUrl({ profilImageUrl: 42 })).toBeUndefined();
     expect(pickProfileImageUrl(null)).toBeUndefined();
     expect(pickProfileImageUrl(undefined)).toBeUndefined();
+  });
+});
+
+describe("hasAnswerContent", () => {
+  it("rien, ou des contenants vides : pas de contenu", () => {
+    for (const vide of [null, undefined, "", "   ", [], {}, { aapStep1: {} }, { a: { b: [null, "", { c: undefined }] } }]) {
+      expect(hasAnswerContent(vide)).toBe(false);
+    }
+  });
+
+  it("une seule valeur, à n'importe quelle profondeur, suffit", () => {
+    expect(hasAnswerContent({ aapStep1: { titre: "x" } })).toBe(true);
+    expect(hasAnswerContent({ a: [{}, { b: ["", "y"] }] })).toBe(true);
+    expect(hasAnswerContent(" x ")).toBe(true);
+  });
+
+  it("`false` et `0` sont des valeurs : quelqu'un les a enregistrées", () => {
+    expect(hasAnswerContent({ step: { accord: false } })).toBe(true);
+    expect(hasAnswerContent({ step: { montant: 0 } })).toBe(true);
+  });
+});
+
+describe("isNotFoundError", () => {
+  it("vrai pour l'`ApiError` 404 de l'entité — ce que lève `Answer.get` pour une réponse absente", () => {
+    expect(isNotFoundError(new Cocolight.error.ApiError("Aucune réponse trouvée pour l'ID x", 404))).toBe(true);
+  });
+
+  it("faux pour le 404 du TRANSPORT : une route qui manque n'est pas une chose absente", () => {
+    expect(isNotFoundError(new Cocolight.error.ApiClientError("Endpoint introuvable", 404))).toBe(false);
+  });
+
+  it("faux pour tout autre statut, sans statut, ou hors d'une erreur", () => {
+    expect(isNotFoundError(new Cocolight.error.ApiError("panne", 500))).toBe(false);
+    expect(isNotFoundError(new Error("sans statut"))).toBe(false);
+    expect(isNotFoundError({ name: "ApiError", status: 404 })).toBe(false);
+    expect(isNotFoundError(null)).toBe(false);
+    expect(isNotFoundError(undefined)).toBe(false);
   });
 });

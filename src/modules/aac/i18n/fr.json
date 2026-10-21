@@ -104,6 +104,16 @@
       "title": "Modifier ce commun",
       "successToast": "Les modifications ont été enregistrées."
     },
+    "discussion": {
+      "cta": "Discussion",
+      "messages_one": "{{count}} message",
+      "messages_other": "{{count}} messages",
+      "unread_one": "{{count}} non lu",
+      "unread_other": "{{count}} non lus",
+      "milestoneCta": "Discuter",
+      "milestone": "Discuter de ce palier",
+      "milestoneNamed": "Discuter du palier « {{name}} »"
+    },
     "editors": {
       "cta": "Éditeurs",
       "ctaHint": "Contributeurs à l'édition : les personnes qui peuvent modifier ce commun",

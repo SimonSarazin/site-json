@@ -1,5 +1,5 @@
 import { useT } from "@/hooks/useT";
-import { voteTypes } from "../../constants/voteTypes";
+import { voteTypes } from "@/modules/comment/constants/voteTypes";
 
 interface NewsReactionPickerProps {
   onSelect: (type: string) => void;

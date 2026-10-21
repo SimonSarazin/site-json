@@ -2989,3 +2989,28 @@ describe("omitHiddenSteps (masquage décidé par l'appelant)", () => {
     expect(Object.keys(data.inputs ?? {})).toEqual(["aapStep1", "aapStep2"]);
   });
 });
+
+// ============================================================================
+// `activeComments` : la question ouverte aux commentaires
+// ============================================================================
+
+describe("parseCoFormFields — `activeComments`, la question ouverte aux commentaires", () => {
+  /** Le champ parsé d'une question dont le drapeau vaut `activeComments` — tel que la base le porte. */
+  const avec = (activeComments: unknown): FormFieldMapping =>
+    parseCoFormFields(makeCoFormData({
+      inputs: {
+        step1: {
+          name: "Étape", id: "step1", formParent: "form123",
+          inputs: { q: { label: "Question", type: "text", activeComments: activeComments as boolean } },
+        },
+      },
+    }))[0]!.fields[0]!;
+
+  it("ouverte : le drapeau du legacy, en booléen comme en chaîne", () => {
+    for (const v of [true, "true", "1"]) expect(avec(v).activeComments).toBe(true);
+  });
+
+  it("fermée : absent, faux, « false » en chaîne, ou la liste vide que laisse l'éditeur legacy — et le champ n'en porte rien", () => {
+    for (const v of [undefined, false, "false", [], "", 0]) expect("activeComments" in avec(v)).toBe(false);
+  });
+});

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown, Plus } from "lucide-react";
 import type { CoFormData } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
@@ -15,7 +15,8 @@ import type {
 } from "@/modules/cagnotte/types";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
-import { toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
+import { DEFAULT_AAC_STEP, toSafeInt, buildItemsFromRawDepenses } from "@/modules/cagnotte/utils/dataTransform";
+import { resolveDepenseKey } from "@/modules/cagnotte/utils/depenseKey";
 import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
@@ -43,6 +44,12 @@ interface CommunFinancingSectionProps {
      * sobres libellé / montant, historique des financements au clic, total en pied.
      */
     layout?: "cards" | "list";
+    /**
+     * Le bouton de discussion d'un palier, rendu par l'interface (c'est la page qui tient l'espace
+     * de discussion du commun). `lineKey` est la CLÉ de la ligne de dépense dans le document, celle
+     * que porte le fil — pas la position du palier dans la liste.
+     */
+    renderMilestoneDiscussion?: (milestone: { lineKey: string; name: string }) => ReactNode;
 }
 
 interface FinancingMilestoneProps {
@@ -54,6 +61,8 @@ interface FinancingMilestoneProps {
     onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
     permissions: MilestoneCardPermissions & Pick<CagnottePermissions, "canRestoreMilestone">;
     loadingIds: { deletingItemId: string; closingItemId: string; restoringItemId: string };
+    /** Le bouton de discussion du palier, à droite de l'en-tête — hors du bouton qui déplie. */
+    discussion?: ReactNode;
 }
 
 type FundingLine = CagnotteFundableItem["allFunding"][number];
@@ -145,61 +154,77 @@ function FinancingMilestoneCard(props: FinancingMilestoneProps) {
 
     return (
         <div className={`bg-surface border rounded-lg overflow-hidden group ${isClosed ? "border-dashed border-border" : "border-border"}`}>
-            <button
-                type="button"
-                onClick={() => setOpen((o) => !o)}
-                aria-expanded={open}
-                aria-controls={panelId}
-                className="w-full text-left p-5 sm:p-6 flex items-center gap-4 sm:gap-8 hover:bg-surface-2/40 transition-colors cursor-pointer"
-            >
-                <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        <span>{String(c("detail.objectives.milestone", undefined, { number: index + 1 }))}</span>
-                        {isClosed ? (
-                            <span
-                                className="rounded-sm border border-border bg-surface-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal"
-                                title={String(c("detail.objectives.closedBadgeHint"))}
-                            >
-                                {String(c("detail.objectives.closedBadge"))}
-                            </span>
+            {/* Le survol éclaire toute la ligne d'en-tête, bouton de discussion compris. */}
+            <div className="flex items-stretch hover:bg-surface-2/40 transition-colors">
+                <button
+                    type="button"
+                    onClick={() => setOpen((o) => !o)}
+                    aria-expanded={open}
+                    aria-controls={panelId}
+                    className="min-w-0 flex-1 text-left p-5 sm:p-6 flex items-center gap-4 sm:gap-8 cursor-pointer"
+                >
+                    <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            <span>{String(c("detail.objectives.milestone", undefined, { number: index + 1 }))}</span>
+                            {isClosed ? (
+                                <span
+                                    className="rounded-sm border border-border bg-surface-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal"
+                                    title={String(c("detail.objectives.closedBadgeHint"))}
+                                >
+                                    {String(c("detail.objectives.closedBadge"))}
+                                </span>
+                            ) : null}
+                        </div>
+                        <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
+                        {/* Aperçu replié, deux lignes : purement visuel (`aria-hidden`), sinon le
+                            texte entier devenait le nom accessible du bouton. Le texte complet
+                            vit dans le panneau, où il est lu et sélectionnable. */}
+                        {description && !open ? (
+                            <p aria-hidden="true" className="mt-1 text-sm text-muted-foreground whitespace-pre-line break-words line-clamp-2">
+                                {description}
+                            </p>
                         ) : null}
                     </div>
-                    <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
-                    {/* Aperçu replié, deux lignes : purement visuel (`aria-hidden`), sinon le
-                        texte entier devenait le nom accessible du bouton. Le texte complet
-                        vit dans le panneau, où il est lu et sélectionnable. */}
-                    {description && !open ? (
-                        <p aria-hidden="true" className="mt-1 text-sm text-muted-foreground whitespace-pre-line break-words line-clamp-2">
-                            {description}
-                        </p>
-                    ) : null}
-                </div>
 
-                <div className="hidden sm:block w-64 shrink-0 ml-auto">
-                    <div className="flex justify-between items-baseline text-xs mb-2 tabular-nums">
-                        <span className={done ? "text-success font-bold" : "text-foreground font-bold"}>
-                        {formatCurrency(toSafeInt(item.currentFunding))}
-                        </span>
-                        <span className="text-muted-foreground">
-                            / {formatCurrency(toSafeInt(item.price))}
-                        </span>
+                    <div className="hidden sm:block w-64 shrink-0 ml-auto">
+                        <div className="flex justify-between items-baseline text-xs mb-2 tabular-nums">
+                            <span className={done ? "text-success font-bold" : "text-foreground font-bold"}>
+                            {formatCurrency(toSafeInt(item.currentFunding))}
+                            </span>
+                            <span className="text-muted-foreground">
+                                / {formatCurrency(toSafeInt(item.price))}
+                            </span>
+                        </div>
+                        <Progress
+                            value={pct}
+                            className="h-1.5 bg-background border border-border"
+                            indicatorClassName="bg-primary"
+                        />
+                        <div className="mt-1 text-right text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums">
+                            {String(c("detail.objectives.collectedPercent", undefined, { percent: pct }))}
+                        </div>
                     </div>
-                    <Progress
-                        value={pct}
-                        className="h-1.5 bg-background border border-border"
-                        indicatorClassName="bg-primary"
+
+                    <ChevronDown
+                        className={`size-5 shrink-0 text-muted-foreground transition-transform ${
+                            open ? "rotate-180" : ""
+                        }`}
                     />
-                    <div className="mt-1 text-right text-[10px] uppercase tracking-widest text-muted-foreground tabular-nums">
-                        {String(c("detail.objectives.collectedPercent", undefined, { percent: pct }))}
-                    </div>
+                </button>
+                {/* Un bouton ne s'imbrique pas dans un autre : celui de la discussion vit À CÔTÉ de
+                    celui qui déplie. `empty:hidden` — sans bouton à montrer (rien à lire pour ce
+                    lecteur), l'emplacement s'efface et l'en-tête reprend toute la largeur. Sauf si
+                    un AUTRE palier de la liste en montre un : tous gardent alors la même largeur
+                    d'emplacement, pour que les jauges restent alignées d'une carte à l'autre.
+                    Cette largeur suit le bouton : étroite tant qu'il se réduit à son icône et à
+                    son compteur, large à partir de 80 rem, où il porte son libellé. */}
+                <div
+                    className="flex shrink-0 items-center justify-end pe-3 sm:pe-4 empty:hidden sm:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:flex! sm:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:min-w-20 xl:group-has-[[data-milestone-discussion-slot]:not(:empty)]/paliers:min-w-40"
+                    data-milestone-discussion-slot
+                >
+                    {props.discussion}
                 </div>
-
-                <ChevronDown
-                    className={`size-5 shrink-0 text-muted-foreground transition-transform ${
-                        open ? "rotate-180" : ""
-                    }`}
-                />
-            </button>
+            </div>
 
             {open && (
                 <div id={panelId} className="p-5 sm:p-6 pt-4 bg-background/30 border-t border-border">
@@ -298,6 +323,14 @@ function FinancingExpenseRow(props: FinancingMilestoneProps) {
                     />
                 </span>
             </button>
+            {/* Le bouton de discussion de la ligne, sous l'en-tête — un bouton ne s'imbrique pas dans un autre.
+                `empty:hidden` — le bouton rend `null` quand il n'a rien à montrer : l'emplacement
+                s'efface, au lieu de laisser sa marge sous la ligne. */}
+            {props.discussion ? (
+                <div className="flex justify-end pb-2 empty:hidden" data-milestone-discussion-slot>
+                    {props.discussion}
+                </div>
+            ) : null}
 
             {open && (
                 <div id={panelId} className="pb-3">
@@ -332,7 +365,7 @@ function FinancingExpenseRow(props: FinancingMilestoneProps) {
     );
 }
 
-export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "cards" }: CommunFinancingSectionProps) {
+export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "cards", renderMilestoneDiscussion }: CommunFinancingSectionProps) {
     useLoadNamespace("modules/aac");
     const t = useT("modules/aac");
 
@@ -350,6 +383,12 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
 
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
 
+    // Le fil d'un palier est celui d'une ligne de `answers.aapStep1.depense` : la seule liste que
+    // l'espace de discussion connaisse, celle du gabarit legacy. Une fiche qui lit ses dépenses à
+    // une autre étape n'a pas de fil à apparier — par la clé seule, elle ouvrirait celui d'une
+    // AUTRE ligne.
+    const milestoneThreads = (aacConfig?.roles?.depenseStepKey ?? DEFAULT_AAC_STEP) === DEFAULT_AAC_STEP;
+
     // Les paliers viennent des dépenses OU de l'enveloppe : tant que l'une des deux est en
     // vol et qu'aucun palier n'est là, une grille vide se lirait « aucun besoin financier ».
     const isLoading = (isDepensesLoading || ctrl.isLoadingData) && items.length === 0;
@@ -363,6 +402,14 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
         onMilestoneDelete: ctrl.handleDeleteMilestone,
         permissions: ctrl.cagnottePerms,
         loadingIds: ctrl.loadingIds,
+        // La clé se lit dans le document : la liste affichée l'a perdue, et une position ne la vaut
+        // que si les dépenses sont un vrai tableau. Introuvable, pas de bouton : retomber sur la
+        // position inventait la clé que `depenseKey.ts` interdit, et un palier pouvait ouvrir le fil
+        // d'une AUTRE dépense (revue du 16/10).
+        discussion: (() => {
+            const lineKey = milestoneThreads ? resolveDepenseKey(ctrl.depensesDocument, item.depenseIndex) : null;
+            return lineKey !== null ? renderMilestoneDiscussion?.({ lineKey, name: item.name }) : undefined;
+        })(),
     });
 
     const addMilestone = ctrl.cagnottePerms.canCreateMilestone ? (
@@ -380,7 +427,7 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
             .reduce((sum, item) => sum + toSafeInt(item.price), 0);
 
         return (
-            <div className="grid gap-4">
+            <div className="group/paliers grid gap-4">
                 {addMilestone}
                 {isLoading ? <ListRowsSkeleton count={2} /> : null}
                 {items.length > 0 ? (
@@ -401,7 +448,7 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
     }
 
     return (
-        <div className="grid gap-4">
+        <div className="group/paliers grid gap-4">
             {addMilestone}
             {isLoading ? <MilestoneCardsSkeleton /> : null}
             {items.map((o: CagnotteFundableItem, i: number) => (
