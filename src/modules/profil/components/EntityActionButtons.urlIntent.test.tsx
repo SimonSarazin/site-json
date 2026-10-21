@@ -90,7 +90,7 @@ describe("EntityActionButtons — ?participer", () => {
     expect(screen.queryByText("Participer à cet événement")).toBeNull();
   });
 
-  it("n'ouvre rien sans droit (action absente : déconnecté, déjà participant)", () => {
+  it("n'ouvre rien quand `participate` n'est pas dans la liste — c'est en amont (`useEntityActions`) que déconnecté ou déjà participant la retirent", () => {
     state.actions = [action("follow", "Suivre")];
     monter(PAGE);
 

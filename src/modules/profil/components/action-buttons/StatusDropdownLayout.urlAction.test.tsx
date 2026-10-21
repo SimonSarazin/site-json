@@ -69,6 +69,7 @@ describe("StatusDropdownLayout — action portée par l'URL", () => {
 
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(done).toHaveBeenCalledTimes(1);
+    expect(onClick.mock.invocationCallOrder[0]).toBeLessThan(done.mock.invocationCallOrder[0]);
   });
 
   it("sans action portée par l'URL, rien ne s'ouvre", () => {

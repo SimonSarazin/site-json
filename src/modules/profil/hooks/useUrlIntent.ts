@@ -58,6 +58,6 @@ const AUCUNE: Omit<UrlIntent, "clear"> = { present: false, value: null };
 export function useProfilePageIntent(param: string, entity: EntityTypes | null): UrlIntent {
   const page = useOptionalProfileEntity();
   const intent = useUrlIntent(param);
-  const isPageEntity = entity !== null && page !== null && (page.entity as unknown) === (entity as unknown);
+  const isPageEntity = entity !== null && page !== null && page.entity === entity;
   return isPageEntity ? intent : { ...AUCUNE, clear: intent.clear };
 }

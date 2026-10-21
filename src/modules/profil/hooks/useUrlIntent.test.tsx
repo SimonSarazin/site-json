@@ -16,13 +16,11 @@ const PAGE = { serverData: { slug: "fete-du-lieu" } } as unknown as EntityTypes;
 const APERCU = { serverData: { slug: "autre-evenement" } } as unknown as EntityTypes;
 
 function routeur(search: string, page: EntityTypes | null = null) {
+  const value = page ? ({ entity: page, config: {}, entityType: "event" } as unknown as ProfileEntityContextType) : null;
   return function Wrapper({ children }: { children: ReactNode }) {
-    const tree = <MemoryRouter initialEntries={[`/profil/fete-du-lieu${search}`]}>{children}</MemoryRouter>;
-    if (!page) return tree;
-    const value = { entity: page, config: {}, entityType: "event" } as unknown as ProfileEntityContextType;
     return (
       <MemoryRouter initialEntries={[`/profil/fete-du-lieu${search}`]}>
-        <ProfileEntityContext.Provider value={value}>{children}</ProfileEntityContext.Provider>
+        {value ? <ProfileEntityContext.Provider value={value}>{children}</ProfileEntityContext.Provider> : children}
       </MemoryRouter>
     );
   };

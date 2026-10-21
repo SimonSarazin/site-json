@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router";
 import { Plus, Building2, Briefcase, Calendar, MapPin } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
@@ -108,6 +109,7 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
   // de création de ce type s'ouvre directement — si et seulement si l'option figure dans le menu,
   // donc avec les MÊMES gardes de permission qu'un clic. Sans droit, rien ne s'ouvre. Ouverture
   // DÉRIVÉE (clic, sinon URL), jamais posée par un effet ; le paramètre part à la fermeture.
+  const navigate = useNavigate();
   const ajouter = useProfilePageIntent("ajouter", entity);
   const fromUrl = ajouter.value !== null ? availableOptions.find((o) => o.type === ajouter.value) ?? null : null;
   const currentModal: AddOpenState = openModal ?? fromUrl?.type ?? null;
@@ -120,6 +122,14 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
   const handleCloseModal = () => {
     setOpenModal(null);
     if (fromUrl) ajouter.clear();
+  };
+
+  // Création partie d'un lien : la modale ne redirige PAS elle-même (`onCreated` coupe
+  // `navigateOnSuccess`, cf. EntityFormModal). Elle se ferme d'abord — ce qui retire `?ajouter` de
+  // l'URL du lieu — puis on va sur la fiche créée. Dans l'ordre inverse, le `replace` du paramètre,
+  // résolu contre l'URL courante, atterrirait sur la fiche créée avec les paramètres résiduels du lieu.
+  const handleCreatedFromUrl = (created: EntityTypes) => {
+    if (created.slug) navigate(`/profil/${created.slug}`);
   };
 
   const isCustomOpen = (modalKey: string) =>
@@ -163,6 +173,7 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
           open
           onOpenChange={(open) => !open && handleCloseModal()}
           parent={entity}
+          onCreated={fromUrl ? handleCreatedFromUrl : undefined}
         />
       )}
 
