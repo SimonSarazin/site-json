@@ -387,7 +387,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `notification` | cloche header, section `notifications` | `header.utilities.notifications` | notifications backend |
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
 | `comment` | fil de discussion générique (toutes entités commentables) + panneau « Discussions » | route `/discussions`, paramètre d'URL `discussion=<type>:<id>[:<path>]` | commentaires backend ; enum `GET_COMMENTS`/`ADD_COMMENTS` élargi aux 10 types |
-| `ampli` | routes ampli | `config.ampli` | campagne ampli |
+| `ampli` | routes `/ampli` (liste des amplis) + `/ampli/:slug` (onglets home/community/stats/news), montées seulement si `config.ampli` est posé | `"ampli": true` — rien d'autre : les amplis sont lus dans `costum.ampli` du porteur. la forme tableau historique a été RETIRÉE du schéma : une config restée dessus n'active aucun ampli | entrées `costum.ampli.<slug>` côté Co, AVEC `coform` (ObjectId du formulaire) et `path.name`/`path.address` — sans `coform`, l'ampli s'affiche « en préparation ». Un admin du costum peut aussi créer/supprimer un ampli DEPUIS `/ampli` (le serveur fabrique alors le formulaire) — cf. doc/22 |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
 | `observatoire` | section `data-observatory` (dashboard déclaratif : dimensions, KPI, charts, table **et/ou liste en split view**, filtres) — ou `searchProStatic.observatory`, le même tableau de bord EMBARQUÉ dans une section search | `props.baseParams` (périmètre) + `dimensions`/`filters`/`kpis`/`charts`/`table` ; `layout:"split"` + `list` pour les KPI en bandeau puis la liste à gauche et les graphes à droite (desktop ; mobile → empilé ; `table` éventuelle SOUS les deux colonnes), `rowAction` au niveau section pour la liste (repli `table.rowAction` — seul lu par la table : une page qui garde sa table l'y laisse) | données indexées (sourceKey + type) |
 | `formEngine` | modales costum **add/edit pilotées par données** (moteur de formulaire générique) | `config.costumForms.<id>` (document `CostumFormSchema`) + déclencheur `floatingActionButton.modal:"add-<id>"` / `profiles.<type>.editModal:"edit-<id>"` | entité costum porteuse (`costumSlug`) ; clés read/write/scope déjà enregistrées (sinon `fns.ts`) — cf. § Recettes avancées |
@@ -449,7 +449,8 @@ Ne lis ces fichiers QUE quand la tâche les concerne :
   modules — **aucun chemin inventé**. ⚠ Une route à paramètre exige une valeur
   concrète : `/profil/:slug`, `/coform/:formId`, `/blog/:slug`, `/ampli/:slug`
   ne sont PAS navigables nus (`/profil` seul est un 404) ; nues et valides :
-  `/login`, `/register`, `/recover-password`, `/admin`. L'audit dérive ces
+  `/login`, `/register`, `/recover-password`, `/admin`, `/ampli` (avec
+  `"ampli": true` seulement). L'audit dérive ces
   préfixes de `src/modules/*/routes.tsx` (`scripts/lib/module-routes.ts`).
 - **Affichage conditionnel** : `visibility` (`auth` / `routes` / `excludeRoutes` /
   `permissions`, cf. doc/19) se pose sur une entrée de nav **et** sur un lien de

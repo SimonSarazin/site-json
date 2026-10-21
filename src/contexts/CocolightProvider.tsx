@@ -135,6 +135,36 @@ export function CocolightProvider({
     }
   }, [api]);
 
+  // ------------------- refresh entity -------------------------------------
+  /**
+   * Recharge l'élément porteur du site. Sert après une écriture sur le costum
+   * (`createAmpli` / `removeAmpli`) : `costum` arrive AVEC l'entité
+   * (`element/about`), et l'entité est du state — aucune invalidation React
+   * Query ne la remettrait à jour.
+   *
+   * Une NOUVELLE instance et pas `entity.get()` : ce dernier met `serverData` à
+   * jour en place, sans changer l'identité de l'objet, donc sans rendu.
+   * Résolution identique aux écouteurs de session : connecté →
+   * `me.entityBySlug` (l'entité porte alors les liens dont dépendent les
+   * droits), anonyme → `api.entitySlug`.
+   */
+  const refreshEntity = useCallback(async () => {
+    const slug = getSlug();
+    if (!slug) return;
+    try {
+      const resolved = me
+        ? await me.entityBySlug(slug)
+        : await api?.entitySlug(slug);
+      if (!resolved) return;
+      const refreshed = resolved as Organization | Project;
+      setEntity(refreshed);
+      setContextType(refreshed.getEntityType());
+      setContextId(refreshed.id || undefined);
+    } catch (e) {
+      console.error("[CocolightProvider] refreshEntity failed:", e);
+    }
+  }, [api, me]);
+
   // ------------------------- Memo du contexte -----------------------------
   const contextValue = useMemo(
     () => ({
@@ -150,8 +180,9 @@ export function CocolightProvider({
       setDataToProfile,
       loading: false,
       refreshMe,
+      refreshEntity,
     }),
-    [client, userApiInstance, api, me, contextType, contextId, entity, dataToProfile, refreshMe],
+    [client, userApiInstance, api, me, contextType, contextId, entity, dataToProfile, refreshMe, refreshEntity],
   );
 
   return (

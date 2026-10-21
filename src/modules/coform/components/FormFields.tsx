@@ -38,7 +38,8 @@ import { QuestionDiscussionButton } from "./QuestionDiscussionButton";
 // `ProseContent` a été sorti dans `@/components/shared` : les fiches AAC
 // affichent en lecture les mêmes valeurs que les champs saisissent, et une
 // seconde implémentation aurait signifié une seconde garantie de sécurité à
-// maintenir. Ré-exporté ici pour que les call-sites du module ne bougent pas.
+// maintenir. Ré-exporté NU ici pour que les call-sites du module ne bougent pas :
+// la césure est posée par eux, via `PROSE_CESURE` (un seul mécanisme, cf. plus bas).
 export { ProseContent };
 
 /**
