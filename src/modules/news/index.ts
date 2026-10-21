@@ -27,13 +27,10 @@ export * from "./prefetch";
 export { useNewsQuery } from "./hooks/useNewsQuery";
 export { useNewsByIdQuery } from "./hooks/useNewsByIdQuery";
 export { useFormatNews } from "./hooks/useFormatNews";
-export { useFormatComment } from "./hooks/useFormatComment";
-export { useNewsCommentsQuery } from "./hooks/useNewsCommentsQuery";
 export { useNewsEntity } from "./hooks/useNewsEntity";
 export { useNewsContext, useOptionalNewsContext } from "./hooks/useNewsContext";
 export * from "./hooks/useNewsMutations";
 export * from "./hooks/useNewsVotes";
-export * from "./hooks/useCommentMutations";
 
 // Export des composants
 export * from "./components";

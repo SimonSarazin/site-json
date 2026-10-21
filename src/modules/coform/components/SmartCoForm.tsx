@@ -12,6 +12,7 @@ import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useCocolightOptional } from "@/hooks/useCocolight";
+import { FormQuestionDiscussions } from "./FormQuestionDiscussions";
 
 interface SmartCoFormProps {
   formId?: string;
@@ -334,12 +335,19 @@ export function SmartCoForm({
     [subFormsFields]
   );
 
-  // Wrapper qui expose les catalogues commonTable aux fields. Le loader rend un
-  // provider vide s'il n'y a pas de commonTable → no-op pur. Il est PARTAGÉ avec
-  // les surfaces qui montent `CoFormReadOnly` sans passer par ici.
-  const withCatalogs = (node: ReactNode) => (
+  // Ce qui entoure le formulaire, quel que soit son rendu :
+  // - les catalogues commonTable des fields — le loader rend un provider vide s'il
+  //   n'y a pas de commonTable → no-op pur ; il est PARTAGÉ avec les surfaces qui
+  //   montent `CoFormReadOnly` sans passer par ici ;
+  // - les discussions des questions ouvertes aux commentaires — l'hôte décide s'il
+  //   en ouvre (réponse enregistrée, question ouverte, site complet), sans jamais
+  //   changer la forme de l'arbre : le formulaire ne remonte pas quand une réponse
+  //   reçoit son identifiant.
+  const withFormContext = (node: ReactNode) => (
     <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
-      {node}
+      <FormQuestionDiscussions answerId={answerId} form={formData} steps={subFormsFields}>
+        {node}
+      </FormQuestionDiscussions>
     </CommonTableCatalogsLoader>
   );
 
@@ -478,7 +486,7 @@ export function SmartCoForm({
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
-    return withCatalogs(
+    return withFormContext(
       <CoFormReadOnly
         formData={effectiveFormData}
         answerData={normalizedDefaults ?? {}}
@@ -492,7 +500,7 @@ export function SmartCoForm({
 
   // Afficher le composant approprié
   if (shouldUseMultiStep) {
-    return withCatalogs(
+    return withFormContext(
       <MultiStepCoForm
         formData={effectiveFormData}
         submitMode={submitMode}
@@ -543,7 +551,7 @@ export function SmartCoForm({
   // Extraire les valeurs par défaut pour cette étape
   const stepDefaults = normalizedDefaults?.[subFormId];
 
-  return withCatalogs(
+  return withFormContext(
     <DynamicCoForm
       formData={effectiveFormData}
       submitButtonText={t("coform.navigation.submit")}
