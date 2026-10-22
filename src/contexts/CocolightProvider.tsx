@@ -103,12 +103,34 @@ export function CocolightProvider({
     // Le client implémente en runtime EventEmitter, mais pas dans les d.ts
     const eventfulClient = userApiInstance.client;
 
+    // Connexion faite dans un AUTRE onglet du même navigateur — retour SSO hors popup : le lien de
+    // vérification d'e-mail du provider s'ouvre dans un nouvel onglet, qui termine la connexion sur
+    // /sso/callback (SsoCallbackPage). Les jetons arrivent ici par le stockage local partagé
+    // (`cocolight_tokens_<backend>`, MultiServerTokenStorageStrategy), mais le client de CET onglet
+    // ne lit que sa mémoire (`isConnected` = jeton en mémoire) : la page de login restait affichée
+    // jusqu'à un rechargement. On recharge les jetons et on rejoue `userLoggedIn`, comme si le login
+    // avait eu lieu ici. `storage` ne se déclenche que dans les AUTRES onglets, jamais dans l'émetteur.
+    const handleStorage = (e: StorageEvent) => {
+      if (!e.key?.startsWith("cocolight_tokens_") || !e.newValue || eventfulClient.isConnected) return;
+      try {
+        const { accessToken, refreshToken } = JSON.parse(e.newValue) as { accessToken?: string; refreshToken?: string };
+        if (!accessToken) return;
+        eventfulClient.setToken(accessToken);
+        if (refreshToken) eventfulClient.setRefreshToken(refreshToken);
+        eventfulClient.emit("userLoggedIn");
+      } catch {
+        // valeur illisible : on ignore, le prochain rechargement relira le stockage
+      }
+    };
+
     eventfulClient.on("userLoggedIn", handleUserLoggedIn);
     eventfulClient.on("sessionReset", handleSessionReset);
+    window.addEventListener("storage", handleStorage);
 
     return () => {
       eventfulClient.off("userLoggedIn", handleUserLoggedIn);
       eventfulClient.off("sessionReset", handleSessionReset);
+      window.removeEventListener("storage", handleStorage);
     };
   }, [userApiInstance]);
 

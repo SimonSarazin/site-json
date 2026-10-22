@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { type ApiClient } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import { getBaseUrl } from "@/lib/constant/common";
+import { getBaseUrl, getSlug } from "@/lib/constant/common";
 
 export interface SSOAuthResult {
   success: boolean;
@@ -16,9 +16,18 @@ export interface SSOAuthResult {
  * Après le flux OAuth, Communecter envoie un `postMessage` contenant les JWT tokens.
  * Le hook les injecte dans l'`ApiClient` et émet l'événement `userLoggedIn` afin que
  * `CocolightProvider` mette à jour l'état de l'utilisateur connecté.
+ *
+ * L'URL porte aussi le costum du SITE (`costumSlug` + `costumId`/`costumType` quand l'entité porteuse
+ * est résolue) : un compte CRÉÉ par le SSO est alors estampillé `source.key` comme une inscription
+ * classique depuis ce site (sans ça il n'appartenait à aucun costum). Même trio que `register`.
+ *
+ * Quand le retour du provider n'arrive PAS dans la popup (lien de vérification d'e-mail ouvert dans
+ * un nouvel onglet), le backend renvoie ce nouvel onglet sur `/sso/callback` (SsoCallbackPage) ;
+ * cet onglet-ci l'apprend par l'événement `storage` (CocolightProvider), la popup se ferme ensuite
+ * d'elle-même et la promesse ci-dessous se résout en annulation silencieuse.
  */
 export function useSSOAuth() {
-  const { apiClient } = useCocolight();
+  const { apiClient, contextId, contextType } = useCocolight();
   const cleanupRef = useRef<(() => void) | null>(null);
 
   // Nettoyage des listeners si le composant est démonté avant la fin du flux
@@ -33,7 +42,16 @@ export function useSSOAuth() {
       return new Promise((resolve) => {
         const origin      = window.location.origin;
         const backendUrl  = getBaseUrl();
-        const ssoUrl      = `${backendUrl}/co2/sso/services?authclient=${encodeURIComponent(service)}&origin=${encodeURIComponent(origin)}`;
+        const params      = new URLSearchParams({ authclient: service, origin });
+        const slug        = getSlug();
+        if (slug) {
+          params.set("costumSlug", slug);
+          if (contextId && contextType) {
+            params.set("costumId", contextId);
+            params.set("costumType", contextType);
+          }
+        }
+        const ssoUrl      = `${backendUrl}/co2/sso/services?${params.toString()}`;
 
         // Centrer le popup
         const w    = 600;
@@ -111,7 +129,7 @@ export function useSSOAuth() {
         window.addEventListener("message", handleMessage);
       });
     },
-    [apiClient],
+    [apiClient, contextId, contextType],
   );
 
   return { openSSOPopup };
