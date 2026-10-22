@@ -15,10 +15,27 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-16** — différenciation acteurs/partenaires par tag (`"Partenaires"`,
-`mutation.stamps`), deux passages de relecture avant merge (routage d'édition, scope réel des annuaires,
-réseaux sociaux, i18n, `HeaderStacked`, lightbox), pastilles d'accueil illisibles en mode sombre
-corrigées (`--p62-pastille-encre`) et titre « Zoom sur le réseau » en Open Sans — détail en
+Dernière mise à jour : **2026-10-22** — section « Les communes du territoire » reprend la couleur
+pleine du bandeau hero (`--page-accent`, déjà réglé par territoire), « Les actions sur le
+territoire » reprend l'ancien alplat des communes (`page-accent`) ; conteneur de l'agenda territoire
+aligné (rayon+ombre) sur la carte acteurs voisine (découverte en vérifiant : `--radius` de ce thème
+vaut 1rem, pas le défaut Tailwind — une règle CSS précédente divergeait, corrigée en
+`var(--radius)`) ; communes du territoire remontées juste sous le bandeau hero ; couleurs des tuiles
+accueil « Vous êtes… » inversées (Parent/Professionnel·le) — détail en §9septuagies. Précédemment : **2026-10-21** — sur les 9 pages
+`/territoire/*`, l'agenda du territoire est désormais accolé (gridLayout 2 colonnes) à une carte des
+acteurs du soutien à la parentalité du même territoire, avec lien vers
+`/annuaire-acteurs-parentalite?territoire=<nom>` ; agenda plafonné à 6 événements, carte acteurs
+alignée EXACTEMENT sur la hauteur de l'agenda (`fillParent`, nouvelle prop moteur opt-in sur
+`searchProStatic`) et visible même vide (« Aucun résultat » — `hideWhenEmpty` ajoutée puis retirée
+le même jour, choix final = ne rien masquer) — détail en §9sexagies.
+Précédemment : **2026-10-20** — filtre « Territoires » ajouté sur `/annuaire-acteurs-parentalite`
+(repris de `/annuaire`, 9 options ; réimport confirmé : les 38 fiches acteur ont maintenant `territoires`
+peuplé) et variantes genrées (« Coordonnateur »/« Coordonnatrice ») ajoutées aux 10 `roles` des sections
+`member` (3 membres locaux invisibles trouvés par coquille proche, non corrigée) — détail en §9quinquagies
+et §9novoquadragies. Précédemment : **2026-10-16** — différenciation acteurs/partenaires par tag
+(`"Partenaires"`, `mutation.stamps`), deux passages de relecture avant merge (routage d'édition, scope réel
+des annuaires, réseaux sociaux, i18n, `HeaderStacked`, lightbox), pastilles d'accueil illisibles en mode
+sombre corrigées (`--p62-pastille-encre`) et titre « Zoom sur le réseau » en Open Sans — détail en
 §9septquadragies.6 à .12 et §9octoquadragies. Précédemment : **2026-10-13** — annuaire des acteurs du
 soutien à la parentalité (`/annuaire-acteurs-parentalite`, 38 organisations importées), fiche profil et
 formulaire d'édition dédié `parent62-acteur` sur les vrais champs du formulaire, correctif admin (colonnes
@@ -4605,6 +4622,291 @@ ce point compte pour cette page.
 |---|---|
 | `typecheck` / `lint` | ✅ |
 | `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+
+## 9novoquadragies. Rôles « Coordonnateur(trice) » : variantes genrées manquantes aux sections `member`
+
+Les 10 sections `member` qui filtrent par `roles:["Coordonnateur(trice)"]` (9 cartes « coordination du
+territoire » + `equipe-terr` sur `/equipe`) et la section `equipe-dep` (rôle départemental long) ne
+matchent le membre que si son rôle est saisi EXACTEMENT sous la forme combinée — le filtre `roles` est une
+égalité stricte côté backend (`EntityMembers.tsx`, cf. `[[project_parent62_equipe_roles_membres]]`, « le
+rôle est le texte du LIEN »). Un membre dont le rôle est saisi au masculin ou au féminin SEUL
+(« Coordonnateur » / « Coordonnatrice ») n'apparaît donc NULLE PART — ni sur `/equipe`, ni sur la page de
+son propre territoire.
+
+**Recherché en base LOCALE** (`prod270726`, org `Parent 62` = `6a450f0ac34c7070327d2a64`) : aucun membre
+n'a les variantes exactes données (« Coordonnateur »/« Coordonnatrice » seuls, ou la forme longue
+départementale genrée) — mais **3 membres** (`bakoly rabibisoa`, `Laëtitia DUMOULIN`,
+`gtgt@gmail.com`) portent une coquille proche, `"Coordinnateur(trice)"` (un « n » en trop), qui tombe
+dans le même piège — invisibles sur `/equipe` et leur page territoire pour la même raison. **Pas corrigé
+en base** (donnée, pas du code — à corriger côté saisie/admin si confirmé réel). À vérifier sur les
+données de PRODUCTION, hors d'atteinte depuis ce poste : la coquille locale suggère que la saisie libre du
+rôle est une source d'erreur réelle, pas seulement théorique.
+
+**Correctif appliqué** (config seule, additif, `roles` est déjà un tableau — zéro changement moteur) :
+chaque `roles` étendu aux 2 variantes genrées en plus de la forme combinée —
+`["Coordonnateur(trice)", "Coordonnateur", "Coordonnatrice"]` (et l'équivalent long pour `equipe-dep`).
+La coquille « Coordinnateur(trice) » n'est PAS couverte (c'est une faute de frappe, pas une variante
+grammaticale légitime à anticiper en config) — à corriger en base si confirmée en production.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+
+## 9quinquagies. Filtre « Territoires » sur `/annuaire-acteurs-parentalite`
+
+La page `/annuaire-acteurs-parentalite` n'avait que le filtre `categoryThematic` ; `/annuaire` (acteurs +
+partenaires) avait déjà un `filterGroup` territoire à 9 options (`field:"territoires"`, couleurs
+`var(--territoire-*)`). Le même bloc est repris tel quel (même `id`, mêmes 9 options) comme PREMIER groupe
+de `annuaire-acteurs-parentalite-filters` (`order:0`, `categoryThematic` passe en `order:1`), ajouté à
+`defaultOpenGroups`, et `"territoires"` ajouté à `baseParams.defaultFields` de
+`annuaire-acteurs-parentalite-search` pour que le champ remonte dans les résultats.
+
+**Vérifié en base locale avant d'implémenter** (le dernier état connu dans ce document disait
+« `territoires` n'existe sur aucune des 38 fiches acteur », devenu FAUX depuis) : un réimport a eu lieu,
+les 38 organisations `reference.costum:"parent62"` ont maintenant toutes le champ `territoires` peuplé —
+une seule valeur distincte en local pour l'instant (`"Arrageois"`), réimport probablement partiel/par
+lots côté production.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` / `audit:config` | ✅ RAS |
+| `tests/preflight/effective-config.test.ts` | ✅ (fixture `__effective__/parent62.json` régénérée : 1 ligne, `"territoires"` dans `defaultFields`) |
+| `tests/preflight/` (suite complète) | ✅ sauf `bundle-size.test.ts` / `lazy-entry-facades.test.ts`, confirmés PRÉEXISTANTS et sans rapport (bundle `dist/` non reconstruit cette session, vérifié par `git stash`) |
+| `npm run typecheck` | 7 erreurs PRÉEXISTANTES dans `src/modules/auth/` (`mode`/`fields` absents du type `register()` du SDK), confirmées sans rapport avec ce lot ni avec aucun fichier modifié cette session (`git stash` + `typecheck` propre reproduit les mêmes 7 erreurs) — à traiter séparément |
+
+## 9sexagies. Acteurs du territoire à côté de l'agenda (9 pages `/territoire/*`)
+
+Sur chacune des 9 pages de territoire, l'agenda du territoire (section `agenda` de premier niveau, tous
+événements `type:others` filtrés `territoires`) était seul dans sa propre rangée. Demande : y associer, à
+droite, une carte listant les acteurs du soutien à la parentalité DU MÊME territoire — agenda à gauche,
+acteurs à droite.
+
+Implémenté en enveloppant l'agenda (inchangé) et un nouveau `searchProStatic` dans un second `gridLayout`
+à 2 colonnes (`columns:2, align:"start"`), même patron que la première rangée (comité local/coordination/
+comptes-rendus) déjà présente plus haut sur la page. Le nouveau `searchProStatic` reprend le filtre des
+acteurs de `/annuaire-acteurs-parentalite` (`defaultTypes:["organizations"]`, `tags:{$nin:["Partenaires"]}`,
+sourceKey `parent62`) et y ajoute `territoires:{$in:[<nom EXACT>]}` ; compact (`indexStepList:4`,
+`showDescription:false`, 1-2 colonnes), `linkHref` vers `/annuaire-acteurs-parentalite?territoire=<nom>`.
+
+**Valeur de query choisie par NOM, pas par id d'option — piège trouvé en vérifiant** : les `filterGroup`
+« territoire » de `/annuaire` et `/annuaire-acteurs-parentalite` donnent aux 2 territoires « Familles en
+sol mineur… » des ids COURTS (`fsm-henin-carvin`/`fsm-lens-lievin`), différents du slug de page
+(`familles-en-sol-mineur-henin-carvin`/`-lens-lievin`) — un `linkHref` construit sur le slug de page
+n'aurait pas matché l'option sur ces 2 territoires. `computeFiltersFromUrl.ts` matche par `option.name`
+OU `option.id` : le nom complet (`"Familles en sol mineur Hénin Carvin"`, espaces non encodés) fonctionne
+pour les 9, et c'est déjà la convention en place sur les `linkHref` de `/recherche` de ce même fichier
+(vérifié avant d'écrire, pas deviné) — suivie ici plutôt qu'une nouvelle convention par id.
+
+**Fixture de skill mise à jour** (`page-recipes.json`, PAS un gate automatisé — recette éditoriale relue à
+la main) : les recettes `page-annuaire-grille` et `page-territoire` décrivaient la 2ᵉ rangée comme une
+section `agenda` nue ; corrigées pour refléter le nouveau `gridLayout` à 2 colonnes.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus (`bundle-size.test.ts`, `lazy-entry-facades.test.ts`) ; `page-recipes.test.ts` et `effective-config.test.ts` (fixture régénérée, 9 territoires) repassés au vert après mise à jour des recettes |
+| `npm run typecheck` / `npm run lint` | mêmes 7 erreurs préexistantes `src/modules/auth/` (sans rapport) ; lint 0 erreur |
+
+**21/10/2026, correctif demandé en relecture** : deux ajustements sur cette même rangée, sur les 9
+territoires.
+- **Fond commun à toute la rangée** : `bg:"page-accent"` vivait sur la section `agenda` seule (donc visible
+  seulement sous la moitié gauche) — déplacé sur le `gridLayout` englobant (seul niveau qui porte un `bg`
+  dans son schéma, `GridLayoutSectionPropsSchema`), retiré de l'`agenda` pour éviter la redondance. Le fond
+  couvre maintenant les deux colonnes.
+- **Carte acteurs en mode carte, pas liste** : `enableMap:false` remplacé par `enableMap:true` +
+  `showMap:true` + `defaultViewMode:"map"` (mêmes props que la carte/liste principale de
+  `/annuaire-acteurs-parentalite`).
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 52 pages · 183 sections |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus ; aucune fixture à régénérer cette fois (`effective-config`/`page-recipes` ne portent pas sur `bg`/`enableMap`) |
+| `npm run typecheck` / `npm run lint` | inchangé (mêmes 7 erreurs préexistantes, lint 0 erreur) |
+
+**21/10/2026, 2 props moteur ajoutées (opt-in, `src/modules/search/`)** : deux demandes
+supplémentaires sur cette rangée (limiter l'agenda à 6, aligner la hauteur de la carte sur l'agenda,
+masquer la colonne si vide) n'avaient AUCUN hook de config existant pour les 2 dernières — vérifié en
+lisant `SearchProStatic.tsx` avant de proposer quoi que ce soit, impact analysé et accord explicite
+demandé AVANT d'y toucher (fichier moteur partagé par tous les sites).
+- `agenda.props.limit: 6` — prop déjà existante (`AgendaSectionSchema`), aucune modif moteur ; posé
+  sur les 9 agendas (plafond PAR bucket À venir/Passés, pas un total — cf. doc `limit` du schéma).
+- `searchProStatic.props.map.fillParent` (NOUVEAU, `MapConfSchema`, défaut `false`) — la vue carte
+  plein écran (`MAP_VIEW_HEIGHT`, calc viewport) est remplacée par `flex-1 min-h-0`, qui suit la
+  hauteur réelle imposée par le parent au lieu de l'écran. Combiné à `gridLayout.align:"stretch"`
+  (déjà existant, pousse `h-full` jusqu'à la `<section>` de chaque colonne via
+  `[&>*>section]:h-full`), la carte acteurs prend EXACTEMENT la hauteur de l'agenda voisin — pas une
+  valeur fixe approchée.
+- `searchProStatic.props.hideWhenEmpty` (NOUVEAU, défaut `false`) — la section retourne `null` une
+  fois le chargement terminé si le périmètre est vide, au lieu d'afficher « Aucun résultat » ; ne se
+  déclenche jamais pendant le chargement (`!isPending && !loadingMap`). **Retiré le 21/10/2026, même
+  jour** : décision finale = laisser la carte acteurs visible même vide (« Aucun résultat »), plutôt
+  que de la masquer. Prop ET son usage entièrement retirés (schema + composant) puisque plus aucun
+  appelant ne la pose — pas de dette opt-in qui ne sert personne.
+- `map.fillParent` reste en place (toujours utile : la carte garde la hauteur de l'agenda même vide).
+  Seule `hideWhenEmpty` est repartie. Les props actives sont `.optional()`, absentes par défaut :
+  **aucun site existant n'est affecté** sans les activer explicitement — posées uniquement sur les 9
+  sections `-acteurs`.
+- Pas de nouveau fichier de test : `SearchProStatic.tsx` n'a aujourd'hui aucun test unitaire dédié
+  (composant lourd, dépend de nombreux hooks data/carte) — en créer un pour 2 lignes isolées aurait
+  dépassé le périmètre demandé ; vérifié par `typecheck`/`lint`/les 786 tests existants du module
+  `search` (tous verts) plutôt qu'un test nouveau.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (ciblé `src/modules/search/`) | ✅ 0 erreur, 0 nouveau warning |
+| `npx vitest run src/modules/search` | ✅ 786 tests, 68 fichiers, tous verts |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+
+**21/10/2026, 2 derniers ajustements** :
+- **Titre de la carte** : `customHeader.title` de la section acteurs renommé « Les acteurs du
+  territoire » → **« La carte des acteurs »** (reflète que le mode par défaut est désormais la
+  carte, pas une liste).
+- **Hauteur fixée aussi en mode liste** : la section acteurs expose un bouton « Carte »/liste
+  (visible dès que `customHeader` est posé, indépendamment de `showViewToggle`) — en liste, la
+  hauteur grandissait librement avec le contenu au lieu de suivre celle de l'agenda voisin. `fillParent`
+  **déplacé** de `map.fillParent` vers la racine des props (`searchProStatic.props.fillParent`,
+  `MapConfSchema` n'en a plus) pour couvrir LES DEUX vues avec un seul flag : la vue carte (div
+  `MAP_VIEW_HEIGHT` → `flex-1 min-h-0`, comme avant) ET la vue liste (div
+  `p-4 mx-auto w-full max-w-[1536px] overflow-y-auto`, qui gagne `flex-1 min-h-0` en plus de son
+  `overflow-y-auto` existant — elle défile dans sa hauteur désormais contrainte au lieu de pousser la
+  page). Config : `"map": {"fillParent": true}` → `"fillParent": true` au même niveau que
+  `enableMap`/`showMap`/`defaultViewMode` sur les 9 sections.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (ciblé `src/modules/search/`) | ✅ 0 erreur |
+| `npx vitest run src/modules/search` | ✅ 786 tests, 68 fichiers, tous verts |
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+
+**21/10/2026, border-radius de l'agenda aligné sur celui de la carte** : les cartes événement de
+l'agenda (`CardEvent.tsx`, `rounded-xl`, 0,75rem) tranchaient avec le rayon de la carte acteurs
+voisine (`rounded`, 0,25rem, Tailwind par défaut sur `MAP_FILL`). `CardEvent.tsx` est **partagé par
+tout le site** (toute page agenda/événement du parc) — demande scopée confirmée avec l'utilisateur
+(3 options proposées : scoper / modifier le composant global / laisser tel quel → scoper retenu).
+Implémenté en CSS, SANS toucher au composant : `src/index-parent62.css`, sélecteur par attribut
+`section[id^="/territoire/"][id$="-agenda"] .h-72.rounded-xl { border-radius: 0.25rem; }` — cible
+les 9 sections agenda de territoire (seules dont l'id commence par `/territoire/` ET finit par
+`-agenda`) et, à l'intérieur, UNIQUEMENT le bloc carte événement (combinaison `.h-72.rounded-xl`
+propre à `CardEvent.tsx`, vérifiée unique dans tout `src/modules/agenda`+`src/modules/search`).
+
+| Gate | Résultat |
+|---|---|
+| `npm run lint` | ✅ 0 erreur (identique à avant, CSS non couvert par ESLint) |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+
+**21/10/2026, 3 anomalies trouvées EN VÉRIFIANT DANS LE NAVIGATEUR** (`npm run dev` + Playwright
+scripté, captures carte/liste/clair/sombre/mobile) les 3 points précédents — les 2 premiers
+n'avaient en réalité PAS d'effet malgré les gates verts :
+
+1. **Titre invisible en mode carte** : `customHeader` (titre + boutons) ne vivait QUE dans la
+   branche liste de `SearchProStatic.tsx` — un vrai manque moteur préexistant (vérifié : même
+   défaut en mode `split`/`observatory`/`graph`, pas touché ici, hors périmètre). Corrigé en
+   extrayant ce bloc en une variable `customHeaderBar` (source unique), rendue dans la branche liste
+   ET, nouvellement, au-dessus de la carte.
+2. **Border-radius toujours pas aligné** : ma 1ʳᵉ règle CSS (`.h-72.rounded-xl`) ciblait la carte
+   événement AVEC PHOTO (`CardEvent.tsx`) — les événements de test n'en ont PAS, ils rendent par
+   `EventCardPlain` (shadcn `<Card>`, `data-slot="card"`, `rounded-xl` posé par le composant de
+   base). Règle CSS étendue pour couvrir LES DEUX variantes (`[data-slot="card"]` ajouté) — vérifié
+   à 4px (`0.25rem`) par `getComputedStyle` après correctif.
+3. **Hauteur toujours libre en liste** : `flex-1 min-h-0` fonctionne pour la carte (son contenu est
+   `position:absolute`, donc ne compte pas dans le calcul de la rangée) mais PAS pour la liste (en
+   flux normal) : une grille CSS à rangées implicites (`auto`, le cas de `gridLayout`) se
+   dimensionne sur le contenu le plus haut de la rangée — une liste de 38 organisations faisait donc
+   grandir TOUTE la rangée (agenda inclus) au lieu d'être plafonnée. Plafonnée à `max-h-[32rem]`
+   (mesuré : l'agenda à 6 événements fait ~512px) — approximatif, pas un miroir pixel-perfect du
+   voisin (CSS seul ne lit pas la hauteur rendue d'un frère sans JS), mais fixe et scrollable comme
+   demandé.
+
+Vérifié en plus (checklist de relecture) : mode sombre (`document.documentElement.classList.add
+("dark")`) et mobile (390×844) — RAS sur les deux, aucune régression visuelle trouvée.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (ciblé `src/modules/search/`) | ✅ 0 erreur |
+| `npx vitest run src/modules/search` | ✅ 786 tests, 68 fichiers, tous verts |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+| Vérification navigateur (Playwright scripté, nettoyé après coup) | ✅ carte/liste, clair/sombre, desktop/mobile |
+
+## 9septuagies. Radius+ombre du conteneur agenda, communes remontées, tuiles « Vous êtes… » inversées
+
+**Border-radius + ombre sur le conteneur de l'agenda** (demande : même traitement que la carte
+acteurs voisine, pas seulement ses cartes événement). Posé sur le `gridLayout` englobant via
+`leftWrapperClass: "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden"`
+— même patron de sélecteur que le `[&>*>section]:h-full` déjà en place pour `align:"stretch"` (2
+niveaux ciblés : le wrapper intermédiaire de `SectionRenderer`, puis la `<section>` elle-même, qui
+porte le fond `bg-background` visible). S'applique aux DEUX colonnes (agenda ET acteurs) puisque
+`leftWrapperClass` est réutilisé pour tous les éléments en mode « rangée » — cohérent visuellement,
+aucun des deux n'a de raison de ne pas l'avoir.
+
+**Découverte en vérifiant** (`getComputedStyle`, pas une supposition) : le rayon réel du site n'est
+PAS le défaut Tailwind. `theme.borderRadius.base` de CETTE config vaut `"1rem"` (→ `--radius: 1rem`,
+posé par `SiteTheme.tsx`), donc la classe Tailwind `rounded` (sans suffixe) résout bien à 16px sur
+parent62 — mais ma règle CSS précédente pour les cartes événement (§9sexagies) avait posé un
+`border-radius: 0.25rem` EN DUR, qui ne suivait pas ce jeton et divergeait donc du reste (16px
+partout ailleurs). **Corrigée** : `border-radius: var(--radius)` dans `src/index-parent62.css`, qui
+suit le thème si la valeur change un jour — vérifié à nouveau 16px partout (conteneur, carte, cartes
+événement) après correctif.
+
+**Communes du territoire remontées** : la section `accordion` (« Les communes du territoire »)
+passe de fin de page à 2ᵉ section, juste sous le bandeau hero `html`, sur les 9 pages. Déplacement
+de bloc en texte brut (pas de `json.dump`), vérifié sur les 9 — nouvel ordre :
+`html, accordion, gridLayout, gridLayout, searchProStatic, searchHeader, articleFeed,
+searchProStatic, cta`.
+
+**Couleurs « Vous êtes… » inversées** (accueil, `home-double-entree`, PAS les pages territoire —
+vérifié qu'aucune couleur par public n'existe sur les 9 configs territoire avant de demander
+confirmation à l'utilisateur) : tuile « Parent » passe de `var(--p62-turquoise)` à
+`rgb(241, 136, 123)` (même couleur que l'actuel bouton « En savoir plus » de Zoom sur le réseau,
+§9octoquadragies.3 — contraste blanc déjà signalé there, inchangé, juste déplacé de tuile) ; tuile
+« Professionnel·le ou bénévole » prend l'ancienne couleur de Parent (`var(--p62-turquoise)`).
+
+Fixtures de skill mises à jour (`page-recipes.json`, PAS un gate automatisé) : recettes
+`page-annuaire-grille` et `page-territoire` reflètent le nouvel ordre `html, accordion, …`.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus ; `page-recipes.test.ts` repassé au vert après mise à jour des recettes |
+| `npm run typecheck` | 134 erreurs PRÉEXISTANTES sur la branche (`src/modules/auth/` + désormais `src/modules/comment/`), confirmées sans rapport avec ce lot par `git stash` (mêmes erreurs arbre vide) — phénomène déjà documenté §9quinquagies, qui s'étend (7→134, fichiers non modifiés) |
+| Vérification navigateur (Playwright scripté, nettoyé après coup) | ✅ radius/ombre cohérents (16px), communes bien repositionnées, tuiles inversées |
+
+**22/10/2026, couleurs communes ⇄ actions échangées.** Demande : la section « Les communes du
+territoire » prend la couleur du bandeau hero (1ʳᵉ section) ; « Les actions sur le territoire »
+prend l'ancienne couleur des communes (`page-accent`).
+
+`bg:"page-accent"` (accordéon) ne pose qu'un ALPLAT LÉGER (`--page-accent-soft`, mélangé à 16 % au
+fond du thème) — pas la couleur PLEINE du bandeau hero (fond solide `var(--territoire-<slug>)`, posé
+en HTML brut). Comme `AccordionSectionSchema` n'offre qu'un `bg` en jetons sémantiques (pas de
+couleur arbitraire), traité en CSS scopé plutôt qu'en nouvelle prop moteur : chaque accordéon
+communes reçoit un `id` (`/territoire/<slug>-communes`), et une seule règle CSS
+(`section[id^="/territoire/"][id$="-communes"] { background: var(--page-accent); }`) suffit pour
+les 9 — `--page-accent` est déjà posé sur le `<main>` par `pageAccentVars` (`page.accent`, lui-même
+réglé à `var(--territoire-<slug>)` sur ces 9 pages) : un seul sélecteur, pas 9 couleurs en dur. Le
+titre de l'accordéon vit sur `bg-card` (carte blanche) à l'intérieur, jamais directement sur ce
+fond : aucun ajustement de contraste nécessaire. « Les actions sur le territoire »
+(`searchProStatic`, dernière section avant le `cta`) récupère simplement `bg:"page-accent"`
+(prop déjà existante, aucun changement moteur).
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` / `audit:config` | ✅ 52 pages · 183 sections / RAS |
+| `npm run lint` | ✅ 0 erreur |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+| Vérification navigateur (Playwright scripté, nettoyé après coup) | ✅ bandeau hero et section communes visuellement fondus (même violet), « Les actions sur le territoire » reprend l'ancien alplat des communes |
+
+**22/10/2026, padding-top réduit.** Même couleur ne suffisait pas à lire les deux sections comme
+une seule bande : le `py-16` (4rem) du composant accordéon en haut, cumulé au `py-14` (≈3,5rem) du
+bandeau hero juste au-dessus, laissait un vide qui les séparait visuellement malgré la couleur
+identique. `padding-top` réduit à `0.5rem` sur le même sélecteur scopé (`padding-bottom` INCHANGÉ —
+c'est lui qui sépare proprement cette section de la suivante, de couleur différente).
+
+| Gate | Résultat |
+|---|---|
+| `npm run lint` | ✅ 0 erreur |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+| Vérification navigateur | ✅ bandeau et communes lisibles comme une seule bande continue |
 
 ## 10. Checklist d'avancement
 

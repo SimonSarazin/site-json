@@ -1341,6 +1341,16 @@ export const SearchProStaticSectionSchema = z.object({
      */
     observatory: ObservatoryPanelConfSchema.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent", "page-accent"]).optional(),
+    /**
+     * Section EMBARQUÉE : carte ET liste prennent la hauteur `flex-1` du PARENT au lieu de leur
+     * hauteur naturelle (carte : écran visible sous la barre de nav via `MAP_VIEW_HEIGHT` ; liste :
+     * croissance libre avec le contenu). À réserver à un parent qui impose déjà une hauteur
+     * contrainte — ex. un `gridLayout` en `align:"stretch"`, pour aligner la section sur une
+     * voisine (une seconde rangée agenda/acteurs côte à côte, parent62). Sans un tel parent,
+     * `flex-1` sans base se résout à 0 et la section s'effondre. Défaut `false` (comportement
+     * historique) — AUCUN site existant n'est affecté sans l'activer explicitement.
+     */
+    fillParent: z.boolean().optional(),
   }),
 });
 

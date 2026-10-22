@@ -343,6 +343,46 @@ footer nav { font-family: var(--font-serif); }
   font-family: "Open Sans", sans-serif;
 }
 
+/* 9 pages `/territoire/*` : rangée agenda+acteurs (gridLayout 2 colonnes, §9sexagies de
+   doc-projets/parent62.md). Demande explicite d'aligner le rayon des cartes événement de l'agenda
+   sur celui de la carte des acteurs voisine. `--radius` est posé par `theme.borderRadius.base` de
+   CETTE config (`1rem` sur parent62, PAS le défaut Tailwind) — une valeur en dur (`0.25rem`, posée
+   ici en 1ʳᵉ intention) divergeait donc du jeton réel du thème une fois vérifiée en navigateur
+   (`getComputedStyle`, 21/10/2026) : corrigée en `var(--radius)`, qui suit le thème si la valeur
+   change un jour. `CardEvent.tsx` est partagé par TOUT le site — jamais touché ici, SCOPÉ par CSS
+   via l'id de la section agenda (`/territoire/<slug>-agenda`, rendu tel quel sur le <section> DOM
+   par `AgendaSection.tsx`) : sélecteur par attribut plutôt que 9 règles — aucune autre section de
+   la config ne porte un id qui commence par `/territoire/` ET finit par `-agenda`. DEUX variantes
+   de carte à couvrir (vérifié en lisant `CardEvent.tsx`, une image de territoire n'ayant pas de
+   visuel) :
+   - SANS image (`EventCardPlain`, le cas réel ici) : shadcn `<Card>` (`data-slot="card"`, qui pose
+     `rounded-xl` par défaut, jamais surchargé par ce composant) ;
+   - AVEC image : `<div class="... h-72 rounded-xl ...">` brut, sans `data-slot`. */
+section[id^="/territoire/"][id$="-agenda"] [data-slot="card"],
+section[id^="/territoire/"][id$="-agenda"] .h-72.rounded-xl {
+  border-radius: var(--radius);
+}
+
+/* 9 pages `/territoire/*` : section « Les communes du territoire » (accordéon, 2ᵉ section de la
+   page depuis le 21/10, cf. §9septuagies de doc-projets/parent62.md). Demande explicite : même
+   couleur que le bandeau hero (1ʳᵉ section, `html`, fond plein `var(--territoire-<slug>)`) —
+   `bg:"page-accent"` (conservé en config) ne pose qu'un ALPLAT LÉGER (`--page-accent-soft`,
+   `sectionBg.ts`), pas la couleur pleine du bandeau. `--page-accent` (posé sur le `<main>` par
+   `pageAccentVars`, depuis `page.accent` — déjà réglé à `var(--territoire-<slug>)` sur ces 9 pages)
+   porte la couleur PLEINE : un seul sélecteur suffit pour les 9 territoires, pas de couleur en dur.
+   Spécificité (2 attributs + balise) > la classe Tailwind `bg-[var(--page-accent-soft,…)]`, pas
+   besoin de `!important`. Le texte (titre de l'accordéon) vit sur `bg-card` à l'intérieur, jamais
+   directement sur ce fond — aucun ajustement de contraste à faire ici.
+   `padding-top` réduit (`py-16` du composant = 4rem en haut ET en bas) : même couleur que le
+   bandeau hero juste au-dessus (qui porte déjà son propre `py-14` ≈ 3,5rem en bas), les deux
+   `padding` cumulés créaient un vide qui les lisait comme deux bandes distinctes au lieu d'une
+   seule. Seul `padding-top` est réduit — `padding-bottom` reste à 4rem, c'est lui qui sépare
+   proprement cette section de la suivante (couleur différente). */
+section[id^="/territoire/"][id$="-communes"] {
+  background: var(--page-accent, transparent);
+  padding-top: 0.5rem;
+}
+
 /* Bulle territoire : cercle plein coloré (taille via --s), libellé centré. */
 .p62-bubble {
   display: inline-flex;

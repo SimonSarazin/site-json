@@ -19,7 +19,7 @@ import type { ArticleData } from "../hooks/useArticle";
 const DEFAULT_LIMIT = 6;
 const BASE = "/blog";
 /** Même découpe asymétrique que la vignette de `FeaturedCarouselSlide` (carrousel « à la une »). */
-const PHOTO_ROUNDING = "rounded-[0px_60px_0_60px]";
+const PHOTO_ROUNDING = "rounded-[0px]";
 
 function TeaserSkeleton() {
   return (
@@ -75,7 +75,7 @@ function TeaserCard({ article, href, ctaLabel, accentColor, accentTextColor }: T
       <span
         style={styleAccent}
         className={cn(
-          "absolute bottom-2 left-24 z-0 inline-flex w-max items-center gap-1 rounded-full py-1.5 pr-4 pl-8 text-xs font-semibold shadow-md transition-opacity group-hover:opacity-90",
+          "absolute bottom-2 left-24 z-0 inline-flex w-max items-center gap-1 rounded-full py-1.5 pr-4 pl-8 text-xs font-semibold shadow-md transition-opacity group-hover:opacity-90 ",
           !accentColor && "bg-primary text-primary-foreground",
         )}
       >
