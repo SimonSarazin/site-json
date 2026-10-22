@@ -2,7 +2,7 @@ import Cocolight, { type Api, type Organization, type User, type Project } from 
 import { useEffect, useState, ReactNode, useMemo, useCallback } from "react";
 
 import { InitApiOptions } from "../lib/apiClient";
-import { getSlug } from "../lib/constant/common";
+import { getBaseUrl, getSlug } from "../lib/constant/common";
 import { applySiteCostum } from "../lib/siteCostum";
 import { CocolightContext } from "./CocolightContext";
 import { useCocolightInit } from "@/hooks/useCocolightInit";
@@ -110,17 +110,36 @@ export function CocolightProvider({
     // ne lit que sa mémoire (`isConnected` = jeton en mémoire) : la page de login restait affichée
     // jusqu'à un rechargement. On recharge les jetons et on rejoue `userLoggedIn`, comme si le login
     // avait eu lieu ici. `storage` ne se déclenche que dans les AUTRES onglets, jamais dans l'émetteur.
+    //
+    // Deux subtilités : (1) la clé est celle de CE backend (`cocolight_tokens_<baseURL>`), pas n'importe
+    // quelle clé `cocolight_tokens_*` (deux fronts sur la même origine ne doivent pas se mélanger) ;
+    // (2) la lib écrit access puis refresh en DEUX écritures, donc deux événements — le second arrive
+    // alors qu'on est déjà connecté. On mémorise qu'un refresh est attendu et on l'adopte s'il diffère
+    // de celui déjà pris ; sans cette attente, l'onglet d'origine vivrait 10 min sans refresh. L'onglet
+    // émetteur, lui, est déjà connecté au premier événement et n'attend rien : aucun ping-pong d'écritures.
+    const tokensKey = `cocolight_tokens_${clientOptions.baseURL ?? getBaseUrl()}`;
+    let refreshAttendu: string | null = null;
     const handleStorage = (e: StorageEvent) => {
-      if (!e.key?.startsWith("cocolight_tokens_") || !e.newValue || eventfulClient.isConnected) return;
+      if (e.key !== tokensKey || !e.newValue) return;
+      let data: { accessToken?: string; refreshToken?: string };
       try {
-        const { accessToken, refreshToken } = JSON.parse(e.newValue) as { accessToken?: string; refreshToken?: string };
-        if (!accessToken) return;
-        eventfulClient.setToken(accessToken);
-        if (refreshToken) eventfulClient.setRefreshToken(refreshToken);
-        eventfulClient.emit("userLoggedIn");
+        data = JSON.parse(e.newValue);
       } catch {
-        // valeur illisible : on ignore, le prochain rechargement relira le stockage
+        return; // valeur illisible : le prochain rechargement relira le stockage
       }
+      const { accessToken, refreshToken } = data;
+      if (!accessToken) return;
+      if (eventfulClient.isConnected) {
+        if (refreshAttendu !== null && refreshToken && refreshToken !== refreshAttendu) {
+          refreshAttendu = null;
+          eventfulClient.setRefreshToken(refreshToken);
+        }
+        return;
+      }
+      eventfulClient.setToken(accessToken);
+      if (refreshToken) eventfulClient.setRefreshToken(refreshToken);
+      refreshAttendu = refreshToken ?? "";
+      eventfulClient.emit("userLoggedIn");
     };
 
     eventfulClient.on("userLoggedIn", handleUserLoggedIn);
@@ -132,7 +151,7 @@ export function CocolightProvider({
       eventfulClient.off("sessionReset", handleSessionReset);
       window.removeEventListener("storage", handleStorage);
     };
-  }, [userApiInstance]);
+  }, [userApiInstance, clientOptions.baseURL]);
 
   // ------------- identité costum du site portée par le client -------------
   // Le client la reçoit déjà à sa construction (apiClient.ts), mais `contextId`/`contextType`

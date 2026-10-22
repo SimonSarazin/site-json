@@ -95,5 +95,6 @@
   "Le champ « {{field}} » est requis": "Le champ « {{field}} » est requis",
   "Sélectionnez une option": "Sélectionnez une option",
   "Connexion en cours…": "Connexion en cours…",
+  "Connexion annulée.": "Connexion annulée.",
   "Lien de connexion invalide ou expiré.": "Lien de connexion invalide ou expiré."
 }

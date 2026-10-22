@@ -42,19 +42,24 @@ export default function SsoCallbackPage() {
     const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const code = params.get("code");
     const erreur = params.get("error");
-    // Le fragment ne doit pas survivre dans l'historique ni dans un éventuel partage d'URL.
-    window.history.replaceState(null, "", window.location.pathname);
+    // Le fragment ne doit pas survivre dans l'historique ni dans un éventuel partage d'URL
+    // (on conserve l'état d'historique de react-router, pas `null`).
+    window.history.replaceState(window.history.state, "", window.location.pathname);
 
     const terminer = async () => {
       try {
-        if (!code) throw new Error(erreur || t("Lien de connexion invalide ou expiré."));
+        if (!code) {
+          // `#error=` vient de l'URL : jamais affiché tel quel (un lien forgé afficherait n'importe quel
+          // texte sous l'en-tête du site) — on ne distingue que l'annulation par l'utilisateur.
+          throw new Error(erreur === "access_denied" ? t("Connexion annulée.") : t("Lien de connexion invalide ou expiré."));
+        }
         await userApi.loginWithSsoCode(code);
         navigate("/", { replace: true });
       } catch (e) {
-        // ApiResponseError porte la réponse `{error}` du serveur (code invalide / expiré / déjà utilisé).
-        const err = e as { responseData?: { error?: string }; message?: string };
+        // ApiResponseError (lib) porte le message serveur lisible : code invalide / expiré / déjà utilisé.
+        const err = e as { name?: string; message?: string };
         setEtat("ko");
-        setMessage(err.responseData?.error || err.message || t("Lien de connexion invalide ou expiré."));
+        setMessage(err.name === "ApiResponseError" || (!code && err.message) ? String(err.message) : t("Lien de connexion invalide ou expiré."));
       }
     };
     void terminer();

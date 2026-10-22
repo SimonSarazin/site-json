@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { type ApiClient } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import { getBaseUrl, getSlug } from "@/lib/constant/common";
+import { getBaseUrl } from "@/lib/constant/common";
+import { getSiteCostumContext } from "@/lib/siteCostum";
 
 export interface SSOAuthResult {
   success: boolean;
@@ -23,12 +24,19 @@ export interface SSOAuthResult {
  *
  * Quand le retour du provider n'arrive PAS dans la popup (lien de vérification d'e-mail ouvert dans
  * un nouvel onglet), le backend renvoie ce nouvel onglet sur `/sso/callback` (SsoCallbackPage) ;
- * cet onglet-ci l'apprend par l'événement `storage` (CocolightProvider), la popup se ferme ensuite
- * d'elle-même et la promesse ci-dessous se résout en annulation silencieuse.
+ * cet onglet-ci l'apprend par l'événement `storage` (CocolightProvider). La popup, elle, reste sur la
+ * page du provider : l'utilisateur la ferme lui-même, et la promesse ci-dessous se résout alors en
+ * annulation silencieuse (ou n'est plus écoutée si le composant a quitté la page de login).
  */
 export function useSSOAuth() {
   const { apiClient, contextId, contextType } = useCocolight();
   const cleanupRef = useRef<(() => void) | null>(null);
+  // Lus via une ref pour que `openSSOPopup` garde la MÊME identité quand l'entité porteuse se résout :
+  // LoginForm l'a en dépendance de son effet d'auto-déclenchement, qui annulerait sinon un flux en cours.
+  const costumCtxRef = useRef({ contextId, contextType });
+  useEffect(() => {
+    costumCtxRef.current = { contextId, contextType };
+  }, [contextId, contextType]);
 
   // Nettoyage des listeners si le composant est démonté avant la fin du flux
   useEffect(() => {
@@ -43,12 +51,13 @@ export function useSSOAuth() {
         const origin      = window.location.origin;
         const backendUrl  = getBaseUrl();
         const params      = new URLSearchParams({ authclient: service, origin });
-        const slug        = getSlug();
-        if (slug) {
-          params.set("costumSlug", slug);
-          if (contextId && contextType) {
-            params.set("costumId", contextId);
-            params.set("costumType", contextType);
+        // Même trio que `register` (getSiteCostumContext neutralise la sentinelle "default" d'un site sans slug).
+        const costumCtx   = getSiteCostumContext(costumCtxRef.current);
+        if (costumCtx) {
+          params.set("costumSlug", costumCtx.costumSlug);
+          if (costumCtx.costumId && costumCtx.costumType) {
+            params.set("costumId", costumCtx.costumId);
+            params.set("costumType", costumCtx.costumType);
           }
         }
         const ssoUrl      = `${backendUrl}/co2/sso/services?${params.toString()}`;
@@ -129,7 +138,7 @@ export function useSSOAuth() {
         window.addEventListener("message", handleMessage);
       });
     },
-    [apiClient, contextId, contextType],
+    [apiClient],
   );
 
   return { openSSOPopup };

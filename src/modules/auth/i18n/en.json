@@ -95,5 +95,6 @@
   "Le champ « {{field}} » est requis": "The field “{{field}}” is required",
   "Sélectionnez une option": "Select an option",
   "Connexion en cours…": "Signing in…",
+  "Connexion annulée.": "Sign-in cancelled.",
   "Lien de connexion invalide ou expiré.": "Invalid or expired sign-in link."
 }
