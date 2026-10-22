@@ -1734,6 +1734,43 @@ moments :
 
 ## Actions et boutons : comportement non connecté
 
+### Ouvrir une action depuis un lien — `?participer`, `?ajouter=<type>`
+
+Un site tiers (l'extension WordPress de tiers-lieux.org, qui affiche les événements d'un lieu) peut
+envoyer le visiteur **directement** sur une action de la fiche, sans lui faire chercher dans les menus :
+
+| URL | Effet | Condition |
+|---|---|---|
+| `/profil/<événement>?participer` | ouvre la confirmation « Participer à cet événement » | l'action `participate` est disponible (connecté, pas encore participant) |
+| `/profil/<lieu>?ajouter=event` | ouvre la modale de création d'un événement | `event` figure dans le menu « Créer » (`canAddEvent`, `addConfig`) — `organization`, `project`, `poi` marchent de même |
+
+Règles, posées par `hooks/useUrlIntent.ts` (`useUrlIntent`, `useProfilePageIntent`) :
+
+- **Mêmes gardes qu'un clic.** Le lien ne crée aucun droit : sans action disponible (déconnecté, déjà
+  participant, type non autorisé), rien ne s'ouvre et la fiche s'affiche normalement — le paramètre
+  reste alors dans l'URL, et l'action s'ouvrira si les droits arrivent (connexion via le header).
+- **Une seule ouverture.** Le paramètre est retiré de l'URL (`replace`) à la **fermeture** de ce qui
+  a été ouvert, confirmée ou non. Rien ne part sans confirmation : le lien n'inscrit personne tout seul.
+- **L'entité de la page, et elle seule.** `useProfilePageIntent` ne rend l'intention que si l'entité
+  est celle de `ProfileEntityContext` : l'aperçu d'un autre événement (agenda, recherche, y compris
+  dans un onglet de la fiche) ne la voit pas.
+- **Par identité, pas par type.** `?participer` vise l'action `participate`, pas le type `join`, que
+  portent aussi « devenir membre » d'une organisation ou « devenir administrateur ».
+- **Dérivé, pas posé par un effet.** L'état « ouvert » vaut `clicUtilisateur ?? intentionUrl` au rendu ;
+  `react-hooks/set-state-in-effect` est en erreur dans ce dépôt.
+- **Création depuis le lien : fermer, puis rediriger.** Avec `?ajouter`, `AddEntityDropdown` passe
+  `onCreated` à la modale (qui ne redirige alors pas elle-même) : la fermeture retire le paramètre de
+  l'URL du lieu, puis on navigue vers la fiche créée — qui n'hérite ainsi d'aucun paramètre du lien.
+- **Une instance par page.** Les composants qui lisent l'intention sont partagés ; une config qui
+  monterait deux fois le même (en-tête avec actions **et** section `profile-actions`) ouvrirait deux
+  dialogues sur la même intention. Aucune config ne le fait aujourd'hui ; ne pas l'introduire.
+
+Câblage : `EntityActionButtons` choisit l'action et la passe à `StatusDropdownLayout` (`urlAction`,
+`onUrlActionDone`) ; `AddEntityDropdown` lit `?ajouter` lui-même. Tests : `hooks/useUrlIntent.test.tsx`,
+`action-buttons/StatusDropdownLayout.urlAction.test.tsx`, `EntityActionButtons.urlIntent.test.tsx`,
+`action-buttons/AddEntityDropdown.urlIntent.test.tsx`.
+
+
 ### `ProfileActions` (`components/actions/ProfileActions.tsx`)
 
 Depuis le commit `c8ad1e6`, la barre d'actions du profil affiche un `<LoginButton size="sm" />` (module auth) pour les visiteurs non connectés qui ne sont pas sur leur propre profil :

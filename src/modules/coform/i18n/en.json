@@ -84,6 +84,12 @@
       "submittedAt": "Submitted on {{date}}",
       "updatedAt": "Updated on {{date}}",
       "author": "Author",
+      "empty": {
+        "title": "This answer is still empty",
+        "description": "No questions have been answered yet.",
+        "descriptionCanFill": "No questions have been answered yet. You can fill it in now.",
+        "fill": "Fill in"
+      },
       "editDenied": {
         "not_logged_in": "You must be logged in to edit this answer.",
         "not_owner": "You can only edit your own answers.",
@@ -592,7 +598,15 @@
       }
     },
     "field": {
-      "required": "required"
+      "required": "required",
+      "discussion": {
+        "question": "Comment on this question",
+        "questionNamed": "Comment on the question “{{label}}”",
+        "messages_one": "{{count}} message",
+        "messages_other": "{{count}} messages",
+        "unread_one": "{{count}} unread",
+        "unread_other": "{{count}} unread"
+      }
     }
   }
 }

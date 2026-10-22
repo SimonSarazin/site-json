@@ -9,6 +9,8 @@ import { useT } from "@/hooks/useT";
 import { cn } from "@/lib/utils";
 import { usageLabelFromId } from "../../lib/aacUsage";
 import { CommunActionBar } from "../../components/pageDetail/CommunActionBar.tsx";
+import { CommunDiscussionControl } from "../../components/pageDetail/CommunDiscussionControl.tsx";
+import { CommunMilestoneDiscussionButton } from "../../components/pageDetail/CommunMilestoneDiscussionButton.tsx";
 import { CommunFinancingCard } from "../../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunReactionStats } from "../../components/pageDetail/CommunReactionStats.tsx";
 import { CommunFinancingSection } from "../../components/pageDetail/CommunFinancingSection.tsx";
@@ -80,7 +82,10 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
         <header className="rounded-2xl border border-border bg-accent/30">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
             <div className="mt-4" role="group" aria-label={String(t("editorial.detail.commands"))}>
-              <CommunActionBar {...vm.actions} />
+              <CommunActionBar
+                {...vm.actions}
+                discussion={<CommunDiscussionControl key={vm.discussion.answerId} {...vm.discussion} />}
+              />
             </div>
 
             {vm.hero.depositedOnName ? (
@@ -230,7 +235,13 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
               <TabsContent value="argent" className="mt-6 grid gap-8 lg:grid-cols-2">
                 <EditorialSection id="besoins-financiers" title={String(t("editorial.detail.expenses"))} className="min-w-0">
                   <div className="mt-4">
-                    <CommunFinancingSection {...funding.section} layout="list" />
+                    <CommunFinancingSection
+                      {...funding.section}
+                      layout="list"
+                      renderMilestoneDiscussion={({ lineKey, name }) => (
+                        <CommunMilestoneDiscussionButton answerId={vm.discussion.answerId} lineKey={lineKey} name={name} compact />
+                      )}
+                    />
                   </div>
                 </EditorialSection>
                 <EditorialSection id="cofinanceurs" title={String(t("detail.toc.cofinancers"))} className="min-w-0">

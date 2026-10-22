@@ -22,7 +22,9 @@ export function CommunProse({ paragraphs, forceMarkdown = false }: CommunProsePr
     }
 
     return (
-        <div className="space-y-4 text-muted-foreground leading-relaxed max-w-[68ch]">
+        // `overflow-wrap: anywhere` : une adresse web collée dans une réponse se coupe au lieu de
+        // déborder de la fiche sur écran étroit.
+        <div className="space-y-4 text-muted-foreground leading-relaxed max-w-[68ch] [overflow-wrap:anywhere]">
             {/* Les paragraphes d'une fiche sont des RÉPONSES au formulaire de
                 dépôt, écrites par un visiteur quelconque : `source` reste au
                 défaut de `ProseContent`, donc au profil restreint (cf.

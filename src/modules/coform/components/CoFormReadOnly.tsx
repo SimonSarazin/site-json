@@ -1,5 +1,5 @@
 import { tallyVotes } from "../utils/pourContre";
-import { useMemo } from "react";
+import { useContext, useMemo, type ReactElement } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,9 @@ import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
 import { dayI18nKey, normalizeSlot, toTimeString } from "../utils/timeSlots";
 import { parseStoredToEntries } from "../utils/coformLocality";
 import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue, CategorizedCheckboxValue, TimeSlotValue, DynamicFieldsRow, TagsValue } from "../types";
+import { FormStepKeyContext } from "../contexts/FormStepKeyContext";
+import { QuestionDiscussionContext } from "../contexts/QuestionDiscussionContext";
+import { QuestionDiscussionButton } from "./QuestionDiscussionButton";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
@@ -38,6 +41,15 @@ interface CoFormReadOnlyProps {
   hideStepHeaders?: boolean;
   /** Masquer les métadonnées (auteur, date) */
   hideMetadata?: boolean;
+  /**
+   * Si fourni, remplace les étapes ; le bandeau du formulaire et l'auteur restent. Le composant ne
+   * juge pas la vacuité : la page qui sait la réponse vide le fournit (`CoFormAnswerPage`), pour ne
+   * pas montrer une liste de questions toutes suivies d'un tiret.
+   *
+   * `ReactElement` et non `ReactNode` : `emptyState={vide && <Encart />}` passerait `false`, que `??`
+   * garde — et les questions d'une réponse REMPLIE disparaîtraient sans un mot.
+   */
+  emptyState?: ReactElement;
 }
 
 /**
@@ -55,6 +67,7 @@ export function CoFormReadOnly({
   hideBanner = false,
   hideStepHeaders = false,
   hideMetadata = false,
+  emptyState,
 }: CoFormReadOnlyProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -151,30 +164,32 @@ export function CoFormReadOnly({
       {/* Sections (une card par étape). `<dl>` parent obligatoire HTML5 pour
           que les `<dt>/<dd>` rendus par ReadOnlyField soient valides et lus
           correctement par les lecteurs d'écran. */}
-      {subFormsFields.map((step) =>
-        hideStepHeaders ? (
-          <dl key={step.subFormId} className="grid grid-cols-12 gap-x-6 gap-y-4">
-            {step.fields.map((field) => (
-              <ReadOnlyField
-                key={field.name}
-                field={field}
-                value={(normalizedAnswers[step.subFormId] ?? {})[field.name]}
-                formId={formData.id}
-                answerId={answerId}
-                subFormId={step.subFormId}
-              />
-            ))}
-          </dl>
-        ) : (
-          <ReadOnlySection
-            key={step.subFormId}
-            step={step}
-            data={normalizedAnswers[step.subFormId] ?? {}}
-            formId={formData.id}
-            answerId={answerId}
-          />
-        )
-      )}
+      {/* La clé de chaque étape, pour le bouton de discussion de ses questions (`ReadOnlyLabel`). */}
+      {emptyState ?? subFormsFields.map((step) => (
+        <FormStepKeyContext.Provider key={step.subFormId} value={step.subFormId}>
+          {hideStepHeaders ? (
+            <dl className="grid grid-cols-12 gap-x-6 gap-y-4">
+              {step.fields.map((field) => (
+                <ReadOnlyField
+                  key={field.name}
+                  field={field}
+                  value={(normalizedAnswers[step.subFormId] ?? {})[field.name]}
+                  formId={formData.id}
+                  answerId={answerId}
+                  subFormId={step.subFormId}
+                />
+              ))}
+            </dl>
+          ) : (
+            <ReadOnlySection
+              step={step}
+              data={normalizedAnswers[step.subFormId] ?? {}}
+              formId={formData.id}
+              answerId={answerId}
+            />
+          )}
+        </FormStepKeyContext.Provider>
+      ))}
     </div>
   );
 }
@@ -216,6 +231,25 @@ function ReadOnlySection({
   );
 }
 
+// ─── Libellé lecture seule ────────────────────────────────────────
+
+/**
+ * Le libellé d'une question en lecture. Ouverte aux commentaires, sur une page qui ouvre les
+ * discussions de la réponse (`FormQuestionDiscussions`), elle reçoit à côté le bouton de sa
+ * discussion — le legacy le montre aussi en lecture. Sinon, le libellé seul, comme avant.
+ */
+function ReadOnlyLabel({ field }: { field: FormFieldMapping }) {
+  const discussion = useContext(QuestionDiscussionContext);
+  const classes = "text-xs font-medium text-muted-foreground uppercase tracking-wide";
+  if (!field.activeComments || discussion === null) return <dt className={classes}>{field.label}</dt>;
+  return (
+    <dt className={cn(classes, "flex items-start justify-between gap-2")}>
+      <span>{field.label}</span>
+      <QuestionDiscussionButton answerId={discussion} field={field} className="-my-1.5 normal-case tracking-normal" />
+    </dt>
+  );
+}
+
 // ─── Champ lecture seule ──────────────────────────────────────────
 
 function ReadOnlyField({
@@ -248,9 +282,7 @@ function ReadOnlyField({
     const subKey = subFormId ? `${subFormId}.${field.name}` : field.name;
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           {isEmpty ? (
             <span className="text-muted-foreground/50 italic">—</span>
@@ -271,9 +303,7 @@ function ReadOnlyField({
   if (field.componentType === "simpleTable") {
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           <SimpleTableField field={field} errors={{}} value={value as SimpleTableValue} readOnly hideLabel />
         </dd>
@@ -284,9 +314,7 @@ function ReadOnlyField({
   if (field.componentType === "evaluation") {
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           <EvaluationField field={field} errors={{}} value={value as EvaluationValue} readOnly hideLabel />
         </dd>
@@ -297,9 +325,7 @@ function ReadOnlyField({
   if (field.componentType === "finder") {
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           <FinderField field={field} errors={{}} value={value as FinderValue} readOnly hideLabel />
         </dd>
@@ -312,9 +338,7 @@ function ReadOnlyField({
   if (field.componentType === "commonTable") {
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           {/* `formId` : parité avec le mode édition (DynamicCoForm) — sans lui, les
               badges de contributeurs s'affichent mais ne sont pas cliquables. */}
@@ -338,9 +362,7 @@ function ReadOnlyField({
   if (field.componentType === "tags") {
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           <TagsField field={field} errors={{}} value={value as TagsValue} readOnly hideLabel />
         </dd>
@@ -354,15 +376,14 @@ function ReadOnlyField({
   if (field.componentType === "milestoneList") {
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           <MilestoneListField
             field={field}
             errors={{}}
             value={value as unknown as DepenseEntry[]}
             readOnly
+            hideLabel
           />
         </dd>
       </div>
@@ -384,9 +405,7 @@ function ReadOnlyField({
         : 0;
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd className="text-sm text-muted-foreground">
           {evaluateurs > 0
             ? t("coform.selection.evaluatorCount", "{{count}} évaluateur(s)", {
@@ -405,9 +424,7 @@ function ReadOnlyField({
     const t2 = tallyVotes(value as Record<string, unknown> | null);
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd className="text-sm text-muted-foreground">
           {t2.total > 0
             ? `${t("coform.pourContre.for", "Pour")} ${t2.pour} · ${t("coform.pourContre.neutral", "Neutre")} ${t2.neutre} · ${t("coform.pourContre.against", "Contre")} ${t2.contre}`
@@ -427,9 +444,7 @@ function ReadOnlyField({
         : 0;
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd className="text-sm text-muted-foreground">
           {evaluateurs > 0
             ? t("coform.selection.evaluatorCount", "{{count}} évaluateur(s)", { count: evaluateurs })
@@ -451,9 +466,7 @@ function ReadOnlyField({
         : [];
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd className="text-sm text-muted-foreground">
           {retenus.length > 0 ? retenus.join(", ") : "—"}
         </dd>
@@ -474,9 +487,7 @@ function ReadOnlyField({
   if (field.componentType === "categorizedCheckbox") {
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           <CategorizedCheckboxField
             field={field}
@@ -494,9 +505,7 @@ function ReadOnlyField({
     const entries = parseStoredToEntries(value);
     return (
       <div className={cn(widthClass, "space-y-1.5")}>
-        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {field.label}
-        </dt>
+        <ReadOnlyLabel field={field} />
         <dd>
           {entries.length === 0 ? (
             <span className="text-muted-foreground">—</span>
@@ -543,9 +552,7 @@ function ReadOnlyField({
 
   return (
     <div className={cn(widthClass, "space-y-1.5")}>
-      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        {field.label}
-      </dt>
+      <ReadOnlyLabel field={field} />
       <dd className="text-sm text-foreground leading-relaxed">
         {(isEmpty || isMultiRadioEmpty) ? (
           <span className="text-muted-foreground/50 italic">—</span>
@@ -638,9 +645,7 @@ function ReadOnlyTimeSlots({ field, value, widthClass }: { field: FormFieldMappi
   const slots = (Array.isArray(value) ? (value as TimeSlotValue[]) : []).map(normalizeSlot);
   return (
     <div className={cn(widthClass, "space-y-1.5")}>
-      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        {field.label}
-      </dt>
+      <ReadOnlyLabel field={field} />
       <dd className="text-sm text-foreground">
         {slots.length === 0 ? (
           <span className="text-muted-foreground/50 italic">—</span>
@@ -683,9 +688,7 @@ function ReadOnlyDynamicFields({ field, value, widthClass }: { field: FormFieldM
   const labelOf = (key: string): string => subFields.find((s) => s.key === key)?.label ?? key;
   return (
     <div className={cn(widthClass, "space-y-1.5")}>
-      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        {field.label}
-      </dt>
+      <ReadOnlyLabel field={field} />
       <dd className="text-sm text-foreground">
         {rows.length === 0 ? (
           <span className="text-muted-foreground/50 italic">—</span>

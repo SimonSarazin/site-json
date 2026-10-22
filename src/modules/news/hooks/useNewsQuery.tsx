@@ -7,6 +7,7 @@ import type { EntityTypes, News } from "@communecter/cocolight-api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 import { NEWS_QUERY_KEYS } from "../constants/queryKeys";
+import { COMMENT_COUNTS_META } from "@/modules/comment/constants/queryKeys";
 
 const { isReactive } = cocolightApiClient;
 
@@ -91,6 +92,9 @@ export function useNewsQuery({
     options: {
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 10,   // 10 minutes
+      // Chaque actualité porte son « Commenter (N) » : un message écrit hors de son fil (panneau
+      // des discussions, envoi « peut-être écrit ») périme ce fil d'actualités (module comment).
+      meta: { [COMMENT_COUNTS_META]: true },
       enabled: enabled && canFetchNews && !!entity,
       initialPageParam: undefined,
     }

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { AacResolvedConfig } from "../types";
 import type { AacDetailSection } from "../lib/resolveAacDetailSections";
 
@@ -33,8 +33,10 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 // La suppression d'un commun fait QUITTER la fiche : la navigation est capturée
 // pour pouvoir vérifier où elle mène, sans embarquer un routeur.
 const navigate = vi.fn();
+// Le commun de la route : fixe, sauf pour le test qui passe d'une fiche à une autre.
+let routeAnswerId = "a1";
 vi.mock("react-router", () => ({
-  useParams: () => ({ answerId: "a1" }),
+  useParams: () => ({ answerId: routeAnswerId }),
   useNavigate: () => navigate,
   Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
 }));
@@ -71,14 +73,25 @@ let ANSWER: TestAnswer = { ...BASE_ANSWER };
 const FORM = { id: "f1", name: "Appel test", inputs: {} };
 const refetchAnswer = vi.fn().mockResolvedValue(undefined);
 const invalidateQueries = vi.fn().mockResolvedValue(undefined);
+/**
+ * L'état des deux lectures de la fiche. Une requête en ERREUR peut encore porter des données :
+ * c'est ce que React Query rend quand une RELECTURE échoue après un premier chargement réussi.
+ */
+type Lecture = { error: Error | null; sansDonnees: boolean };
+let lectureReponse: Lecture = { error: null, sansDonnees: false };
+let lectureAppel: Lecture = { error: null, sansDonnees: false };
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: ({ queryKey }: { queryKey: unknown[] }) => ({
-    data: queryKey[0] === "aac-commun-detail" ? ANSWER : FORM,
-    isLoading: false,
-    isSuccess: true,
-    error: null,
-    refetch: queryKey[0] === "aac-commun-detail" ? refetchAnswer : vi.fn(),
-  }),
+  useQuery: ({ queryKey }: { queryKey: unknown[] }) => {
+    const reponse = queryKey[0] === "aac-commun-detail";
+    const lecture = reponse ? lectureReponse : lectureAppel;
+    return {
+      data: lecture.sansDonnees ? undefined : reponse ? ANSWER : FORM,
+      isLoading: false,
+      isSuccess: lecture.error === null,
+      error: lecture.error,
+      refetch: reponse ? refetchAnswer : vi.fn(),
+    };
+  },
   useQueryClient: () => ({ invalidateQueries }),
 }));
 
@@ -187,13 +200,15 @@ vi.mock("@/modules/coform/components/CoFormModal", () => ({
 // Les blocs eux-mêmes ont leurs propres dépendances (cagnotte, React Query) hors
 // du périmètre de CE test : on ne vérifie que leur PRÉSENCE dans l'arbre.
 // La barre d'actions a ses propres tests (état, aplat, menu, écritures) : la page n'est observée
-// que sur ce qu'elle lui passe. Elle apporterait sinon ses mutations, hors périmètre.
+// que sur ce qu'elle lui passe. Elle apporterait sinon ses mutations, hors périmètre. Elle rend
+// l'emplacement `discussion` tel quel, comme la vraie : le bouton de discussion y est observé.
 vi.mock("../components/pageDetail/CommunActionBar.tsx", () => ({
   CommunActionBar: (props: {
     canEdit: boolean;
     canManageEditors: boolean;
     selection: { contextId: string | null };
     project: { isLoading: boolean };
+    discussion?: ReactNode;
   }) => (
     <div
       data-testid="action-bar"
@@ -201,8 +216,32 @@ vi.mock("../components/pageDetail/CommunActionBar.tsx", () => ({
       data-can-manage-editors={String(props.canManageEditors)}
       data-context-id={String(props.selection.contextId)}
       data-project-loading={String(props.project.isLoading)}
-    />
+    >
+      {props.discussion}
+    </div>
   ),
+}));
+// L'espace de discussion a ses propres tests (bouton, compteurs, modale différée) : il lit
+// l'adresse et le serveur, hors périmètre ici. La page n'est observée que sur ce qu'elle lui PASSE.
+let discussionControlMounts = 0;
+vi.mock("../components/pageDetail/CommunDiscussionControl", () => ({
+  CommunDiscussionControl: (props: {
+    answerId: string;
+    communTitle?: string | null;
+    scopeEntity?: { id?: string } | null;
+  }) => {
+    // Un numéro par MONTAGE : ce qui distingue un bouton remonté d'un bouton réemployé.
+    const [mount] = useState(() => ++discussionControlMounts);
+    return (
+      <div
+        data-testid="discussion-control"
+        data-mount={mount}
+        data-answer-id={props.answerId}
+        data-title={props.communTitle ?? "null"}
+        data-scope={props.scopeEntity?.id ?? ""}
+      />
+    );
+  },
 }));
 vi.mock("../components/pageDetail/CommunHero.tsx", () => ({ CommunHero: () => <div data-testid="hero" /> }));
 // La carte expose son crochet `onFunded` — ce que `CagnotteDialog` joue après
@@ -260,8 +299,33 @@ vi.mock("../components/pageDetail/CommunTocNav.tsx", () => ({
     </nav>
   ),
 }));
+// La section demande à la page le bouton de discussion de chaque palier : la doublure le demande
+// pour UN palier, ce qui suffit à voir ce que la page lui rend.
 vi.mock("../components/pageDetail/CommunFinancingSection.tsx", () => ({
-  CommunFinancingSection: () => <div data-testid="financing-section" />,
+  CommunFinancingSection: (props: { renderMilestoneDiscussion?: (palier: { lineKey: string; name: string }) => unknown }) => (
+    <div data-testid="financing-section">
+      {props.renderMilestoneDiscussion?.({ lineKey: "3", name: "Matériel" }) as never}
+    </div>
+  ),
+}));
+vi.mock("../components/pageDetail/CommunMilestoneDiscussionButton", () => ({
+  CommunMilestoneDiscussionButton: (props: { answerId: string; lineKey: string; name?: string | null }) => (
+    <div data-testid="milestone-discussion" data-answer-id={props.answerId} data-line={props.lineKey} data-name={props.name ?? "null"} />
+  ),
+}));
+// Ce qui pose le bouton de discussion sur les lignes de dépense du FORMULAIRE : on ne vérifie ici
+// que ce que la fiche lui donne, et qu'il enveloppe bien le formulaire d'édition.
+vi.mock("../components/pageDetail/CommunFormLineDiscussions", () => ({
+  CommunFormLineDiscussions: (props: { answerId: string; savedDepenses: unknown; enabled: boolean; children: unknown }) => (
+    <div
+      data-testid="form-line-discussions"
+      data-answer-id={props.answerId}
+      data-saved={JSON.stringify(props.savedDepenses ?? null)}
+      data-enabled={String(props.enabled)}
+    >
+      {props.children as never}
+    </div>
+  ),
 }));
 vi.mock("../components/pageDetail/CommunActionsSection.tsx", () => ({ CommunActionsSection: () => null }));
 vi.mock("../components/pageDetail/CommunMilestoneDialogs.tsx", () => ({ CommunMilestoneDialogs: () => null }));
@@ -272,9 +336,11 @@ vi.mock("../components/pageDetail/CommunCofinancersTable.tsx", () => ({
 vi.mock("../components/pageDetail/CommunProse.tsx", () => ({ CommunProse: () => null }));
 vi.mock("../components/pageDetail/CommunContentSections.tsx", () => ({ GallerySection: () => null }));
 
-// jsdom n'a pas d'IntersectionObserver ; la page en crée un pour le sommaire.
+// jsdom n'a pas d'IntersectionObserver ; la page en crée un pour le sommaire. On compte ce qu'il
+// observe : c'est ce qui dit que le sommaire suit la lecture.
+const sommaire = vi.hoisted(() => ({ observes: 0 }));
 class FakeIntersectionObserver {
-  observe() {}
+  observe() { sommaire.observes += 1; }
   unobserve() {}
   disconnect() {}
 }
@@ -287,6 +353,7 @@ const FUNDING_TOC = ["toc-besoins-financiers", "toc-cofinanceurs"] as const;
 
 beforeEach(() => {
   me = CONNECTED;
+  routeAnswerId = "a1";
   // `ANSWER` est un objet PARTAGÉ par les douze tests du fichier : la remise à
   // zéro appartient au `beforeEach`, pas au corps du test qui l'a rempli. Écrite
   // là-bas, elle ne s'exécutait pas si l'assertion précédente échouait — et la
@@ -299,6 +366,9 @@ beforeEach(() => {
   isFundingLoading = false;
   isDetailSectionsLoading = false;
   detailSections = [];
+  lectureReponse = { error: null, sansDonnees: false };
+  lectureAppel = { error: null, sansDonnees: false };
+  sommaire.observes = 0;
   refetchAnswer.mockClear();
   invalidateQueries.mockClear();
 });
@@ -410,6 +480,61 @@ describe("AacCommunDetailPage — la fiche attend la configuration de l'appel", 
     expect(screen.getByText("page.configErrorMessage")).toBeTruthy();
     expect(screen.queryByTestId("hero")).toBeNull();
     consoleError.mockRestore();
+  });
+});
+
+/**
+ * Une RELECTURE ratée ne remplace pas la fiche déjà affichée (relecture du 13/10). La carte
+ * d'erreur démontait tout ce que la fiche porte — dont l'espace de discussion ouvert, et le message
+ * qu'on y écrivait : il suffisait de revenir sur l'onglet au moment où le réseau flanchait.
+ */
+describe("AacCommunDetailPage — une lecture en erreur", () => {
+  it.each([
+    ["de la réponse", () => { lectureReponse = { error: new Error("réseau"), sansDonnees: false }; }],
+    ["de l'appel", () => { lectureAppel = { error: new Error("réseau"), sansDonnees: false }; }],
+  ])("relecture %s ratée, fiche déjà là : elle RESTE, avec son bouton de discussion — pas de carte d'erreur", (_cas, casser) => {
+    casser();
+    const avant = discussionControlMounts;
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("hero")).toBeTruthy();
+    expect(discussionControlMounts).toBeGreaterThan(avant);
+    expect(screen.queryByText("page.error")).toBeNull();
+    expect(screen.queryByText("page.errorMessage")).toBeNull();
+  });
+
+  /**
+   * La CONFIG de l'appel aussi (revue du 16/10) : `useAacConfig` rend `config` ET `error` quand une
+   * relecture échoue, et `if (configError)` remplaçait encore toute la fiche — modale de discussion
+   * démontée, message en cours perdu.
+   */
+  it("relecture de la config ratée, config déjà là : la fiche RESTE, bouton de discussion compris", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    configError = new Error("réseau");
+    const avant = discussionControlMounts;
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("hero")).toBeTruthy();
+    expect(discussionControlMounts).toBeGreaterThan(avant);
+    expect(screen.queryByText("page.configErrorMessage")).toBeNull();
+    consoleError.mockRestore();
+  });
+
+  it("une relecture ratée ne coupe pas le suivi du sommaire : la fiche est là, ses sections sont observées", () => {
+    detailSections = [CONTEXTE_SECTION];
+    lectureReponse = { error: new Error("réseau"), sansDonnees: false };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("hero")).toBeTruthy();
+    expect(sommaire.observes).toBeGreaterThan(0);
+  });
+
+  it.each([
+    ["de la réponse", () => { lectureReponse = { error: new Error("réseau"), sansDonnees: true }; }],
+    ["de l'appel", () => { lectureAppel = { error: new Error("réseau"), sansDonnees: true }; }],
+  ])("premier chargement %s raté, rien à montrer : la carte d'erreur", (_cas, casser) => {
+    casser();
+    render(<AacCommunDetailPage />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("page.error");
+    expect(screen.getByText("page.errorMessage")).toBeTruthy();
+    expect(screen.queryByTestId("hero")).toBeNull();
   });
 });
 
@@ -678,5 +803,109 @@ describe("AacCommunDetailPage — contributeurs à l'édition", () => {
     render(<AacCommunDetailPage />);
     expect(screen.queryByTestId("edit-modal")).not.toBeInTheDocument();
     expect(screen.getByTestId("action-bar")).toHaveAttribute("data-can-edit", "false");
+  });
+});
+
+/**
+ * L'espace de discussion du commun — parité du bouton « Commentaires » de `campDetail.php`.
+ *
+ * Le legacy l'ouvre sans contrôle de session : la fiche le pose donc pour TOUT LE MONDE, là où
+ * les boutons voisins (« Modifier », contributeurs, sélection) se gardent chacun par un droit.
+ */
+describe("AacCommunDetailPage — l'espace de discussion du commun", () => {
+  const TIERS = "65d4000000000000000000d9";
+
+  it("le bouton reçoit CE commun, son titre et l'organisation de l'appel", () => {
+    ANSWER.answers = { aapStep1: { titre: "Une instance peertube" } };
+    render(<AacCommunDetailPage />);
+
+    const control = screen.getByTestId("discussion-control");
+    expect(control).toHaveAttribute("data-answer-id", "a1");
+    expect(control).toHaveAttribute("data-title", "Une instance peertube");
+    // L'entité du site : c'est chez elle qu'on cherche d'abord les personnes à mentionner.
+    expect(control).toHaveAttribute("data-scope", "host");
+  });
+
+  it("un visiteur non connecté l'a aussi — l'espace se lit sans session", () => {
+    me = ANONYMOUS;
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("discussion-control")).toBeInTheDocument();
+  });
+
+  it("un tiers connecté sans aucun droit sur le commun l'a aussi, sans « Modifier »", () => {
+    me = { id: TIERS, isConnected: true };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("discussion-control")).toBeInTheDocument();
+    expect(screen.queryByTestId("edit-modal")).not.toBeInTheDocument();
+  });
+
+  it("sans titre de commun, il ne reçoit PAS le nom de l'appel à la place : la modale nommerait l'appel", () => {
+    render(<AacCommunDetailPage />);
+    // Le SEO, lui, retombe sur le nom de l'appel ; l'espace est celui d'un commun, pas d'un appel.
+    expect(screen.getByTestId("seo").getAttribute("data-title")).toBe("Appel test");
+    expect(screen.getByTestId("discussion-control")).toHaveAttribute("data-title", "null");
+  });
+
+  it("chaque palier a son bouton de discussion : CE commun, et la ligne que la section désigne", () => {
+    // Parité de « Commenter » sur chaque carte de la liste des dépenses du legacy.
+    config = makeConfig(true);
+    render(<AacCommunDetailPage />);
+
+    const palier = screen.getByTestId("milestone-discussion");
+    expect(screen.getByTestId("financing-section").contains(palier)).toBe(true);
+    expect(palier).toHaveAttribute("data-answer-id", "a1");
+    expect(palier).toHaveAttribute("data-line", "3");
+    expect(palier).toHaveAttribute("data-name", "Matériel");
+  });
+
+  // Parité de « Commenter » sur la liste des dépenses du FORMULAIRE legacy.
+  it("le formulaire d'édition reçoit de quoi poser le bouton sur ses lignes : CE commun, et les dépenses que la fiche a lues", () => {
+    const depense = [{ poste: "Local", milestone: "m-1" }, { poste: "Matériel", milestone: "m-2" }];
+    ANSWER.answers = { aapStep1: { depense } };
+    render(<AacCommunDetailPage />);
+
+    const lignes = screen.getByTestId("form-line-discussions");
+    expect(lignes.contains(screen.getByTestId("edit-modal"))).toBe(true);
+    expect(lignes).toHaveAttribute("data-answer-id", "a1");
+    // Celles du DOCUMENT : c'est d'elles que le formulaire part, pas d'une liste tenue à côté.
+    expect(JSON.parse(lignes.getAttribute("data-saved")!)).toEqual(depense);
+    expect(lignes).toHaveAttribute("data-enabled", "true");
+  });
+
+  it("… sans dépense au document, il le dit : rien à retrouver, donc aucun bouton", () => {
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("form-line-discussions")).toHaveAttribute("data-saved", "null");
+  });
+
+  it("… et pas sur une fiche qui lit ses dépenses à une autre étape : par la clé seule, une ligne ouvrirait le fil d'une autre", () => {
+    config = { ...makeConfig(false), roles: { ...makeConfig(false).roles, depenseStepKey: "etapeA" } };
+    ANSWER.answers = { aapStep1: { depense: [{ poste: "Local", milestone: "m-1" }] } };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("form-line-discussions")).toHaveAttribute("data-enabled", "false");
+  });
+
+  it("… et sans étape déclarée, c'est l'étape de dépôt : les boutons sont posés", () => {
+    config = { ...makeConfig(false), roles: { ...makeConfig(false).roles, depenseStepKey: null } };
+    render(<AacCommunDetailPage />);
+    expect(screen.getByTestId("form-line-discussions")).toHaveAttribute("data-enabled", "true");
+  });
+
+  it("qui ne peut pas éditer le commun n'a ni formulaire, ni rien autour", () => {
+    me = { id: TIERS, isConnected: true };
+    render(<AacCommunDetailPage />);
+    expect(screen.queryByTestId("form-line-discussions")).not.toBeInTheDocument();
+  });
+
+  it("d'un commun à l'autre, le bouton est REMONTÉ, pas réemployé", () => {
+    // La même route sert deux communs : React garderait le bouton tel quel, avec ce qu'il
+    // retenait de la fiche d'avant — le focus à rendre après une modale, par exemple.
+    const { rerender } = render(<AacCommunDetailPage />);
+    const before = screen.getByTestId("discussion-control").getAttribute("data-mount");
+
+    routeAnswerId = "a2";
+    rerender(<AacCommunDetailPage />);
+    const control = screen.getByTestId("discussion-control");
+    expect(control).toHaveAttribute("data-answer-id", "a2");
+    expect(control.getAttribute("data-mount")).not.toBe(before);
   });
 });

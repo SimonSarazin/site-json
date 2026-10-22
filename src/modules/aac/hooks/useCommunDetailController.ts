@@ -44,6 +44,8 @@ import type { CommunNewsSection } from "../components/pageDetail/CommunNewsSecti
 import type { CommunAgendaSection } from "../components/pageDetail/CommunAgendaSection.tsx";
 import type { CommunCofinancersTable } from "../components/pageDetail/CommunCofinancersTable.tsx";
 import type { CommunObjectivesController } from "../components/pageDetail/CommunMilestoneDialogs.tsx";
+import type { CommunDiscussionControl } from "../components/pageDetail/CommunDiscussionControl.tsx";
+import type { CommunFormLineDiscussions } from "../components/pageDetail/CommunFormLineDiscussions.tsx";
 import type { GalleryImage } from "../components/pageDetail/CommunContentSections.tsx";
 
 /**
@@ -118,9 +120,18 @@ export interface CommunDetailReadyVM extends CommunDetailBaseVM {
     demoBlocks: boolean;
     /** Props de la barre d'actions (`CommunActionBar`), un gate par action. */
     actions: CommunActionBarProps;
+    /**
+     * L'espace de discussion du commun — pour tout le monde, visiteur compris : il se lit sans
+     * session. L'interface le rend en tête des actions (`CommunDiscussionControl`, avec `answerId`
+     * pour `key` : d'un commun à l'autre, le bouton et sa modale repartent de zéro) et, par
+     * `answerId`, le bouton « Discuter » de chaque palier (`CommunMilestoneDiscussionButton`).
+     */
+    discussion: ComponentProps<typeof CommunDiscussionControl>;
     /** Overlays sans position, rendus par la coquille de la page hors de toute interface. */
     overlays: {
         edit: ComponentProps<typeof CoFormModal> | null;
+        /** Les fils de ligne de dépense du formulaire d'édition ; enveloppe `edit`, nul avec lui. */
+        editDiscussions: Omit<ComponentProps<typeof CommunFormLineDiscussions>, "children"> | null;
         milestones: CommunObjectivesController;
     };
 }
@@ -297,9 +308,14 @@ export function useCommunDetailController(): CommunDetailVM {
 
     if (!answerId) return { status: "missing-answer", ...base };
     if (answerQuery.isLoading || formQuery.isLoading || isConfigLoading) return { status: "loading", ...base };
-    if (answerQuery.error || formQuery.error) return { status: "error", kind: "data", ...base };
+    // Seulement SANS données : une RELECTURE ratée (retour sur l'onglet, réseau qui flanche) garde
+    // la fiche déjà affichée. La remplacer par la carte d'erreur démontait tout ce qu'elle porte —
+    // l'espace de discussion ouvert, et le message qu'on y était en train d'écrire.
+    if ((answerQuery.error && !answerQuery.data) || (formQuery.error && !formQuery.data)) return { status: "error", kind: "data", ...base };
     // Sans config, ni gates ni blocs déclarés : erreur explicite plutôt qu'une fiche vidée.
-    if (configError) return { status: "error", kind: "config", ...base };
+    // Seulement SANS config, elle aussi : `useAacConfig` rend `config` ET `error` quand une
+    // relecture échoue (revue du 16/10).
+    if (configError && !config) return { status: "error", kind: "config", ...base };
     if (!answerQuery.data || !formQuery.data || !card) return { status: "error", kind: "not-found", ...base };
 
     const answer = answerQuery.data;
@@ -473,6 +489,11 @@ export function useCommunDetailController(): CommunDetailVM {
                 onDeleted: () => void navigate("/aac"),
             },
         },
+        discussion: {
+            answerId,
+            communTitle: communSeo.title || null,
+            scopeEntity: entity,
+        },
         overlays: {
             edit:
                 canOpenEdit && formId
@@ -491,6 +512,16 @@ export function useCommunDetailController(): CommunDetailVM {
                           baseUpdatedAt: answer.updated ?? answer.created ?? null,
                           hiddenStepKeys: hiddenStepsForEdit,
                           onAfterSubmit: handleEditSubmit,
+                      }
+                    : null,
+            // Les dépenses enregistrées sont celles de la réponse lue ; le fil d'une ligne n'existe
+            // que sur `answers.aapStep1.depense`, la seule liste que l'espace de discussion connaisse.
+            editDiscussions:
+                canOpenEdit && formId
+                    ? {
+                          answerId,
+                          savedDepenses: (answer.answers as Record<string, Record<string, unknown>> | undefined)?.[DEFAULT_AAC_STEP]?.depense,
+                          enabled: (depenseStepKey ?? DEFAULT_AAC_STEP) === DEFAULT_AAC_STEP,
                       }
                     : null,
             milestones: objectivesCtrl,

@@ -21,7 +21,6 @@ import { ArticleFeedSectionSchema, ArticleReaderSectionSchema, ArticleTeaserSect
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AdminConfigSchema } from "../modules/admin/schema";
-import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
 import { BlogConfigSchema } from "@/modules/blog/configSchema";
 import { VisibilityConditionSchema, type VisibilityCondition } from "@/lib/visibility/schema";
@@ -2496,9 +2495,11 @@ export const SiteConfig = z.object({
     position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
     condition: VisibilityConditionSchema,
   }).optional(),
-  ampli: z.array(AmpliConfigSchema).optional(),
-  // Config site-level de l'Appel à Communs — SINGULIER (un seul AAC par site,
-  // contrairement à `ampli` qui est un tableau). Le site déclare son `formId` ;
+  // Active les amplis du site : ils sont lus dans `costum.ampli` du porteur (source de vérité de Co),
+  // `/ampli` les liste et `/ampli/:slug` ouvre l'un d'eux. Un simple interrupteur — la définition d'un
+  // ampli (coform, mapping des champs) vit en base, jamais ici. cf. doc/22.
+  ampli: z.boolean().optional(),
+  // Config site-level de l'Appel à Communs — SINGULIER (un seul AAC par site). Le site déclare son `formId` ;
   // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
   // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
   aac: AacConfigSchema.optional(),

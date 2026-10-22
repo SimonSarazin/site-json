@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import type { FormFieldMapping } from "../types";
 import type { DepenseEntry } from "../utils/depense";
+import { MilestoneLineSlotContext, type MilestoneLine, type MilestoneLineSlot } from "../contexts/MilestoneLineSlotContext";
 
 /**
  * Ces tests verrouillent les DEUX défauts corrigés par le passage en
@@ -327,5 +328,125 @@ describe("MilestoneListField", () => {
       expect(screen.getByText("Modifier la dépense")).toBeTruthy();
       expect((screen.getByLabelText("Intitulé") as HTMLInputElement).value).toBe("Hébergement");
     });
+  });
+});
+
+/**
+ * L'emplacement par ligne (`MilestoneLineSlotContext`) : ce qu'un HÔTE du formulaire pose sur
+ * chaque ligne — la fiche d'un commun y met le bouton de discussion du palier. Le champ ne sait
+ * rien de ce qu'on y pose : il dit la ligne, et rend ce qu'on lui donne.
+ */
+describe("MilestoneListField — l'emplacement que l'hôte remplit sur chaque ligne", () => {
+  const AUTRE: DepenseEntry = { poste: "Hébergement", price: 1200, milestone: "m-def" };
+  const CLOSE: DepenseEntry = { poste: "Clôturée", price: 50, milestone: "m-clo", include: false };
+
+  beforeEach(() => {
+    fundingMock.mockReset();
+    fundingMock.mockReturnValue({ targetResource: undefined });
+    permsMock.mockReturnValue({ currentUserId: "u1" });
+  });
+
+  function poserAvecEmplacement(value: unknown, emplacement: MilestoneLineSlot, nomDuChamp = "depense") {
+    const arbre = (v: unknown) => (
+      <MilestoneLineSlotContext.Provider value={emplacement}>
+        <MilestoneListField field={{ ...champ(), name: nomDuChamp }} errors={{}} value={v as DepenseEntry[]} onChange={vi.fn()} answerId="answer-1" />
+      </MilestoneLineSlotContext.Provider>
+    );
+    const vue = render(arbre(value));
+    return { rerender: (v: unknown) => vue.rerender(arbre(v)) };
+  }
+  /** Les lignes DISTINCTES que l'hôte a reçues, dans l'ordre de leur première venue — pas le nombre de rendus. */
+  const recues = (emplacement: { mock: { calls: [MilestoneLine][] } }) => {
+    const vues = new Map<number, MilestoneLine>();
+    for (const [ligne] of emplacement.mock.calls) vues.set(ligne.index, ligne);
+    return [...vues.values()];
+  };
+  /** Les en-têtes de ligne : le conteneur du bouton qui déplie. */
+  const entetes = () => [...document.querySelectorAll<HTMLElement>("button[aria-controls]")].map(b => b.parentElement!);
+
+  it("sans hôte, l'en-tête d'une ligne ne porte que son bouton", () => {
+    poser([LIGNE, AUTRE], "answer-1");
+    expect(entetes()).toHaveLength(2);
+    for (const entete of entetes()) expect(entete.children).toHaveLength(1);
+  });
+
+  it("l'hôte reçoit, pour chaque ligne affichée : la réponse, le champ, la liste LOCALE, la position et l'intitulé", () => {
+    const emplacement = vi.fn((_ligne: MilestoneLine) => null);
+    poserAvecEmplacement([LIGNE, AUTRE], emplacement);
+    expect(recues(emplacement)).toEqual([
+      { answerId: "answer-1", fieldName: "depense", lines: [LIGNE, AUTRE], index: 0, name: "Développement" },
+      { answerId: "answer-1", fieldName: "depense", lines: [LIGNE, AUTRE], index: 1, name: "Hébergement" },
+    ]);
+  });
+
+  it("le nom du champ est celui de SON input : c'est par lui que l'hôte le reconnaît", () => {
+    const emplacement = vi.fn((_ligne: MilestoneLine) => null);
+    poserAvecEmplacement([LIGNE], emplacement, "financement");
+    expect(recues(emplacement).map(ligne => ligne.fieldName)).toEqual(["financement"]);
+  });
+
+  it("ce qu'il rend est posé dans l'en-tête de la ligne, À CÔTÉ du bouton qui la déplie — jamais dedans", () => {
+    poserAvecEmplacement([LIGNE, AUTRE], ({ index }) => <button type="button" data-pose={index}>posé</button>);
+    const poses = [...document.querySelectorAll<HTMLElement>("[data-pose]")];
+    expect(poses.map(b => b.getAttribute("data-pose"))).toEqual(["0", "1"]);
+    for (const pose of poses) {
+      // Un bouton ne contient pas un bouton.
+      expect(pose.closest("[aria-expanded]")).toBeNull();
+      const bascule = pose.parentElement!.querySelector(":scope > button[aria-expanded]");
+      expect(bascule).not.toBeNull();
+      expect(bascule!.textContent).toContain(pose.getAttribute("data-pose") === "0" ? "Développement" : "Hébergement");
+    }
+  });
+
+  it("la position est celle de la liste, pas celle de l'écran : une ligne clôturée, repliée, garde la sienne", () => {
+    const emplacement = vi.fn(({ index }: MilestoneLine) => <span data-pose={index} />);
+    poserAvecEmplacement([CLOSE, LIGNE], emplacement);
+    // Seule la ligne ouverte est affichée — et c'est la SECONDE de la liste.
+    expect([...document.querySelectorAll("[data-pose]")].map(e => e.getAttribute("data-pose"))).toEqual(["1"]);
+    // Dépliées, les lignes clôturées reçoivent le leur.
+    fireEvent.click(screen.getByRole("button", { expanded: false, name: /archivedMilestones/ }));
+    expect([...document.querySelectorAll("[data-pose]")].map(e => e.getAttribute("data-pose")).sort()).toEqual(["0", "1"]);
+  });
+
+  it("la liste donnée à l'hôte suit la saisie : une ligne ajoutée y est, avant tout enregistrement", () => {
+    const emplacement = vi.fn((_ligne: MilestoneLine) => null);
+    const banc = poserAvecEmplacement([LIGNE], emplacement);
+    emplacement.mockClear();
+    banc.rerender([LIGNE, AUTRE]);
+    expect(recues(emplacement).map(({ lines, index }) => ({ lines, index }))).toEqual([
+      { lines: [LIGNE, AUTRE], index: 0 },
+      { lines: [LIGNE, AUTRE], index: 1 },
+    ]);
+  });
+
+  // Le champ écarte ce qui n'est pas une ligne (un trou laissé par la sérialisation) : la liste et la
+  // position données à l'hôte sont celles de ce qu'il AFFICHE, pas celles de la valeur brute.
+  it("la liste et la position sont celles de ce que le champ affiche, entrées illisibles écartées", () => {
+    const emplacement = vi.fn((_ligne: MilestoneLine) => null);
+    poserAvecEmplacement([null, LIGNE, "illisible", AUTRE], emplacement);
+    expect(recues(emplacement).map(({ lines, index, name }) => ({ lines, index, name }))).toEqual([
+      { lines: [LIGNE, AUTRE], index: 0, name: "Développement" },
+      { lines: [LIGNE, AUTRE], index: 1, name: "Hébergement" },
+    ]);
+  });
+
+  it("en lecture seule aussi : discuter d'une ligne n'est pas la modifier", () => {
+    const emplacement = vi.fn(({ index }: MilestoneLine) => <span data-pose={index} />);
+    render(
+      <MilestoneLineSlotContext.Provider value={emplacement}>
+        <MilestoneListField field={champ()} errors={{}} value={[LIGNE]} onChange={vi.fn()} answerId="answer-1" readOnly />
+      </MilestoneLineSlotContext.Provider>,
+    );
+    expect(document.querySelector("[data-pose='0']")).not.toBeNull();
+  });
+
+  it("sur une réponse neuve, l'hôte l'apprend : pas d'identifiant de réponse", () => {
+    const emplacement = vi.fn((_ligne: MilestoneLine) => null);
+    render(
+      <MilestoneLineSlotContext.Provider value={emplacement}>
+        <MilestoneListField field={champ()} errors={{}} value={[LIGNE]} onChange={vi.fn()} />
+      </MilestoneLineSlotContext.Provider>,
+    );
+    expect(recues(emplacement).map(ligne => ligne.answerId)).toEqual([undefined]);
   });
 });

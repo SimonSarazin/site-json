@@ -13,8 +13,9 @@ export const AMPLI_QUERY_KEYS = {
    * Réponses CoForm paginées pour Meeteem (annuaire/carte/split).
    *
    * Producteur : `useFetchAnswerQuery` (`AmpliSectionRenderer`, `MeeteemSection`)
-   * Consommateurs invalidants : aucun explicite — refetch via `refetch()` ou
-   *   `enabled` toggle (le module ampli n'expose pas de mutations directes).
+   * Consommateurs invalidants : `AmpliIdeaForm` après une soumission (la
+   *   mutation coform n'invalide que ses propres caches) ; ailleurs, refetch
+   *   via `refetch()` ou toggle d'`enabled`.
    */
   FETCH_ANSWERS: (coformId: string, view: string, baseParams?: unknown) =>
     [
@@ -25,6 +26,29 @@ export const AMPLI_QUERY_KEYS = {
     ] as const,
   /** Préfixe minimal — invalide toutes les vues d'un coform donné. */
   FETCH_ANSWERS_PREFIX: (coformId: string) => ["ampli-meeteem", coformId] as const,
+  /**
+   * Nombre de propositions d'un ampli, pour la page liste `/ampli`.
+   *
+   * Producteur : `useAmpliAnswerCounts`
+   * Sous le préfixe `FETCH_ANSWERS_PREFIX` À DESSEIN : l'invalidation que pose
+   * `AmpliIdeaForm` après une soumission rafraîchit aussi ce compteur. Le segment
+   * `"count"` ne peut pas entrer en collision avec une vue (`answers`/`map`/`split`).
+   *
+   * La clé porte le jeu de filtres ENTIER, comme `FETCH_ANSWERS` porte ses
+   * `baseParams` : deux amplis branchés sur le même formulaire ne diffèrent que
+   * par leur `finderPath`, et se partageraient sinon un compteur.
+   */
+  ANSWERS_COUNT: (coformId: string, filters: unknown) =>
+    ["ampli-meeteem", coformId, "count", JSON.stringify(filters ?? {})] as const,
+  /**
+   * Coordonnées d'une commune (`cityAutocompleteByCountry`), pour placer les
+   * contributeurs dont le profil n'a qu'une adresse.
+   *
+   * Producteur : `useContributorCities`
+   * Clé par COMMUNE (et non par contributeur) : deux contributeurs d'une même
+   * ville partagent l'entrée, et le cache est très long (une commune ne bouge pas).
+   */
+  CITY_GEO: (localityId: string) => ["ampli-city-geo", localityId] as const,
 } as const;
 
 export type AmpliQueryKeyType = ReturnType<

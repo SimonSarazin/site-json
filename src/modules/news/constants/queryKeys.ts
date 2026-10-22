@@ -38,16 +38,11 @@ export const NEWS_QUERY_KEYS = {
   NEWS_BY_ID_PREFIX: (entityId: string | null, newsId: string | null) =>
     ["news-by-id", entityId, newsId] as const,
 
-  /**
-   * Commentaires d'une news.
-   *
-   * Producteur : `useNewsCommentsQuery`
-   * Consommateurs invalidants : `useCommentMutations` (add/edit/delete/like)
-   *   via `NEWS_COMMENTS_PREFIX`
+  /*
+   * `NEWS_COMMENTS` / `NEWS_COMMENTS_PREFIX` ont été retirées : le fil d'une actualité est
+   * désormais servi par le module `comment`, sous ses propres clés (`COMMENT_QUERY_KEYS`).
+   * Les laisser aurait créé deux caches concurrents pour la même donnée.
    */
-  NEWS_COMMENTS: (newsId: string | null, userContextId: string | null = null) =>
-    ["news-comments", newsId, userContextId] as const,
-  NEWS_COMMENTS_PREFIX: (newsId: string | null) => ["news-comments", newsId] as const,
 
   /**
    * Votes (likes/reactions) d'une news.
