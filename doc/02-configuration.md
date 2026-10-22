@@ -201,7 +201,7 @@ Tous les fichiers doivent être conformes au `SiteConfigSchema` défini dans `sr
 
 #### Utilitaires du header (`header.utilities`)
 
-Le bloc `header.utilities` active des widgets dans la barre (tous des booléens `default false` sauf `themeSwitch`/`langSwitch` à `true`) : `themeSwitch`, `langSwitch`, `search`, `auth`, `cart`, `notifications` et **`piggyBank`** (bouton cagnotte). Voir le schéma `src/types/site-schema.ts` (`Header.utilities`) et le bloc optionnel `header.piggyBank` (`amount`, `icon`, `path`).
+Le bloc `header.utilities` active des widgets dans la barre (tous des booléens `default false` sauf `themeSwitch`/`langSwitch` à `true`) : `themeSwitch`, `langSwitch`, `search`, `auth`, `cart`, `notifications`, **`piggyBank`** (bouton cagnotte) et **`pledge`** (promesses à régler et paiements ; headers `standard`, `transparent-scroll` et `mega-menu`). Voir le schéma `src/types/site-schema.ts` (`Header.utilities`) et le bloc optionnel `header.piggyBank` (`amount`, `icon`, `path`).
 
 #### Pages d'authentification
 
