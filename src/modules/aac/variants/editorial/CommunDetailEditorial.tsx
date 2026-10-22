@@ -12,7 +12,7 @@ import { CommunActionBar } from "../../components/pageDetail/CommunActionBar.tsx
 import { CommunFinancingCard } from "../../components/pageDetail/CommunFinancingCard.tsx";
 import { CommunReactionStats } from "../../components/pageDetail/CommunReactionStats.tsx";
 import { CommunFinancingSection } from "../../components/pageDetail/CommunFinancingSection.tsx";
-import { CommunActionsSection } from "../../components/pageDetail/CommunActionsSection.tsx";
+import { CommunActionsFeed, CommunMilestonesList } from "../../components/pageDetail/CommunActionsLists.tsx";
 import { CommunContributorsSection } from "../../components/pageDetail/CommunContributorsSection.tsx";
 import { CommunNewsSection } from "../../components/pageDetail/CommunNewsSection.tsx";
 import { CommunAgendaSection } from "../../components/pageDetail/CommunAgendaSection.tsx";
@@ -40,6 +40,7 @@ const SECTION_TAB: Readonly<Record<string, TabKey>> = {
   "besoins-financiers": "argent",
   cofinanceurs: "argent",
   objectifs: "action",
+  actions: "action",
   contributeurs: "communaute",
   actualites: "vie",
   agenda: "vie",
@@ -58,6 +59,8 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
   const t = useT("modules/aac");
   // Onglet ouvert (état d'interface).
   const [tab, setTab] = useState<TabKey>("fiche");
+  // Palier dont on ne montre que les actions (onglet « Passage à l'action »).
+  const [milestoneFilter, setMilestoneFilter] = useState<string | null>(null);
   const showSection = tabbedSectionNav<TabKey>(
     setTab,
     (id) => SECTION_TAB[id] ?? (vm.prose.some((block) => block.id === id) ? "fiche" : null),
@@ -210,18 +213,41 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
               )}
             </TabsContent>
 
-            <TabsContent value="action" className="mt-6">
+            {/* Jalons à gauche, actions à droite. */}
+            <TabsContent value="action" className="mt-6 grid gap-8 lg:grid-cols-2">
               <ProjectPhaseSection
                 objectives={objectives}
                 id="objectifs"
-                title={String(t("detail.toc.actions"))}
+                title={String(t("editorial.detail.milestones"))}
+                className="min-w-0"
                 fallback={
-                  <EditorialSection title={String(t("detail.toc.actions"))}>
+                  <EditorialSection title={String(t("editorial.detail.tabs.action"))} className="lg:col-span-2">
                     <p className="mt-3 text-sm text-muted-foreground">{String(t("editorial.detail.noProject"))}</p>
                   </EditorialSection>
                 }
               >
-                {(project) => <CommunActionsSection {...project.actions} />}
+                {(project) => (
+                  <CommunMilestonesList
+                    {...project.actions}
+                    selectedMilestoneId={milestoneFilter}
+                    onSelectMilestone={setMilestoneFilter}
+                  />
+                )}
+              </ProjectPhaseSection>
+              <ProjectPhaseSection
+                objectives={objectives}
+                id="actions"
+                title={String(t("editorial.detail.actions"))}
+                intro={String(t("editorial.detail.actionsIntro"))}
+                className="min-w-0"
+              >
+                {(project) => (
+                  <CommunActionsFeed
+                    {...project.actions}
+                    milestoneFilter={milestoneFilter}
+                    onClearMilestoneFilter={() => setMilestoneFilter(null)}
+                  />
+                )}
               </ProjectPhaseSection>
             </TabsContent>
 
@@ -316,6 +342,7 @@ function ProjectPhaseSection({
   objectives,
   id,
   title,
+  intro,
   className,
   fallback = null,
   children,
@@ -323,6 +350,8 @@ function ProjectPhaseSection({
   objectives: CommunObjectivesVM;
   id: string;
   title: string;
+  /** Phrase sous le titre. */
+  intro?: string;
   className?: string;
   fallback?: ReactNode;
   children: (project: ProjectObjectives) => ReactNode;
@@ -330,6 +359,7 @@ function ProjectPhaseSection({
   if (objectives.phase === "none") return fallback;
   return (
     <EditorialSection id={id} title={title} className={className}>
+      {intro && <p className="mt-1 text-sm text-muted-foreground">{intro}</p>}
       <div className="mt-4">
         {objectives.phase === "project" ? children(objectives) : <SectionBodySkeleton rows={2} />}
       </div>

@@ -17,7 +17,7 @@ import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
 import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useShowSection } from "@/modules/aac/hooks/useCommunSectionNav";
-import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
+import { canManageObjectiveActions, uniqueActionRows } from "@/modules/aac/lib/objectiveHelpers";
 import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
 import { CommunReactionStats } from "./CommunReactionStats.tsx";
 
@@ -116,7 +116,7 @@ export function CommunFinancingCard({
     // Stats d'actions — seulement pertinent une fois la proposition promue en
     // projet (cf. `canManageObjectiveActions`, même règle que CommunActionsSection).
     const isProjectPhase = canManageObjectiveActions(funding?.projectId);
-    const allActions = items.flatMap((item) => item?.actions ?? []);
+    const allActions = uniqueActionRows(items).map(({ action }) => action);
     const doneActionsCount = allActions.filter((action) => action?.status === "done").length;
     const totalActionsCount = allActions.length;
     const actionsPerc = totalActionsCount > 0 ? Math.round((doneActionsCount / totalActionsCount) * 100) : 0;

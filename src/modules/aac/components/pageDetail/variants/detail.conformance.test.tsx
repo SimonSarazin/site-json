@@ -55,6 +55,11 @@ vi.mock("../CommunReactionStats.tsx", () => ({ CommunReactionStats: probe("react
 vi.mock("../CommunFinancingSection.tsx", () => ({ CommunFinancingSection: probe("funding-section") }));
 vi.mock("../CommunCofinancersTable.tsx", () => ({ CommunCofinancersTable: probe("cofinancers") }));
 vi.mock("../CommunActionsSection.tsx", () => ({ CommunActionsSection: probe("actions") }));
+// Paliers et actions en deux blocs : la liste des paliers tient lieu de « actions ».
+vi.mock("../CommunActionsLists.tsx", () => ({
+  CommunMilestonesList: probe("actions"),
+  CommunActionsFeed: probe("actions-feed"),
+}));
 vi.mock("../CommunContributorsSection.tsx", () => ({ CommunContributorsSection: probe("contributors") }));
 vi.mock("../CommunNewsSection.tsx", () => ({ CommunNewsSection: probe("news") }));
 vi.mock("../CommunAgendaSection.tsx", () => ({ CommunAgendaSection: probe("agenda") }));
@@ -227,20 +232,28 @@ describe.each(AAC_DETAIL_VARIANTS.keys())("interface de fiche « %s »", (key) =
   });
 
   it("phase projet : paliers et contributeurs atteignables", async () => {
-    await renderVariant(key, makeVM());
+    const vm = makeVM();
+    await renderVariant(key, vm);
 
     expect(reachable(byTestId("probe-actions"))).toBe(true);
     expect(reachable(byTestId("probe-contributors"))).toBe(true);
+    if (vm.objectives.phase !== "project") throw new Error("vm de test hors phase projet");
+    // Les listes reçoivent le paquet entier, plus le filtre par palier.
+    expect(received.actions).toMatchObject(vm.objectives.actions);
+    // Liste des actions à part : mêmes props que les paliers.
+    if (reachable(byTestId("probe-actions-feed"))) expect(received["actions-feed"]).toMatchObject(vm.objectives.actions);
   });
 
   it("sans projet lié, ou phase en résolution : ni paliers, ni contributeurs", async () => {
     await renderVariant(key, makeVM({ objectives: { phase: "none" } }));
     expect(nowhere(byTestId("probe-actions"))).toBe(true);
+    expect(nowhere(byTestId("probe-actions-feed"))).toBe(true);
     expect(nowhere(byTestId("probe-contributors"))).toBe(true);
     cleanup();
 
     await renderVariant(key, makeVM({ objectives: { phase: "unresolved", isProjectPhase: true } }));
     expect(nowhere(byTestId("probe-actions"))).toBe(true);
+    expect(nowhere(byTestId("probe-actions-feed"))).toBe(true);
     expect(nowhere(byTestId("probe-contributors"))).toBe(true);
   });
 

@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { allEmbedded } from "@/lib/variants";
 import { useT } from "@/hooks/useT";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
+import { CommunActionDialogs } from "../components/pageDetail/CommunActionDialogs.tsx";
 import { CommunMilestoneDialogs } from "../components/pageDetail/CommunMilestoneDialogs.tsx";
 import { AAC_DETAIL_VARIANTS } from "../components/pageDetail/variants/registry";
 import { useCommunDetailController } from "../hooks/useCommunDetailController";
@@ -57,6 +58,7 @@ export default function AacCommunDetailPage() {
             )}
 
             <CommunMilestoneDialogs ctrl={vm.overlays.milestones} />
+            <CommunActionDialogs ctrl={vm.overlays.milestones} />
 
             {vm.overlays.edit && <CoFormModal {...vm.overlays.edit} />}
         </PageShell>

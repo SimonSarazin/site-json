@@ -548,6 +548,19 @@ sont rendus que si **`config.aac.detail.demoBlocks: true`** (faux par défaut, `
 coupés, les onglets Maturation et Coopérations disparaissent aussi. **À couper avant la mise en
 ligne d'un site réel** : un visiteur y lirait des dons et des chiffres qui n'existent pas.
 
+**Jalons et actions** (onglet « Passage à l'action » de l'interface `editorial`). Deux colonnes à
+partir de `lg`, sur le même contrôleur et les mêmes droits que `CommunActionsSection` (interface par
+défaut) : `CommunMilestonesList` (frise des paliers, gestion au survol, « Ajouter un palier ») et
+`CommunActionsFeed` (toutes les actions à plat, commandes en ligne), dans
+`components/pageDetail/CommunActionsLists.tsx`. Les dialogues d'action (`CommunActionDialogs`) sont
+montés une fois par la page (`AacCommunDetailPage`), à côté de `CommunMilestoneDialogs`, pour toutes
+les interfaces : une vue ne les monte pas. La liste ne montre chaque action qu'une fois
+(`uniqueActionRows`, `lib/objectiveHelpers.ts`). Un clic sur un palier filtre la liste des actions sur
+ce palier, un second clic ou « Toutes les actions » retire le filtre. L'état vit dans l'interface
+(`selectedMilestoneId`/`onSelectMilestone`, `milestoneFilter`/`onClearMilestoneFilter`) ; sans ces
+props, les deux listes restent sans filtre. Les actions terminées sont masquées par défaut :
+l'interrupteur « Masquer les terminées (n) », état local de `CommunActionsFeed`, les réaffiche.
+
 **Actualités et agenda** (onglet « Actus et agenda » de l'interface `editorial`). Ils sont ceux du
 **projet lié** au commun, donc rendus en phase `project` seulement (`vm.objectives.news` /
 `.agenda`, `{ projectId }`) :

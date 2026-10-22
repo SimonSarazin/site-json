@@ -265,6 +265,7 @@ vi.mock("../components/pageDetail/CommunFinancingSection.tsx", () => ({
 }));
 vi.mock("../components/pageDetail/CommunActionsSection.tsx", () => ({ CommunActionsSection: () => null }));
 vi.mock("../components/pageDetail/CommunMilestoneDialogs.tsx", () => ({ CommunMilestoneDialogs: () => null }));
+vi.mock("../components/pageDetail/CommunActionDialogs.tsx", () => ({ CommunActionDialogs: () => null }));
 vi.mock("../components/pageDetail/CommunContributorsSection.tsx", () => ({ CommunContributorsSection: () => null }));
 vi.mock("../components/pageDetail/CommunCofinancersTable.tsx", () => ({
   CommunCofinancersTable: () => <div data-testid="cofinancers-table" />,
