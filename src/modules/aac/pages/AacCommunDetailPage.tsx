@@ -10,6 +10,7 @@ import { allEmbedded } from "@/lib/variants";
 import { useT } from "@/hooks/useT";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import { CommunMilestoneDialogs } from "../components/pageDetail/CommunMilestoneDialogs.tsx";
+import { CommunFormLineDiscussions } from "../components/pageDetail/CommunFormLineDiscussions";
 import { AAC_DETAIL_VARIANTS } from "../components/pageDetail/variants/registry";
 import { useCommunDetailController } from "../hooks/useCommunDetailController";
 import { AacSeo, type AacSeoProps } from "../AacSeo";
@@ -58,7 +59,19 @@ export default function AacCommunDetailPage() {
 
             <CommunMilestoneDialogs ctrl={vm.overlays.milestones} />
 
-            {vm.overlays.edit && <CoFormModal {...vm.overlays.edit} />}
+            {/* Le bouton « Discuter » de chaque ligne de dépense, dans le formulaire aussi — comme
+                « Commenter » sur la liste des dépenses du formulaire legacy. Les dépenses enregistrées
+                sont celles de la réponse que la fiche a lue : c'est d'elles que le formulaire part
+                (`defaultValues`), et la fiche les relit après chaque enregistrement. */}
+            {vm.overlays.edit && (
+                vm.overlays.editDiscussions ? (
+                    <CommunFormLineDiscussions {...vm.overlays.editDiscussions}>
+                        <CoFormModal {...vm.overlays.edit} />
+                    </CommunFormLineDiscussions>
+                ) : (
+                    <CoFormModal {...vm.overlays.edit} />
+                )
+            )}
         </PageShell>
     );
 }

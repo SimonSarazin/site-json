@@ -10,18 +10,11 @@ interface AmpliRendererProps {
 
 export function AmpliRenderer({ activeTab }: AmpliRendererProps) {
 
-    const { config } = useAmpliContext();
+    const { ampli } = useAmpliContext();
     const t = useT("modules/ampli");
 
-    const layoutClass = {
-        "default": "max-w-4xl mx-auto",
-        "modern": "max-w-6xl mx-auto",
-        "compact": "max-w-3xl mx-auto",
-        "fullwidth": "w-full",
-    }[config.layout || "default"];
-
     return (
-        <div className={`ampli-container ${layoutClass}`}>
+        <div className="ampli-container w-full">
             <Suspense
                 fallback={
                     <div className="flex items-center justify-center min-h-[400px]">
@@ -29,7 +22,7 @@ export function AmpliRenderer({ activeTab }: AmpliRendererProps) {
                     </div>
                 }
             >
-                <AmpliSectionRenderer activeTab={activeTab} config={config.props} />
+                <AmpliSectionRenderer activeTab={activeTab} ampli={ampli} />
             </Suspense>
         </div>
     )

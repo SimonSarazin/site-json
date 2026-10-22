@@ -20,63 +20,48 @@ import {
 } from "@/components/ui/select";
 import { useT } from "@/hooks/useT";
 import { useReportNews } from "../hooks/useNewsMutations";
-import { useReportComment } from "../hooks/useCommentMutations";
-import { REPORT_REASONS } from "../constants/reportReasons";
-import type { News, Comment } from "@communecter/cocolight-api-client";
+import { REPORT_REASONS } from "@/modules/comment/constants/reportReasons";
+import type { News } from "@communecter/cocolight-api-client";
 
 interface ReportDialogProps {
-  type: "news" | "comment";
-  item: News | Comment | null;
+  /**
+   * Conservé pour les appelants existants, mais une seule valeur a désormais un sens : le
+   * signalement d'un COMMENTAIRE est passé au module `comment`, qui porte son propre dialogue.
+   */
+  type?: "news";
+  item: News | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function ReportDialog({ type, item, open, onOpenChange }: ReportDialogProps) {
+export function ReportDialog({ item, open, onOpenChange }: ReportDialogProps) {
   const t = useT("modules/news");
   const reportNewsMutation = useReportNews();
-  const reportCommentMutation = useReportComment();
 
   const [reason, setReason] = useState("");
   const [commentText, setCommentText] = useState("");
 
-  const isReporting = reportNewsMutation.isPending || reportCommentMutation.isPending;
+  const isReporting = reportNewsMutation.isPending;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!item || !reason) return;
 
-    if (type === "news") {
-      reportNewsMutation.mutate(
-        {
-          news: item as News,
-          reason,
-          comment: commentText.trim() || undefined,
+    reportNewsMutation.mutate(
+      {
+        news: item,
+        reason,
+        comment: commentText.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          setReason("");
+          setCommentText("");
+          onOpenChange(false);
         },
-        {
-          onSuccess: () => {
-            setReason("");
-            setCommentText("");
-            onOpenChange(false);
-          },
-        }
-      );
-    } else {
-      reportCommentMutation.mutate(
-        {
-          comment: item as Comment,
-          reason,
-          commentText: commentText.trim() || undefined,
-        },
-        {
-          onSuccess: () => {
-            setReason("");
-            setCommentText("");
-            onOpenChange(false);
-          },
-        }
-      );
-    }
+      }
+    );
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -97,7 +82,7 @@ export function ReportDialog({ type, item, open, onOpenChange }: ReportDialogPro
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            {type === "news" ? t("reportDialog.title") : t("reportDialog.titleComment")}
+            {t("reportDialog.title")}
           </DialogTitle>
           <DialogDescription>
             {t("reportDialog.description")}

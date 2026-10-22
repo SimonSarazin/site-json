@@ -1,8 +1,10 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router";
 import { Plus, Building2, Briefcase, Calendar, MapPin } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
+import { useProfilePageIntent } from "../../hooks/useUrlIntent";
 import { useSite } from "@/hooks/useSite";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
@@ -103,6 +105,15 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
     return options;
   }, [permissions, config, t, costumForms, siteSlug]);
 
+  // `?ajouter=<type>` dans l'URL de la fiche (lien posé par un site tiers, cf. doc/08) : la modale
+  // de création de ce type s'ouvre directement — si et seulement si l'option figure dans le menu,
+  // donc avec les MÊMES gardes de permission qu'un clic. Sans droit, rien ne s'ouvre. Ouverture
+  // DÉRIVÉE (clic, sinon URL), jamais posée par un effet ; le paramètre part à la fermeture.
+  const navigate = useNavigate();
+  const ajouter = useProfilePageIntent("ajouter", entity);
+  const fromUrl = ajouter.value !== null ? availableOptions.find((o) => o.type === ajouter.value) ?? null : null;
+  const currentModal: AddOpenState = openModal ?? fromUrl?.type ?? null;
+
   // Ne rien afficher si aucune option n'est visible (ni builtin, ni custom).
   if (availableOptions.length === 0 && visibleCustomItems.length === 0) {
     return null;
@@ -110,10 +121,19 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
 
   const handleCloseModal = () => {
     setOpenModal(null);
+    if (fromUrl) ajouter.clear();
+  };
+
+  // Création partie d'un lien : la modale ne redirige PAS elle-même (`onCreated` coupe
+  // `navigateOnSuccess`, cf. EntityFormModal). Elle se ferme d'abord — ce qui retire `?ajouter` de
+  // l'URL du lieu — puis on va sur la fiche créée. Dans l'ordre inverse, le `replace` du paramètre,
+  // résolu contre l'URL courante, atterrirait sur la fiche créée avec les paramètres résiduels du lieu.
+  const handleCreatedFromUrl = (created: EntityTypes) => {
+    if (created.slug) navigate(`/profil/${created.slug}`);
   };
 
   const isCustomOpen = (modalKey: string) =>
-    typeof openModal === "object" && openModal !== null && openModal.modalKey === modalKey;
+    typeof currentModal === "object" && currentModal !== null && currentModal.modalKey === modalKey;
 
   return (
     <>
@@ -147,12 +167,13 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
       </DropdownMenu>
 
       {/* Modals builtins — via ModalRegistry (add-organization/project/event/poi = modals génériques formEngine). */}
-      {typeof openModal === "string" && (
+      {typeof currentModal === "string" && (
         <DynamicModal
-          modalName={availableOptions.find((o) => o.type === openModal)?.modalKey ?? `add-${openModal}`}
+          modalName={availableOptions.find((o) => o.type === currentModal)?.modalKey ?? `add-${currentModal}`}
           open
           onOpenChange={(open) => !open && handleCloseModal()}
           parent={entity}
+          onCreated={fromUrl ? handleCreatedFromUrl : undefined}
         />
       )}
 

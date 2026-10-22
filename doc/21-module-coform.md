@@ -137,7 +137,8 @@ src/modules/coform/
 │   ├── CoFormProvider.tsx   # Provider : état multi-étapes, navigation, stepsDataRef, brouillon localStorage
 │   ├── CoFormProvider.test.tsx # Tests unitaires CoFormProvider
 │   ├── CommonTableCatalogsContext.ts   # Contexte des catalogues collaboratifs commonTable
-│   └── CommonTableCatalogsProvider.tsx
+│   ├── CommonTableCatalogsProvider.tsx
+│   └── MilestoneLineSlotContext.ts     # Emplacement qu'un HÔTE remplit sur chaque ligne de `MilestoneListField` (vide par défaut ; lu par `useMilestoneLineSlot`) — la fiche d'un commun y pose le bouton de discussion du palier, cf. doc/38 §17.3
 ├── hooks/
 │   ├── useCategorizedCheckboxOptions.ts # Arbre d'options (liste manuelle ∪ questions commonTable distantes)
 │   ├── useCoForm.tsx            # useCoForm() + useOptionalCoForm()
@@ -151,6 +152,7 @@ src/modules/coform/
 │   │                            #   (re-exporte useCoFormFinalMutation depuis mutations/file.ts)
 │   ├── useCoFormStep.tsx        # react-hook-form + Zod par étape
 │   ├── useCommonTableCatalog.ts # Catalogue (lecture seule) d'un input commonTable
+│   ├── useMilestoneLineSlot.ts  # Ce qu'un hôte pose sur chaque ligne de `MilestoneListField` (`null` sans hôte)
 │   ├── useCommonTableContributors.tsx # Contributions individuelles d'une ligne de commonTable
 │   ├── useConditionalFields.ts  # Visibilité conditionnelle des champs
 │   ├── useConditionalFields.test.ts
@@ -271,6 +273,42 @@ elle rend `PlaceFormView`.
 - Sur le détail, `useCoFormQuery` reçoit `elementId: placeId` + `elementType: "organizations"` pour que le
   serveur renvoie l'`access` de la **réponse partagée du lieu**, et non la réponse personnelle de l'utilisateur.
 
+### CoFormAnswerPage — une réponse existante, vide ou absente
+
+`pages/CoFormAnswerPage.tsx` sert `/coform/:formId/answer/:answerId?mode=readonly|edit` : la réponse en lecture
+(`CoFormReadOnly`) ou en édition (`SmartCoForm` pré-rempli), le mode édition n'étant tenu que si le serveur dit
+`canEdit` (sinon bandeau de refus, puis lecture).
+
+**Trois cas que la page distingue** (14/10/2026) :
+
+| Cas | Ce que rend le serveur | Ce qu'affiche la page |
+|---|---|---|
+| Réponse remplie | le document, avec `answers` | ses étapes et ses questions |
+| Réponse **vide** — existe, aucune valeur | le document, **sans** `answers` (ou des étapes vides) | en lecture, un encart « Cette réponse est encore vide » à la place des étapes, avec « Remplir » pour qui peut la modifier ; en édition, le formulaire vide |
+| Réponse **absente** | des données sans identifiant — le SDK lève un `ApiError` **404** (`Answer.get`) | « Réponse introuvable » |
+
+Une réponse vide n'est pas rare : un dossier ouvert puis jamais rempli. En base de dev le 14/10/2026, **4 388 réponses
+sur 17 927** n'avaient pas de champ `answers` ou un objet vide, et 64 autres n'y gardaient que des étapes vides. La
+page les disait toutes « introuvables », même en édition — on ne pouvait pas les remplir depuis là.
+
+- « Vide » se juge par `hasAnswerContent` (`utils/helpers.ts`) : aucune valeur à aucune profondeur — `null`, chaîne
+  blanche, tableau ou objet vides ; `false` et `0` comptent comme des valeurs.
+- L'encart garde le bandeau et l'auteur (`CoFormReadOnly`, prop `emptyState`) ; la barre d'actions s'efface (son
+  « Modifier » doublerait « Remplir »), « Soumis le » aussi : la réponse n'a jamais été soumise. « Remplir » démonte
+  l'encart et son bouton : le focus passe au bandeau d'édition, au lieu de tomber sur la page.
+- « Introuvable » se juge par `isNotFoundError` : un `ApiError` au statut 404, l'erreur de l'ENTITÉ — y compris quand
+  React Query garde une ancienne donnée en cache, une réponse supprimée pendant qu'on la regarde. Le 404 du
+  TRANSPORT (`ApiClientError`, une route qui manque : SDK non régénéré, serveur mal déployé) reste « Erreur » +
+  message, comme toute autre erreur : dire « introuvable » cacherait la panne.
+- `useCoFormAnswerQuery` ne réessaie pas un 404 : la réponse ne reviendra pas, et les trois tentatives par défaut
+  tenaient la page plusieurs secondes sur « Chargement ».
+
+Preuves : `CoFormAnswerPage.test.tsx`, `CoFormReadOnly.test.tsx`, `helpers.test.ts`, et `useCoFormAnswerQuery.test.tsx`
+— ce dernier au niveau du TRANSPORT (`client.callEndpoint`) : `Form.get` et `Answer.get` y tournent pour de vrai,
+puisque c'est `Answer.get` qui décide qu'une réponse est absente. Contre-épreuve par mutation ; sonde navigateur sur
+le serveur de dev (compte simple, 20/20 : réponse vide en lecture puis « Remplir » — focus au bandeau d'édition —,
+ouverte en édition, réponse absente lue une seule fois, réponse remplie inchangée).
+
 ---
 
 ## Composants principaux
@@ -305,9 +343,13 @@ interface SmartCoFormProps {
   discardDraftRef?: React.RefObject<(() => void) | null>; // rejet explicite du brouillon
   baseUpdatedAt?: number | null;// `answer.updated` — OBLIGATOIRE dès qu'on passe `answerId`
   lockedFields?: string[];      // Champs en lecture seule (pointer-events-none)
+  submitButtonText?: string;    // Libellé du bouton d'envoi (mono-étape)
+  hideBanner?: boolean;         // Form EMBARQUÉ : la surface hôte porte déjà son titre
   hiddenFields?: readonly string[]; // Champs MASQUÉS par l'appelant, valeur conservée (cf. DynamicCoForm)
 }
 ```
+
+**Formulaire embarqué dans une section hôte** — `hideBanner` + `submitButtonText` vont de pair. Sans `hideBanner`, le nom du formulaire s'affiche en `<h1>` 4xl au milieu de la page qui l'accueille, en doublon de son propre titre ; `submitButtonText` laisse l'hôte porter son appel à l'action plutôt que le générique `coform.navigation.submit`. Premier usage : la colonne gauche d'`AmpliFeatures` (cf. [Module Ampli](22-module-ampli.md#amplideaform--le-formulaire-en-ligne)). En multi-étapes, seul `hideBanner` s'applique — la navigation du wizard garde ses libellés.
 
 **Logique de sélection du mode :**
 
@@ -406,6 +448,9 @@ export interface CoFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
+  titleClassName?: string;    // Style du titre (à poser avec hideBanner)
+  hideBanner?: boolean;       // Masque le nom du formulaire (<h1> 4xl)
+  headerActions?: ReactNode;  // Actions à droite du titre (ex. « Modifier »)
   stepKey?: string;
   inputKey?: string;
   answerId?: string;
@@ -418,6 +463,10 @@ export interface CoFormModalProps {
   hiddenFields?: readonly string[]; // transmis à SmartCoForm (cf. plus haut)
 }
 ```
+
+**`headerActions`** — rendu à droite du titre, avec `pr-8` pour ne pas passer sous le bouton de fermeture du Dialog (`absolute top-4 right-4`). Ces actions doivent vivre **dans** le Dialog : le contenu est monté dans un portail, l'appelant ne peut rien poser par-dessus. Usage type : basculer une fiche en lecture seule vers l'édition (`MeeteemAnswerModal`).
+
+**`hideBanner` + `titleClassName`** — une modale a déjà un titre qui dit ce qu'on regarde. Sans `hideBanner`, la bannière du formulaire peint son nom en `<h1>` 4xl **sous** ce titre laissé en `text-lg` : le nom du FORMULAIRE écrase visuellement celui de la RÉPONSE affichée. Les deux props se posent ensemble — la bannière disparaît, le titre reprend une taille de titre de fiche. Premier usage : `MeeteemAnswerModal` (module ampli).
 
 **Comportement de fermeture** :
 - Si `isDirty && !isSubmitting` → affiche `AlertDialog` avec 3 options : "Continuer l'édition", "Annuler les modifications", "Enregistrer"
@@ -471,7 +520,11 @@ Affiche une réponse existante en lecture seule. Caractéristiques :
 - Badge Oui/Non pour les booléens
 - `ReadOnlyUploaderGallery` pour les fichiers uploadés
 
-Props : `{ formData, answerData, answerId?, hideBanner?, hideStepHeaders?, hideMetadata? }`
+Props : `{ formData, answerData, answerId?, hideBanner?, hideStepHeaders?, hideMetadata?, emptyState? }` —
+`emptyState`, si fourni, remplace les étapes (bandeau et auteur restent). Le composant ne juge pas la vacuité : la
+page qui sait la réponse vide le fournit (`CoFormAnswerPage`). Typé `ReactElement` et non `ReactNode` :
+`emptyState={vide && <Encart />}` passerait `false`, que `??` garde, et les questions d'une réponse remplie
+disparaîtraient sans un mot.
 
 ---
 
@@ -1043,6 +1096,10 @@ const {
 
 Charge une réponse existante via `api.form({ id: formId })` → `form.answer({ id: answerId })`. La normalisation uploader (format Array → `{updateDate, files}`) est effectuée côté lib (`_transformServerData`), plus besoin de `normalizeAnswerData` pour les champs uploader.
 
+`answerData` vaut `null` quand la réponse n'a pas de champ `answers` — elle existe pourtant (`answer` non nul). Une
+réponse **absente** fait lever un `ApiError` 404 au SDK, que la requête ne réessaie pas ; les autres erreurs gardent
+trois nouvelles tentatives.
+
 ---
 
 ### useCoForm / useCoFormNavigation / useCoFormStep / useCoFormSubmit
@@ -1480,6 +1537,8 @@ final se terminant par `finder` → `finder` (on perd la création custom du cos
 | `formatTimestamp(timestamp)` | Formate un timestamp Unix en date lisible |
 | `isStepComplete(data, requiredFields)` | Vérifie si tous les champs requis sont remplis |
 | `mergeStepsData(stepsData)` | Fusionne `AllStepsData` → `SubFormData` plat |
+| `hasAnswerContent(value)` | Une réponse (ou toute valeur) porte-t-elle au moins une valeur, à n'importe quelle profondeur ? `false` et `0` en sont |
+| `isNotFoundError(error)` | Un `ApiError` 404 — l'entité du SDK dit la chose absente ? (Pas le 404 du transport, `ApiClientError` : une route qui manque) |
 
 `src/modules/coform/utils/toFinderSearchResult.ts` :
 

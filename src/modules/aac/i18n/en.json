@@ -104,6 +104,16 @@
       "title": "Edit this commun",
       "successToast": "Your changes have been saved."
     },
+    "discussion": {
+      "cta": "Discussion",
+      "messages_one": "{{count}} message",
+      "messages_other": "{{count}} messages",
+      "unread_one": "{{count}} unread",
+      "unread_other": "{{count}} unread",
+      "milestoneCta": "Discuss",
+      "milestone": "Discuss this milestone",
+      "milestoneNamed": "Discuss the milestone “{{name}}”"
+    },
     "editors": {
       "cta": "Editors",
       "ctaHint": "Edit contributors: the people who can edit this commun",
