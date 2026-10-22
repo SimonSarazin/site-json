@@ -986,6 +986,15 @@ mentionne pour ces deux surfaces est périmée.
    (`config.roles.depenseStepKey`) aux replis document, `buildResourceFromAnswer` comme
    `useCommunRawDepenses`, plutôt que de laisser jouer leur défaut `DEFAULT_AAC_STEP`.
    Sur les limites du repli lui-même (index Mongo, suppression refusée) : `doc/18` §Pièges n°2bis.
+
+   L'hôte ne suffit pas : il peut porter plusieurs appels (Open Atlas en a trois), et
+   `getFormData` lit par défaut le premier, le plus récent. Les lecteurs de la fiche passent donc
+   `form: { id: useCommunFundingContext().formId, answerId }` à `useFundingEnvelope`
+   (`openContext.envelopeForm` pour `CagnotteDialog`) ; le champ coform `MilestoneListField` passe
+   le formulaire qu'il rend (`formId`). L'enveloppe ne lit alors que la réponse du commun, et une
+   réponse illisible ailleurs dans le formulaire ne la fait plus échouer. Le contrôleur des paliers
+   n'interroge l'enveloppe qu'une fois l'id de la réponse connu : sans lui, `getFormData` lirait tout
+   le formulaire.
 10. **Les `.default()` des schémas de section ne jouent PAS à l'exécution** (la config n'est jamais
    parsée par Zod au runtime — cf. `doc/05`, encadré d'en-tête). Un sous-objet de la config arrive
    donc **tel quel**, et un défaut de destructuration (`filters = {…}`) ne joue que s'il est

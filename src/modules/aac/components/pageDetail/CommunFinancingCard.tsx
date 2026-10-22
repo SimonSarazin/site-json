@@ -93,7 +93,7 @@ export function CommunFinancingCard({
         // eslint-disable-next-line react-hooks/exhaustive-deps -- ne rejoue que sur l'arrivée de la session ou d'une intention
     }, [postLoginIntent, me?.isConnected]);
 
-    const { context: fundingContext } = useCommunFundingContext(answerQuery);
+    const { context: fundingContext, formId: fundingFormId } = useCommunFundingContext(answerQuery);
     const { hostEntity: fundingHost } = useCommunFundingHost(fundingContext);
 
     // L'étape RÉSOLUE par la page (`config.roles.depenseStepKey`), jamais
@@ -154,6 +154,7 @@ export function CommunFinancingCard({
                 hideResourceSelect: true,
                 hostEntity: fundingHost,
                 resource: funding ?? undefined,
+                envelopeForm: fundingFormId ? { id: fundingFormId, answerId } : null,
             }}
         >
             {trigger}

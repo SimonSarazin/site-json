@@ -32,7 +32,7 @@ vi.mock("@/hooks/useCocolight", () => ({
 // FUSIONNE avec la valeur RHF — les tests de fusion, plus bas, la font parler.
 const fundingMock = vi.fn();
 vi.mock("@/modules/aac/hooks/useAacFundingResource", () => ({
-  useAacFundingResource: () => fundingMock(),
+  useAacFundingResource: (...args: unknown[]) => fundingMock(...args),
 }));
 
 const permsMock = vi.fn();
@@ -144,6 +144,11 @@ describe("MilestoneListField", () => {
     poser([LIGNE], "answer-1", true);
     expect(screen.getByText("Développement")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /addMilestone/i })).toBeNull();
+  });
+
+  it("lit l'enveloppe sur le formulaire rendu", () => {
+    render(<MilestoneListField field={champ()} errors={{}} value={[]} answerId="answer-1" formId="form-1" />);
+    expect(fundingMock).toHaveBeenCalledWith("answer-1", { formId: "form-1" });
   });
 
   it("la saisie suit les droits de la RÉPONSE, pas ceux de la cagnotte", async () => {

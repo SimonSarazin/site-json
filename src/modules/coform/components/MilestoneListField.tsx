@@ -78,6 +78,8 @@ interface MilestoneListFieldProps {
   onChange?: (value: DepenseEntry[]) => void;
   /** Réponse en cours d'édition. Absente ⇒ réponse neuve : saisie locale seule. */
   answerId?: string;
+  /** Formulaire rendu : l'enveloppe ne lit que lui (l'hôte peut porter plusieurs appels). */
+  formId?: string;
   readOnly?: boolean;
 }
 
@@ -261,6 +263,7 @@ export function MilestoneListField({
   value,
   onChange,
   answerId,
+  formId,
   readOnly,
 }: MilestoneListFieldProps) {
   useLoadNamespace("modules/aac");
@@ -281,7 +284,7 @@ export function MilestoneListField({
   // site ne le porte pas, `projectId` reste vide et la projection vers le projet
   // ci-dessous ne fait rien — elle est best-effort par conception, la réponse restant
   // la source de vérité. La fiche, elle, résout bien ce contexte.
-  const { targetResource } = useAacFundingResource(answerId);
+  const { targetResource } = useAacFundingResource(answerId, { formId });
   const projectId = targetResource?.projectId ?? "";
 
 

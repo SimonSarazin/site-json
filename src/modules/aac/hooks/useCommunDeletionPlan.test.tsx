@@ -28,6 +28,7 @@ vi.mock("./useCommunFundingContext", () => ({
   useCommunFundingContext: (answer: { form?: string } | undefined) => ({
     context: answer?.form === "form-etranger" ? CONTEXTE_ETRANGER : null,
     isLoading: false,
+    formId: answer?.form ?? null,
   }),
 }));
 vi.mock("./useCommunFundingHost", () => ({
@@ -86,7 +87,11 @@ describe("useCommunDeletionPlan", () => {
     await waitFor(() =>
       expect(useFundingEnvelope).toHaveBeenLastCalledWith(
         "a1",
-        expect.objectContaining({ hostEntity: HOTE_ETRANGER, enabled: true }),
+        expect.objectContaining({
+          hostEntity: HOTE_ETRANGER,
+          enabled: true,
+          form: { id: "form-etranger", answerId: "a1" },
+        }),
       ),
     );
   });
