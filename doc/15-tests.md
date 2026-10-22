@@ -97,7 +97,6 @@ source .env.test && npm run test:e2e
 │   │   └── components/sections/parts/
 │   │       ├── MeeteemCard.test.tsx         # Composant card Meeteem
 │   │       ├── MeeteemFilters.test.tsx      # Composant filtres Meeteem
-│   │       ├── MeeteemMapPlaceholder.test.tsx # Placeholder carte Meeteem
 │   │       └── MeeteemViewToggle.test.tsx   # Toggle vue Meeteem
 │   ├── auth/hooks/__tests__/
 │   │   └── useSSOAuth.test.ts               # Hook SSO auth
@@ -576,8 +575,23 @@ D'autres tests CoForm couvrent : `formParser.test.ts` (parsing schéma de form),
 - `utils/cardFilters.test.ts` : filtres de cards
 - `components/sections/parts/MeeteemCard.test.tsx` : composant card
 - `components/sections/parts/MeeteemFilters.test.tsx` : composant filtres
-- `components/sections/parts/MeeteemMapPlaceholder.test.tsx` : placeholder carte
+- `utils/ampliUsersGeo.test.ts` : contributeurs → entités carto (id, Null Island, non localisés)
 - `components/sections/parts/MeeteemViewToggle.test.tsx` : toggle de vue
+- `components/sections/AmpliFeatures.test.tsx` : section « Proposez votre idée » (formulaire en ligne, compteurs)
+- `components/sections/parts/AmpliIdeaForm.test.tsx` : formulaire de proposition en ligne (accès, soumission, édition)
+- `components/sections/AmpliHeader.test.tsx` : les 3 CTA du hero et leurs ancres
+- `components/sections/parts/AmpliJoinButton.test.tsx` : demande d'adhésion (organisation ou projet)
+- `utils/scrollToSection.test.ts` : défilement + focus vers une section
+- `components/sections/parts/MeeteemAnswerModal.test.tsx` : détail d'une réponse, lecture seule et édition de sa réponse
+- `lib/costumAmpli.test.ts` : lecture de `costum.ampli` (fixtures réelles), forme historique, filtres de la liste
+- `lib/answersQuery.test.ts` : filtres et champs partagés par la page et les compteurs
+- `hooks/useAmplis.test.tsx` : aiguillage costum / tableau / désactivé
+- `routes.test.tsx` : gate des routes sur `config.ampli`
+- `pages/AmpliListPage.test.tsx` : page `/ampli` (cartes, compteurs, filtres, accès direct, gestion)
+- `pages/AmpliPage.test.tsx` : introuvable, non configuré, rendu normal
+- `hooks/useAmpliAdmin.test.tsx` : gate de gestion (admin du costum) + création/suppression via le SDK
+- `components/AmpliCreateDialog.test.tsx` : création d'un ampli (garde anti-collision de slug)
+- `components/AmpliDeleteButton.test.tsx` : suppression d'un ampli (confirmation obligatoire)
 
 #### Cagnotte (`src/modules/cagnotte/`)
 
@@ -672,7 +686,8 @@ les entités homonymes d'autres sites.
 
 #### Facettes « par réponses » (`answer-facets.test.ts`)
 
-Les groupes `filtersByAnswers`/`filtersByPath` ont deux cibles possibles (`filterTarget`) et se
+Les groupes `filtersByAnswers`/`filtersByPath` ont trois cibles possibles (`filterTarget` : éléments
+liés, réponses, `parentId`) et se
 trompent **en silence** : une facette mal ciblée s'affiche normalement, avec ses options, et vide
 simplement la liste au clic (défaut mesuré sur `/creneaux` — filtrage par `_id` d'organisation sur
 une liste qui porte les réponses elles-mêmes). Deux règles statiques, sur toutes les configs de

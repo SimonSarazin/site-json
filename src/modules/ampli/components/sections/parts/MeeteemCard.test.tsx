@@ -241,4 +241,118 @@ describe("MeeteemCard", () => {
       expect(wrapper.style.animationDelay).toBe("");
     });
   });
+  describe("réaction (ajout / retrait)", () => {
+    const reactLabel = "Amplifier cette réponse";
+    const unreactLabel = "Retirer mon amplification";
+
+    it("reste un simple compteur sans handler (pas de bouton)", () => {
+      renderWithProviders(
+        <MeeteemCardComponent
+          card={makeCard({ userName: "Alice", vote: { u1: true } })}
+          activeFilters={[]}
+          onToggleFilter={() => {}}
+          onSelectUser={() => {}}
+        />,
+      );
+      expect(screen.queryByRole("button", { name: reactLabel })).not.toBeInTheDocument();
+      expect(screen.getByText("1")).toBeInTheDocument();
+    });
+
+    it("appelle onToggleReaction au clic", async () => {
+      const onToggleReaction = vi.fn();
+      const user = userEvent.setup();
+      renderWithProviders(
+        <MeeteemCardComponent
+          card={makeCard({ userName: "Alice" })}
+          activeFilters={[]}
+          onToggleFilter={() => {}}
+          onSelectUser={() => {}}
+          reactionCount={2}
+          onToggleReaction={onToggleReaction}
+        />,
+      );
+      await user.click(screen.getByRole("button", { name: reactLabel }));
+      expect(onToggleReaction).toHaveBeenCalledTimes(1);
+    });
+
+    it("affiche le compte piloté par la section, pas celui de serverData", () => {
+      renderWithProviders(
+        <MeeteemCardComponent
+          card={makeCard({ userName: "Alice", vote: { u1: true } })}
+          activeFilters={[]}
+          onToggleFilter={() => {}}
+          onSelectUser={() => {}}
+          reactionCount={7}
+          onToggleReaction={() => {}}
+        />,
+      );
+      expect(screen.getByText("7")).toBeInTheDocument();
+    });
+
+    it("bascule le libellé et aria-pressed selon l'état", () => {
+      const { rerender } = renderWithProviders(
+        <MeeteemCardComponent
+          card={makeCard({ userName: "Alice" })}
+          activeFilters={[]}
+          onToggleFilter={() => {}}
+          onSelectUser={() => {}}
+          reactionCount={0}
+          onToggleReaction={() => {}}
+        />,
+      );
+      expect(screen.getByRole("button", { name: reactLabel })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+
+      rerender(
+        <MeeteemCardComponent
+          card={makeCard({ userName: "Alice" })}
+          activeFilters={[]}
+          onToggleFilter={() => {}}
+          onSelectUser={() => {}}
+          reactionCount={1}
+          hasReacted
+          onToggleReaction={() => {}}
+        />,
+      );
+      expect(screen.getByRole("button", { name: unreactLabel })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    it("désactive le bouton pendant l'aller-retour serveur", () => {
+      renderWithProviders(
+        <MeeteemCardComponent
+          card={makeCard({ userName: "Alice" })}
+          activeFilters={[]}
+          onToggleFilter={() => {}}
+          onSelectUser={() => {}}
+          reactionCount={1}
+          reactionPending
+          onToggleReaction={() => {}}
+        />,
+      );
+      expect(screen.getByRole("button", { name: reactLabel })).toBeDisabled();
+    });
+
+    it("n'ouvre pas le détail au clic sur la réaction", async () => {
+      const onOpenDetails = vi.fn();
+      const user = userEvent.setup();
+      renderWithProviders(
+        <MeeteemCardComponent
+          card={makeCard({ userName: "Alice" })}
+          activeFilters={[]}
+          onToggleFilter={() => {}}
+          onSelectUser={() => {}}
+          onOpenDetails={onOpenDetails}
+          reactionCount={0}
+          onToggleReaction={() => {}}
+        />,
+      );
+      await user.click(screen.getByRole("button", { name: reactLabel }));
+      expect(onOpenDetails).not.toHaveBeenCalled();
+    });
+  });
 });

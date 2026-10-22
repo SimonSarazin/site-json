@@ -21,7 +21,7 @@
   - [`ThemeConfigSchema`](#themeconfigschema)
   - [`PerformanceConfigSchema`](#performanceconfigschema)
   - [`ProfilesConfigSchema`](#profilesconfigschema)
-  - [`AmpliConfigSchema`](#ampliconfigschema)
+  - [`ampli`](#ampli)
   - [`floatingQRCode`](#floatingqrcode)
   - [`auth`](#auth)
   - [`AdvancedSiteConfig`](#advancedsiteconfig)
@@ -70,7 +70,7 @@ export const SiteConfig = z.object({
     bgColor: z.string().optional().default("#ffffff"),
     fgColor: z.string().optional().default("#000000"),
   }).optional(),
-  ampli: z.array(AmpliConfigSchema).optional(),
+  ampli: z.boolean().optional(),
 });
 ```
 
@@ -92,7 +92,7 @@ export const SiteConfig = z.object({
 | **auth**         | `object`                | Non      | Configuration de l'authentification                                |
 | **profiles**     | `ProfilesConfigSchema`  | Non      | Configuration des pages profil                                     |
 | **floatingQRCode** | `object`              | Non      | QR Code flottant                                                   |
-| **ampli**        | `AmpliConfigSchema[]`   | Non      | Configuration du module Ampli                                      |
+| **ampli**        | `boolean`                    | Non | Active les amplis, lus dans `costum.ampli` du porteur        |
 
 ---
 
@@ -729,45 +729,22 @@ Chaque `ProfileConfigSchema` configure le layout, les sections et les onglets du
 
 ---
 
-## `AmpliConfigSchema`
+## `ampli`
 
-Configuration du module Ampli (amplification de projets). Defini dans `src/modules/ampli/schema.ts`.
+Active les amplis du site (module Ampli). Les amplis eux-memes sont declares dans Co, sous `costum.ampli.<slug>` du porteur — la config ne fait que les activer.
 
 ```ts
-export const AmpliConfigSchema = z.object({
-  layout: AmpliLayoutVariantSchema.optional().default("default"),
-  seo: z.object({
-    titleTemplate: z.string().optional(),
-    descriptionTemplate: z.string().optional(),
-  }).optional(),
-  slug: z.string().min(1),
-  props: z.object({
-    coform: z.string().min(1),
-    path: z.object({
-      name: z.string().min(1),
-      description: z.string().optional(),
-      address: z.string().min(1),
-      image: z.string().optional(),
-      finder: z.string().optional(),
-      tags: z.string().optional(),
-    }),
-    hero: z.object({ /* ... */ }).optional(),
-    intro: z.object({ /* ... */ }).optional(),
-    features: z.object({ /* ... */ }).optional(),
-    message: z.object({ /* ... */ }).optional(),
-    community: z.object({ /* ... */ }).optional(),
-    dashboard: z.object({ /* ... */ }).optional(),
-    news: z.object({ /* ... */ }).optional(),
-  }),
-});
+ampli: z.boolean().optional(),
 ```
 
-| Cle      | Type     | Requis ? | Description                              |
-| -------- | -------- | -------- | ---------------------------------------- |
-| `layout` | `enum`   | Non      | Variante de layout (defaut: `"default"`) |
-| `seo`    | `object` | Non      | Templates SEO                            |
-| `slug`   | `string` | Oui      | Slug de la page Ampli                    |
-| `props`  | `object` | Oui      | Contenu et chemins de la page            |
+| Valeur    | Effet                                                                     |
+| --------- | ------------------------------------------------------------------------- |
+| `true`    | amplis lus dans `costum.ampli` ; routes `/ampli` (liste) + `/ampli/:slug` |
+| absent    | aucune route ampli                                                        |
+
+`true` STRICT : la config n'etant jamais parsee par Zod au runtime, `"true"` en chaine n'active rien. La forme tableau historique (`ampli: [{ slug, props: { coform, path } }]`) a ete retiree, surcharges de textes comprises : une config restee dessus n'active aucun ampli.
+
+> Forme attendue de `costum.ampli.<slug>` (dont `coform`) et migration : voir [Module Ampli](22-module-ampli.md#activation-et-source-des-amplis-costumampli).
 
 ---
 

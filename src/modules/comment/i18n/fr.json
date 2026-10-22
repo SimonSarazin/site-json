@@ -1,0 +1,340 @@
+{
+  "thread": {
+    "empty": "Aucun message pour l'instant",
+    "emptyHint": "Lancez la discussion.",
+    "loginToComment": "Connectez-vous pour participer",
+    "loading": "Chargement de la discussion…",
+    "loadError": "La discussion n'a pas pu être chargée",
+    "staleError": "Les derniers messages n'ont pas pu être rechargés.",
+    "retry": "Réessayer",
+    "gone": "Cette discussion n'existe plus",
+    "goneHint": "L'élément auquel elle était rattachée a été supprimé.",
+    "newMessages": "Nouveaux messages",
+    "newMessages_other": "{{count}} nouveaux messages",
+    "newBadge": "nouveau",
+    "showMore": "Afficher la suite",
+    "showLess": "Réduire",
+    "inReplyTo": "En réponse à {{author}}",
+    "deleted": "Message supprimé",
+    "sending": "Envoi…",
+    "sendFailed": "Non envoyé",
+    "replyCount_one": "{{count}} réponse",
+    "replyCount_other": "{{count}} réponses",
+    "lastReply": "dernière {{when}}"
+  },
+  "composer": {
+    "placeholder": "Écrire un message…",
+    "replyPlaceholder": "Répondre à {{author}}…",
+    "editPlaceholder": "Modifier le message…",
+    "send": "Envoyer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "replyingTo": "Réponse à {{author}}",
+    "stopReplying": "Ne plus répondre",
+    "emoji": "Insérer un émoji",
+    "mentionHint": "Tapez @ pour mentionner quelqu'un",
+    "formattingHint": "Ctrl+Entrée envoie le message. Entrée ouvre un paragraphe, Maj+Entrée passe à la ligne. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, # titre, `code`, > citation, - liste, 1. liste numérotée.",
+    "formattingHintTouch": "Entrée passe à la ligne ; le message part par son bouton. Mise en forme au clavier : **gras**, *italique*, ~~barré~~, # titre, `code`, > citation, - liste, 1. liste numérotée.",
+    "sendShortcut": "Ctrl+Entrée",
+    "tools": "Mise en forme et pièces jointes",
+    "editorFailed": "L'éditeur n'a pas pu être chargé. Réessayez, ou rechargez la page.",
+    "mentionCount_one": "{{count}} personne proposée",
+    "mentionCount_other": "{{count}} personnes proposées",
+    "marks": {
+      "bold": {
+        "label": "Gras"
+      },
+      "italic": {
+        "label": "Italique"
+      },
+      "strike": {
+        "label": "Barré"
+      },
+      "heading": {
+        "label": "Titre"
+      },
+      "code": {
+        "label": "Code"
+      },
+      "link": {
+        "label": "Lien"
+      },
+      "quote": {
+        "label": "Citation"
+      },
+      "list": {
+        "label": "Liste à puces"
+      },
+      "ordered": {
+        "label": "Liste numérotée"
+      },
+      "codeBlock": {
+        "label": "Bloc de code"
+      }
+    },
+    "heading": {
+      "normal": "Texte normal",
+      "level": "Titre {{level}}"
+    },
+    "link": {
+      "url": "Adresse du lien",
+      "apply": "Appliquer",
+      "remove": "Retirer le lien"
+    },
+    "inlineImage": {
+      "label": "Insérer une image dans le texte",
+      "import": "Importer",
+      "address": "Adresse",
+      "choose": "Choisir une image…",
+      "formats": "JPEG ou PNG, 8 Mo au plus.",
+      "uploading": "Envoi de {{name}}…",
+      "ready": "{{name}} est prête à être insérée.",
+      "failed": "L'image n'a pas pu être envoyée. Réessayez.",
+      "url": "Adresse de l'image",
+      "remoteHint": "Elle vient d'un autre site : les lecteurs l'afficheront d'un clic.",
+      "refused": "Donnez l'adresse complète d'une image en ligne (https://…).",
+      "alt": "Description",
+      "altHint": "Ce que montre l'image, pour qui ne la voit pas",
+      "insert": "Insérer"
+    },
+    "emojiSearch": "Rechercher un émoji"
+  },
+  "images": {
+    "attach": "Joindre une image",
+    "full": "Cinq images au maximum",
+    "remove": "Retirer {{name}}",
+    "uploading": "Envoi de {{name}}…",
+    "uploadFailed": "{{name}} n'a pas pu être jointe",
+    "failedHint_one": "{{name}} n'a pas pu être jointe. Retirez-la pour envoyer le message.",
+    "failedHint_other": "{{count}} images n'ont pas pu être jointes. Retirez-les pour envoyer le message.",
+    "waitingHint_one": "L'image est encore en cours d'envoi. Le message pourra partir dès qu'elle sera jointe.",
+    "waitingHint_other": "{{count}} images sont encore en cours d'envoi. Le message pourra partir dès qu'elles seront jointes.",
+    "nth": "Image {{index}} sur {{total}}",
+    "viewer": "Image agrandie",
+    "close": "Fermer l'image",
+    "previous": "Image précédente",
+    "next": "Image suivante",
+    "rejected": {
+      "type": "Seuls les fichiers JPEG et PNG sont acceptés.",
+      "size": "Une image ne doit pas dépasser 8 Mo.",
+      "count": "Cinq images au maximum par message."
+    },
+    "inline": {
+      "remoteShow": "Afficher l'image de {{host}}"
+    }
+  },
+  "actions": {
+    "reply": "Répondre",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "report": "Signaler",
+    "react": "Ajouter une réaction",
+    "copyLink": "Copier le lien du message",
+    "linkCopied": "Lien copié",
+    "more": "Plus d'actions",
+    "showVoters": "Voir qui a réagi"
+  },
+  "reactions": {
+    "add": "Ajouter une réaction",
+    "who": "{{names}} ont réagi",
+    "whoOne": "{{names}} a réagi",
+    "andOthers": "{{names}} et {{count}} autres"
+  },
+  "voters": {
+    "title": "Qui a réagi",
+    "description": "Les personnes qui ont réagi à ce message, réaction par réaction.",
+    "loading": "Chargement des réactions…",
+    "empty": "Aucune réaction pour l'instant",
+    "error": "Les réactions n'ont pas pu être chargées."
+  },
+  "reactionsTypes": {
+    "love": "J'adore",
+    "like": "J'aime",
+    "enjoy": "Content",
+    "glad": "Ravi",
+    "bothered": "Énervé",
+    "sad": "Triste",
+    "scared": "Inquiet",
+    "support": "Soutien"
+  },
+  "deleteDialog": {
+    "title": "Supprimer ce message ?",
+    "description": "Le message et ses réponses seront supprimés définitivement.",
+    "descriptionNoReplies": "Ce message sera supprimé définitivement.",
+    "confirm": "Supprimer",
+    "cancel": "Annuler"
+  },
+  "panel": {
+    "title": "Discussions",
+    "description": "Vos contextes, leurs fils de discussion et les messages du fil choisi.",
+    "holders": "Contextes",
+    "close": "Fermer les discussions",
+    "expandRail": "Déplier les contextes",
+    "collapseRail": "Replier les contextes",
+    "threads": "Fils",
+    "messages": "Messages",
+    "noHolder": "Aucun contexte avec des discussions",
+    "noThread": "Aucun fil dans ce contexte",
+    "pickThread": "Choisissez un fil pour l'afficher",
+    "loadAll": "Charger toutes les discussions",
+    "loadAllHint": "Par défaut, seul le contexte en cours est chargé.",
+    "truncated": "Affichage partiel — affinez le contexte pour tout voir",
+    "unreadCount_one": "{{count}} non lu",
+    "unreadCount_other": "{{count}} non lus",
+    "carrierUnread_one": "{{name}}, {{count}} non lu",
+    "carrierUnread_other": "{{name}}, {{count}} non lus",
+    "lastActivity": "Dernier message {{when}}",
+    "backToThreads": "Retour aux fils",
+    "backToHolders": "Retour aux contextes",
+    "startThread": "Démarrer la discussion",
+    "openThread": "Fil ouvert",
+    "withoutThread_one": "Sans discussion ({{count}})",
+    "withoutThread_other": "Sans discussion ({{count}})",
+    "noCarrier": "Sans contexte",
+    "untitled": "Sans titre",
+    "pickHolder": "Choisissez un contexte",
+    "loginRequired": "Connectez-vous pour retrouver vos discussions.",
+    "mine": "j'y écris",
+    "threadCount_one": "{{count}} fil",
+    "threadCount_other": "{{count}} fils",
+    "messageCount_one": "{{count}} message",
+    "messageCount_other": "{{count}} messages",
+    "search": "Rechercher un contexte ou une discussion",
+    "searchClear": "Effacer la recherche",
+    "searching": "Recherche…",
+    "searchThreads": "Fils correspondants — tous contextes",
+    "searchScopeHint": "La recherche ne porte pas sur le contenu des messages.",
+    "searchPartial": "Affichage partiel — la recherche ne couvre pas tout",
+    "noHolderMatch": "Aucun contexte ne correspond à « {{query}} »",
+    "noThreadMatch": "Aucun fil ne correspond à « {{query}} »",
+    "holderCount_one": "{{count}} contexte",
+    "holderCount_other": "{{count}} contextes",
+    "searchSummary": "{{holders}} · {{threads}}",
+    "inSpace": "dans {{name}}",
+    "error": {
+      "hidden": "Discussion introuvable, ou dont l'accès est réservé.",
+      "refused": "Le serveur a refusé la demande.",
+      "unreadable": "Le serveur a renvoyé une réponse illisible.",
+      "failed": "Les discussions n'ont pas pu être chargées."
+    },
+    "loginToRead": "Connectez-vous pour lire cette discussion."
+  },
+  "space": {
+    "title": "Discussions du commun",
+    "titleOf": "Discussions — {{name}}",
+    "description": "Les fils de discussion de ce commun et les messages du fil choisi.",
+    "titleAnswer": "Discussions de la réponse",
+    "descriptionAnswer": "Les fils de discussion de cette réponse et les messages du fil choisi.",
+    "general": "Discussion générale",
+    "questionUntitled": "Question sans intitulé",
+    "expenseUntitled": "Ligne de dépense",
+    "notFound": "Cet espace de discussion est introuvable.",
+    "loginIfReserved": "Si elle vous est réservée, connectez-vous pour la lire.",
+    "kinds": {
+      "general": "Général",
+      "question": "Question",
+      "expense": "Dépense",
+      "other": "Discussion"
+    },
+    "audiences": {
+      "authorAll": "Publique",
+      "authorAdmin": "Privée",
+      "private": "Admins"
+    },
+    "groups": {
+      "questions": "Questions",
+      "expenses": "Dépenses",
+      "other": "Autres"
+    },
+    "create": {
+      "open": "Nouvelle discussion",
+      "title": "Nouvelle discussion",
+      "name": "Nom de la discussion",
+      "namePlaceholder": "De quoi voulez-vous parler ?",
+      "audience": "Qui peut la lire",
+      "audienceHint": {
+        "authorAll": "Tout le monde, sans être connecté.",
+        "authorAdmin": "Le déposant du commun, ses référents et les administrateurs de l'appel.",
+        "private": "Les administrateurs de l'appel seulement."
+      },
+      "submit": "Créer",
+      "submitting": "Création…",
+      "cancel": "Annuler",
+      "error": {
+        "login": "Connectez-vous pour créer une discussion.",
+        "hidden": "Cet espace de discussion est introuvable.",
+        "forbidden": "Vous ne pouvez pas créer cette discussion.",
+        "bad-name": "Donnez-lui un nom, de 120 caractères au plus.",
+        "too-many": "Ce commun a atteint son nombre maximal de discussions.",
+        "unreadable": "La réponse du serveur est illisible. Vérifiez la liste avant de recommencer.",
+        "uncertain": "Le serveur n'a pas répondu : la discussion a peut-être été créée. Vérifiez la liste avant de recommencer.",
+        "failed": "La discussion n'a pas pu être créée. Réessayez."
+      }
+    }
+  },
+  "reportDialog": {
+    "title": "Signaler ce message",
+    "description": "Merci de nous aider à maintenir une communauté respectueuse en signalant les contenus inappropriés.",
+    "reasonLabel": "Raison du signalement",
+    "reasonPlaceholder": "Sélectionnez une raison",
+    "commentLabel": "Détails supplémentaires (optionnel)",
+    "commentPlaceholder": "Ajoutez des détails sur ce signalement…",
+    "cancel": "Annuler",
+    "submit": "Envoyer le signalement",
+    "submitting": "Envoi…",
+    "reasons": {
+      "spam": "Spam ou contenu promotionnel",
+      "harassment": "Harcèlement ou intimidation",
+      "hateSpeech": "Discours haineux",
+      "violence": "Violence ou menaces",
+      "inappropriate": "Contenu inapproprié",
+      "misinformation": "Désinformation",
+      "other": "Autre"
+    }
+  },
+  "dates": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "at": "{{date}} à {{time}}",
+    "todayAt": "aujourd'hui à {{time}}",
+    "yesterdayAt": "hier à {{time}}",
+    "onDate": "le {{date}}"
+  },
+  "toast": {
+    "addSuccess": "Message envoyé",
+    "addError": "Le message n'a pas pu être envoyé",
+    "editSuccess": "Message modifié",
+    "editError": "Le message n'a pas pu être modifié",
+    "deleteSuccess": "Message supprimé",
+    "deleteError": "Le message n'a pas pu être supprimé",
+    "replySuccess": "Réponse envoyée",
+    "replyError": "La réponse n'a pas pu être envoyée",
+    "reactError": "La réaction n'a pas pu être enregistrée",
+    "reportSuccess": "Signalement envoyé",
+    "reportError": "Le signalement n'a pas pu être envoyé",
+    "maybeSent": "Le message a peut-être été envoyé — la discussion a été rechargée",
+    "maybeApplied": "L'opération a peut-être abouti — la discussion a été rechargée",
+    "draftRestored": "Votre texte est revenu dans le champ de saisie.",
+    "draftKept": "Rouvrez la discussion où vous l'avez écrit : votre texte vous y attendra quelques minutes."
+  },
+  "a11y": {
+    "thread": "Fil de discussion",
+    "message": "Message de {{author}}, {{when}}",
+    "reactionCount": "{{reaction}} : {{count}}",
+    "unreadSeparator": "Début des messages non lus",
+    "messageActions": "Actions du message",
+    "threadHint": "Utilisez les flèches haut et bas pour passer d'un message à l'autre, puis la tabulation pour atteindre ses actions."
+  },
+  "contextTypes": {
+    "citoyens": "Profil",
+    "organizations": "Organisation",
+    "projects": "Projet",
+    "events": "Événement",
+    "poi": "Lieu",
+    "news": "Actualité",
+    "answers": "Réponse",
+    "forms": "Formulaire",
+    "classifieds": "Annonce",
+    "actions": "Action"
+  }
+}

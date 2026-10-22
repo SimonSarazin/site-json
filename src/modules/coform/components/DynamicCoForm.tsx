@@ -15,7 +15,7 @@ import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, PROSE_CESURE, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
 import { TagsField } from "./TagsField";
 import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
@@ -47,6 +47,7 @@ import { useCoFormDraft } from "../hooks/useCoFormDraft";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { FormStepKeyContext } from "../contexts/FormStepKeyContext";
 
 import "../i18n/i18n";
 
@@ -986,8 +987,11 @@ export function DynamicCoForm({
             </div>
           );
 
+          // La clé de l'étape, pour le bouton de discussion de chaque question (`FieldLabel`).
+          const grilleDeLEtape = <FormStepKeyContext.Provider value={subForm.subFormId}>{fieldsGrid}</FormStepKeyContext.Provider>;
+
           if (hideStepHeaders) {
-            return <div key={subForm.subFormId}>{fieldsGrid}</div>;
+            return <div key={subForm.subFormId}>{grilleDeLEtape}</div>;
           }
 
           // Bouton "Voir les évaluations" — visible uniquement si la step
@@ -1027,13 +1031,13 @@ export function DynamicCoForm({
                     <ProseContent
                       text={formData.inputs[subForm.subFormId].info as string}
                       source="formDefinition"
-                      className="prose prose-sm dark:prose-invert max-w-none"
+                      className={`${PROSE_CESURE} prose prose-sm dark:prose-invert max-w-none`}
                     />
                   </CardDescription>
                 )}
               </CardHeader>
               <CardContent>
-                {fieldsGrid}
+                {grilleDeLEtape}
               </CardContent>
             </Card>
           );

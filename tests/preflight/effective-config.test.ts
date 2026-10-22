@@ -102,15 +102,20 @@ function poser(obj: Record<string, unknown>, chemin: string, valeur: unknown): v
   ref[parts[parts.length - 1]] = valeur;
 }
 
-/** Entité-sonde minimale : `resolveEditModalName` ne lit que `getEntityType()` + `serverData`. */
+/** Entité-sonde minimale : `resolveEditModalName` ne lit que `getEntityType()`, `slug` + `serverData`. */
+const SONDE_SLUG = "sonde";
 function sonde(collection: string, serverData: Record<string, unknown>) {
-  return { getEntityType: () => collection, serverData } as never;
+  return { getEntityType: () => collection, slug: SONDE_SLUG, serverData } as never;
 }
+/** Visiteur PROPRIÉTAIRE de la sonde (route `userContext:"own"`) et visiteur tiers. */
+const VISITEUR_PROPRIO = { me: { slug: SONDE_SLUG } };
+const VISITEUR_TIERS = { me: { slug: "quelqu-un-d-autre" } };
 
 interface RouteDecl {
   editModal?: string;
   editModalMatch?: Record<string, unknown>;
   when?: unknown;
+  userContext?: "own" | "other";
 }
 
 /** Les routes déclarées d'un profil, dans l'ordre du registry (table `editModals`, puis la paire
@@ -183,7 +188,8 @@ function projeter(site: string, cfg: Cfg) {
   for (const [collection, profil] of Object.entries(profils)) {
     const routes = routesDe(profil);
     if (routes.length === 0) continue;
-    const resolue = (sd: Record<string, unknown>) => resolveEditModalName(sonde(collection, sd), cfg as never);
+    const resolue = (sd: Record<string, unknown>, visiteur = VISITEUR_PROPRIO) =>
+      resolveEditModalName(sonde(collection, sd), cfg as never, visiteur);
     editModals[collection] = {
       vierge: resolue({}),
       routes: routes.map((route) => {
@@ -194,7 +200,14 @@ function projeter(site: string, cfg: Cfg) {
           poser(native, "source.keys", [slug]);
           poser(native, "reference.costum", [slug]);
         }
-        return { declare: route.editModal, native: resolue(native), horsPerimetre: resolue(identite) };
+        // Route conditionnée au VISITEUR (`userContext`) : la sonde native est aussi résolue pour un
+        // tiers — c'est l'écart « propriétaire ≠ tiers » que la clé introduit, il doit être visible.
+        return {
+          declare: route.editModal,
+          native: resolue(native),
+          horsPerimetre: resolue(identite),
+          ...(route.userContext ? { nativeVuParUnTiers: resolue(native, VISITEUR_TIERS) } : {}),
+        };
       }),
     };
   }

@@ -1,2 +1,2 @@
 // Utilitaires du module News
-export * from "./commentCacheUtils";
+export { bumpCommentCount } from "./commentCount";

@@ -111,12 +111,14 @@ export function ProfileImageUpload({
           cropH: taille.height,
         });
       } else {
-        // Carrée à l'envoi, même au format « Original » : cf. `padFileToSquare`. En cas d'échec de la mise
-        // au carré (décodage, canvas refusé par le navigateur), on envoie la photo telle quelle — comme
-        // avant ce traitement — plutôt que de ne rien envoyer.
-        const fichier = await padFileToSquare(croppedFile).catch((error) => {
+        // Allégée PUIS carrée à l'envoi, même au format « Original » : cf. `padFileToSquare`. L'allègement
+        // vient d'abord pour que les deux cas où la mise au carré rend le fichier tel quel — photo déjà
+        // carrée, mise au carré en échec (décodage, canvas refusé) — ne partent pas à pleine taille, comme
+        // la bannière : un JPEG 4000×4000 de 12 Mo dépasserait la taille de requête de PHP.
+        const legere = await lightenImage(croppedFile);
+        const fichier = await padFileToSquare(legere).catch((error) => {
           console.warn("Photo de profil non mise au carré, envoyée telle quelle :", error);
-          return croppedFile;
+          return legere;
         });
         await uploadImageMutation.mutateAsync(fichier);
       }
@@ -132,6 +134,9 @@ export function ProfileImageUpload({
       }
     } catch (error) {
       console.error("Error uploading image:", error);
+      // Le dialogue est déjà fermé (« Utiliser l'image entière » le ferme au clic) : sans remise à zéro,
+      // rechoisir la MÊME photo pour réessayer ne déclencherait aucun `change`.
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 

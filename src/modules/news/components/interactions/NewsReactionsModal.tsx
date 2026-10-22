@@ -4,7 +4,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useT } from "@/hooks/useT";
 import { useNewsVotes } from "../../hooks/useNewsVotes";
 import { useState } from "react";
-import { voteTypes, voteTypeMap } from "../../constants/voteTypes";
+import { voteTypes, voteTypeMap } from "@/modules/comment/constants/voteTypes";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface NewsReactionsModalProps {

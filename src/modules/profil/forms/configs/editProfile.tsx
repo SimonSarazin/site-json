@@ -3,6 +3,7 @@
  * (descripteur/schéma/spec résolus depuis l'entité au runtime). Remplace le corps de `EditProfileGenericModal`
  * (qui ne reste qu'un mince ROUTER vers cette config OU le legacy EditProfileModal pour les types non migrés).
  */
+import { reloadOnSlugChange } from "../../lib/reloadOnSlugChange";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { FieldValues } from "react-hook-form";
 import { PROFIL_QUERY_KEYS } from "../../constants";
@@ -50,12 +51,5 @@ export const editProfileConfig: EntityModalConfig = {
   },
 
   // Slug changé → recharger sur la nouvelle URL (effet hors moteur, parité ancien modal).
-  afterSubmit: ({ entity }, values) => {
-    const oldSlug = (entity as EntityTypes | null)?.slug;
-    const newSlug = values.slug as string | undefined;
-    if (newSlug && oldSlug && newSlug !== oldSlug && typeof window !== "undefined") {
-      window.history.replaceState(null, "", window.location.pathname.replace(oldSlug, newSlug));
-      window.location.reload();
-    }
-  },
+  afterSubmit: ({ entity }, values) => reloadOnSlugChange((entity as EntityTypes | null)?.slug, values.slug),
 };

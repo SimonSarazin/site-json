@@ -70,3 +70,26 @@ describe("CoFormReadOnly — dynamicFields", () => {
     expect(container.querySelectorAll(".bg-muted\\/30")).toHaveLength(1);
   });
 });
+
+/**
+ * L'emplacement d'une réponse vide (`emptyState`) : fourni par la page qui en décide
+ * (`CoFormAnswerPage`), il prend la place des étapes — le bandeau du formulaire reste, pour qu'on
+ * sache de quel formulaire la réponse est vide.
+ */
+describe("CoFormReadOnly — emplacement d'une réponse vide", () => {
+  it("remplace les étapes, garde le bandeau et l'auteur", () => {
+    const { container, getByRole, getByText } = render(
+      <CoFormReadOnly formData={FORM} answerData={{}} authorName="Une autrice" emptyState={<p data-testid="vide">vide</p>} />,
+    );
+    expect(container.querySelector("[data-testid=vide]")).not.toBeNull();
+    expect(container.textContent).not.toContain("Partenaires");
+    expect(container.querySelector("dl")).toBeNull();
+    expect(getByRole("heading", { level: 1 }).textContent).toBe("Test");
+    expect(getByText("Une autrice")).toBeTruthy();
+  });
+
+  it("absent, les étapes s'affichent comme toujours", () => {
+    const { container } = render(<CoFormReadOnly formData={FORM} answerData={{}} />);
+    expect(container.textContent).toContain("Partenaires");
+  });
+});

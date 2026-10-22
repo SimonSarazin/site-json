@@ -388,6 +388,8 @@ export function useCommunObjectivesController({
     loadingIds,
     // Etat de chargement des LECTURES (squelettes de bloc)
     isLoadingData,
+    // Les dépenses telles que le document les porte, CLÉS comprises (la liste affichée les perd).
+    depensesDocument: rawDepensesDocument,
 
     // Dialogs : etat d'ouverture
     isCreateActionOpen,

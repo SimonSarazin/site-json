@@ -3,8 +3,8 @@ import { LocalizedString } from "@/types/locale-schema";
 import { PLACE_KINDS } from "@/modules/coform/utils/finderFilters";
 
 /**
- * Bloc de config AAC AU NIVEAU DU SITE (`config.aac`) — même patron que
- * `config.ampli`, mais **SINGULIER : un seul AAC par site**.
+ * Bloc de config AAC AU NIVEAU DU SITE (`config.aac`) — **SINGULIER : un seul
+ * AAC par site**.
  *
  * Le site déclare simplement SON formulaire (form parent `type:aap,
  * aapType:aac`). Les sections `aac-directory`/`aac-highlight` et les routes

@@ -5,8 +5,9 @@
 import { createElement, Suspense } from "react";
 import { lazy } from "vite-preload";
 import type { QueryKey } from "@tanstack/react-query";
-import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, registerSlotFn, type InvalidateFn } from "../specRegistries";
+import { registerExistingUrlFn, registerCleanValuesFn, registerInvalidateFn, registerSlotFn, registerAfterSubmitFn, type InvalidateFn } from "../specRegistries";
 import { PROFIL_QUERY_KEYS } from "../../constants";
+import { reloadOnSlugChange } from "../../lib/reloadOnSlugChange";
 import { SEARCH_QUERY_KEYS, SEARCH_STAT_COUNT_PREFIX } from "@/modules/search/constants";
 import { BLOG_QUERY_KEYS } from "@/modules/blog/constants/queryKeys";
 import { AGENDA_QUERY_KEYS } from "@/modules/agenda/constants/queryKeys";
@@ -86,6 +87,18 @@ registerInvalidateFn("invalidate:event", (ctx, params) => [
   AGENDA_QUERY_KEYS.LIST_PREFIX(),
 ]);
 
+
+/**
+ * afterSubmit GÉNÉRIQUE (clé `afterSubmit:reloadOnSlugChange`) : en ÉDITION, si le `slug` soumis diffère
+ * de celui de l'entité, réécrit l'URL courante et recharge — même effet que `editProfileConfig.afterSubmit`
+ * (modale de profil standard, même helper `lib/reloadOnSlugChange`), rendu disponible aux formulaires costum qui exposent le slug (ex. le
+ * formulaire citoyen : le slug est le nom d'utilisateur, donc le chemin `/profil/<slug>` du profil ouvert).
+ * Inerte en création et hors navigateur.
+ */
+registerAfterSubmitFn("afterSubmit:reloadOnSlugChange", (ctx, values) => {
+  if (ctx.mode !== "edit") return;
+  reloadOnSlugChange(ctx.entity?.slug, values.slug);
+});
 
 // Chargé à la demande : le slot ne sert qu'aux formulaires qui déclarent `duplicateCheck`, et en
 // création seulement — les autres ne paient rien. Constante de module (pas dans la SlotFn) : un

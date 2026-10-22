@@ -335,7 +335,7 @@ Deux catalogues à exposer à la skill :
 | **auth** | `loginForm/registerForm/recoverPasswordForm` + `<AuthMenu>` | `config.auth` (variant, menu, SSO), `header.utilities.auth` | SSO/comptes Communecter |
 | **notification** | cloche header + section `notifications` | `header.utilities.notifications` | notifications backend |
 | **commandPalette** | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
-| **ampli** | routes ampli | `config.ampli` | campagne ampli |
+| **ampli** | routes `/ampli` (liste) + `/ampli/:slug` | `"ampli": true` (la forme tableau est dépréciée) | entrées `costum.ampli.<slug>` côté Co, avec `coform` |
 | **interop** | pods Discourse/Mediawiki | clés interop | instances externes |
 
 La skill doit refuser d'activer un module dont le prérequis backend n'est pas

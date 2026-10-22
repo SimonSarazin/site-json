@@ -89,12 +89,9 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
           streetAddress: str(addr?.streetAddress),
           postalCode: str(addr?.postalCode),
           addressLocality: str(addr?.addressLocality),
-          zones: Object.fromEntries(
-            ["level1", "level2", "level3", "level4"].flatMap((lvl) => {
-              const zone = str(addr?.[lvl]);
-              return zone ? [[lvl, zone]] : [];
-            }),
-          ),
+          zones: ["level1", "level2", "level3", "level4"]
+            .map((lvl) => str(addr?.[lvl]))
+            .filter((zone): zone is string => !!zone),
           coords: coordsOf(sd),
         });
       }
@@ -108,5 +105,6 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
     parents: result.data ?? EMPTY,
     isLoading: result.isLoading,
     isFetched: result.isFetched,
+    isError: result.isError,
   };
 }

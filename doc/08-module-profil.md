@@ -797,7 +797,9 @@ carré transparent (PNG, image entière centrée — `padFileToSquare`) : elle s
 `object-cover` hors de l'en-tête et le backend en tire une miniature 50×50 recadrée au centre. Le carré
 est plafonné à 1024 px (`MAX_SQUARE_SIDE`, image réduite en gardant ses proportions) : sans plafond, une
 photo 4000×3000 donnait un PNG de plusieurs dizaines de Mo, et Safari iOS refuse d'exporter un canvas
-au-delà de 16,7 Mpx. Si la mise au carré échoue malgré tout, la photo part telle quelle. La bannière,
+au-delà de 16,7 Mpx. La photo est d'abord allégée (`lightenImage`, comme la bannière) : une photo déjà
+carrée, ou dont la mise au carré échoue, part donc allégée et non à pleine taille. Après un échec d'envoi,
+le champ fichier est remis à zéro pour qu'on puisse rechoisir la même photo. La bannière,
 elle, est allégée avant l'envoi (`lightenImage` : au-delà de 1 Mo, plus grand côté ramené à 1920 px,
 JPEG 0,85) et sa zone de recadrage (`cropW`/`cropH`) suit les dimensions du fichier envoyé (`fitWithin`) :
 envoyée telle quelle, une photo d'appareil (15,8 Mo, 6875×4544) dépassait la taille de requête de PHP
@@ -1300,6 +1302,16 @@ création, elle, passait par `me.costum(slug)`. ⚠ Un `costumForm` sans `costum
 silence côté config. Gardes : `useEntityMutation.test.ts` (§ « EDIT costum : épingle du schéma ») et le préflight
 `tests/preflight/costum-form-slug.test.ts`.
 
+**Costum LIVE (`VITE_COSTUM_FORCE_LIVE=true`, posé par site dans `sites.json` → `env`)** : la lib ignore ses schémas
+bundlés et ne résout un costum que depuis son cache live. Or `get()` ne précharge que le costum de la
+PROVENANCE de la fiche (`source.key`). Quand la fiche vient d'ailleurs — cas d'un annuaire : un lieu de
+tiers-lieux.org a `source.key: "laRosee"`, `"franceTierslieux"`… —, le costum du FORMULAIRE n'est jamais
+chargé, `setCostumScope` épingle un contexte NU (aucun champ) et l'enregistrement rejette
+`holderOrganization` (59 lieux sur 59 mesurés). Dans ce mode, `pinSchemaCostumScope` appelle d'abord
+`entity.loadCostumScope(slug)` (charge le costum du formulaire en live, cache de session, puis épingle) et
+ne retombe sur `setCostumScope` que si ce chargement échoue ou ne rend rien. Une fiche dont la provenance
+EST le costum du formulaire (parent62) ne dépendait pas de ce chargement. Hors mode live : inchangé.
+
 ---
 
 ### Édition inline d'une propriété `serverData` (pattern `updateField` + `refresh`)
@@ -1716,6 +1728,43 @@ moments :
 ---
 
 ## Actions et boutons : comportement non connecté
+
+### Ouvrir une action depuis un lien — `?participer`, `?ajouter=<type>`
+
+Un site tiers (l'extension WordPress de tiers-lieux.org, qui affiche les événements d'un lieu) peut
+envoyer le visiteur **directement** sur une action de la fiche, sans lui faire chercher dans les menus :
+
+| URL | Effet | Condition |
+|---|---|---|
+| `/profil/<événement>?participer` | ouvre la confirmation « Participer à cet événement » | l'action `participate` est disponible (connecté, pas encore participant) |
+| `/profil/<lieu>?ajouter=event` | ouvre la modale de création d'un événement | `event` figure dans le menu « Créer » (`canAddEvent`, `addConfig`) — `organization`, `project`, `poi` marchent de même |
+
+Règles, posées par `hooks/useUrlIntent.ts` (`useUrlIntent`, `useProfilePageIntent`) :
+
+- **Mêmes gardes qu'un clic.** Le lien ne crée aucun droit : sans action disponible (déconnecté, déjà
+  participant, type non autorisé), rien ne s'ouvre et la fiche s'affiche normalement — le paramètre
+  reste alors dans l'URL, et l'action s'ouvrira si les droits arrivent (connexion via le header).
+- **Une seule ouverture.** Le paramètre est retiré de l'URL (`replace`) à la **fermeture** de ce qui
+  a été ouvert, confirmée ou non. Rien ne part sans confirmation : le lien n'inscrit personne tout seul.
+- **L'entité de la page, et elle seule.** `useProfilePageIntent` ne rend l'intention que si l'entité
+  est celle de `ProfileEntityContext` : l'aperçu d'un autre événement (agenda, recherche, y compris
+  dans un onglet de la fiche) ne la voit pas.
+- **Par identité, pas par type.** `?participer` vise l'action `participate`, pas le type `join`, que
+  portent aussi « devenir membre » d'une organisation ou « devenir administrateur ».
+- **Dérivé, pas posé par un effet.** L'état « ouvert » vaut `clicUtilisateur ?? intentionUrl` au rendu ;
+  `react-hooks/set-state-in-effect` est en erreur dans ce dépôt.
+- **Création depuis le lien : fermer, puis rediriger.** Avec `?ajouter`, `AddEntityDropdown` passe
+  `onCreated` à la modale (qui ne redirige alors pas elle-même) : la fermeture retire le paramètre de
+  l'URL du lieu, puis on navigue vers la fiche créée — qui n'hérite ainsi d'aucun paramètre du lien.
+- **Une instance par page.** Les composants qui lisent l'intention sont partagés ; une config qui
+  monterait deux fois le même (en-tête avec actions **et** section `profile-actions`) ouvrirait deux
+  dialogues sur la même intention. Aucune config ne le fait aujourd'hui ; ne pas l'introduire.
+
+Câblage : `EntityActionButtons` choisit l'action et la passe à `StatusDropdownLayout` (`urlAction`,
+`onUrlActionDone`) ; `AddEntityDropdown` lit `?ajouter` lui-même. Tests : `hooks/useUrlIntent.test.tsx`,
+`action-buttons/StatusDropdownLayout.urlAction.test.tsx`, `EntityActionButtons.urlIntent.test.tsx`,
+`action-buttons/AddEntityDropdown.urlIntent.test.tsx`.
+
 
 ### `ProfileActions` (`components/actions/ProfileActions.tsx`)
 

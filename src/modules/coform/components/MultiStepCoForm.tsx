@@ -21,7 +21,7 @@ import { CoFormProvider } from "../contexts/CoFormProvider";
 import { useCoForm } from "../hooks/useCoForm";
 import { useCoFormStep } from "../hooks/useCoFormStep";
 import { useCoFormNavigation, useCoFormSubmit } from "../hooks/useCoFormNavigation";
-import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, SelectField, ProseContent, PROSE_CESURE, SectionTitleField, SectionDescriptionField, TitleSeparatorField } from "./FormFields";
 import { TagsField } from "./TagsField";
 import type { DepenseEntry } from "../utils/depense";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
@@ -118,6 +118,12 @@ interface MultiStepCoFormProps {
   /** Active la persistance du draft. Défaut : true. */
   enableDraft?: boolean;
   /**
+   * Masque la bannière du formulaire (titre + image). À poser quand le form est
+   * EMBARQUÉ dans une surface qui porte déjà son propre titre — sinon le nom du
+   * formulaire s'affiche en `<h1>` 4xl au milieu de la section hôte.
+   */
+  hideBanner?: boolean;
+  /**
    * Métadonnées de la réponse existante (créateur + dernier modifieur).
    * Quand fournies, un lien "Voir l'activité" apparaît sous le form qui
    * ouvre la modale AnswerActivityDialog avec l'historique des modifs.
@@ -163,6 +169,7 @@ export function MultiStepCoForm({
   enableDraft = true,
   existingAnswerMeta,
   unknownFieldVariant = "error",
+  hideBanner = false,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -195,6 +202,7 @@ export function MultiStepCoForm({
         className={className}
         existingAnswerMeta={existingAnswerMeta}
         unknownFieldVariant={unknownFieldVariant}
+        hideBanner={hideBanner}
       />
     </CoFormProvider>
   );
@@ -216,6 +224,7 @@ function MultiStepCoFormContent({
   className,
   existingAnswerMeta,
   unknownFieldVariant,
+  hideBanner,
 }: {
   variant: CoFormVariant;
   showProgress: boolean;
@@ -229,6 +238,7 @@ function MultiStepCoFormContent({
   className?: string;
   existingAnswerMeta?: ExistingAnswerMeta | null;
   unknownFieldVariant: "error" | "placeholder";
+  hideBanner?: boolean;
 }) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -436,7 +446,7 @@ function MultiStepCoFormContent({
 
   return (
     <div ref={containerRef} className={cn("space-y-6", className)}>
-      <CoFormBanner formData={coform.formData} />
+      <CoFormBanner formData={coform.formData} hidden={hideBanner} />
 
       {/* En-tête d'étapes : fenêtre cliquable sur ordinateur, étape courante +
           sommaire sur téléphone. Il porte aussi le compteur « Étape 3 sur 11 »,
@@ -494,7 +504,7 @@ function MultiStepCoFormContent({
               <ProseContent
                 text={coform.formData.inputs[fields.subFormId].info as string}
                 source="formDefinition"
-                className="prose prose-sm dark:prose-invert max-w-none"
+                className={`${PROSE_CESURE} prose prose-sm dark:prose-invert max-w-none`}
               />
             </CardDescription>
           )}
