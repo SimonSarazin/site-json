@@ -149,7 +149,7 @@ src/modules/cagnotte/
 │
 ├── prefetch/
 │   ├── prefetchFundingEnvelope.ts      # Helper SSR (exporté, voir §SSR)
-│   └── index.ts                        # prefetchFundingEnvelope + hasCagnotteSection + CAGNOTTE_SECTION_TYPES
+│   └── index.ts                        # prefetchFundingEnvelope ; ré-exporte hasCagnotteSection + CAGNOTTE_SECTION_TYPES (lib/cagnotteSections.ts)
 │
 ├── services/
 │   ├── fundingEnvelopeResponse.ts      # Réponse d'une action de paiement, erreur serveur levée, issue inconnue
@@ -385,7 +385,7 @@ Exports principaux consommés hors du module :
 | Helpers lib (`editMilestoneWithSync`, `appendProjectMilestone`, `getApiErrorMessage`, …) | Fonctions | Composants qui veulent appeler directement (rare) |
 | Types : `FundingMilestone`, `FundingAction`, `FundingProject`, `CagnottePermissions`, `MilestoneSyncContext`, … | Types | DTO publics |
 | `CAGNOTTE_QUERY_KEYS` | Constants | Invalidations cross-modules |
-| `prefetchFundingEnvelope`, `hasCagnotteSection`, `CAGNOTTE_SECTION_TYPES` | Helpers SSR | Loader / entry-server (cf. §SSR) |
+| `prefetchFundingEnvelope`, `hasCagnotteSection`, `CAGNOTTE_SECTION_TYPES` | Helpers SSR | Loader / entry-server (cf. §SSR) ; `hasCagnotteSection` : onglets du profil (`isTabAvailable`) |
 | `calculateCagnottePermissions`, `DEFAULT_CAGNOTTE_PERMISSIONS` | Fonctions | Système de permissions central |
 
 Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas** exposées via `index.ts` — elles sont chargées en lazy par `SectionRenderer` via import dynamique pour préserver le code-splitting `vite-preload`.
@@ -891,11 +891,11 @@ await prefetchFundingEnvelope(queryClient, {
 
 La queryKey générée par le prefetch match celle de `useFundingEnvelope` (incluant `me?.id ?? null`), donc le cache est correctement consommé à l'hydratation. Échec silencieux si l'entité n'expose pas `fundingEnvelope()` → le client fera le fetch normalement.
 
-**`prefetch/index.ts`** exporte également :
+**`prefetch/index.ts`** ré-exporte aussi, depuis `lib/cagnotteSections.ts` (fichier feuille, sans dépendance) :
 - `CAGNOTTE_SECTION_TYPES` — `Set<string>` des 4 types de sections (`"actions"`, `"finance"`, `"actions-summary"`, `"finance-summary"`)
-- `hasCagnotteSection(sections)` — walk récursif sur une liste de sections JSON (inclut les `leftSections`/`rightSections` de `profile-tab-layout`) pour détecter la présence d'une section cagnotte
+- `hasCagnotteSection(sections)` — walk récursif sur une liste de sections JSON (inclut les `leftSections`/`rightSections` de `profile-tab-layout` et les `props.leftSections`/`props.rightSections` de `cagnotte-layout`) pour détecter la présence d'une section cagnotte
 
-**Statut au repo** : exporté mais pas branché côté loader / entry-server (cf. [Décisions design en attente](#décisions-design-en-attente)).
+**Statut au repo** : `prefetchFundingEnvelope` est exporté mais pas branché côté loader / entry-server (cf. [Décisions design en attente](#décisions-design-en-attente)). `hasCagnotteSection` sert aux onglets du profil : sur un projet sans réponse liée, un onglet qui en porte une est retiré (`isTabAvailable`, doc/08).
 
 ---
 
@@ -1083,7 +1083,8 @@ Le module suppose que le CoForm cible contient `answers.aapStep1.depense[]`. Pou
 
 ## Exemple de configuration JSON
 
-Page profil projet avec onglets cagnotte (Finance + Actions) :
+Page profil projet avec onglets cagnotte (Finance + Actions). Sur le profil d'un projet sans réponse
+liée (`serverData.answer` vide), ces onglets sont retirés d'office (`isTabAvailable`, doc/08) :
 
 ```json
 {

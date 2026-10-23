@@ -1,4 +1,5 @@
-import type { ProfileTabCondition, ProfileType } from "../schema";
+import type { ProfileTab, ProfileTabCondition, ProfileType } from "../schema";
+import { hasCagnotteSection } from "@/modules/cagnotte/lib/cagnotteSections";
 
 export interface TabVisibilityContext {
   /** Type de l'entité du profil (`getEntityType()`) ; absent = inconnu, la condition ne filtre pas. */
@@ -9,6 +10,8 @@ export interface TabVisibilityContext {
   me?: { id?: string | null; slug?: string | null } | null;
   /** Slug de l'entité du profil. */
   entitySlug?: string | null;
+  /** Projet : id de la réponse liée (`serverData.answer`) ; vide = projet sans réponse. */
+  answerId?: string | null;
 }
 
 /**
@@ -41,4 +44,16 @@ export function isTabVisible(condition: ProfileTabCondition | undefined, ctx: Ta
   }
 
   return true;
+}
+
+/**
+ * Onglet proposé : sa `condition` (cf. {@link isTabVisible}) et, sur un projet sans réponse liée,
+ * aucune section cagnotte. Ne lit que l'entité : tranché dès le SSR.
+ */
+export function isTabAvailable(
+  tab: Pick<ProfileTab, "condition" | "sections">,
+  ctx: TabVisibilityContext,
+): boolean {
+  if (!isTabVisible(tab.condition, ctx)) return false;
+  return !(ctx.entityType === "projects" && !ctx.answerId && hasCagnotteSection(tab.sections ?? []));
 }

@@ -561,6 +561,7 @@ export const BLOCK_NOTES: Record<string, string[]> = {
     "Refinement non exportable (ProfileTabSchema) : chaque tab exige `sections` non vide OU `component`.",
     "resolveEditModalName lit editModal/editModals sur profiles[getEntityType()] UNIQUEMENT — jamais sur `default` ; repli final « edit-profile ».",
     "tabs[].condition.permissions est déclaré au schéma mais NON implémenté (non implémenté, cf. lib/tabVisibility.ts) — ne pas s'y fier.",
+    "Projet sans réponse liée (serverData.answer vide) : les onglets qui contiennent une section cagnotte (finance, actions, *-summary, même dans un cagnotte-layout) sont retirés d'office — aucune clé de config à poser.",
     "generateTabRoutes fusionne les tabs de TOUS les types (routes partagées par id) ; le filtrage par condition n'agit qu'à l'affichage — d'où la redirection client vers l'onglet par défaut si l'URL d'un tab filtré est visitée.",
   ],
   admin: [

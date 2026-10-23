@@ -1349,6 +1349,14 @@ Depuis la branche `review`, les tabs de profil supportent une `condition.auth` e
 
 Valeurs : `"required"` (connecté seulement), `"anonymous"` (déconnecté seulement), `"any"` (tous). Évalué par `isTabVisible` (`lib/tabVisibility.ts`), après hydratation seulement.
 
+### Onglets cagnotte d'un projet sans réponse
+
+Sur le profil d'un projet sans réponse AAP liée (`serverData.answer` vide), les onglets qui contiennent
+une section cagnotte (`finance`, `actions`, `*-summary`, y compris dans un `cagnotte-layout` ou un
+`profile-tab-layout`) sont retirés d'office : leurs paliers et financements vivent dans la réponse.
+Aucune clé de config. La règle ne lit que l'entité : elle vaut dès le SSR (`isTabAvailable`,
+`lib/tabVisibility.ts`), et l'URL d'un tel onglet renvoie au profil.
+
 ---
 
 ## Système d'actions (entity-actions)
