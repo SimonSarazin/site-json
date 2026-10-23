@@ -79,7 +79,9 @@
           "geo",
           "geoPosition",
           "parent",
-          "source"
+          "source",
+          "inst_siret",
+          "inst_uai"
         ],
         "defaultFilters": {
           "type": "recoveryCenter"
@@ -89,6 +91,43 @@
           "inst_nom",
           "equip_type_name",
           "categorie"
+        ]
+      }
+    },
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "notSourceKey": true,
+        "defaultTypes": [
+          "organizations"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "tags"
+        ],
+        "indexStepList": 24,
+        "indexStepMap": 500,
+        "defaultFields": [
+          "name",
+          "slug",
+          "collection",
+          "type",
+          "source",
+          "shortDescription",
+          "description",
+          "tags",
+          "address",
+          "geo",
+          "geoPosition",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "links",
+          "counts",
+          "created"
         ]
       }
     },
@@ -145,7 +184,9 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
+          "parent",
+          "inst_siret",
+          "inst_uai"
         ],
         "defaultFilters": {
           "type": "recoveryCenter"
@@ -205,7 +246,9 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
+          "parent",
+          "inst_siret",
+          "inst_uai"
         ],
         "defaultFilters": {
           "type": "recoveryCenter"
