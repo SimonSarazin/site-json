@@ -301,21 +301,33 @@
       },
       {
         "label": {
-          "fr": "Coopérer",
-          "en": "Cooperate"
+          "fr": "Communs",
+          "en": "Commons"
         },
-        "icon": "handshake",
+        "icon": "puzzle",
+        "path": "/communs",
         "children": [
+          {
+            "label": {
+              "fr": "Annuaire de nos communs",
+              "en": "Directory of our commons"
+            },
+            "description": {
+              "fr": "La plateforme pour référencer, mutualiser et cofinancer les communs des tiers-lieux",
+              "en": "The platform to reference, pool and co‑finance the commons of third places"
+            },
+            "path": "/communs"
+          },
           {
             "label": {
               "fr": "Appel à communs",
               "en": "Call for commons"
             },
             "description": {
-              "fr": "La plateforme pour référencer, mutualiser et cofinancer les communs des tiers-lieux",
-              "en": "The platform to reference, pool and co‑finance the commons of third places"
+              "fr": "Pour cofinancer des communs, rendez-vous sur les fiches et indiquez vos intentions de cofinancement",
+              "en": "To co-finance commons, go to their pages and indicate your co-financing intentions"
             },
-            "path": "/aac/communs"
+            "path": "/communs"
           },
           {
             "label": {
@@ -338,7 +350,16 @@
               "en": "The monthly day around the commons"
             },
             "path": "https://communlundi.tiers-lieux.org"
-          },
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Coopérer",
+          "en": "Cooperate"
+        },
+        "icon": "handshake",
+        "children": [
           {
             "label": {
               "fr": "Auto-diagnostic du lieu comme Licoop",
@@ -3510,7 +3531,7 @@
       ]
     },
     {
-      "path": "/aac/communs",
+      "path": "/communs",
       "title": {
         "fr": "Appel à communs",
         "en": "Call for commons"
