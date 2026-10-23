@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { SearchCardProps } from "../../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
@@ -74,10 +75,17 @@ export default function CardFunding({
     },
   });
 
+  // Verrou synchrone : `isPending` n'arrive qu'au rendu suivant, un double clic passerait.
+  const activatingRef = useRef(false);
   const handleActivateFundingClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    if (!formId || !projectId || !entity) return;
-    activateFunding();
+    if (!formId || !projectId || !entity || activatingRef.current) return;
+    activatingRef.current = true;
+    activateFunding(undefined, {
+      onSettled: () => {
+        activatingRef.current = false;
+      },
+    });
   };
 
   const handleViewProjectClick = (e: React.MouseEvent<HTMLButtonElement>) => {

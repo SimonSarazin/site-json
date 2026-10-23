@@ -112,6 +112,7 @@ src/modules/cagnotte/
 │
 ├── hooks/
 │   ├── useFundingEnvelope.ts           # Query React Query principale (envelope normalisée) + exports normalizeFundingEnvelope, extractFormIdFromEnvelope, mergeEnvelopePayloads
+│   ├── useSiteEnvelopeForm.ts          # Formulaire de l'enveloppe du site : `config.aac.formId` en type aac, sinon aucun
 │   ├── useCagnottePermissions.ts       # Wrapper typé sur usePermissions
 │   ├── useCagnotteContext.ts           # Accès au CagnotteProvider (safe + strict)
 │   ├── useActionGuards.ts              # requireConnected + requireApiContext
@@ -148,7 +149,7 @@ src/modules/cagnotte/
 │
 ├── prefetch/
 │   ├── prefetchFundingEnvelope.ts      # Helper SSR (exporté, voir §SSR)
-│   └── index.ts                        # prefetchFundingEnvelope + hasCagnotteSection + CAGNOTTE_SECTION_TYPES
+│   └── index.ts                        # prefetchFundingEnvelope ; ré-exporte hasCagnotteSection + CAGNOTTE_SECTION_TYPES (lib/cagnotteSections.ts)
 │
 ├── services/
 │   ├── fundingEnvelopeResponse.ts      # Réponse d'une action de paiement, erreur serveur levée, issue inconnue
@@ -255,6 +256,23 @@ serait neuve à chaque recalcul du memo.
 ⚠️ Le **header** (`PiggyBankHeaderButton`) et **`CagnotteDialog`** ne réparent plus rien. Tout passage
 disant que la réparation part « au rendu » ou « à l'ouverture de la modale » est faux.
 
+**Une dépense ↔ un jalon.** Le sens inverse (jalon du projet sans dépense) est réparé par le legacy
+`budgetmilestoneV2.js` (compact, fiche projet, budget ocecoform). Il ajoutait des dépenses sans
+`milestone`, de façon asynchrone ; `Aap::generateMilestones` les rattachait plus tard par nom.
+Chaque affichage intermédiaire en ajoutait une de plus, d'où des dépenses en double sur un même
+jalon, qui portent les mêmes actions.
+
+Depuis le correctif :
+- le legacy appelle `coremuoperation` `generateDepenses` (`Aap::ensureMilestoneDepenses`), qui
+  ajoute des dépenses déjà liées, sous un filtre atomique ;
+- `generateMilestones` ne rattache plus par nom un jalon déjà pris ;
+- les doublons existants se retirent avec `/co2/admin/aapduplicates` (`op=report|apply`,
+  super-admin), une fois ce correctif déployé.
+
+Côté site-json, `uniqueActionRows` (`aac/lib/objectiveHelpers.ts`) ne compte chaque action qu'une
+fois, même sur des données encore en double : liste `CommunActionsFeed` et avancement des actions de
+`CommunFinancingCard`.
+
 > Le nom `aapStep1` vient de « Appel À Projet, étape 1 ». Le module suppose que le CoForm cible contient cette structure. **Non généralisé** pour d'autres structures.
 
 ### Types canoniques (`types.ts`)
@@ -329,8 +347,9 @@ export function getServerData(value: unknown): UnknownRecord {
 | `readEntityPreferences(entity, source)` | Lit `entity.data.preferences` ou `entity.serverData.preferences` |
 
 > **`normalizeActionStatus` n'est plus une fonction privée de `useFundingEnvelope`.** Elle vit ici,
-> exportée, à côté de `resolveActionAuthorId`, et sert **les deux** lectures : l'enveloppe **et** la
-> fiche commun du module AAC (`normalizeActionForEdit`). Un statut lu différemment selon l'écran
+> exportée, à côté de `resolveActionAuthorId`, et sert **trois** lectures : l'enveloppe, l'adaptateur
+> (`normalizeRawAction`, d'où viennent les actions de la fiche AAC, de `CagnotteDialog` et de
+> `MilestoneListField`) **et** la fiche commun du module AAC (`normalizeActionForEdit`). Un statut lu différemment selon l'écran
 > donnerait des droits différents sur la même action — les gardes de permission testent des égalités
 > strictes (`status === "done"`, `status !== "todo"`).
 
@@ -366,7 +385,7 @@ Exports principaux consommés hors du module :
 | Helpers lib (`editMilestoneWithSync`, `appendProjectMilestone`, `getApiErrorMessage`, …) | Fonctions | Composants qui veulent appeler directement (rare) |
 | Types : `FundingMilestone`, `FundingAction`, `FundingProject`, `CagnottePermissions`, `MilestoneSyncContext`, … | Types | DTO publics |
 | `CAGNOTTE_QUERY_KEYS` | Constants | Invalidations cross-modules |
-| `prefetchFundingEnvelope`, `hasCagnotteSection`, `CAGNOTTE_SECTION_TYPES` | Helpers SSR | Loader / entry-server (cf. §SSR) |
+| `prefetchFundingEnvelope`, `hasCagnotteSection`, `CAGNOTTE_SECTION_TYPES` | Helpers SSR | Loader / entry-server (cf. §SSR) ; `hasCagnotteSection` : onglets du profil (`isTabAvailable`) |
 | `calculateCagnottePermissions`, `DEFAULT_CAGNOTTE_PERMISSIONS` | Fonctions | Système de permissions central |
 
 Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas** exposées via `index.ts` — elles sont chargées en lazy par `SectionRenderer` via import dynamique pour préserver le code-splitting `vite-preload`.
@@ -609,7 +628,7 @@ lazy** — `src/components/layout/header/CagnotteHeaderButtons.tsx`, qui exporte
 Comportement du bouton lui-même :
 
 - Lit `entity.serverData.preferences.projectModalId` via `useReactiveProperty` (réactif aux mutations live)
-- Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture)
+- Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture). En type `aac`, l'enveloppe et la modale (`openContext.envelopeForm`) lisent le formulaire de l'annuaire (`useSiteEnvelopeForm`), comme `PledgeHeaderButton` : les deux boutons partagent une seule lecture
 - Affiche le montant `targetProject.totalFinancement` en temps réel (PiggyBank icon + montant en €)
 - Masqué si `me?.id` est nul (feature member-only, évite d'afficher "0 €" pour les anonymes)
 - Ouvre `<CagnotteDialog>` au clic avec `defaultResourceId` pré-sélectionné
@@ -626,6 +645,11 @@ Comportement du bouton lui-même :
   les siens (`scope: "mine"`, sans colonne Payeur).
 
 La modale s'ouvre sur les paiements quand il n'y a rien à régler.
+
+Les promesses viennent de l'enveloppe de l'entité du site. En type `aac`, `getFormData` y lit le
+formulaire de l'annuaire (`useSiteEnvelopeForm` : `config.aac.formId`), pas le premier de l'hôte. Les
+projets de l'organisation (`useOrganizationProjectsWithAnswers`) ne sont chargés qu'en type `standard`
+(`selectorType: "project"`), le seul où l'adaptateur s'en sert ; `CagnotteDialog` suit la même règle.
 
 ### `CagnotteDialog` — parts supplémentaires
 
@@ -867,11 +891,11 @@ await prefetchFundingEnvelope(queryClient, {
 
 La queryKey générée par le prefetch match celle de `useFundingEnvelope` (incluant `me?.id ?? null`), donc le cache est correctement consommé à l'hydratation. Échec silencieux si l'entité n'expose pas `fundingEnvelope()` → le client fera le fetch normalement.
 
-**`prefetch/index.ts`** exporte également :
+**`prefetch/index.ts`** ré-exporte aussi, depuis `lib/cagnotteSections.ts` (fichier feuille, sans dépendance) :
 - `CAGNOTTE_SECTION_TYPES` — `Set<string>` des 4 types de sections (`"actions"`, `"finance"`, `"actions-summary"`, `"finance-summary"`)
-- `hasCagnotteSection(sections)` — walk récursif sur une liste de sections JSON (inclut les `leftSections`/`rightSections` de `profile-tab-layout`) pour détecter la présence d'une section cagnotte
+- `hasCagnotteSection(sections)` — walk récursif sur une liste de sections JSON (inclut les `leftSections`/`rightSections` de `profile-tab-layout` et les `props.leftSections`/`props.rightSections` de `cagnotte-layout`) pour détecter la présence d'une section cagnotte
 
-**Statut au repo** : exporté mais pas branché côté loader / entry-server (cf. [Décisions design en attente](#décisions-design-en-attente)).
+**Statut au repo** : `prefetchFundingEnvelope` est exporté mais pas branché côté loader / entry-server (cf. [Décisions design en attente](#décisions-design-en-attente)). `hasCagnotteSection` sert aux onglets du profil : sur un projet sans réponse liée, un onglet qui en porte une est retiré (`isTabAvailable`, doc/08).
 
 ---
 
@@ -1059,7 +1083,8 @@ Le module suppose que le CoForm cible contient `answers.aapStep1.depense[]`. Pou
 
 ## Exemple de configuration JSON
 
-Page profil projet avec onglets cagnotte (Finance + Actions) :
+Page profil projet avec onglets cagnotte (Finance + Actions). Sur le profil d'un projet sans réponse
+liée (`serverData.answer` vide), ces onglets sont retirés d'office (`isTabAvailable`, doc/08) :
 
 ```json
 {

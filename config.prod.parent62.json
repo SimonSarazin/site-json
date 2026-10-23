@@ -488,7 +488,7 @@
                   "lg": 2
                 },
                 "headlineStyle": "text",
-                "accentColor": "var(--p62-marine)",
+                "accentColor": "var(--p62-pastille-encre)",
                 "width": "wide",
                 "tileLayout": "pillRow",
                 "size": "lg",
@@ -502,8 +502,8 @@
                       "en": "A parent"
                     },
                     "href": "/parents",
-                    "background": "var(--p62-vert-fonce)",
-                    "textColor": "var(--p62-vert-fonce-encre)"
+                    "background": "rgb(241, 136, 123)",
+                    "textColor": "#ffffff"
                   },
                   {
                     "icon": "briefcase",
@@ -512,7 +512,7 @@
                       "en": "A professional or volunteer"
                     },
                     "href": "/pro",
-                    "background": "var(--p62-marine)",
+                    "background": "var(--p62-turquoise)",
                     "textColor": "#ffffff"
                   }
                 ]
@@ -538,7 +538,7 @@
                 "illustrationBackgroundImage": "/images/parent62/fond-degrade-territoire.png",
                 "illustrationMaxHeight": "80vh",
                 "illustrationAspectRatio": "996/945",
-                "badgeColor": "var(--p62-marine)",
+                "badgeColor": "var(--p62-pastille-encre)",
                 "animate": true,
                 "backgroundImageAlt": {
                   "fr": "Carte du Pas-de-Calais et ses territoires",
@@ -694,7 +694,7 @@
                 "design": "card",
                 "showControls": true,
                 "linkTitleAndImage": true,
-                "badgeColor": "var(--p62-marine)"
+                "badgeColor": "var(--p62-pastille-encre)"
               }
             },
             "align": "stretch",
@@ -720,9 +720,11 @@
             },
             "viewAllHref": "/zoomcat",
             "maxWidth": "7xl",
+            "imageFit": "contain",
             "background": "var(--p62-marine)",
             "accentColor": "var(--p62-turquoise)",
-            "accentTextColor": "var(--p62-marine)",
+            "accentTextColor": "#ffffff",
+            "itemAccentColor": "#f1887b",
             "headlineStyle": "badge"
           }
         }
@@ -1642,7 +1644,9 @@
           "id": "equipe-dep",
           "props": {
             "roles": [
-              "Coordonnateur(trice) départemental du réseau à la Fédération des Centres Sociaux Nord Pas-de-Calais"
+              "Coordonnateur(trice) départemental du réseau à la Fédération des Centres Sociaux Nord Pas-de-Calais",
+              "Coordonnateur départemental du réseau à la Fédération des Centres Sociaux Nord Pas-de-Calais",
+              "Coordonnatrice départemental du réseau à la Fédération des Centres Sociaux Nord Pas-de-Calais"
             ],
             "showRole": true,
             "showManagement": false,
@@ -1673,7 +1677,7 @@
           "type": "member",
           "id": "equipe-terr",
           "props": {
-            "roles": ["Coordonnateur(trice)"],
+            "roles": ["Coordonnateur(trice)", "Coordonnateur", "Coordonnatrice"],
             "showRole": true,
             "showManagement": false,
             "showCard": false,
@@ -11029,6 +11033,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/arrageois-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (224)",
+                  "en": "Towns in the territory (224)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Ablainzevelle</li><li>Achicourt</li><li>Achiet-le-Grand</li><li>Achiet-le-Petit</li><li>Acq</li><li>Adinfer</li><li>Agnez-lès-Duisans</li><li>Agny</li><li>Amplier</li><li>Anzin-Saint-Aubin</li><li>Arleux-en-Gohelle</li><li>Arras</li><li>Athies</li><li>Avesnes-les-Bapaume</li><li>Ayette</li><li>Bailleul-Sire-Berthoult</li><li>Bailleulmont</li><li>Bailleulval</li><li>Bancourt</li><li>Bapaume</li><li>Baralle</li><li>Barastre</li><li>Barly</li><li>Basseux</li><li>Bavincourt</li><li>Beaudricourt</li><li>Beaufort-Blavincourt</li><li>Beaulencourt</li><li>Beaumetz les Loges</li><li>Beaumetz-les-Cambrai</li><li>Beaurains</li><li>Behagnies</li><li>Bellonne</li><li>Berles-au-Bois</li><li>Berneville</li><li>Bertencourt-le-Cauroy</li><li>Bertincourt</li><li>Beugnatre</li><li>Beugny</li><li>Biache-Saint-Vaast</li><li>Biefvillers-les-Bapaume</li><li>Bienvillers-au-Bois</li><li>Bihucourt</li><li>Blairville</li><li>Boiry-Becquerelle</li><li>Boiry-Notre-Dame</li><li>Boiry-Saint-Martin</li><li>Boiry-Sainte-Rictrude</li><li>Boisleux au Mont</li><li>Boisleux-Saint-Marc</li><li>Bourlon</li><li>Boyelles</li><li>Brebieres</li><li>Bucquoy</li><li>Buissy</li><li>Bullecourt</li><li>Bus</li><li>Cagnicourt</li><li>Canettemont</li><li>Cherisy</li><li>Corbehem</li><li>Couin</li><li>Coullemont</li><li>Courcelles-le-Comte</li><li>Croisilles</li><li>Dainville</li><li>Denier</li><li>Douchy-les-Ayette</li><li>Duisans</li><li>Dury</li><li>Écourt-Saint-Quentin</li><li>Écoust-Saint-Mein</li><li>Écurie</li><li>Épinoy</li><li>Ervillers</li><li>Estree-Wamin</li><li>Étaing</li><li>Éterpigny</li><li>Étrun</li><li>Famechon</li><li>Fampoux</li><li>Farbus</li><li>Favreuil</li><li>Feuchy</li><li>Ficheux</li><li>Foncquevillers</li><li>Fontaine-les-Croisilles</li><li>Fosseux</li><li>Fremicourt</li><li>Fresnes-les-Montauban</li><li>Fresnoy-en-Gohelle</li><li>Gaudiempre</li><li>Gavrelle</li><li>Givenchy-le-Noble</li><li>Gomiecourt</li><li>Gommecourt</li><li>Gouves</li><li>Gouy-en-Artois</li><li>Gouy-sous-Bellonne</li><li>Graincourt-les-Havrincourt</li><li>Grand-Rullecourt</li><li>Grevillers</li><li>Grincourt-les-Pas</li><li>Guemappe</li><li>Habarcq</li><li>Hally</li><li>Hamblain-les-Pres</li><li>Hamelincourt</li><li>Hannescamp</li><li>Haplincourt</li><li>Haucourt</li><li>Haudecourt-les-Rensart</li><li>Haute-Avesnes</li><li>Hauteville</li><li>Havrincourt</li><li>Hebuterne</li><li>Hendecourt-les-Cagnicourt</li><li>Henin sur Cojeul</li><li>Heninel</li><li>Henu</li><li>Hermies</li><li>Houvin-Houvigneul</li><li>Humbercamps</li><li>Inchy-en-Artois</li><li>Ivergny</li><li>Izel-les-Équerchin</li><li>La Cauchie</li><li>Lagnicourt-Marcel</li><li>Latter-Saint-Quentin</li><li>Le Sars</li><li>Le Souichet</li><li>Le Transloy</li><li>Lebucquiere</li><li>Lechelle</li><li>Liencourt</li><li>Lignereuil</li><li>Ligny-Thilloy</li><li>Magnicourt-sur-Canche</li><li>Marœuil</li><li>Marquion</li><li>Martinpuich</li><li>Mercatel</li><li>Metz-en-Couture</li><li>Monchiet</li><li>Monchy-au-Bois</li><li>Monchy-le-Preux</li><li>Mondicourt</li><li>Mont-Saint-Éloi</li><li>Montenescourt</li><li>Morchies</li><li>Morval</li><li>Mory</li><li>Moyenneville</li><li>Neuville-Bourjonval</li><li>Neuville-Saint-Vaast</li><li>Neuville-Vitasse</li><li>Neuvireuil</li><li>Noreuil</li><li>Noyelles-sous-Bellonne</li><li>Noyellette</li><li>Oisy-le-Verger</li><li>Oppy</li><li>Orville</li><li>Palluel</li><li>Pas-en-Artois</li><li>Pelves</li><li>Plouvain</li><li>Pommera</li><li>Pommier</li><li>Pronville-en-Artois</li><li>Puisieux</li><li>Queant</li><li>Quiery-la-Motte</li><li>Ransart</li><li>Rebreuviette</li><li>Recourt</li><li>Remy</li><li>Riencourt-les-Bapaume</li><li>Riencourt-les-Cagnicourt</li><li>Riviere</li><li>Roclincourt</li><li>Rocquigny</li><li>Rœux</li><li>Rumaucourt</li><li>Ruyaulcourt</li><li>Sailly-au-Bois</li><li>Sailly-en-Ostrevent</li><li>Sains-les-Marquion</li><li>Saint Martin sur Cojeul</li><li>Saint-Amand</li><li>Saint-Laurent-Blangy</li><li>Saint-Léger</li><li>Saint-Nicolas-Lez-Arras</li><li>Sainte-Catherine</li><li>Sapignies</li><li>Sarton</li><li>Sauchy-Cauchy</li><li>Sauchy-Lestree</li><li>Saudemont</li><li>Saulty</li><li>Simencourt</li><li>Sombrin</li><li>Souastre</li><li>Sus-Saint-Leger</li><li>Thelus</li><li>Thievres</li><li>Tilloy-les-Mofflaines</li><li>Tortequesne</li><li>Trescault</li><li>Vaulx-Vraucourt</li><li>Velu</li><li>Villers-au-Flos</li><li>Villers-les-Cagnicourt</li><li>Vis-en-Artois</li><li>Vitry-en-Artois</li><li>Wailly</li><li>Walrus</li><li>Wancourt</li><li>Wanquetin</li><li>Warlencourt-Eaucourt</li><li>Warlincourt-les-Pas</li><li>Warluzel</li><li>Willerval</li><li>Ytres</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Ablainzevelle</li><li>Achicourt</li><li>Achiet-le-Grand</li><li>Achiet-le-Petit</li><li>Acq</li><li>Adinfer</li><li>Agnez-lès-Duisans</li><li>Agny</li><li>Amplier</li><li>Anzin-Saint-Aubin</li><li>Arleux-en-Gohelle</li><li>Arras</li><li>Athies</li><li>Avesnes-les-Bapaume</li><li>Ayette</li><li>Bailleul-Sire-Berthoult</li><li>Bailleulmont</li><li>Bailleulval</li><li>Bancourt</li><li>Bapaume</li><li>Baralle</li><li>Barastre</li><li>Barly</li><li>Basseux</li><li>Bavincourt</li><li>Beaudricourt</li><li>Beaufort-Blavincourt</li><li>Beaulencourt</li><li>Beaumetz les Loges</li><li>Beaumetz-les-Cambrai</li><li>Beaurains</li><li>Behagnies</li><li>Bellonne</li><li>Berles-au-Bois</li><li>Berneville</li><li>Bertencourt-le-Cauroy</li><li>Bertincourt</li><li>Beugnatre</li><li>Beugny</li><li>Biache-Saint-Vaast</li><li>Biefvillers-les-Bapaume</li><li>Bienvillers-au-Bois</li><li>Bihucourt</li><li>Blairville</li><li>Boiry-Becquerelle</li><li>Boiry-Notre-Dame</li><li>Boiry-Saint-Martin</li><li>Boiry-Sainte-Rictrude</li><li>Boisleux au Mont</li><li>Boisleux-Saint-Marc</li><li>Bourlon</li><li>Boyelles</li><li>Brebieres</li><li>Bucquoy</li><li>Buissy</li><li>Bullecourt</li><li>Bus</li><li>Cagnicourt</li><li>Canettemont</li><li>Cherisy</li><li>Corbehem</li><li>Couin</li><li>Coullemont</li><li>Courcelles-le-Comte</li><li>Croisilles</li><li>Dainville</li><li>Denier</li><li>Douchy-les-Ayette</li><li>Duisans</li><li>Dury</li><li>Écourt-Saint-Quentin</li><li>Écoust-Saint-Mein</li><li>Écurie</li><li>Épinoy</li><li>Ervillers</li><li>Estree-Wamin</li><li>Étaing</li><li>Éterpigny</li><li>Étrun</li><li>Famechon</li><li>Fampoux</li><li>Farbus</li><li>Favreuil</li><li>Feuchy</li><li>Ficheux</li><li>Foncquevillers</li><li>Fontaine-les-Croisilles</li><li>Fosseux</li><li>Fremicourt</li><li>Fresnes-les-Montauban</li><li>Fresnoy-en-Gohelle</li><li>Gaudiempre</li><li>Gavrelle</li><li>Givenchy-le-Noble</li><li>Gomiecourt</li><li>Gommecourt</li><li>Gouves</li><li>Gouy-en-Artois</li><li>Gouy-sous-Bellonne</li><li>Graincourt-les-Havrincourt</li><li>Grand-Rullecourt</li><li>Grevillers</li><li>Grincourt-les-Pas</li><li>Guemappe</li><li>Habarcq</li><li>Hally</li><li>Hamblain-les-Pres</li><li>Hamelincourt</li><li>Hannescamp</li><li>Haplincourt</li><li>Haucourt</li><li>Haudecourt-les-Rensart</li><li>Haute-Avesnes</li><li>Hauteville</li><li>Havrincourt</li><li>Hebuterne</li><li>Hendecourt-les-Cagnicourt</li><li>Henin sur Cojeul</li><li>Heninel</li><li>Henu</li><li>Hermies</li><li>Houvin-Houvigneul</li><li>Humbercamps</li><li>Inchy-en-Artois</li><li>Ivergny</li><li>Izel-les-Équerchin</li><li>La Cauchie</li><li>Lagnicourt-Marcel</li><li>Latter-Saint-Quentin</li><li>Le Sars</li><li>Le Souichet</li><li>Le Transloy</li><li>Lebucquiere</li><li>Lechelle</li><li>Liencourt</li><li>Lignereuil</li><li>Ligny-Thilloy</li><li>Magnicourt-sur-Canche</li><li>Marœuil</li><li>Marquion</li><li>Martinpuich</li><li>Mercatel</li><li>Metz-en-Couture</li><li>Monchiet</li><li>Monchy-au-Bois</li><li>Monchy-le-Preux</li><li>Mondicourt</li><li>Mont-Saint-Éloi</li><li>Montenescourt</li><li>Morchies</li><li>Morval</li><li>Mory</li><li>Moyenneville</li><li>Neuville-Bourjonval</li><li>Neuville-Saint-Vaast</li><li>Neuville-Vitasse</li><li>Neuvireuil</li><li>Noreuil</li><li>Noyelles-sous-Bellonne</li><li>Noyellette</li><li>Oisy-le-Verger</li><li>Oppy</li><li>Orville</li><li>Palluel</li><li>Pas-en-Artois</li><li>Pelves</li><li>Plouvain</li><li>Pommera</li><li>Pommier</li><li>Pronville-en-Artois</li><li>Puisieux</li><li>Queant</li><li>Quiery-la-Motte</li><li>Ransart</li><li>Rebreuviette</li><li>Recourt</li><li>Remy</li><li>Riencourt-les-Bapaume</li><li>Riencourt-les-Cagnicourt</li><li>Riviere</li><li>Roclincourt</li><li>Rocquigny</li><li>Rœux</li><li>Rumaucourt</li><li>Ruyaulcourt</li><li>Sailly-au-Bois</li><li>Sailly-en-Ostrevent</li><li>Sains-les-Marquion</li><li>Saint Martin sur Cojeul</li><li>Saint-Amand</li><li>Saint-Laurent-Blangy</li><li>Saint-Léger</li><li>Saint-Nicolas-Lez-Arras</li><li>Sainte-Catherine</li><li>Sapignies</li><li>Sarton</li><li>Sauchy-Cauchy</li><li>Sauchy-Lestree</li><li>Saudemont</li><li>Saulty</li><li>Simencourt</li><li>Sombrin</li><li>Souastre</li><li>Sus-Saint-Leger</li><li>Thelus</li><li>Thievres</li><li>Tilloy-les-Mofflaines</li><li>Tortequesne</li><li>Trescault</li><li>Vaulx-Vraucourt</li><li>Velu</li><li>Villers-au-Flos</li><li>Villers-les-Cagnicourt</li><li>Vis-en-Artois</li><li>Vitry-en-Artois</li><li>Wailly</li><li>Walrus</li><li>Wancourt</li><li>Wanquetin</li><li>Warlencourt-Eaucourt</li><li>Warlincourt-les-Pas</li><li>Warluzel</li><li>Willerval</li><li>Ytres</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "arrageois-comite-rangee",
           "props": {
@@ -11091,7 +11114,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Arrageois" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -11145,59 +11170,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/arrageois-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/arrageois-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=arrageois"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Arrageois.",
-              "en": "Events open to families and professionals across the Arrageois area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Arrageois"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/arrageois-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=arrageois"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Arrageois.",
+                  "en": "Events open to families and professionals across the Arrageois area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Arrageois"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/arrageois-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Arrageois"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Arrageois"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -11603,26 +11782,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (224)",
-                  "en": "Towns in the territory (224)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Ablainzevelle</li><li>Achicourt</li><li>Achiet-le-Grand</li><li>Achiet-le-Petit</li><li>Acq</li><li>Adinfer</li><li>Agnez-lès-Duisans</li><li>Agny</li><li>Amplier</li><li>Anzin-Saint-Aubin</li><li>Arleux-en-Gohelle</li><li>Arras</li><li>Athies</li><li>Avesnes-les-Bapaume</li><li>Ayette</li><li>Bailleul-Sire-Berthoult</li><li>Bailleulmont</li><li>Bailleulval</li><li>Bancourt</li><li>Bapaume</li><li>Baralle</li><li>Barastre</li><li>Barly</li><li>Basseux</li><li>Bavincourt</li><li>Beaudricourt</li><li>Beaufort-Blavincourt</li><li>Beaulencourt</li><li>Beaumetz les Loges</li><li>Beaumetz-les-Cambrai</li><li>Beaurains</li><li>Behagnies</li><li>Bellonne</li><li>Berles-au-Bois</li><li>Berneville</li><li>Bertencourt-le-Cauroy</li><li>Bertincourt</li><li>Beugnatre</li><li>Beugny</li><li>Biache-Saint-Vaast</li><li>Biefvillers-les-Bapaume</li><li>Bienvillers-au-Bois</li><li>Bihucourt</li><li>Blairville</li><li>Boiry-Becquerelle</li><li>Boiry-Notre-Dame</li><li>Boiry-Saint-Martin</li><li>Boiry-Sainte-Rictrude</li><li>Boisleux au Mont</li><li>Boisleux-Saint-Marc</li><li>Bourlon</li><li>Boyelles</li><li>Brebieres</li><li>Bucquoy</li><li>Buissy</li><li>Bullecourt</li><li>Bus</li><li>Cagnicourt</li><li>Canettemont</li><li>Cherisy</li><li>Corbehem</li><li>Couin</li><li>Coullemont</li><li>Courcelles-le-Comte</li><li>Croisilles</li><li>Dainville</li><li>Denier</li><li>Douchy-les-Ayette</li><li>Duisans</li><li>Dury</li><li>Écourt-Saint-Quentin</li><li>Écoust-Saint-Mein</li><li>Écurie</li><li>Épinoy</li><li>Ervillers</li><li>Estree-Wamin</li><li>Étaing</li><li>Éterpigny</li><li>Étrun</li><li>Famechon</li><li>Fampoux</li><li>Farbus</li><li>Favreuil</li><li>Feuchy</li><li>Ficheux</li><li>Foncquevillers</li><li>Fontaine-les-Croisilles</li><li>Fosseux</li><li>Fremicourt</li><li>Fresnes-les-Montauban</li><li>Fresnoy-en-Gohelle</li><li>Gaudiempre</li><li>Gavrelle</li><li>Givenchy-le-Noble</li><li>Gomiecourt</li><li>Gommecourt</li><li>Gouves</li><li>Gouy-en-Artois</li><li>Gouy-sous-Bellonne</li><li>Graincourt-les-Havrincourt</li><li>Grand-Rullecourt</li><li>Grevillers</li><li>Grincourt-les-Pas</li><li>Guemappe</li><li>Habarcq</li><li>Hally</li><li>Hamblain-les-Pres</li><li>Hamelincourt</li><li>Hannescamp</li><li>Haplincourt</li><li>Haucourt</li><li>Haudecourt-les-Rensart</li><li>Haute-Avesnes</li><li>Hauteville</li><li>Havrincourt</li><li>Hebuterne</li><li>Hendecourt-les-Cagnicourt</li><li>Henin sur Cojeul</li><li>Heninel</li><li>Henu</li><li>Hermies</li><li>Houvin-Houvigneul</li><li>Humbercamps</li><li>Inchy-en-Artois</li><li>Ivergny</li><li>Izel-les-Équerchin</li><li>La Cauchie</li><li>Lagnicourt-Marcel</li><li>Latter-Saint-Quentin</li><li>Le Sars</li><li>Le Souichet</li><li>Le Transloy</li><li>Lebucquiere</li><li>Lechelle</li><li>Liencourt</li><li>Lignereuil</li><li>Ligny-Thilloy</li><li>Magnicourt-sur-Canche</li><li>Marœuil</li><li>Marquion</li><li>Martinpuich</li><li>Mercatel</li><li>Metz-en-Couture</li><li>Monchiet</li><li>Monchy-au-Bois</li><li>Monchy-le-Preux</li><li>Mondicourt</li><li>Mont-Saint-Éloi</li><li>Montenescourt</li><li>Morchies</li><li>Morval</li><li>Mory</li><li>Moyenneville</li><li>Neuville-Bourjonval</li><li>Neuville-Saint-Vaast</li><li>Neuville-Vitasse</li><li>Neuvireuil</li><li>Noreuil</li><li>Noyelles-sous-Bellonne</li><li>Noyellette</li><li>Oisy-le-Verger</li><li>Oppy</li><li>Orville</li><li>Palluel</li><li>Pas-en-Artois</li><li>Pelves</li><li>Plouvain</li><li>Pommera</li><li>Pommier</li><li>Pronville-en-Artois</li><li>Puisieux</li><li>Queant</li><li>Quiery-la-Motte</li><li>Ransart</li><li>Rebreuviette</li><li>Recourt</li><li>Remy</li><li>Riencourt-les-Bapaume</li><li>Riencourt-les-Cagnicourt</li><li>Riviere</li><li>Roclincourt</li><li>Rocquigny</li><li>Rœux</li><li>Rumaucourt</li><li>Ruyaulcourt</li><li>Sailly-au-Bois</li><li>Sailly-en-Ostrevent</li><li>Sains-les-Marquion</li><li>Saint Martin sur Cojeul</li><li>Saint-Amand</li><li>Saint-Laurent-Blangy</li><li>Saint-Léger</li><li>Saint-Nicolas-Lez-Arras</li><li>Sainte-Catherine</li><li>Sapignies</li><li>Sarton</li><li>Sauchy-Cauchy</li><li>Sauchy-Lestree</li><li>Saudemont</li><li>Saulty</li><li>Simencourt</li><li>Sombrin</li><li>Souastre</li><li>Sus-Saint-Leger</li><li>Thelus</li><li>Thievres</li><li>Tilloy-les-Mofflaines</li><li>Tortequesne</li><li>Trescault</li><li>Vaulx-Vraucourt</li><li>Velu</li><li>Villers-au-Flos</li><li>Villers-les-Cagnicourt</li><li>Vis-en-Artois</li><li>Vitry-en-Artois</li><li>Wailly</li><li>Walrus</li><li>Wancourt</li><li>Wanquetin</li><li>Warlencourt-Eaucourt</li><li>Warlincourt-les-Pas</li><li>Warluzel</li><li>Willerval</li><li>Ytres</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Ablainzevelle</li><li>Achicourt</li><li>Achiet-le-Grand</li><li>Achiet-le-Petit</li><li>Acq</li><li>Adinfer</li><li>Agnez-lès-Duisans</li><li>Agny</li><li>Amplier</li><li>Anzin-Saint-Aubin</li><li>Arleux-en-Gohelle</li><li>Arras</li><li>Athies</li><li>Avesnes-les-Bapaume</li><li>Ayette</li><li>Bailleul-Sire-Berthoult</li><li>Bailleulmont</li><li>Bailleulval</li><li>Bancourt</li><li>Bapaume</li><li>Baralle</li><li>Barastre</li><li>Barly</li><li>Basseux</li><li>Bavincourt</li><li>Beaudricourt</li><li>Beaufort-Blavincourt</li><li>Beaulencourt</li><li>Beaumetz les Loges</li><li>Beaumetz-les-Cambrai</li><li>Beaurains</li><li>Behagnies</li><li>Bellonne</li><li>Berles-au-Bois</li><li>Berneville</li><li>Bertencourt-le-Cauroy</li><li>Bertincourt</li><li>Beugnatre</li><li>Beugny</li><li>Biache-Saint-Vaast</li><li>Biefvillers-les-Bapaume</li><li>Bienvillers-au-Bois</li><li>Bihucourt</li><li>Blairville</li><li>Boiry-Becquerelle</li><li>Boiry-Notre-Dame</li><li>Boiry-Saint-Martin</li><li>Boiry-Sainte-Rictrude</li><li>Boisleux au Mont</li><li>Boisleux-Saint-Marc</li><li>Bourlon</li><li>Boyelles</li><li>Brebieres</li><li>Bucquoy</li><li>Buissy</li><li>Bullecourt</li><li>Bus</li><li>Cagnicourt</li><li>Canettemont</li><li>Cherisy</li><li>Corbehem</li><li>Couin</li><li>Coullemont</li><li>Courcelles-le-Comte</li><li>Croisilles</li><li>Dainville</li><li>Denier</li><li>Douchy-les-Ayette</li><li>Duisans</li><li>Dury</li><li>Écourt-Saint-Quentin</li><li>Écoust-Saint-Mein</li><li>Écurie</li><li>Épinoy</li><li>Ervillers</li><li>Estree-Wamin</li><li>Étaing</li><li>Éterpigny</li><li>Étrun</li><li>Famechon</li><li>Fampoux</li><li>Farbus</li><li>Favreuil</li><li>Feuchy</li><li>Ficheux</li><li>Foncquevillers</li><li>Fontaine-les-Croisilles</li><li>Fosseux</li><li>Fremicourt</li><li>Fresnes-les-Montauban</li><li>Fresnoy-en-Gohelle</li><li>Gaudiempre</li><li>Gavrelle</li><li>Givenchy-le-Noble</li><li>Gomiecourt</li><li>Gommecourt</li><li>Gouves</li><li>Gouy-en-Artois</li><li>Gouy-sous-Bellonne</li><li>Graincourt-les-Havrincourt</li><li>Grand-Rullecourt</li><li>Grevillers</li><li>Grincourt-les-Pas</li><li>Guemappe</li><li>Habarcq</li><li>Hally</li><li>Hamblain-les-Pres</li><li>Hamelincourt</li><li>Hannescamp</li><li>Haplincourt</li><li>Haucourt</li><li>Haudecourt-les-Rensart</li><li>Haute-Avesnes</li><li>Hauteville</li><li>Havrincourt</li><li>Hebuterne</li><li>Hendecourt-les-Cagnicourt</li><li>Henin sur Cojeul</li><li>Heninel</li><li>Henu</li><li>Hermies</li><li>Houvin-Houvigneul</li><li>Humbercamps</li><li>Inchy-en-Artois</li><li>Ivergny</li><li>Izel-les-Équerchin</li><li>La Cauchie</li><li>Lagnicourt-Marcel</li><li>Latter-Saint-Quentin</li><li>Le Sars</li><li>Le Souichet</li><li>Le Transloy</li><li>Lebucquiere</li><li>Lechelle</li><li>Liencourt</li><li>Lignereuil</li><li>Ligny-Thilloy</li><li>Magnicourt-sur-Canche</li><li>Marœuil</li><li>Marquion</li><li>Martinpuich</li><li>Mercatel</li><li>Metz-en-Couture</li><li>Monchiet</li><li>Monchy-au-Bois</li><li>Monchy-le-Preux</li><li>Mondicourt</li><li>Mont-Saint-Éloi</li><li>Montenescourt</li><li>Morchies</li><li>Morval</li><li>Mory</li><li>Moyenneville</li><li>Neuville-Bourjonval</li><li>Neuville-Saint-Vaast</li><li>Neuville-Vitasse</li><li>Neuvireuil</li><li>Noreuil</li><li>Noyelles-sous-Bellonne</li><li>Noyellette</li><li>Oisy-le-Verger</li><li>Oppy</li><li>Orville</li><li>Palluel</li><li>Pas-en-Artois</li><li>Pelves</li><li>Plouvain</li><li>Pommera</li><li>Pommier</li><li>Pronville-en-Artois</li><li>Puisieux</li><li>Queant</li><li>Quiery-la-Motte</li><li>Ransart</li><li>Rebreuviette</li><li>Recourt</li><li>Remy</li><li>Riencourt-les-Bapaume</li><li>Riencourt-les-Cagnicourt</li><li>Riviere</li><li>Roclincourt</li><li>Rocquigny</li><li>Rœux</li><li>Rumaucourt</li><li>Ruyaulcourt</li><li>Sailly-au-Bois</li><li>Sailly-en-Ostrevent</li><li>Sains-les-Marquion</li><li>Saint Martin sur Cojeul</li><li>Saint-Amand</li><li>Saint-Laurent-Blangy</li><li>Saint-Léger</li><li>Saint-Nicolas-Lez-Arras</li><li>Sainte-Catherine</li><li>Sapignies</li><li>Sarton</li><li>Sauchy-Cauchy</li><li>Sauchy-Lestree</li><li>Saudemont</li><li>Saulty</li><li>Simencourt</li><li>Sombrin</li><li>Souastre</li><li>Sus-Saint-Leger</li><li>Thelus</li><li>Thievres</li><li>Tilloy-les-Mofflaines</li><li>Tortequesne</li><li>Trescault</li><li>Vaulx-Vraucourt</li><li>Velu</li><li>Villers-au-Flos</li><li>Villers-les-Cagnicourt</li><li>Vis-en-Artois</li><li>Vitry-en-Artois</li><li>Wailly</li><li>Walrus</li><li>Wancourt</li><li>Wanquetin</li><li>Warlencourt-Eaucourt</li><li>Warlincourt-les-Pas</li><li>Warluzel</li><li>Willerval</li><li>Ytres</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -11746,6 +11908,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/artois-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (62)",
+                  "en": "Towns in the territory (62)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Allouagne</li><li>Ames</li><li>Amettes</li><li>Annequin</li><li>Annezin</li><li>Auchy-au-Bois</li><li>Auchy-les-Mines</li><li>Béthune</li><li>Beuvry</li><li>Billy-Berclau</li><li>Bourecq</li><li>Burbure</li><li>Busnes</li><li>Calonne-sur-la-Lys</li><li>Cambrin</li><li>Chocques</li><li>Cuinchy</li><li>Douvrin</li><li>Drouvin</li><li>Ecquedecques</li><li>Essars</li><li>Ferfay</li><li>Festubert</li><li>Fleurbaix</li><li>Fouquereuil</li><li>Fouquières-les-Béthunes</li><li>Ginvenchy-les-la-Bassée</li><li>Gonnehem</li><li>Haisnes</li><li>Ham</li><li>Hinges</li><li>La Couture</li><li>Labeuvrière</li><li>Labourse</li><li>Lapugnoy</li><li>Laventie</li><li>Lespesses</li><li>Lestrem</li><li>Lières</li><li>Lillers</li><li>Locon</li><li>Lorgies</li><li>Mont-Bernenchon</li><li>Neuve Chapelle</li><li>Noeux-les-Mines</li><li>Norrent-Fontes</li><li>Noyelles-les-Vermelles</li><li>Oblinghem</li><li>Richebourg</li><li>Robecq</li><li>Sailly-Labourse</li><li>Sailly-sur-la-Lys</li><li>Saint-Floris</li><li>Saint-Venant</li><li>Vaudricourt</li><li>Vemelles</li><li>Vendin-les-Béthune</li><li>Verquigneul</li><li>Verquin</li><li>Vieille Chapelle</li><li>Violaines</li><li>Westrehem</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Allouagne</li><li>Ames</li><li>Amettes</li><li>Annequin</li><li>Annezin</li><li>Auchy-au-Bois</li><li>Auchy-les-Mines</li><li>Béthune</li><li>Beuvry</li><li>Billy-Berclau</li><li>Bourecq</li><li>Burbure</li><li>Busnes</li><li>Calonne-sur-la-Lys</li><li>Cambrin</li><li>Chocques</li><li>Cuinchy</li><li>Douvrin</li><li>Drouvin</li><li>Ecquedecques</li><li>Essars</li><li>Ferfay</li><li>Festubert</li><li>Fleurbaix</li><li>Fouquereuil</li><li>Fouquières-les-Béthunes</li><li>Ginvenchy-les-la-Bassée</li><li>Gonnehem</li><li>Haisnes</li><li>Ham</li><li>Hinges</li><li>La Couture</li><li>Labeuvrière</li><li>Labourse</li><li>Lapugnoy</li><li>Laventie</li><li>Lespesses</li><li>Lestrem</li><li>Lières</li><li>Lillers</li><li>Locon</li><li>Lorgies</li><li>Mont-Bernenchon</li><li>Neuve Chapelle</li><li>Noeux-les-Mines</li><li>Norrent-Fontes</li><li>Noyelles-les-Vermelles</li><li>Oblinghem</li><li>Richebourg</li><li>Robecq</li><li>Sailly-Labourse</li><li>Sailly-sur-la-Lys</li><li>Saint-Floris</li><li>Saint-Venant</li><li>Vaudricourt</li><li>Vemelles</li><li>Vendin-les-Béthune</li><li>Verquigneul</li><li>Verquin</li><li>Vieille Chapelle</li><li>Violaines</li><li>Westrehem</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "artois-comite-rangee",
           "props": {
@@ -11808,7 +11989,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Artois" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -11862,59 +12045,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/artois-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/artois-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=artois"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Artois.",
-              "en": "Events open to families and professionals across the Artois area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Artois"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/artois-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=artois"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Artois.",
+                  "en": "Events open to families and professionals across the Artois area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Artois"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/artois-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Artois"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Artois"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -12320,26 +12657,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (62)",
-                  "en": "Towns in the territory (62)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Allouagne</li><li>Ames</li><li>Amettes</li><li>Annequin</li><li>Annezin</li><li>Auchy-au-Bois</li><li>Auchy-les-Mines</li><li>Béthune</li><li>Beuvry</li><li>Billy-Berclau</li><li>Bourecq</li><li>Burbure</li><li>Busnes</li><li>Calonne-sur-la-Lys</li><li>Cambrin</li><li>Chocques</li><li>Cuinchy</li><li>Douvrin</li><li>Drouvin</li><li>Ecquedecques</li><li>Essars</li><li>Ferfay</li><li>Festubert</li><li>Fleurbaix</li><li>Fouquereuil</li><li>Fouquières-les-Béthunes</li><li>Ginvenchy-les-la-Bassée</li><li>Gonnehem</li><li>Haisnes</li><li>Ham</li><li>Hinges</li><li>La Couture</li><li>Labeuvrière</li><li>Labourse</li><li>Lapugnoy</li><li>Laventie</li><li>Lespesses</li><li>Lestrem</li><li>Lières</li><li>Lillers</li><li>Locon</li><li>Lorgies</li><li>Mont-Bernenchon</li><li>Neuve Chapelle</li><li>Noeux-les-Mines</li><li>Norrent-Fontes</li><li>Noyelles-les-Vermelles</li><li>Oblinghem</li><li>Richebourg</li><li>Robecq</li><li>Sailly-Labourse</li><li>Sailly-sur-la-Lys</li><li>Saint-Floris</li><li>Saint-Venant</li><li>Vaudricourt</li><li>Vemelles</li><li>Vendin-les-Béthune</li><li>Verquigneul</li><li>Verquin</li><li>Vieille Chapelle</li><li>Violaines</li><li>Westrehem</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Allouagne</li><li>Ames</li><li>Amettes</li><li>Annequin</li><li>Annezin</li><li>Auchy-au-Bois</li><li>Auchy-les-Mines</li><li>Béthune</li><li>Beuvry</li><li>Billy-Berclau</li><li>Bourecq</li><li>Burbure</li><li>Busnes</li><li>Calonne-sur-la-Lys</li><li>Cambrin</li><li>Chocques</li><li>Cuinchy</li><li>Douvrin</li><li>Drouvin</li><li>Ecquedecques</li><li>Essars</li><li>Ferfay</li><li>Festubert</li><li>Fleurbaix</li><li>Fouquereuil</li><li>Fouquières-les-Béthunes</li><li>Ginvenchy-les-la-Bassée</li><li>Gonnehem</li><li>Haisnes</li><li>Ham</li><li>Hinges</li><li>La Couture</li><li>Labeuvrière</li><li>Labourse</li><li>Lapugnoy</li><li>Laventie</li><li>Lespesses</li><li>Lestrem</li><li>Lières</li><li>Lillers</li><li>Locon</li><li>Lorgies</li><li>Mont-Bernenchon</li><li>Neuve Chapelle</li><li>Noeux-les-Mines</li><li>Norrent-Fontes</li><li>Noyelles-les-Vermelles</li><li>Oblinghem</li><li>Richebourg</li><li>Robecq</li><li>Sailly-Labourse</li><li>Sailly-sur-la-Lys</li><li>Saint-Floris</li><li>Saint-Venant</li><li>Vaudricourt</li><li>Vemelles</li><li>Vendin-les-Béthune</li><li>Verquigneul</li><li>Verquin</li><li>Vieille Chapelle</li><li>Violaines</li><li>Westrehem</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -12463,6 +12783,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/audomarois-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (89)",
+                  "en": "Towns in the territory (89)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Acquin-Westbecourt</li><li>Affringues</li><li>Aire-sur-la-Lys</li><li>Alquines</li><li>Arques</li><li>Audincthun</li><li>Audrehem</li><li>Avroult</li><li>Bayenghem-les-Éperlecques</li><li>Bayenghem-lès-Seninghem</li><li>Beaumetz-les-Aire</li><li>Bellinghem</li><li>Blendecques</li><li>Bléquin</li><li>Boisdinghem</li><li>Bomy</li><li>Bonningues-les-Ardres</li><li>Bouvelinghem</li><li>Campagne-les-Wardrecques</li><li>Clairmarais</li><li>Clerques</li><li>Clety</li><li>Coulomby</li><li>Coyecques</li><li>Delettes</li><li>Dennebrœucq</li><li>Dohem</li><li>Ecques</li><li>Elnes</li><li>Enquin-Lez-Guinegatte</li><li>Éperlecques</li><li>Erny-Saint-Julien</li><li>Escœuilles</li><li>Esquerdes</li><li>Fauquembergues</li><li>Febvin-Palfart</li><li>Fléchin</li><li>Hallines</li><li>Haut-Loquin</li><li>Helfaut</li><li>Heuringhem</li><li>Houlle</li><li>Journy</li><li>Laires</li><li>Ledinghem</li><li>Leulinghem</li><li>Longuenesse</li><li>Lumbres</li><li>Mametz</li><li>Mentque-Nortbecourt</li><li>Merck-Saint-Lievin</li><li>Moringhem</li><li>Moulle</li><li>Nielles-les-Blequin</li><li>Nordausques</li><li>Nort-Leulinghem</li><li>Ouve-Wirquin</li><li>Pihem</li><li>Quelmes</li><li>Quercamps</li><li>Quiestède</li><li>Racquinghem</li><li>Rebergues</li><li>Reclinghem</li><li>Remilly-Wirquin</li><li>Renty</li><li>Roquetoire</li><li>Saint-Augustin</li><li>Saint-Martin-d'Hardinghem</li><li>Saint-Martin-Lez-Tatinghem</li><li>Saint-Omer</li><li>Salperwick</li><li>Seninghem</li><li>Serques</li><li>Setques</li><li>Surques</li><li>Therouanne</li><li>Thiembronne</li><li>Tilques</li><li>Tournehem-sur-la-Hem</li><li>Vaudringhem</li><li>Wardrecques</li><li>Wavrans-sur-l'Aa</li><li>Wismes</li><li>Wisques</li><li>Wittes</li><li>Wizernes</li><li>Zouafques</li><li>Zudausques</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Acquin-Westbecourt</li><li>Affringues</li><li>Aire-sur-la-Lys</li><li>Alquines</li><li>Arques</li><li>Audincthun</li><li>Audrehem</li><li>Avroult</li><li>Bayenghem-les-Éperlecques</li><li>Bayenghem-lès-Seninghem</li><li>Beaumetz-les-Aire</li><li>Bellinghem</li><li>Blendecques</li><li>Bléquin</li><li>Boisdinghem</li><li>Bomy</li><li>Bonningues-les-Ardres</li><li>Bouvelinghem</li><li>Campagne-les-Wardrecques</li><li>Clairmarais</li><li>Clerques</li><li>Clety</li><li>Coulomby</li><li>Coyecques</li><li>Delettes</li><li>Dennebrœucq</li><li>Dohem</li><li>Ecques</li><li>Elnes</li><li>Enquin-Lez-Guinegatte</li><li>Éperlecques</li><li>Erny-Saint-Julien</li><li>Escœuilles</li><li>Esquerdes</li><li>Fauquembergues</li><li>Febvin-Palfart</li><li>Fléchin</li><li>Hallines</li><li>Haut-Loquin</li><li>Helfaut</li><li>Heuringhem</li><li>Houlle</li><li>Journy</li><li>Laires</li><li>Ledinghem</li><li>Leulinghem</li><li>Longuenesse</li><li>Lumbres</li><li>Mametz</li><li>Mentque-Nortbecourt</li><li>Merck-Saint-Lievin</li><li>Moringhem</li><li>Moulle</li><li>Nielles-les-Blequin</li><li>Nordausques</li><li>Nort-Leulinghem</li><li>Ouve-Wirquin</li><li>Pihem</li><li>Quelmes</li><li>Quercamps</li><li>Quiestède</li><li>Racquinghem</li><li>Rebergues</li><li>Reclinghem</li><li>Remilly-Wirquin</li><li>Renty</li><li>Roquetoire</li><li>Saint-Augustin</li><li>Saint-Martin-d'Hardinghem</li><li>Saint-Martin-Lez-Tatinghem</li><li>Saint-Omer</li><li>Salperwick</li><li>Seninghem</li><li>Serques</li><li>Setques</li><li>Surques</li><li>Therouanne</li><li>Thiembronne</li><li>Tilques</li><li>Tournehem-sur-la-Hem</li><li>Vaudringhem</li><li>Wardrecques</li><li>Wavrans-sur-l'Aa</li><li>Wismes</li><li>Wisques</li><li>Wittes</li><li>Wizernes</li><li>Zouafques</li><li>Zudausques</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "audomarois-comite-rangee",
           "props": {
@@ -12525,7 +12864,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Audomarois" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -12579,59 +12920,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/audomarois-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/audomarois-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=audomarois"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Audomarois.",
-              "en": "Events open to families and professionals across the Audomarois area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Audomarois"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/audomarois-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=audomarois"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Audomarois.",
+                  "en": "Events open to families and professionals across the Audomarois area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Audomarois"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/audomarois-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Audomarois"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Audomarois"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -13037,26 +13532,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (89)",
-                  "en": "Towns in the territory (89)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Acquin-Westbecourt</li><li>Affringues</li><li>Aire-sur-la-Lys</li><li>Alquines</li><li>Arques</li><li>Audincthun</li><li>Audrehem</li><li>Avroult</li><li>Bayenghem-les-Éperlecques</li><li>Bayenghem-lès-Seninghem</li><li>Beaumetz-les-Aire</li><li>Bellinghem</li><li>Blendecques</li><li>Bléquin</li><li>Boisdinghem</li><li>Bomy</li><li>Bonningues-les-Ardres</li><li>Bouvelinghem</li><li>Campagne-les-Wardrecques</li><li>Clairmarais</li><li>Clerques</li><li>Clety</li><li>Coulomby</li><li>Coyecques</li><li>Delettes</li><li>Dennebrœucq</li><li>Dohem</li><li>Ecques</li><li>Elnes</li><li>Enquin-Lez-Guinegatte</li><li>Éperlecques</li><li>Erny-Saint-Julien</li><li>Escœuilles</li><li>Esquerdes</li><li>Fauquembergues</li><li>Febvin-Palfart</li><li>Fléchin</li><li>Hallines</li><li>Haut-Loquin</li><li>Helfaut</li><li>Heuringhem</li><li>Houlle</li><li>Journy</li><li>Laires</li><li>Ledinghem</li><li>Leulinghem</li><li>Longuenesse</li><li>Lumbres</li><li>Mametz</li><li>Mentque-Nortbecourt</li><li>Merck-Saint-Lievin</li><li>Moringhem</li><li>Moulle</li><li>Nielles-les-Blequin</li><li>Nordausques</li><li>Nort-Leulinghem</li><li>Ouve-Wirquin</li><li>Pihem</li><li>Quelmes</li><li>Quercamps</li><li>Quiestède</li><li>Racquinghem</li><li>Rebergues</li><li>Reclinghem</li><li>Remilly-Wirquin</li><li>Renty</li><li>Roquetoire</li><li>Saint-Augustin</li><li>Saint-Martin-d'Hardinghem</li><li>Saint-Martin-Lez-Tatinghem</li><li>Saint-Omer</li><li>Salperwick</li><li>Seninghem</li><li>Serques</li><li>Setques</li><li>Surques</li><li>Therouanne</li><li>Thiembronne</li><li>Tilques</li><li>Tournehem-sur-la-Hem</li><li>Vaudringhem</li><li>Wardrecques</li><li>Wavrans-sur-l'Aa</li><li>Wismes</li><li>Wisques</li><li>Wittes</li><li>Wizernes</li><li>Zouafques</li><li>Zudausques</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Acquin-Westbecourt</li><li>Affringues</li><li>Aire-sur-la-Lys</li><li>Alquines</li><li>Arques</li><li>Audincthun</li><li>Audrehem</li><li>Avroult</li><li>Bayenghem-les-Éperlecques</li><li>Bayenghem-lès-Seninghem</li><li>Beaumetz-les-Aire</li><li>Bellinghem</li><li>Blendecques</li><li>Bléquin</li><li>Boisdinghem</li><li>Bomy</li><li>Bonningues-les-Ardres</li><li>Bouvelinghem</li><li>Campagne-les-Wardrecques</li><li>Clairmarais</li><li>Clerques</li><li>Clety</li><li>Coulomby</li><li>Coyecques</li><li>Delettes</li><li>Dennebrœucq</li><li>Dohem</li><li>Ecques</li><li>Elnes</li><li>Enquin-Lez-Guinegatte</li><li>Éperlecques</li><li>Erny-Saint-Julien</li><li>Escœuilles</li><li>Esquerdes</li><li>Fauquembergues</li><li>Febvin-Palfart</li><li>Fléchin</li><li>Hallines</li><li>Haut-Loquin</li><li>Helfaut</li><li>Heuringhem</li><li>Houlle</li><li>Journy</li><li>Laires</li><li>Ledinghem</li><li>Leulinghem</li><li>Longuenesse</li><li>Lumbres</li><li>Mametz</li><li>Mentque-Nortbecourt</li><li>Merck-Saint-Lievin</li><li>Moringhem</li><li>Moulle</li><li>Nielles-les-Blequin</li><li>Nordausques</li><li>Nort-Leulinghem</li><li>Ouve-Wirquin</li><li>Pihem</li><li>Quelmes</li><li>Quercamps</li><li>Quiestède</li><li>Racquinghem</li><li>Rebergues</li><li>Reclinghem</li><li>Remilly-Wirquin</li><li>Renty</li><li>Roquetoire</li><li>Saint-Augustin</li><li>Saint-Martin-d'Hardinghem</li><li>Saint-Martin-Lez-Tatinghem</li><li>Saint-Omer</li><li>Salperwick</li><li>Seninghem</li><li>Serques</li><li>Setques</li><li>Surques</li><li>Therouanne</li><li>Thiembronne</li><li>Tilques</li><li>Tournehem-sur-la-Hem</li><li>Vaudringhem</li><li>Wardrecques</li><li>Wavrans-sur-l'Aa</li><li>Wismes</li><li>Wisques</li><li>Wittes</li><li>Wizernes</li><li>Zouafques</li><li>Zudausques</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -13180,6 +13658,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/boulonnais-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (75)",
+                  "en": "Towns in the territory (75)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Alincthun</li><li>Ambleteuse</li><li>Audembert</li><li>Audinghen</li><li>Audresselles</li><li>Baincthun</li><li>Bazinghen</li><li>Belle et Houllefort</li><li>Bellebrune</li><li>Beuvrequen</li><li>Boulogne-sur-Mer</li><li>Bournonville</li><li>Brunembert</li><li>Carly</li><li>Colembert</li><li>Condette</li><li>Conteville-lès-Boulogne</li><li>Courset</li><li>Crémarest</li><li>Dannes</li><li>Desvres</li><li>Doudeauville</li><li>Echinghen</li><li>Elinghen</li><li>Equihen-Plage</li><li>Ferques</li><li>Halinghen</li><li>Henneveux</li><li>Hervelinghen</li><li>Hesdigneul-lès-Boulogne</li><li>Hesdin-l’Abbé</li><li>Isques</li><li>La Capelle-lès-Boulogne</li><li>Lacres</li><li>Landrethun-le-Nord</li><li>Le Portel</li><li>Le Wast</li><li>Leubringhen</li><li>Leulinghen-Bernes</li><li>Longfossé</li><li>Longueville</li><li>Lottinghen</li><li>Maninghen-Henne</li><li>Marquise</li><li>Menneville</li><li>Nabringhen</li><li>Nesles</li><li>Neufchâtel-Hardelot</li><li>Offrethun</li><li>Outreau</li><li>Pernes-lès-Boulogne</li><li>Pittefaux</li><li>Quesques</li><li>Questrecques</li><li>Réty</li><li>Rinxent</li><li>Saint Inglevert</li><li>Saint Léonard</li><li>Saint-Etienne-au-Mont</li><li>Saint-Martin-Boulogne</li><li>Saint-Martin-Choquel</li><li>Samer</li><li>Selles</li><li>Senlecques</li><li>Tardinghen</li><li>Tingry</li><li>Verlincthun</li><li>Vieil-Moutier</li><li>Wacquinghen</li><li>Wierre-au-Bois</li><li>Wierre-Effroy</li><li>Wimereux</li><li>Wimille</li><li>Wirwignes</li><li>Wissant</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Alincthun</li><li>Ambleteuse</li><li>Audembert</li><li>Audinghen</li><li>Audresselles</li><li>Baincthun</li><li>Bazinghen</li><li>Belle et Houllefort</li><li>Bellebrune</li><li>Beuvrequen</li><li>Boulogne-sur-Mer</li><li>Bournonville</li><li>Brunembert</li><li>Carly</li><li>Colembert</li><li>Condette</li><li>Conteville-lès-Boulogne</li><li>Courset</li><li>Crémarest</li><li>Dannes</li><li>Desvres</li><li>Doudeauville</li><li>Echinghen</li><li>Elinghen</li><li>Equihen-Plage</li><li>Ferques</li><li>Halinghen</li><li>Henneveux</li><li>Hervelinghen</li><li>Hesdigneul-lès-Boulogne</li><li>Hesdin-l’Abbé</li><li>Isques</li><li>La Capelle-lès-Boulogne</li><li>Lacres</li><li>Landrethun-le-Nord</li><li>Le Portel</li><li>Le Wast</li><li>Leubringhen</li><li>Leulinghen-Bernes</li><li>Longfossé</li><li>Longueville</li><li>Lottinghen</li><li>Maninghen-Henne</li><li>Marquise</li><li>Menneville</li><li>Nabringhen</li><li>Nesles</li><li>Neufchâtel-Hardelot</li><li>Offrethun</li><li>Outreau</li><li>Pernes-lès-Boulogne</li><li>Pittefaux</li><li>Quesques</li><li>Questrecques</li><li>Réty</li><li>Rinxent</li><li>Saint Inglevert</li><li>Saint Léonard</li><li>Saint-Etienne-au-Mont</li><li>Saint-Martin-Boulogne</li><li>Saint-Martin-Choquel</li><li>Samer</li><li>Selles</li><li>Senlecques</li><li>Tardinghen</li><li>Tingry</li><li>Verlincthun</li><li>Vieil-Moutier</li><li>Wacquinghen</li><li>Wierre-au-Bois</li><li>Wierre-Effroy</li><li>Wimereux</li><li>Wimille</li><li>Wirwignes</li><li>Wissant</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "boulonnais-comite-rangee",
           "props": {
@@ -13242,7 +13739,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Boulonnais" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -13296,59 +13795,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/boulonnais-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/boulonnais-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=boulonnais"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Boulonnais.",
-              "en": "Events open to families and professionals across the Boulonnais area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Boulonnais"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/boulonnais-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=boulonnais"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Boulonnais.",
+                  "en": "Events open to families and professionals across the Boulonnais area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Boulonnais"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/boulonnais-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Boulonnais"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Boulonnais"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -13754,26 +14407,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (75)",
-                  "en": "Towns in the territory (75)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Alincthun</li><li>Ambleteuse</li><li>Audembert</li><li>Audinghen</li><li>Audresselles</li><li>Baincthun</li><li>Bazinghen</li><li>Belle et Houllefort</li><li>Bellebrune</li><li>Beuvrequen</li><li>Boulogne-sur-Mer</li><li>Bournonville</li><li>Brunembert</li><li>Carly</li><li>Colembert</li><li>Condette</li><li>Conteville-lès-Boulogne</li><li>Courset</li><li>Crémarest</li><li>Dannes</li><li>Desvres</li><li>Doudeauville</li><li>Echinghen</li><li>Elinghen</li><li>Equihen-Plage</li><li>Ferques</li><li>Halinghen</li><li>Henneveux</li><li>Hervelinghen</li><li>Hesdigneul-lès-Boulogne</li><li>Hesdin-l’Abbé</li><li>Isques</li><li>La Capelle-lès-Boulogne</li><li>Lacres</li><li>Landrethun-le-Nord</li><li>Le Portel</li><li>Le Wast</li><li>Leubringhen</li><li>Leulinghen-Bernes</li><li>Longfossé</li><li>Longueville</li><li>Lottinghen</li><li>Maninghen-Henne</li><li>Marquise</li><li>Menneville</li><li>Nabringhen</li><li>Nesles</li><li>Neufchâtel-Hardelot</li><li>Offrethun</li><li>Outreau</li><li>Pernes-lès-Boulogne</li><li>Pittefaux</li><li>Quesques</li><li>Questrecques</li><li>Réty</li><li>Rinxent</li><li>Saint Inglevert</li><li>Saint Léonard</li><li>Saint-Etienne-au-Mont</li><li>Saint-Martin-Boulogne</li><li>Saint-Martin-Choquel</li><li>Samer</li><li>Selles</li><li>Senlecques</li><li>Tardinghen</li><li>Tingry</li><li>Verlincthun</li><li>Vieil-Moutier</li><li>Wacquinghen</li><li>Wierre-au-Bois</li><li>Wierre-Effroy</li><li>Wimereux</li><li>Wimille</li><li>Wirwignes</li><li>Wissant</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Alincthun</li><li>Ambleteuse</li><li>Audembert</li><li>Audinghen</li><li>Audresselles</li><li>Baincthun</li><li>Bazinghen</li><li>Belle et Houllefort</li><li>Bellebrune</li><li>Beuvrequen</li><li>Boulogne-sur-Mer</li><li>Bournonville</li><li>Brunembert</li><li>Carly</li><li>Colembert</li><li>Condette</li><li>Conteville-lès-Boulogne</li><li>Courset</li><li>Crémarest</li><li>Dannes</li><li>Desvres</li><li>Doudeauville</li><li>Echinghen</li><li>Elinghen</li><li>Equihen-Plage</li><li>Ferques</li><li>Halinghen</li><li>Henneveux</li><li>Hervelinghen</li><li>Hesdigneul-lès-Boulogne</li><li>Hesdin-l’Abbé</li><li>Isques</li><li>La Capelle-lès-Boulogne</li><li>Lacres</li><li>Landrethun-le-Nord</li><li>Le Portel</li><li>Le Wast</li><li>Leubringhen</li><li>Leulinghen-Bernes</li><li>Longfossé</li><li>Longueville</li><li>Lottinghen</li><li>Maninghen-Henne</li><li>Marquise</li><li>Menneville</li><li>Nabringhen</li><li>Nesles</li><li>Neufchâtel-Hardelot</li><li>Offrethun</li><li>Outreau</li><li>Pernes-lès-Boulogne</li><li>Pittefaux</li><li>Quesques</li><li>Questrecques</li><li>Réty</li><li>Rinxent</li><li>Saint Inglevert</li><li>Saint Léonard</li><li>Saint-Etienne-au-Mont</li><li>Saint-Martin-Boulogne</li><li>Saint-Martin-Choquel</li><li>Samer</li><li>Selles</li><li>Senlecques</li><li>Tardinghen</li><li>Tingry</li><li>Verlincthun</li><li>Vieil-Moutier</li><li>Wacquinghen</li><li>Wierre-au-Bois</li><li>Wierre-Effroy</li><li>Wimereux</li><li>Wimille</li><li>Wirwignes</li><li>Wissant</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -13897,6 +14533,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/calaisis-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (53)",
+                  "en": "Towns in the territory (53)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Alembon</li><li>Andres</li><li>Ardres</li><li>Audruicq</li><li>Autingues</li><li>Bainghen</li><li>Balinghem</li><li>Bonningues les Calais</li><li>Bouquehault</li><li>Boursin</li><li>Bremes les Ardres</li><li>Caffiers</li><li>Calais</li><li>Campagne les Guines</li><li>Ccra Audruicq</li><li>Coquelles</li><li>Coulogne</li><li>Escalles</li><li>Fiennes</li><li>Frethun</li><li>Guemps</li><li>Guines</li><li>Hames Boucres</li><li>Hardinghem</li><li>Herbinghem</li><li>Hermelinghen</li><li>Hocquinghen</li><li>Landrethun les Ardres</li><li>Les Attaques</li><li>Licques</li><li>Louches</li><li>Marck</li><li>Muncq Nieurlet</li><li>Nielles les Ardres</li><li>Nielles les Calais</li><li>Nortkerque</li><li>Nouvelle Eglise</li><li>Offekerque</li><li>Oye Plage</li><li>Peuplingues</li><li>Pihen les Guines</li><li>Polincove</li><li>Recques sur Hem</li><li>Rodelinghem</li><li>Ruminghem</li><li>Saint Folquin</li><li>Saint Omer Capelle</li><li>Saint Tricat</li><li>Sainte Marie Kerque</li><li>Sangatte</li><li>Sanghen</li><li>Vieille Eglise</li><li>Zutkerque</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Alembon</li><li>Andres</li><li>Ardres</li><li>Audruicq</li><li>Autingues</li><li>Bainghen</li><li>Balinghem</li><li>Bonningues les Calais</li><li>Bouquehault</li><li>Boursin</li><li>Bremes les Ardres</li><li>Caffiers</li><li>Calais</li><li>Campagne les Guines</li><li>Ccra Audruicq</li><li>Coquelles</li><li>Coulogne</li><li>Escalles</li><li>Fiennes</li><li>Frethun</li><li>Guemps</li><li>Guines</li><li>Hames Boucres</li><li>Hardinghem</li><li>Herbinghem</li><li>Hermelinghen</li><li>Hocquinghen</li><li>Landrethun les Ardres</li><li>Les Attaques</li><li>Licques</li><li>Louches</li><li>Marck</li><li>Muncq Nieurlet</li><li>Nielles les Ardres</li><li>Nielles les Calais</li><li>Nortkerque</li><li>Nouvelle Eglise</li><li>Offekerque</li><li>Oye Plage</li><li>Peuplingues</li><li>Pihen les Guines</li><li>Polincove</li><li>Recques sur Hem</li><li>Rodelinghem</li><li>Ruminghem</li><li>Saint Folquin</li><li>Saint Omer Capelle</li><li>Saint Tricat</li><li>Sainte Marie Kerque</li><li>Sangatte</li><li>Sanghen</li><li>Vieille Eglise</li><li>Zutkerque</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "calaisis-comite-rangee",
           "props": {
@@ -13959,7 +14614,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Calaisis" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -14013,59 +14670,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/calaisis-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/calaisis-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=calaisis"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Calaisis.",
-              "en": "Events open to families and professionals across the Calaisis area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Calaisis"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/calaisis-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=calaisis"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Calaisis.",
+                  "en": "Events open to families and professionals across the Calaisis area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Calaisis"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/calaisis-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Calaisis"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Calaisis"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -14471,26 +15282,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (53)",
-                  "en": "Towns in the territory (53)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Alembon</li><li>Andres</li><li>Ardres</li><li>Audruicq</li><li>Autingues</li><li>Bainghen</li><li>Balinghem</li><li>Bonningues les Calais</li><li>Bouquehault</li><li>Boursin</li><li>Bremes les Ardres</li><li>Caffiers</li><li>Calais</li><li>Campagne les Guines</li><li>Ccra Audruicq</li><li>Coquelles</li><li>Coulogne</li><li>Escalles</li><li>Fiennes</li><li>Frethun</li><li>Guemps</li><li>Guines</li><li>Hames Boucres</li><li>Hardinghem</li><li>Herbinghem</li><li>Hermelinghen</li><li>Hocquinghen</li><li>Landrethun les Ardres</li><li>Les Attaques</li><li>Licques</li><li>Louches</li><li>Marck</li><li>Muncq Nieurlet</li><li>Nielles les Ardres</li><li>Nielles les Calais</li><li>Nortkerque</li><li>Nouvelle Eglise</li><li>Offekerque</li><li>Oye Plage</li><li>Peuplingues</li><li>Pihen les Guines</li><li>Polincove</li><li>Recques sur Hem</li><li>Rodelinghem</li><li>Ruminghem</li><li>Saint Folquin</li><li>Saint Omer Capelle</li><li>Saint Tricat</li><li>Sainte Marie Kerque</li><li>Sangatte</li><li>Sanghen</li><li>Vieille Eglise</li><li>Zutkerque</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Alembon</li><li>Andres</li><li>Ardres</li><li>Audruicq</li><li>Autingues</li><li>Bainghen</li><li>Balinghem</li><li>Bonningues les Calais</li><li>Bouquehault</li><li>Boursin</li><li>Bremes les Ardres</li><li>Caffiers</li><li>Calais</li><li>Campagne les Guines</li><li>Ccra Audruicq</li><li>Coquelles</li><li>Coulogne</li><li>Escalles</li><li>Fiennes</li><li>Frethun</li><li>Guemps</li><li>Guines</li><li>Hames Boucres</li><li>Hardinghem</li><li>Herbinghem</li><li>Hermelinghen</li><li>Hocquinghen</li><li>Landrethun les Ardres</li><li>Les Attaques</li><li>Licques</li><li>Louches</li><li>Marck</li><li>Muncq Nieurlet</li><li>Nielles les Ardres</li><li>Nielles les Calais</li><li>Nortkerque</li><li>Nouvelle Eglise</li><li>Offekerque</li><li>Oye Plage</li><li>Peuplingues</li><li>Pihen les Guines</li><li>Polincove</li><li>Recques sur Hem</li><li>Rodelinghem</li><li>Ruminghem</li><li>Saint Folquin</li><li>Saint Omer Capelle</li><li>Saint Tricat</li><li>Sainte Marie Kerque</li><li>Sangatte</li><li>Sanghen</li><li>Vieille Eglise</li><li>Zutkerque</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -14614,6 +15408,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/entre-mer-et-terres-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (163)",
+                  "en": "Towns in the territory (163)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Airon-Notre-Dame</li><li>Airon-Saint-Vaast</li><li>Aix-en-Ergny</li><li>Aix-en-Issart</li><li>Alette</li><li>Ambricourt</li><li>Attin</li><li>Aubin-Saint-Vaast</li><li>Auchy-lès-Hesdin</li><li>Avesnes</li><li>Avondance</li><li>Azincourt</li><li>Béalancourt</li><li>Beaumerie-Saint-Martin</li><li>Beaurainville</li><li>Bécourt</li><li>Berck-sur-Mer</li><li>Bernieulles</li><li>Beussent</li><li>Beutin</li><li>Bezinghem</li><li>Bimont</li><li>Blangy-sur-Ternoise</li><li>Blingel</li><li>Boisjean</li><li>Boubers-lès-Hesmond</li><li>Bouin-Plumoison</li><li>Bourthes</li><li>Brévillers</li><li>Bréxent-Enocq</li><li>Brimeux</li><li>Buire-le-Sec</li><li>Camiers</li><li>Campagne-lès-Boulonnais</li><li>Campagne-lès-Hesdin</li><li>Campigneulles-les-Grandes</li><li>Campigneulles-les-Petites</li><li>Canlers</li><li>Capelle-lès-Hesdin</li><li>Caumont</li><li>Cavron-Saint-Martin</li><li>Chériennes</li><li>Clenleu</li><li>Colline-Beaumont</li><li>Conchil-le-Temple</li><li>Contes</li><li>Cormont</li><li>Coupelle-Neuve</li><li>Coupelle-Vieille</li><li>Crépy</li><li>Créquy</li><li>Cucq</li><li>Douriez</li><li>Eclimeux</li><li>Ecuires</li><li>Embry</li><li>Enquin-sur-Baillons</li><li>Ergny</li><li>Estrée</li><li>Estréelles</li><li>Etaples</li><li>Fillièvres</li><li>Frencq</li><li>Fresnoy</li><li>Fressin</li><li>Fruges</li><li>Galametz</li><li>Gouy-Saint-André</li><li>Grigny</li><li>Groffliers</li><li>Guigny</li><li>Guisy</li><li>Herly</li><li>Hesdin</li><li>Hesmond</li><li>Hézecques</li><li>Hubersent</li><li>Huby-Saint-Leu</li><li>Hucqueliers</li><li>Humbert</li><li>Incourt</li><li>Inxent</li><li>La Caloterie</li><li>La Loge</li><li>La Madelaine-sous-Montreuil</li><li>Labroye</li><li>Le Faux</li><li>Le Parcq</li><li>Le Touquet-Paris-Plage</li><li>Lebiez</li><li>Lépine</li><li>Lespinoy</li><li>Loison-sur-Créquoise</li><li>Longvilliers</li><li>Lugy</li><li>Maintenay</li><li>Maisoncelle</li><li>Maninghem</li><li>Marant</li><li>Marconne</li><li>Marconnelle</li><li>Marenla</li><li>Maresquel-Ecquemicourt</li><li>Maresville</li><li>Marles-sur-Canche</li><li>Matringhem</li><li>Mencas</li><li>Merlimont</li><li>Moncavrel</li><li>Montreuil</li><li>Mouriez</li><li>Nempont-Saint-Firmin</li><li>Neulette</li><li>Neuville-sous-Montreuil</li><li>Noyelles-lès-Humières</li><li>Offin</li><li>Parenty</li><li>Planques</li><li>Preures</li><li>Quilen</li><li>Radinghem</li><li>Rang-du-Fliers</li><li>Raye-sur-Authie</li><li>Recques-sur-Course</li><li>Regnauville</li><li>Rimboval</li><li>Rollancourt</li><li>Roussent</li><li>Royon</li><li>Ruisseauville</li><li>Rumilly</li><li>Saint Michel-sous-Bois</li><li>Saint-Aubin</li><li>Saint-Denoeux</li><li>Saint-Georges</li><li>Saint-Josse</li><li>Saint-Rémy-au-Bois</li><li>Sainte-Austreberthe</li><li>Saulchoy</li><li>Seins-lès-Fressin</li><li>Sempy</li><li>Senlis</li><li>Sorrus</li><li>Tigny-Noyelle</li><li>Torcy</li><li>Tortefontaine</li><li>Tramecourt</li><li>Tubersent</li><li>Vacqueriette-Erquières</li><li>Verchin</li><li>Verchocq</li><li>Verton</li><li>Vieil-Hesdin</li><li>Vincly</li><li>Waben</li><li>Wail</li><li>Wailly-Beaucamp</li><li>Wambercourt</li><li>Wamin</li><li>Wicquinghem</li><li>Widehem</li><li>Willeman</li><li>Zoteux</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Airon-Notre-Dame</li><li>Airon-Saint-Vaast</li><li>Aix-en-Ergny</li><li>Aix-en-Issart</li><li>Alette</li><li>Ambricourt</li><li>Attin</li><li>Aubin-Saint-Vaast</li><li>Auchy-lès-Hesdin</li><li>Avesnes</li><li>Avondance</li><li>Azincourt</li><li>Béalancourt</li><li>Beaumerie-Saint-Martin</li><li>Beaurainville</li><li>Bécourt</li><li>Berck-sur-Mer</li><li>Bernieulles</li><li>Beussent</li><li>Beutin</li><li>Bezinghem</li><li>Bimont</li><li>Blangy-sur-Ternoise</li><li>Blingel</li><li>Boisjean</li><li>Boubers-lès-Hesmond</li><li>Bouin-Plumoison</li><li>Bourthes</li><li>Brévillers</li><li>Bréxent-Enocq</li><li>Brimeux</li><li>Buire-le-Sec</li><li>Camiers</li><li>Campagne-lès-Boulonnais</li><li>Campagne-lès-Hesdin</li><li>Campigneulles-les-Grandes</li><li>Campigneulles-les-Petites</li><li>Canlers</li><li>Capelle-lès-Hesdin</li><li>Caumont</li><li>Cavron-Saint-Martin</li><li>Chériennes</li><li>Clenleu</li><li>Colline-Beaumont</li><li>Conchil-le-Temple</li><li>Contes</li><li>Cormont</li><li>Coupelle-Neuve</li><li>Coupelle-Vieille</li><li>Crépy</li><li>Créquy</li><li>Cucq</li><li>Douriez</li><li>Eclimeux</li><li>Ecuires</li><li>Embry</li><li>Enquin-sur-Baillons</li><li>Ergny</li><li>Estrée</li><li>Estréelles</li><li>Etaples</li><li>Fillièvres</li><li>Frencq</li><li>Fresnoy</li><li>Fressin</li><li>Fruges</li><li>Galametz</li><li>Gouy-Saint-André</li><li>Grigny</li><li>Groffliers</li><li>Guigny</li><li>Guisy</li><li>Herly</li><li>Hesdin</li><li>Hesmond</li><li>Hézecques</li><li>Hubersent</li><li>Huby-Saint-Leu</li><li>Hucqueliers</li><li>Humbert</li><li>Incourt</li><li>Inxent</li><li>La Caloterie</li><li>La Loge</li><li>La Madelaine-sous-Montreuil</li><li>Labroye</li><li>Le Faux</li><li>Le Parcq</li><li>Le Touquet-Paris-Plage</li><li>Lebiez</li><li>Lépine</li><li>Lespinoy</li><li>Loison-sur-Créquoise</li><li>Longvilliers</li><li>Lugy</li><li>Maintenay</li><li>Maisoncelle</li><li>Maninghem</li><li>Marant</li><li>Marconne</li><li>Marconnelle</li><li>Marenla</li><li>Maresquel-Ecquemicourt</li><li>Maresville</li><li>Marles-sur-Canche</li><li>Matringhem</li><li>Mencas</li><li>Merlimont</li><li>Moncavrel</li><li>Montreuil</li><li>Mouriez</li><li>Nempont-Saint-Firmin</li><li>Neulette</li><li>Neuville-sous-Montreuil</li><li>Noyelles-lès-Humières</li><li>Offin</li><li>Parenty</li><li>Planques</li><li>Preures</li><li>Quilen</li><li>Radinghem</li><li>Rang-du-Fliers</li><li>Raye-sur-Authie</li><li>Recques-sur-Course</li><li>Regnauville</li><li>Rimboval</li><li>Rollancourt</li><li>Roussent</li><li>Royon</li><li>Ruisseauville</li><li>Rumilly</li><li>Saint Michel-sous-Bois</li><li>Saint-Aubin</li><li>Saint-Denoeux</li><li>Saint-Georges</li><li>Saint-Josse</li><li>Saint-Rémy-au-Bois</li><li>Sainte-Austreberthe</li><li>Saulchoy</li><li>Seins-lès-Fressin</li><li>Sempy</li><li>Senlis</li><li>Sorrus</li><li>Tigny-Noyelle</li><li>Torcy</li><li>Tortefontaine</li><li>Tramecourt</li><li>Tubersent</li><li>Vacqueriette-Erquières</li><li>Verchin</li><li>Verchocq</li><li>Verton</li><li>Vieil-Hesdin</li><li>Vincly</li><li>Waben</li><li>Wail</li><li>Wailly-Beaucamp</li><li>Wambercourt</li><li>Wamin</li><li>Wicquinghem</li><li>Widehem</li><li>Willeman</li><li>Zoteux</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "entre-mer-et-terres-comite-rangee",
           "props": {
@@ -14676,7 +15489,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Entre Mer et Terres" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -14730,59 +15545,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/entre-mer-et-terres-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/entre-mer-et-terres-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=entre-mer-et-terres"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Entre Mer et Terres.",
-              "en": "Events open to families and professionals across the Entre Mer et Terres area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Entre Mer et Terres"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/entre-mer-et-terres-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=entre-mer-et-terres"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Entre Mer et Terres.",
+                  "en": "Events open to families and professionals across the Entre Mer et Terres area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Entre Mer et Terres"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/entre-mer-et-terres-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Entre Mer et Terres"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Entre Mer et Terres"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -15188,26 +16157,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (163)",
-                  "en": "Towns in the territory (163)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Airon-Notre-Dame</li><li>Airon-Saint-Vaast</li><li>Aix-en-Ergny</li><li>Aix-en-Issart</li><li>Alette</li><li>Ambricourt</li><li>Attin</li><li>Aubin-Saint-Vaast</li><li>Auchy-lès-Hesdin</li><li>Avesnes</li><li>Avondance</li><li>Azincourt</li><li>Béalancourt</li><li>Beaumerie-Saint-Martin</li><li>Beaurainville</li><li>Bécourt</li><li>Berck-sur-Mer</li><li>Bernieulles</li><li>Beussent</li><li>Beutin</li><li>Bezinghem</li><li>Bimont</li><li>Blangy-sur-Ternoise</li><li>Blingel</li><li>Boisjean</li><li>Boubers-lès-Hesmond</li><li>Bouin-Plumoison</li><li>Bourthes</li><li>Brévillers</li><li>Bréxent-Enocq</li><li>Brimeux</li><li>Buire-le-Sec</li><li>Camiers</li><li>Campagne-lès-Boulonnais</li><li>Campagne-lès-Hesdin</li><li>Campigneulles-les-Grandes</li><li>Campigneulles-les-Petites</li><li>Canlers</li><li>Capelle-lès-Hesdin</li><li>Caumont</li><li>Cavron-Saint-Martin</li><li>Chériennes</li><li>Clenleu</li><li>Colline-Beaumont</li><li>Conchil-le-Temple</li><li>Contes</li><li>Cormont</li><li>Coupelle-Neuve</li><li>Coupelle-Vieille</li><li>Crépy</li><li>Créquy</li><li>Cucq</li><li>Douriez</li><li>Eclimeux</li><li>Ecuires</li><li>Embry</li><li>Enquin-sur-Baillons</li><li>Ergny</li><li>Estrée</li><li>Estréelles</li><li>Etaples</li><li>Fillièvres</li><li>Frencq</li><li>Fresnoy</li><li>Fressin</li><li>Fruges</li><li>Galametz</li><li>Gouy-Saint-André</li><li>Grigny</li><li>Groffliers</li><li>Guigny</li><li>Guisy</li><li>Herly</li><li>Hesdin</li><li>Hesmond</li><li>Hézecques</li><li>Hubersent</li><li>Huby-Saint-Leu</li><li>Hucqueliers</li><li>Humbert</li><li>Incourt</li><li>Inxent</li><li>La Caloterie</li><li>La Loge</li><li>La Madelaine-sous-Montreuil</li><li>Labroye</li><li>Le Faux</li><li>Le Parcq</li><li>Le Touquet-Paris-Plage</li><li>Lebiez</li><li>Lépine</li><li>Lespinoy</li><li>Loison-sur-Créquoise</li><li>Longvilliers</li><li>Lugy</li><li>Maintenay</li><li>Maisoncelle</li><li>Maninghem</li><li>Marant</li><li>Marconne</li><li>Marconnelle</li><li>Marenla</li><li>Maresquel-Ecquemicourt</li><li>Maresville</li><li>Marles-sur-Canche</li><li>Matringhem</li><li>Mencas</li><li>Merlimont</li><li>Moncavrel</li><li>Montreuil</li><li>Mouriez</li><li>Nempont-Saint-Firmin</li><li>Neulette</li><li>Neuville-sous-Montreuil</li><li>Noyelles-lès-Humières</li><li>Offin</li><li>Parenty</li><li>Planques</li><li>Preures</li><li>Quilen</li><li>Radinghem</li><li>Rang-du-Fliers</li><li>Raye-sur-Authie</li><li>Recques-sur-Course</li><li>Regnauville</li><li>Rimboval</li><li>Rollancourt</li><li>Roussent</li><li>Royon</li><li>Ruisseauville</li><li>Rumilly</li><li>Saint Michel-sous-Bois</li><li>Saint-Aubin</li><li>Saint-Denoeux</li><li>Saint-Georges</li><li>Saint-Josse</li><li>Saint-Rémy-au-Bois</li><li>Sainte-Austreberthe</li><li>Saulchoy</li><li>Seins-lès-Fressin</li><li>Sempy</li><li>Senlis</li><li>Sorrus</li><li>Tigny-Noyelle</li><li>Torcy</li><li>Tortefontaine</li><li>Tramecourt</li><li>Tubersent</li><li>Vacqueriette-Erquières</li><li>Verchin</li><li>Verchocq</li><li>Verton</li><li>Vieil-Hesdin</li><li>Vincly</li><li>Waben</li><li>Wail</li><li>Wailly-Beaucamp</li><li>Wambercourt</li><li>Wamin</li><li>Wicquinghem</li><li>Widehem</li><li>Willeman</li><li>Zoteux</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Airon-Notre-Dame</li><li>Airon-Saint-Vaast</li><li>Aix-en-Ergny</li><li>Aix-en-Issart</li><li>Alette</li><li>Ambricourt</li><li>Attin</li><li>Aubin-Saint-Vaast</li><li>Auchy-lès-Hesdin</li><li>Avesnes</li><li>Avondance</li><li>Azincourt</li><li>Béalancourt</li><li>Beaumerie-Saint-Martin</li><li>Beaurainville</li><li>Bécourt</li><li>Berck-sur-Mer</li><li>Bernieulles</li><li>Beussent</li><li>Beutin</li><li>Bezinghem</li><li>Bimont</li><li>Blangy-sur-Ternoise</li><li>Blingel</li><li>Boisjean</li><li>Boubers-lès-Hesmond</li><li>Bouin-Plumoison</li><li>Bourthes</li><li>Brévillers</li><li>Bréxent-Enocq</li><li>Brimeux</li><li>Buire-le-Sec</li><li>Camiers</li><li>Campagne-lès-Boulonnais</li><li>Campagne-lès-Hesdin</li><li>Campigneulles-les-Grandes</li><li>Campigneulles-les-Petites</li><li>Canlers</li><li>Capelle-lès-Hesdin</li><li>Caumont</li><li>Cavron-Saint-Martin</li><li>Chériennes</li><li>Clenleu</li><li>Colline-Beaumont</li><li>Conchil-le-Temple</li><li>Contes</li><li>Cormont</li><li>Coupelle-Neuve</li><li>Coupelle-Vieille</li><li>Crépy</li><li>Créquy</li><li>Cucq</li><li>Douriez</li><li>Eclimeux</li><li>Ecuires</li><li>Embry</li><li>Enquin-sur-Baillons</li><li>Ergny</li><li>Estrée</li><li>Estréelles</li><li>Etaples</li><li>Fillièvres</li><li>Frencq</li><li>Fresnoy</li><li>Fressin</li><li>Fruges</li><li>Galametz</li><li>Gouy-Saint-André</li><li>Grigny</li><li>Groffliers</li><li>Guigny</li><li>Guisy</li><li>Herly</li><li>Hesdin</li><li>Hesmond</li><li>Hézecques</li><li>Hubersent</li><li>Huby-Saint-Leu</li><li>Hucqueliers</li><li>Humbert</li><li>Incourt</li><li>Inxent</li><li>La Caloterie</li><li>La Loge</li><li>La Madelaine-sous-Montreuil</li><li>Labroye</li><li>Le Faux</li><li>Le Parcq</li><li>Le Touquet-Paris-Plage</li><li>Lebiez</li><li>Lépine</li><li>Lespinoy</li><li>Loison-sur-Créquoise</li><li>Longvilliers</li><li>Lugy</li><li>Maintenay</li><li>Maisoncelle</li><li>Maninghem</li><li>Marant</li><li>Marconne</li><li>Marconnelle</li><li>Marenla</li><li>Maresquel-Ecquemicourt</li><li>Maresville</li><li>Marles-sur-Canche</li><li>Matringhem</li><li>Mencas</li><li>Merlimont</li><li>Moncavrel</li><li>Montreuil</li><li>Mouriez</li><li>Nempont-Saint-Firmin</li><li>Neulette</li><li>Neuville-sous-Montreuil</li><li>Noyelles-lès-Humières</li><li>Offin</li><li>Parenty</li><li>Planques</li><li>Preures</li><li>Quilen</li><li>Radinghem</li><li>Rang-du-Fliers</li><li>Raye-sur-Authie</li><li>Recques-sur-Course</li><li>Regnauville</li><li>Rimboval</li><li>Rollancourt</li><li>Roussent</li><li>Royon</li><li>Ruisseauville</li><li>Rumilly</li><li>Saint Michel-sous-Bois</li><li>Saint-Aubin</li><li>Saint-Denoeux</li><li>Saint-Georges</li><li>Saint-Josse</li><li>Saint-Rémy-au-Bois</li><li>Sainte-Austreberthe</li><li>Saulchoy</li><li>Seins-lès-Fressin</li><li>Sempy</li><li>Senlis</li><li>Sorrus</li><li>Tigny-Noyelle</li><li>Torcy</li><li>Tortefontaine</li><li>Tramecourt</li><li>Tubersent</li><li>Vacqueriette-Erquières</li><li>Verchin</li><li>Verchocq</li><li>Verton</li><li>Vieil-Hesdin</li><li>Vincly</li><li>Waben</li><li>Wail</li><li>Wailly-Beaucamp</li><li>Wambercourt</li><li>Wamin</li><li>Wicquinghem</li><li>Widehem</li><li>Willeman</li><li>Zoteux</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -15331,6 +16283,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/familles-en-sol-mineur-henin-carvin-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (25)",
+                  "en": "Towns in the territory (25)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Bénifontaine</li><li>Billy-Montigny</li><li>Bois-Bernard</li><li>Carvin</li><li>Courcelles-les-Lens</li><li>Courrières</li><li>Dourges</li><li>Drocourt</li><li>Estevelles</li><li>Evin-Malmaison</li><li>Fouquières-les-Lens</li><li>Harnes</li><li>Hénin-Beaumont</li><li>Hulluch</li><li>Leforest</li><li>Libercourt</li><li>Meurchin</li><li>Montigny-en-Gohelle</li><li>Noyelles-Godault</li><li>Noyelles-sous-Lens</li><li>Oignies</li><li>Pont à Vendin</li><li>Rouvroy</li><li>Vendin-le Vieil</li><li>Wingles</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Bénifontaine</li><li>Billy-Montigny</li><li>Bois-Bernard</li><li>Carvin</li><li>Courcelles-les-Lens</li><li>Courrières</li><li>Dourges</li><li>Drocourt</li><li>Estevelles</li><li>Evin-Malmaison</li><li>Fouquières-les-Lens</li><li>Harnes</li><li>Hénin-Beaumont</li><li>Hulluch</li><li>Leforest</li><li>Libercourt</li><li>Meurchin</li><li>Montigny-en-Gohelle</li><li>Noyelles-Godault</li><li>Noyelles-sous-Lens</li><li>Oignies</li><li>Pont à Vendin</li><li>Rouvroy</li><li>Vendin-le Vieil</li><li>Wingles</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "familles-en-sol-mineur-henin-carvin-comite-rangee",
           "props": {
@@ -15393,7 +16364,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Familles en sol mineur Hénin Carvin" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -15447,59 +16420,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/familles-en-sol-mineur-henin-carvin-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/familles-en-sol-mineur-henin-carvin-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=familles-en-sol-mineur-henin-carvin"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Familles en sol mineur Hénin Carvin.",
-              "en": "Events open to families and professionals across the Familles en sol mineur Hénin Carvin area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Familles en sol mineur Hénin Carvin"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/familles-en-sol-mineur-henin-carvin-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=familles-en-sol-mineur-henin-carvin"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Familles en sol mineur Hénin Carvin.",
+                  "en": "Events open to families and professionals across the Familles en sol mineur Hénin Carvin area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Familles en sol mineur Hénin Carvin"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/familles-en-sol-mineur-henin-carvin-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Familles en sol mineur Hénin Carvin"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Familles en sol mineur Hénin Carvin"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -15905,26 +17032,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (25)",
-                  "en": "Towns in the territory (25)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Bénifontaine</li><li>Billy-Montigny</li><li>Bois-Bernard</li><li>Carvin</li><li>Courcelles-les-Lens</li><li>Courrières</li><li>Dourges</li><li>Drocourt</li><li>Estevelles</li><li>Evin-Malmaison</li><li>Fouquières-les-Lens</li><li>Harnes</li><li>Hénin-Beaumont</li><li>Hulluch</li><li>Leforest</li><li>Libercourt</li><li>Meurchin</li><li>Montigny-en-Gohelle</li><li>Noyelles-Godault</li><li>Noyelles-sous-Lens</li><li>Oignies</li><li>Pont à Vendin</li><li>Rouvroy</li><li>Vendin-le Vieil</li><li>Wingles</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Bénifontaine</li><li>Billy-Montigny</li><li>Bois-Bernard</li><li>Carvin</li><li>Courcelles-les-Lens</li><li>Courrières</li><li>Dourges</li><li>Drocourt</li><li>Estevelles</li><li>Evin-Malmaison</li><li>Fouquières-les-Lens</li><li>Harnes</li><li>Hénin-Beaumont</li><li>Hulluch</li><li>Leforest</li><li>Libercourt</li><li>Meurchin</li><li>Montigny-en-Gohelle</li><li>Noyelles-Godault</li><li>Noyelles-sous-Lens</li><li>Oignies</li><li>Pont à Vendin</li><li>Rouvroy</li><li>Vendin-le Vieil</li><li>Wingles</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -16048,6 +17158,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/familles-en-sol-mineur-lens-lievin-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (24)",
+                  "en": "Towns in the territory (24)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Ablain-Saint-Nazaire</li><li>Acheville</li><li>Aix-Noulette</li><li>Angres</li><li>Annay-sous-Lens</li><li>Avion</li><li>Bouvigny-Boyeffles</li><li>Bully-les-Mines</li><li>Carency</li><li>Eleu-Dit-Leauwette</li><li>Givenchy-en-Gohelle</li><li>Gouy-Servins</li><li>Grenay</li><li>Lens</li><li>Liévin</li><li>Loison-sous-Lens</li><li>Loos-en-Gohelle</li><li>Mazingarbe</li><li>Sains-en-Gohelle</li><li>Sallaumines</li><li>Servins</li><li>Souchez</li><li>Villers-au-Bois</li><li>Vimy</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Ablain-Saint-Nazaire</li><li>Acheville</li><li>Aix-Noulette</li><li>Angres</li><li>Annay-sous-Lens</li><li>Avion</li><li>Bouvigny-Boyeffles</li><li>Bully-les-Mines</li><li>Carency</li><li>Eleu-Dit-Leauwette</li><li>Givenchy-en-Gohelle</li><li>Gouy-Servins</li><li>Grenay</li><li>Lens</li><li>Liévin</li><li>Loison-sous-Lens</li><li>Loos-en-Gohelle</li><li>Mazingarbe</li><li>Sains-en-Gohelle</li><li>Sallaumines</li><li>Servins</li><li>Souchez</li><li>Villers-au-Bois</li><li>Vimy</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "familles-en-sol-mineur-lens-lievin-comite-rangee",
           "props": {
@@ -16110,7 +17239,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Familles en sol mineur Lens Liévin" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -16164,59 +17295,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/familles-en-sol-mineur-lens-lievin-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/familles-en-sol-mineur-lens-lievin-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=familles-en-sol-mineur-lens-lievin"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Familles en sol mineur Lens Liévin.",
-              "en": "Events open to families and professionals across the Familles en sol mineur Lens Liévin area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Familles en sol mineur Lens Liévin"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/familles-en-sol-mineur-lens-lievin-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=familles-en-sol-mineur-lens-lievin"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Familles en sol mineur Lens Liévin.",
+                  "en": "Events open to families and professionals across the Familles en sol mineur Lens Liévin area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Familles en sol mineur Lens Liévin"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/familles-en-sol-mineur-lens-lievin-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Familles en sol mineur Lens Liévin"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Familles en sol mineur Lens Liévin"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -16622,26 +17907,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (24)",
-                  "en": "Towns in the territory (24)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Ablain-Saint-Nazaire</li><li>Acheville</li><li>Aix-Noulette</li><li>Angres</li><li>Annay-sous-Lens</li><li>Avion</li><li>Bouvigny-Boyeffles</li><li>Bully-les-Mines</li><li>Carency</li><li>Eleu-Dit-Leauwette</li><li>Givenchy-en-Gohelle</li><li>Gouy-Servins</li><li>Grenay</li><li>Lens</li><li>Liévin</li><li>Loison-sous-Lens</li><li>Loos-en-Gohelle</li><li>Mazingarbe</li><li>Sains-en-Gohelle</li><li>Sallaumines</li><li>Servins</li><li>Souchez</li><li>Villers-au-Bois</li><li>Vimy</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Ablain-Saint-Nazaire</li><li>Acheville</li><li>Aix-Noulette</li><li>Angres</li><li>Annay-sous-Lens</li><li>Avion</li><li>Bouvigny-Boyeffles</li><li>Bully-les-Mines</li><li>Carency</li><li>Eleu-Dit-Leauwette</li><li>Givenchy-en-Gohelle</li><li>Gouy-Servins</li><li>Grenay</li><li>Lens</li><li>Liévin</li><li>Loison-sous-Lens</li><li>Loos-en-Gohelle</li><li>Mazingarbe</li><li>Sains-en-Gohelle</li><li>Sallaumines</li><li>Servins</li><li>Souchez</li><li>Villers-au-Bois</li><li>Vimy</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -16765,6 +18033,25 @@
           }
         },
         {
+          "type": "accordion",
+          "id": "/territoire/ternois-bruaysis-communes",
+          "props": {
+            "bg": "page-accent",
+            "items": [
+              {
+                "title": {
+                  "fr": "Les communes du territoire (172)",
+                  "en": "Towns in the territory (172)"
+                },
+                "content": {
+                  "fr": "<ul class=\"p62-communes\"><li>Agnieres</li><li>Ambrines</li><li>Anvin</li><li>Aubigny en Artois</li><li>Aubrometz</li><li>Auchel</li><li>Aumerval</li><li>Auxi le Chateau</li><li>Averdoingt</li><li>Avesnes le Comte</li><li>Bailleul aux Cornailles</li><li>Bailleul les Pernes</li><li>Bajus</li><li>Barlin</li><li>Beauvoir Wavrans</li><li>Beauvois</li><li>Bergueneuse</li><li>Berles Monchel</li><li>Bernicourt</li><li>Bethonsart</li><li>Beugin</li><li>Blangerval Blangermont</li><li>Blessy</li><li>Boffles</li><li>Bonnieres</li><li>Boubers sur Canche</li><li>Bouret sur Canche</li><li>Bours</li><li>Boyaval</li><li>Brias</li><li>Bruay la Buissiere</li><li>Buire au Bois</li><li>Buneville</li><li>Calonne Ricouart</li><li>Camblain Chatelain</li><li>Camblain l’Abbe</li><li>Cambligneul</li><li>Canteleux</li><li>Capelle Fermont</li><li>Cauchy A la Tour</li><li>Caucourt</li><li>Chelers</li><li>Conchy sur Canche</li><li>Contreville</li><li>Croisette</li><li>Croix en Ternois</li><li>Dieval</li><li>Divion</li><li>Ecoivres</li><li>Eps</li><li>Equirre</li><li>Erin</li><li>Estree Blanche</li><li>Estree Cauchy</li><li>Flefs</li><li>Flers</li><li>Fleury</li><li>Floringhem</li><li>Fontaine l’Etalon</li><li>Fontaine les Boulans</li><li>Fontaine les Hermans</li><li>Fortel en Artois</li><li>Foufflin Ricamets</li><li>Framecourt</li><li>Fresnicourt le Dolmen</li><li>Frevent</li><li>Frevillers</li><li>Frevin Capelle</li><li>Gauchin le Gal</li><li>Gauchin Verloingt</li><li>Gennes Ivergny</li><li>Gosnay</li><li>Gouy</li><li>Guarbecque</li><li>Guinecourt</li><li>Haillicourt</li><li>Haravesnes</li><li>Hautecloque</li><li>Hericourt</li><li>Herlin le Sec</li><li>Herlincourt</li><li>Hermaville</li><li>Hermin</li><li>Hernicourt</li><li>Hersin Coupigny</li><li>Hesdigneul les Bethune</li><li>Hestrus</li><li>Heuchin</li><li>Houchin</li><li>Houdain</li><li>Huclier</li><li>Humeroeuille</li><li>Humieres</li><li>Isbergues-Molinghem-Berguette</li><li>Izel les Hameaux</li><li>La Comte</li><li>Lambres</li><li>Le Ponchel</li><li>Le Thieuloye</li><li>Liettres</li><li>Ligny les Aires</li><li>Ligny St Flochel</li><li>Ligny sur Canche</li><li>Linghem</li><li>Linzeux</li><li>Lisbourg</li><li>Lozinghem</li><li>Magnicourt en Comte</li><li>Maisnil</li><li>Maisnil les Ruitz</li><li>Maizieres</li><li>Manin</li><li>Marest</li><li>Marles les Mines</li><li>Marquay</li><li>Mazinghem</li><li>Mingoval</li><li>Moncheaux les Frevent</li><li>Monchel sur Canche</li><li>Monchy Breton</li><li>Monchy Cayeux</li><li>Monts en Ternois</li><li>Nedon</li><li>Nedonchel</li><li>Noeux les Auxi</li><li>Nouville au Cornet</li><li>Noyelle Vion</li><li>Nuncq Hautecote</li><li>Œuf en Ternois</li><li>Ostreville</li><li>Ourton</li><li>Penin</li><li>Pernes</li><li>Pierremont</li><li>Predefin</li><li>Pressy</li><li>Quernes</li><li>Quoeux Haut Maisnil</li><li>Ramecourt</li><li>Rebreuve Ranchicourt</li><li>Rely</li><li>Roellecourt</li><li>Rombly</li><li>Rougefay</li><li>Ruitz</li><li>Sachin</li><li>Sains les Pernes</li><li>Saint Pol sur Ternoise</li><li>Savy Berlette</li><li>Sericourt</li><li>Sibiville</li><li>Siracourt</li><li>St Hillaire Cottes</li><li>St Michel sur Ternoise</li><li>Tangry</li><li>Teneur</li><li>Ternas</li><li>Tilloy les Hermaville</li><li>Tilly Capelle</li><li>Tincques</li><li>Tollent</li><li>Troisveaux</li><li>Vacquerie le Boucq</li><li>Valhuon</li><li>Vaulx</li><li>Villers Brulin</li><li>Villers Chatel</li><li>Villers l’Hopital</li><li>Villers Sir Simon</li><li>Wavrans sur Ternoise</li><li>Willencourt</li><li>Witternesse</li></ul>",
+                  "en": "<ul class=\"p62-communes\"><li>Agnieres</li><li>Ambrines</li><li>Anvin</li><li>Aubigny en Artois</li><li>Aubrometz</li><li>Auchel</li><li>Aumerval</li><li>Auxi le Chateau</li><li>Averdoingt</li><li>Avesnes le Comte</li><li>Bailleul aux Cornailles</li><li>Bailleul les Pernes</li><li>Bajus</li><li>Barlin</li><li>Beauvoir Wavrans</li><li>Beauvois</li><li>Bergueneuse</li><li>Berles Monchel</li><li>Bernicourt</li><li>Bethonsart</li><li>Beugin</li><li>Blangerval Blangermont</li><li>Blessy</li><li>Boffles</li><li>Bonnieres</li><li>Boubers sur Canche</li><li>Bouret sur Canche</li><li>Bours</li><li>Boyaval</li><li>Brias</li><li>Bruay la Buissiere</li><li>Buire au Bois</li><li>Buneville</li><li>Calonne Ricouart</li><li>Camblain Chatelain</li><li>Camblain l’Abbe</li><li>Cambligneul</li><li>Canteleux</li><li>Capelle Fermont</li><li>Cauchy A la Tour</li><li>Caucourt</li><li>Chelers</li><li>Conchy sur Canche</li><li>Contreville</li><li>Croisette</li><li>Croix en Ternois</li><li>Dieval</li><li>Divion</li><li>Ecoivres</li><li>Eps</li><li>Equirre</li><li>Erin</li><li>Estree Blanche</li><li>Estree Cauchy</li><li>Flefs</li><li>Flers</li><li>Fleury</li><li>Floringhem</li><li>Fontaine l’Etalon</li><li>Fontaine les Boulans</li><li>Fontaine les Hermans</li><li>Fortel en Artois</li><li>Foufflin Ricamets</li><li>Framecourt</li><li>Fresnicourt le Dolmen</li><li>Frevent</li><li>Frevillers</li><li>Frevin Capelle</li><li>Gauchin le Gal</li><li>Gauchin Verloingt</li><li>Gennes Ivergny</li><li>Gosnay</li><li>Gouy</li><li>Guarbecque</li><li>Guinecourt</li><li>Haillicourt</li><li>Haravesnes</li><li>Hautecloque</li><li>Hericourt</li><li>Herlin le Sec</li><li>Herlincourt</li><li>Hermaville</li><li>Hermin</li><li>Hernicourt</li><li>Hersin Coupigny</li><li>Hesdigneul les Bethune</li><li>Hestrus</li><li>Heuchin</li><li>Houchin</li><li>Houdain</li><li>Huclier</li><li>Humeroeuille</li><li>Humieres</li><li>Isbergues-Molinghem-Berguette</li><li>Izel les Hameaux</li><li>La Comte</li><li>Lambres</li><li>Le Ponchel</li><li>Le Thieuloye</li><li>Liettres</li><li>Ligny les Aires</li><li>Ligny St Flochel</li><li>Ligny sur Canche</li><li>Linghem</li><li>Linzeux</li><li>Lisbourg</li><li>Lozinghem</li><li>Magnicourt en Comte</li><li>Maisnil</li><li>Maisnil les Ruitz</li><li>Maizieres</li><li>Manin</li><li>Marest</li><li>Marles les Mines</li><li>Marquay</li><li>Mazinghem</li><li>Mingoval</li><li>Moncheaux les Frevent</li><li>Monchel sur Canche</li><li>Monchy Breton</li><li>Monchy Cayeux</li><li>Monts en Ternois</li><li>Nedon</li><li>Nedonchel</li><li>Noeux les Auxi</li><li>Nouville au Cornet</li><li>Noyelle Vion</li><li>Nuncq Hautecote</li><li>Œuf en Ternois</li><li>Ostreville</li><li>Ourton</li><li>Penin</li><li>Pernes</li><li>Pierremont</li><li>Predefin</li><li>Pressy</li><li>Quernes</li><li>Quoeux Haut Maisnil</li><li>Ramecourt</li><li>Rebreuve Ranchicourt</li><li>Rely</li><li>Roellecourt</li><li>Rombly</li><li>Rougefay</li><li>Ruitz</li><li>Sachin</li><li>Sains les Pernes</li><li>Saint Pol sur Ternoise</li><li>Savy Berlette</li><li>Sericourt</li><li>Sibiville</li><li>Siracourt</li><li>St Hillaire Cottes</li><li>St Michel sur Ternoise</li><li>Tangry</li><li>Teneur</li><li>Ternas</li><li>Tilloy les Hermaville</li><li>Tilly Capelle</li><li>Tincques</li><li>Tollent</li><li>Troisveaux</li><li>Vacquerie le Boucq</li><li>Valhuon</li><li>Vaulx</li><li>Villers Brulin</li><li>Villers Chatel</li><li>Villers l’Hopital</li><li>Villers Sir Simon</li><li>Wavrans sur Ternoise</li><li>Willencourt</li><li>Witternesse</li></ul>"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "gridLayout",
           "id": "ternois-bruaysis-comite-rangee",
           "props": {
@@ -16827,7 +18114,9 @@
                     "en": "Territory coordination"
                   },
                   "roles": [
-                    "Coordonnateur(trice)"
+                    "Coordonnateur(trice)",
+                    "Coordonnateur",
+                    "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Ternois Bruaysis" },
                   "fields": ["territoires", "telephone", "phone", "mobile", "email"],
@@ -16877,59 +18166,213 @@
           }
         },
         {
-          "type": "agenda",
-          "id": "/territoire/ternois-bruaysis-agenda",
+          "type": "gridLayout",
+          "id": "/territoire/ternois-bruaysis-agenda-acteurs",
           "props": {
             "bg": "page-accent",
-            "customHeader": {
-              "title": {
-                "fr": "L'agenda du territoire",
-                "en": "The territory's agenda"
-              },
-              "linkText": {
-                "fr": "Voir tout l'agenda",
-                "en": "See the full agenda"
-              },
-              "linkHref": "/agenda?territoire=ternois-bruaysis"
-            },
-            "description": {
-              "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Ternois Bruaysis.",
-              "en": "Events open to families and professionals across the Ternois Bruaysis area."
-            },
-            "defaultMode": "list",
-            "showViewToggle": false,
-            "tabs": [
-              "upcoming",
-              "past"
-            ],
-            "defaultTab": "upcoming",
-            "upcomingWindowMonths": 12,
-            "filters": {
-              "type": false,
-              "text": false,
-              "tags": false
-            },
-            "detailsMode": "drawer",
-            "enableMap": false,
-            "columns": {
-              "sm": 1,
-              "md": 2,
-              "lg": 3
-            },
-            "baseParams": {
-              "sourceKey": [
-                "parent62"
-              ],
-              "indexStepList": 60,
-              "filters": {
-                "type": "others",
-                "territoires": {
-                  "$in": [
-                    "Ternois Bruaysis"
-                  ]
+            "columns": 2,
+            "align": "stretch",
+            "gap": 6,
+            "leftWrapperClass": "[&>*>section]:rounded [&>*>section]:shadow-sm [&>*>section]:overflow-hidden",
+            "sections": [
+            {
+              "type": "agenda",
+              "id": "/territoire/ternois-bruaysis-agenda",
+              "props": {
+                "limit": 6,
+                "customHeader": {
+                  "title": {
+                    "fr": "L'agenda du territoire",
+                    "en": "The territory's agenda"
+                  },
+                  "linkText": {
+                    "fr": "Voir tout l'agenda",
+                    "en": "See the full agenda"
+                  },
+                  "linkHref": "/agenda?territoire=ternois-bruaysis"
+                },
+                "description": {
+                  "fr": "Les rendez-vous ouverts aux familles et aux professionnel·les sur le territoire Ternois Bruaysis.",
+                  "en": "Events open to families and professionals across the Ternois Bruaysis area."
+                },
+                "defaultMode": "list",
+                "showViewToggle": false,
+                "tabs": [
+                  "upcoming",
+                  "past"
+                ],
+                "defaultTab": "upcoming",
+                "upcomingWindowMonths": 12,
+                "filters": {
+                  "type": false,
+                  "text": false,
+                  "tags": false
+                },
+                "detailsMode": "drawer",
+                "enableMap": false,
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3
+                },
+                "baseParams": {
+                  "sourceKey": [
+                    "parent62"
+                  ],
+                  "indexStepList": 60,
+                  "filters": {
+                    "type": "others",
+                    "territoires": {
+                      "$in": [
+                        "Ternois Bruaysis"
+                      ]
+                    }
+                  }
                 }
               }
             }
+              ,
+              {
+                "type": "searchProStatic",
+                "id": "/territoire/ternois-bruaysis-acteurs",
+                "props": {
+                  "enableMap": true,
+                  "showMap": true,
+                  "defaultViewMode": "map",
+                  "fillParent": true,
+                  "customHeader": {
+                    "title": {
+                      "fr": "La carte des acteurs",
+                      "en": "The actors map"
+                    },
+                    "linkText": {
+                      "fr": "Voir tous les acteurs",
+                      "en": "See all actors"
+                    },
+                    "linkHref": "/annuaire-acteurs-parentalite?territoire=Ternois Bruaysis"
+                  },
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "sourceKey": [
+                      "parent62"
+                    ],
+                    "costumSlug": "parent62",
+                    "defaultFilters": {
+                      "tags": { "$nin": ["Partenaires"] },
+                      "territoires": {
+                        "$in": [
+                          "Ternois Bruaysis"
+                        ]
+                      }
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug",
+                      "type",
+                      "collection",
+                      "source",
+                      "reference",
+                      "shortDescription",
+                      "description",
+                      "email",
+                      "telephone",
+                      "url",
+                      "address",
+                      "geo",
+                      "geoPosition",
+                      "territoires",
+                      "categoryThematic",
+                      "typeAction",
+                      "publicCible",
+                      "profilThumbImageUrl",
+                      "profilMediumImageUrl",
+                      "profilImageUrl"
+                    ],
+                    "searchBy": [
+                      "name",
+                      "shortDescription",
+                      "description"
+                    ],
+                    "defaultSortBy": {
+                      "name": 1
+                    },
+                    "indexStepList": 4
+                  },
+                  "list": {
+                    "columns": {
+                      "sm": 1,
+                      "md": 1,
+                      "lg": 2
+                    },
+                    "card": {
+                      "type": "image-cover",
+                      "variant": "image-cover",
+                      "imageFit": "contain",
+                      "showDescription": false,
+                      "showAddress": true,
+                      "detailsMode": "drawer"
+                    },
+                    "previewFetch": "organizations",
+                    "preview": {
+                      "type": "facets",
+                      "width": "3xl",
+                      "facets": [
+                        {
+                          "field": "categoryThematic",
+                          "label": {
+                            "fr": "Catégorie thématique",
+                            "en": "Thematic category"
+                          },
+                          "icon": "tags"
+                        },
+                        {
+                          "field": "typeAction",
+                          "label": {
+                            "fr": "Type d'action",
+                            "en": "Type of action"
+                          },
+                          "icon": "list-checks"
+                        },
+                        {
+                          "field": "publicCible",
+                          "label": {
+                            "fr": "Public cible",
+                            "en": "Target audience"
+                          },
+                          "icon": "users"
+                        },
+                        {
+                          "field": "email",
+                          "label": {
+                            "fr": "E-mail",
+                            "en": "Email"
+                          },
+                          "icon": "at-sign"
+                        },
+                        {
+                          "field": "telephone",
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
+                          "icon": "phone"
+                        },
+                        {
+                          "field": "url",
+                          "label": {
+                            "fr": "Site internet",
+                            "en": "Website"
+                          },
+                          "icon": "globe"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
           }
         },
         {
@@ -17335,26 +18778,9 @@
           }
         },
         {
-          "type": "accordion",
-          "props": {
-            "bg": "page-accent",
-            "items": [
-              {
-                "title": {
-                  "fr": "Les communes du territoire (172)",
-                  "en": "Towns in the territory (172)"
-                },
-                "content": {
-                  "fr": "<ul class=\"p62-communes\"><li>Agnieres</li><li>Ambrines</li><li>Anvin</li><li>Aubigny en Artois</li><li>Aubrometz</li><li>Auchel</li><li>Aumerval</li><li>Auxi le Chateau</li><li>Averdoingt</li><li>Avesnes le Comte</li><li>Bailleul aux Cornailles</li><li>Bailleul les Pernes</li><li>Bajus</li><li>Barlin</li><li>Beauvoir Wavrans</li><li>Beauvois</li><li>Bergueneuse</li><li>Berles Monchel</li><li>Bernicourt</li><li>Bethonsart</li><li>Beugin</li><li>Blangerval Blangermont</li><li>Blessy</li><li>Boffles</li><li>Bonnieres</li><li>Boubers sur Canche</li><li>Bouret sur Canche</li><li>Bours</li><li>Boyaval</li><li>Brias</li><li>Bruay la Buissiere</li><li>Buire au Bois</li><li>Buneville</li><li>Calonne Ricouart</li><li>Camblain Chatelain</li><li>Camblain l’Abbe</li><li>Cambligneul</li><li>Canteleux</li><li>Capelle Fermont</li><li>Cauchy A la Tour</li><li>Caucourt</li><li>Chelers</li><li>Conchy sur Canche</li><li>Contreville</li><li>Croisette</li><li>Croix en Ternois</li><li>Dieval</li><li>Divion</li><li>Ecoivres</li><li>Eps</li><li>Equirre</li><li>Erin</li><li>Estree Blanche</li><li>Estree Cauchy</li><li>Flefs</li><li>Flers</li><li>Fleury</li><li>Floringhem</li><li>Fontaine l’Etalon</li><li>Fontaine les Boulans</li><li>Fontaine les Hermans</li><li>Fortel en Artois</li><li>Foufflin Ricamets</li><li>Framecourt</li><li>Fresnicourt le Dolmen</li><li>Frevent</li><li>Frevillers</li><li>Frevin Capelle</li><li>Gauchin le Gal</li><li>Gauchin Verloingt</li><li>Gennes Ivergny</li><li>Gosnay</li><li>Gouy</li><li>Guarbecque</li><li>Guinecourt</li><li>Haillicourt</li><li>Haravesnes</li><li>Hautecloque</li><li>Hericourt</li><li>Herlin le Sec</li><li>Herlincourt</li><li>Hermaville</li><li>Hermin</li><li>Hernicourt</li><li>Hersin Coupigny</li><li>Hesdigneul les Bethune</li><li>Hestrus</li><li>Heuchin</li><li>Houchin</li><li>Houdain</li><li>Huclier</li><li>Humeroeuille</li><li>Humieres</li><li>Isbergues-Molinghem-Berguette</li><li>Izel les Hameaux</li><li>La Comte</li><li>Lambres</li><li>Le Ponchel</li><li>Le Thieuloye</li><li>Liettres</li><li>Ligny les Aires</li><li>Ligny St Flochel</li><li>Ligny sur Canche</li><li>Linghem</li><li>Linzeux</li><li>Lisbourg</li><li>Lozinghem</li><li>Magnicourt en Comte</li><li>Maisnil</li><li>Maisnil les Ruitz</li><li>Maizieres</li><li>Manin</li><li>Marest</li><li>Marles les Mines</li><li>Marquay</li><li>Mazinghem</li><li>Mingoval</li><li>Moncheaux les Frevent</li><li>Monchel sur Canche</li><li>Monchy Breton</li><li>Monchy Cayeux</li><li>Monts en Ternois</li><li>Nedon</li><li>Nedonchel</li><li>Noeux les Auxi</li><li>Nouville au Cornet</li><li>Noyelle Vion</li><li>Nuncq Hautecote</li><li>Œuf en Ternois</li><li>Ostreville</li><li>Ourton</li><li>Penin</li><li>Pernes</li><li>Pierremont</li><li>Predefin</li><li>Pressy</li><li>Quernes</li><li>Quoeux Haut Maisnil</li><li>Ramecourt</li><li>Rebreuve Ranchicourt</li><li>Rely</li><li>Roellecourt</li><li>Rombly</li><li>Rougefay</li><li>Ruitz</li><li>Sachin</li><li>Sains les Pernes</li><li>Saint Pol sur Ternoise</li><li>Savy Berlette</li><li>Sericourt</li><li>Sibiville</li><li>Siracourt</li><li>St Hillaire Cottes</li><li>St Michel sur Ternoise</li><li>Tangry</li><li>Teneur</li><li>Ternas</li><li>Tilloy les Hermaville</li><li>Tilly Capelle</li><li>Tincques</li><li>Tollent</li><li>Troisveaux</li><li>Vacquerie le Boucq</li><li>Valhuon</li><li>Vaulx</li><li>Villers Brulin</li><li>Villers Chatel</li><li>Villers l’Hopital</li><li>Villers Sir Simon</li><li>Wavrans sur Ternoise</li><li>Willencourt</li><li>Witternesse</li></ul>",
-                  "en": "<ul class=\"p62-communes\"><li>Agnieres</li><li>Ambrines</li><li>Anvin</li><li>Aubigny en Artois</li><li>Aubrometz</li><li>Auchel</li><li>Aumerval</li><li>Auxi le Chateau</li><li>Averdoingt</li><li>Avesnes le Comte</li><li>Bailleul aux Cornailles</li><li>Bailleul les Pernes</li><li>Bajus</li><li>Barlin</li><li>Beauvoir Wavrans</li><li>Beauvois</li><li>Bergueneuse</li><li>Berles Monchel</li><li>Bernicourt</li><li>Bethonsart</li><li>Beugin</li><li>Blangerval Blangermont</li><li>Blessy</li><li>Boffles</li><li>Bonnieres</li><li>Boubers sur Canche</li><li>Bouret sur Canche</li><li>Bours</li><li>Boyaval</li><li>Brias</li><li>Bruay la Buissiere</li><li>Buire au Bois</li><li>Buneville</li><li>Calonne Ricouart</li><li>Camblain Chatelain</li><li>Camblain l’Abbe</li><li>Cambligneul</li><li>Canteleux</li><li>Capelle Fermont</li><li>Cauchy A la Tour</li><li>Caucourt</li><li>Chelers</li><li>Conchy sur Canche</li><li>Contreville</li><li>Croisette</li><li>Croix en Ternois</li><li>Dieval</li><li>Divion</li><li>Ecoivres</li><li>Eps</li><li>Equirre</li><li>Erin</li><li>Estree Blanche</li><li>Estree Cauchy</li><li>Flefs</li><li>Flers</li><li>Fleury</li><li>Floringhem</li><li>Fontaine l’Etalon</li><li>Fontaine les Boulans</li><li>Fontaine les Hermans</li><li>Fortel en Artois</li><li>Foufflin Ricamets</li><li>Framecourt</li><li>Fresnicourt le Dolmen</li><li>Frevent</li><li>Frevillers</li><li>Frevin Capelle</li><li>Gauchin le Gal</li><li>Gauchin Verloingt</li><li>Gennes Ivergny</li><li>Gosnay</li><li>Gouy</li><li>Guarbecque</li><li>Guinecourt</li><li>Haillicourt</li><li>Haravesnes</li><li>Hautecloque</li><li>Hericourt</li><li>Herlin le Sec</li><li>Herlincourt</li><li>Hermaville</li><li>Hermin</li><li>Hernicourt</li><li>Hersin Coupigny</li><li>Hesdigneul les Bethune</li><li>Hestrus</li><li>Heuchin</li><li>Houchin</li><li>Houdain</li><li>Huclier</li><li>Humeroeuille</li><li>Humieres</li><li>Isbergues-Molinghem-Berguette</li><li>Izel les Hameaux</li><li>La Comte</li><li>Lambres</li><li>Le Ponchel</li><li>Le Thieuloye</li><li>Liettres</li><li>Ligny les Aires</li><li>Ligny St Flochel</li><li>Ligny sur Canche</li><li>Linghem</li><li>Linzeux</li><li>Lisbourg</li><li>Lozinghem</li><li>Magnicourt en Comte</li><li>Maisnil</li><li>Maisnil les Ruitz</li><li>Maizieres</li><li>Manin</li><li>Marest</li><li>Marles les Mines</li><li>Marquay</li><li>Mazinghem</li><li>Mingoval</li><li>Moncheaux les Frevent</li><li>Monchel sur Canche</li><li>Monchy Breton</li><li>Monchy Cayeux</li><li>Monts en Ternois</li><li>Nedon</li><li>Nedonchel</li><li>Noeux les Auxi</li><li>Nouville au Cornet</li><li>Noyelle Vion</li><li>Nuncq Hautecote</li><li>Œuf en Ternois</li><li>Ostreville</li><li>Ourton</li><li>Penin</li><li>Pernes</li><li>Pierremont</li><li>Predefin</li><li>Pressy</li><li>Quernes</li><li>Quoeux Haut Maisnil</li><li>Ramecourt</li><li>Rebreuve Ranchicourt</li><li>Rely</li><li>Roellecourt</li><li>Rombly</li><li>Rougefay</li><li>Ruitz</li><li>Sachin</li><li>Sains les Pernes</li><li>Saint Pol sur Ternoise</li><li>Savy Berlette</li><li>Sericourt</li><li>Sibiville</li><li>Siracourt</li><li>St Hillaire Cottes</li><li>St Michel sur Ternoise</li><li>Tangry</li><li>Teneur</li><li>Ternas</li><li>Tilloy les Hermaville</li><li>Tilly Capelle</li><li>Tincques</li><li>Tollent</li><li>Troisveaux</li><li>Vacquerie le Boucq</li><li>Valhuon</li><li>Vaulx</li><li>Villers Brulin</li><li>Villers Chatel</li><li>Villers l’Hopital</li><li>Villers Sir Simon</li><li>Wavrans sur Ternoise</li><li>Willencourt</li><li>Witternesse</li></ul>"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "searchProStatic",
           "props": {
+            "bg": "page-accent",
             "useFilter": false,
             "showMap": false,
             "enableMap": false,
@@ -18983,7 +20409,9 @@
                     "parent62"
                   ],
                   "costumSlug": "parent62",
-                  "defaultTags": ["Partenaires"],
+                  "defaultFilters": {
+                    "tags": { "$in": ["Partenaires"] }
+                  },
                   "defaultFields": [
                     "name",
                     "slug",
@@ -19153,10 +20581,103 @@
                   "en": "Filters"
                 },
                 "defaultOpenGroups": [
+                  "territoire",
                   "categoryThematic"
                 ],
                 "className": "lg:sticky lg:top-20",
                 "filterGroups": [
+                  {
+                    "id": "territoire",
+                    "label": {
+                      "fr": "Territoire",
+                      "en": "Territory"
+                    },
+                    "field": "territoires",
+                    "options": [
+                      {
+                        "id": "arrageois",
+                        "label": {
+                          "fr": "Arrageois",
+                          "en": "Arrageois"
+                        },
+                        "name": "Arrageois",
+                        "color": "var(--territoire-arrageois)"
+                      },
+                      {
+                        "id": "artois",
+                        "label": {
+                          "fr": "Artois",
+                          "en": "Artois"
+                        },
+                        "name": "Artois",
+                        "color": "var(--territoire-artois)"
+                      },
+                      {
+                        "id": "audomarois",
+                        "label": {
+                          "fr": "Audomarois",
+                          "en": "Audomarois"
+                        },
+                        "name": "Audomarois",
+                        "color": "var(--territoire-audomarois)"
+                      },
+                      {
+                        "id": "boulonnais",
+                        "label": {
+                          "fr": "Boulonnais",
+                          "en": "Boulonnais"
+                        },
+                        "name": "Boulonnais",
+                        "color": "var(--territoire-boulonnais)"
+                      },
+                      {
+                        "id": "calaisis",
+                        "label": {
+                          "fr": "Calaisis",
+                          "en": "Calaisis"
+                        },
+                        "name": "Calaisis",
+                        "color": "var(--territoire-calaisis)"
+                      },
+                      {
+                        "id": "entre-mer-et-terres",
+                        "label": {
+                          "fr": "Entre Mer et Terres",
+                          "en": "Entre Mer et Terres"
+                        },
+                        "name": "Entre Mer et Terres",
+                        "color": "var(--territoire-entre-mer-et-terres)"
+                      },
+                      {
+                        "id": "fsm-henin-carvin",
+                        "label": {
+                          "fr": "Familles en sol mineur Hénin Carvin",
+                          "en": "Familles en sol mineur Hénin Carvin"
+                        },
+                        "name": "Familles en sol mineur Hénin Carvin",
+                        "color": "var(--territoire-fsm-henin-carvin)"
+                      },
+                      {
+                        "id": "fsm-lens-lievin",
+                        "label": {
+                          "fr": "Familles en sol mineur Lens Liévin",
+                          "en": "Familles en sol mineur Lens Liévin"
+                        },
+                        "name": "Familles en sol mineur Lens Liévin",
+                        "color": "var(--territoire-fsm-lens-lievin)"
+                      },
+                      {
+                        "id": "ternois-bruaysis",
+                        "label": {
+                          "fr": "Ternois Bruaysis",
+                          "en": "Ternois Bruaysis"
+                        },
+                        "name": "Ternois Bruaysis",
+                        "color": "var(--territoire-ternois-bruaysis)"
+                      }
+                    ],
+                    "order": 0
+                  },
                   {
                     "id": "categoryThematic",
                     "label": {
@@ -19168,7 +20689,7 @@
                       "list": "categoryThematic"
                     },
                     "optionStyle": "check",
-                    "order": 0
+                    "order": 1
                   }
                 ]
               }
@@ -19215,6 +20736,7 @@
                     "address",
                     "geo",
                     "geoPosition",
+                    "territoires",
                     "categoryThematic",
                     "typeAction",
                     "publicCible",
@@ -19612,15 +21134,15 @@
     "typography": {
       "fontFamily": {
         "sans": [
-          "Hanken Grotesk",
+          "Open Sans",
           "sans-serif"
         ],
         "serif": [
-          "Patrick Hand",
+          "Playpen Sans",
           "sans-serif"
         ],
         "mono": [
-          "Spline Sans Mono",
+          "Open Sans",
           "monospace"
         ]
       },
@@ -20202,7 +21724,8 @@
                   "type": "profile-badges"
                 },
                 {
-                  "type": "profile-tags"
+                  "type": "profile-tags",
+                  "hideTags": ["Partenaires"]
                 }
               ],
               "rightSections": [
@@ -21514,7 +23037,6 @@
           "widget": "file",
           "label": {
             "fr": "Documents",
-            
             "en": "Documents"
           },
           "info": {

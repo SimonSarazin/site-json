@@ -22,7 +22,7 @@ import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdmin
 import { isUser } from "@/lib/getTypedEntity";
 import type { User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
-import { asRecord, getServerData, normalizeTags, toArrayOrValues, toNumber, toSafeInt } from "@/modules/cagnotte/utils/dataTransform.ts";
+import { asRecord, getServerData, normalizeActionStatus, normalizeTags, toArrayOrValues, toNumber, toSafeInt } from "@/modules/cagnotte/utils/dataTransform.ts";
 import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
@@ -145,6 +145,7 @@ interface ActionLinks {
  * (dépense côté projet, action côté proposition) sans les confondre.
  */
 interface ActionNormalizable {
+    status?: unknown;
     tags?: unknown;
     links?: ActionLinks;
 }
@@ -153,7 +154,7 @@ interface ActionNormalizable {
  * Générique, et non `(action: any)` : le type d'entrée doit RESSORTIR intact. Le
  * `...action` conserve les champs du domaine (`name`, `credits`, `status`,
  * `contributors`) qu'un paramètre élargi aurait effacés — c'est ce que masquait
- * l'`any` d'origine.
+ * l'`any` d'origine. Le statut sort ramené à `todo` | `done` : les vues le comparent strictement.
  */
 function normalizeRawAction<T extends ActionNormalizable>(action: T, globalLinks: GlobalLinks) {
     const contributorsLinks = action.links?.contributors || {};
@@ -177,6 +178,7 @@ function normalizeRawAction<T extends ActionNormalizable>(action: T, globalLinks
 
     return {
         ...action,
+        status: normalizeActionStatus(action.status),
         tags: normalizeTags(action.tags),
         links: {
             ...action.links,

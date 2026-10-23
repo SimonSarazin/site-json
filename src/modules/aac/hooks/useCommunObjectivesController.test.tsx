@@ -21,6 +21,11 @@ import type { CagnotteResource } from "@/modules/cagnotte/types";
 
 const mocks = vi.hoisted(() => ({
   meProject: vi.fn<(args: { id: string }) => Promise<unknown>>(),
+  useFundingEnvelope: vi.fn<
+    (answerId: string, opts?: { enabled?: boolean; form?: { id: string; answerId?: string } | null }) => { data: undefined; refetch: () => void }
+  >(
+    () => ({ data: undefined, refetch: vi.fn() }),
+  ),
 }));
 
 vi.mock("@/hooks/useCocolight", () => ({
@@ -44,7 +49,7 @@ vi.mock("@/modules/cagnotte/hooks/useActionGuards", () => ({
   }),
 }));
 vi.mock("@/modules/cagnotte/hooks/useFundingEnvelope", () => ({
-  useFundingEnvelope: () => ({ data: undefined, refetch: vi.fn() }),
+  useFundingEnvelope: mocks.useFundingEnvelope,
 }));
 vi.mock("@/modules/cagnotte/actions/mutations", () => {
   const mutation = () => ({ mutate: vi.fn(), isPending: false });
@@ -59,7 +64,7 @@ vi.mock("@/modules/cagnotte/actions/mutations", () => {
   };
 });
 vi.mock("@/modules/aac/hooks/useCommunFundingContext", () => ({
-  useCommunFundingContext: () => ({ context: null }),
+  useCommunFundingContext: () => ({ context: null, formId: "form-annuaire" }),
 }));
 vi.mock("@/modules/aac/hooks/useCommunFundingHost", () => ({
   useCommunFundingHost: () => ({ hostEntity: null, isLoading: false }),
@@ -155,5 +160,30 @@ describe("useCommunObjectivesController — projet résolu pour la modale (M7)",
     expect(mocks.meProject).toHaveBeenCalledTimes(1);
     expect(project.refresh).toHaveBeenCalledTimes(1);
     expect(result.current.actionCtx.project).toBe(project);
+  });
+});
+
+describe("useCommunObjectivesController — enveloppe du commun", () => {
+  function poser(answerQuery: CoFormAnswer | null) {
+    mocks.useFundingEnvelope.mockClear();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(QueryClientProvider, { client: queryClient }, createElement(LocalizationProvider, null, children));
+    renderHook(() => useCommunObjectivesController({ answerQuery, funding: undefined }), { wrapper });
+    return mocks.useFundingEnvelope.mock.calls;
+  }
+
+  it("réponse pas encore lue : enveloppe désactivée", () => {
+    const appels = poser(null);
+    expect(appels.length).toBeGreaterThan(0);
+    expect(appels.every(([, opts]) => opts?.enabled === false)).toBe(true);
+  });
+
+  it("réponse lue : enveloppe de cette réponse", () => {
+    poser({ id: "answer-1", userId: "u1" } as unknown as CoFormAnswer);
+    expect(mocks.useFundingEnvelope).toHaveBeenLastCalledWith(
+      "answer-1",
+      expect.objectContaining({ enabled: true, form: { id: "form-annuaire", answerId: "answer-1" } }),
+    );
   });
 });

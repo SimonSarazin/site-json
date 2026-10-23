@@ -519,6 +519,9 @@ export function mergeEnvelopePayloads(envelopeData: unknown, formData: unknown):
   };
 }
 
+/** Formulaire (et, au besoin, réponse) que `getFormData` doit lire. */
+export type FundingEnvelopeForm = { id: string; answerId?: string };
+
 /**
  * @param idProjet - ressource ciblée (`selectedProject` forcé côté normalisation)
  * @param opts.enabled - désactive la query (défaut `true`)
@@ -528,10 +531,12 @@ export function mergeEnvelopePayloads(envelopeData: unknown, formData: unknown):
  *   le financement d'une ressource qui vit sous un AUTRE contexte (ex. un commun AAC déposé
  *   sur l'appel d'une autre organisation, cf. `useCommunFundingHost`), il faut appeler
  *   `fundingEnvelope()` sur l'hôte de CE contexte-là.
+ * @param opts.form - formulaire lu par `getFormData` (défaut : le premier de l'enveloppe) ;
+ *   `form.answerId` limite la lecture à cette réponse.
  */
 export function useFundingEnvelope(
   idProjet?: string,
-  opts?: { enabled?: boolean; hostEntity?: EntityTypes | null }
+  opts?: { enabled?: boolean; hostEntity?: EntityTypes | null; form?: FundingEnvelopeForm | null }
 ) {
   const { entity, contextId, contextType, me } = useCocolight();
 
@@ -546,9 +551,12 @@ export function useFundingEnvelope(
   const profileSlug = getProfileSlugFromLocation();
 
   const normalizedProjectId = toString(idProjet);
+  const forcedFormId = opts?.form?.id || null;
+  const formAnswerId = (forcedFormId && opts?.form?.answerId) || null;
 
   return useQuery<FundingEnvelopeNormalizedData>({
-    queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE(entityId, effectiveContextType, normalizedProjectId, profileSlug, me?.id ?? null),
+    queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE(
+      entityId, effectiveContextType, normalizedProjectId, profileSlug, me?.id ?? null, forcedFormId, formAnswerId),
     queryFn: async () => {
       const entityRecord = host as unknown as UnknownRecord;
 
@@ -562,7 +570,7 @@ export function useFundingEnvelope(
           action: 'getEnvelopeData',
         });
 
-        const formId = extractFormIdFromEnvelope(rawEnvelope);
+        const formId = forcedFormId || extractFormIdFromEnvelope(rawEnvelope);
         let mergedEnvelope = rawEnvelope;
 
         // `getFormData` enrichit avec projects/links/contextData/nopropProject,
@@ -578,9 +586,8 @@ export function useFundingEnvelope(
               financerId: me.id,
               financerType: 'citoyens',
               action: 'getFormData',
-              params: {
-                project: 'all',
-              },
+              // `answerId` : cette seule réponse, sans `nopropProject`.
+              params: formAnswerId ? { answerId: formAnswerId } : { project: 'all' },
             });
             mergedEnvelope = mergeEnvelopePayloads(rawEnvelope, rawFormData);
           } catch (formError) {

@@ -38,6 +38,8 @@ export interface UseAacFundingResourceOptions {
   isHostLoading?: boolean;
   answer?: unknown;
   step?: string;
+  /** Formulaire du commun (`useCommunFundingContext().formId`) : l'enveloppe ne lit que sa réponse. */
+  formId?: string | null;
 }
 
 export function useAacFundingResource(
@@ -61,6 +63,7 @@ export function useAacFundingResource(
   const { data: fundingData, isLoading: isEnvelopeLoading } = useFundingEnvelope(answerId, {
     hostEntity: options?.hostEntity,
     enabled: !options?.isHostLoading,
+    form: options?.formId ? { id: options.formId, answerId } : null,
   });
   const siteConfig = useSite();
 
