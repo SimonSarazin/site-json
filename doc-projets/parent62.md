@@ -5026,6 +5026,27 @@ posé explicitement sur `zoom-reseau` (parent62) pour garder le rendu voulu par 
 | `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
 | Vérification navigateur | ✅ un seul bouton par sens de bascule carte/liste ; `zoom-reseau` inchangé visuellement (vignettes vides en local, pas de régression structurelle) |
 
+## 9unodecenties. Nettoyage de relecture (non bloquant)
+
+Deux derniers constats de la même relecture :
+
+- **`toText` dupliqué mot pour mot** entre `ProfileSsbeAbout.tsx` et `ProfileParent62About.tsx` (le
+  commentaire du second le disait déjà : « pas encore mutualisé, 2ᵉ occurrence »). Extrait en
+  `src/helpers/toText.ts`, à côté de `toStringArray` — même convention, nouveau test dédié
+  (`toText.test.ts`, règle du repo : un helper pur extrait d'un composant requiert un test).
+- **Commentaire neuf avec des numéros de ligne déjà faux** (`SearchProStatic.tsx`, renvoyait à
+  « lignes 580-601 » pour la colonne flex ambiante, en réalité ligne 691 à la tête de ce commentaire)
+  — remplacé par le nom de la classe (`"flex flex-col flex-1 w-full h-full overflow-hidden"`), qui ne
+  bouge pas au premier ajout de code. Espace final retiré d'une chaîne de classes dans
+  `ArticleTeaser.tsx`.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (ciblé) | ✅ 0 erreur |
+| `npx vitest run src/helpers/toText.test.ts src/modules/profil src/modules/search src/modules/blog` | ✅ 1836 tests, 179 fichiers, tous verts |
+| `config:validate` / `audit:config` | ✅ RAS |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)

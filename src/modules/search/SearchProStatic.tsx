@@ -1008,7 +1008,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                définie, sa base de 0 % ferait ignorer la hauteur, et la boîte — dont
                la carte est en absolu — s'effondrerait.
                Exception `fillParent` : le parent (ex. `gridLayout` en `align:"stretch"`) impose
-               déjà une hauteur contrainte — la colonne flex ambiante (lignes 580-601) a alors une
+               déjà une hauteur contrainte — la colonne flex ambiante (`className="flex flex-col
+               flex-1 w-full h-full overflow-hidden"`, plus haut dans ce composant) a alors une
                vraie base, et `flex-1` aligne la carte sur elle plutôt que sur l'écran.
                `min-h-[20rem]` PLANCHER, remplace un `min-h-0` insuffisant (relecture MR, bloquant,
                23/10/2026) : `fillParent` suppose un

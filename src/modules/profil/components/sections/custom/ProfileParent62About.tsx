@@ -15,6 +15,7 @@ import { useT } from "@/hooks/useT";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { toStringArray } from "@/helpers/toStringArray";
+import { toText } from "@/helpers/toText";
 import { useDocumentsList } from "../../../hooks/useDocuments";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useProfileSetup } from "../../../hooks/useProfileSetup";
@@ -24,15 +25,6 @@ import { toSocialLinks } from "./profileParent62Social";
 
 interface ProfileParent62AboutProps {
   section: ProfileParent62AboutSection;
-}
-
-/** Même patron que `ProfileSsbeAbout.tsx` (pas encore mutualisé, 2ᵉ occurrence) : une fiche d'une
- *  collection partagée par plusieurs costums peut porter un champ texte en forme inattendue (objet,
- *  nombre) — `<p>{value}</p>` sur un objet lève « Objects are not valid as a React child ». */
-function toText(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
 }
 
 function SectionCard({

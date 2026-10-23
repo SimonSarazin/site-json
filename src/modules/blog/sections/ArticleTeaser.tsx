@@ -85,7 +85,7 @@ function TeaserCard({ article, href, ctaLabel, accentColor, accentTextColor, ima
       <span
         style={styleAccent}
         className={cn(
-          "absolute bottom-2 left-24 z-0 inline-flex w-max items-center gap-1 rounded-full py-1.5 pr-4 pl-8 text-xs font-semibold shadow-md transition-opacity group-hover:opacity-90 ",
+          "absolute bottom-2 left-24 z-0 inline-flex w-max items-center gap-1 rounded-full py-1.5 pr-4 pl-8 text-xs font-semibold shadow-md transition-opacity group-hover:opacity-90",
           !accentColor && "bg-primary text-primary-foreground",
         )}
       >
