@@ -999,10 +999,20 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                la carte est en absolu — s'effondrerait.
                Exception `fillParent` : le parent (ex. `gridLayout` en `align:"stretch"`) impose
                déjà une hauteur contrainte — la colonne flex ambiante (lignes 580-601) a alors une
-               vraie base, et `flex-1 min-h-0` aligne la carte sur elle plutôt que sur l'écran. */}
+               vraie base, et `flex-1` aligne la carte sur elle plutôt que sur l'écran.
+               `min-h-[20rem]` PLANCHER, remplace un `min-h-0` insuffisant (relecture MR, bloquant,
+               23/10/2026) : `fillParent` suppose un
+               voisin de rangée qui lui donne une hauteur via `gridLayout.align:"stretch"` — mais
+               `align-items:stretch` sur une grille CSS ne joue qu'ENTRE colonnes de la MÊME rangée. Sous
+               `sm` (640px), `GridLayoutSection` empile les colonnes en `grid-cols-1` : chaque section
+               devient alors SEULE dans sa propre rangée implicite, sans personne à qui s'aligner — la
+               carte (contenu `position:absolute`, donc 0 hauteur intrinsèque) s'effondrait à 0px sur
+               mobile. Le même plancher protège aussi le cas desktop d'un agenda voisin très court (ex.
+               aucun événement à venir) : sans lui la rangée entière se tassait sur la hauteur de l'état
+               vide de l'agenda, quelques dizaines de pixels. */}
             <div
               ref={mapViewRef}
-              className={`relative w-full overflow-hidden ${props.fillParent ? "flex-1 min-h-0" : MAP_VIEW_HEIGHT}`}
+              className={`relative w-full overflow-hidden ${props.fillParent ? "flex-1 min-h-[20rem]" : MAP_VIEW_HEIGHT}`}
             >
               <div className="absolute top-2 right-2 z-50">{panelViewSwitch("map")}</div>
 

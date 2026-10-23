@@ -15,7 +15,12 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-22** — section « Les communes du territoire » reprend la couleur
+Dernière mise à jour : **2026-10-23** — 2 correctifs de relecture MR (bloquants) : la carte acteurs
+disparaissait sur mobile (sous `sm`, `gridLayout` empile ses colonnes, `fillParent` n'avait alors
+aucun voisin pour lui donner une hauteur — plancher `min-h-[20rem]` ajouté, détail §9nonagies) et le
+focus à l'ouverture d'un détail en `dialog` partait nulle part (`onOpenAutoFocus` avec
+`preventDefault` seul désarme le repli de focus de Radix — corrigé moteur, tout le parc,
+`DetailsModeDialog.tsx`, couverture de test rouverte, détail en §9octogies). Précédemment : **2026-10-22** — section « Les communes du territoire » reprend la couleur
 pleine du bandeau hero (`--page-accent`, déjà réglé par territoire), « Les actions sur le
 territoire » reprend l'ancien alplat des communes (`page-accent`) ; conteneur de l'agenda territoire
 aligné (rayon+ombre) sur la carte acteurs voisine (découverte en vérifiant : `--radius` de ce thème
@@ -4907,6 +4912,75 @@ c'est lui qui sépare proprement cette section de la suivante, de couleur diffé
 | `npm run lint` | ✅ 0 erreur |
 | `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
 | Vérification navigateur | ✅ bandeau et communes lisibles comme une seule bande continue |
+
+## 9octogies. Focus à l'ouverture d'un détail en dialog (relecture MR, bloquant) — moteur, tout le parc
+
+Signalé en relecture de MR, **bloquant pour le merge** : `DetailsModeDialog.tsx` posait
+`onOpenAutoFocus={(e) => e.preventDefault()}` seul (commit `c7ee3189`, correctif « racine » du
+focus piégé derrière la croix). Ce `preventDefault` SEUL désarme aussi le repli de focus de Radix —
+dans son `FocusScope`, le repli (focus du conteneur à défaut d'un élément interne) vit dans un
+`if (!defaultPrevented)`. Résultat : à l'ouverture au clavier, le focus ne va NULLE PART — ni sur un
+élément de la preview, ni sur le dialogue — un lecteur d'écran n'annonce rien, la tabulation
+suivante part dans la page masquée sous l'overlay. **Les 3 précédents cités dans le commentaire du
+code (`MentionInput`, `TagsInput`, `CommonTableField`) ne sont PAS le bon modèle** : ce sont des
+popovers posés sur un champ qui doit garder SON focus, pas des dialogues modaux.
+
+Corrigé en reposant explicitement le focus sur le conteneur après le `preventDefault`
+(`event.currentTarget.focus()`), modèle repris de `DiscussionModalShell.tsx:54` — même geste, seul
+autre précédent MODAL (pas popover) du repo. `DetailsModeDialog` est partagé par TOUT le site
+(toute preview en `detailsMode:"dialog"`, 8 configs du parc d'après la relecture) — correctif
+moteur, pas une config parent62.
+
+**Couverture de test rouverte** : le commit `c7ee3189` avait retiré le test de
+`PreviewTestimonialBubble.test.tsx` qui vérifiait le symptôme (tabIndex -1 du bouton image, devenu
+obsolète) SANS le remplacer — plus aucun test ne disait où allait le focus à l'ouverture, ce qui
+aurait justement attrapé cette régression. Nouveau fichier `DetailsModeDialog.test.tsx`
+(`describe("DetailsModeDialog — focus à l'ouverture")`) : vérifie que `document.activeElement` est
+le dialogue (pas le premier bouton de la preview). **Vérifié en échec avant correctif** (`git diff`
+temporaire vers l'ancien `onOpenAutoFocus`, test rouge — focus parti sur le `focus-guard` interne
+de Radix, nulle part dans la boîte — puis restauré).
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (ciblé) | ✅ 0 erreur |
+| `npx vitest run src/modules/search` | ✅ 817 tests, 74 fichiers, tous verts |
+| Nouveau test vérifié en échec sur l'ancien code, puis vert sur le correctif | ✅ |
+
+## 9nonagies. Carte acteurs invisible sur mobile (relecture MR, bloquant) — moteur, 9 territoires
+
+Signalé en relecture, **bloquant** : sur téléphone (sous `sm`, 640px), la carte des acteurs
+n'affichait plus rien — le titre et le bouton « Carte », puis directement la section suivante, sans
+carte. `fillParent` (`flex-1 min-h-0`, §9sexagies/9octoquadragies) suppose un voisin de MÊME RANGÉE
+qui lui donne une hauteur via `gridLayout.align:"stretch"` — mais `GridLayoutSection` EMPILE ses
+colonnes sous `sm` (`grid-cols-1` implicite, cf. `buildGridColsClass`) : chaque section devient alors
+SEULE dans sa propre rangée, sans personne à qui s'aligner. Le contenu de la carte étant en
+`position:absolute` (`MAP_FILL`), sa hauteur intrinsèque est nulle — `flex-1` sans base se résout à
+0px, exactement comme le décrivait déjà le commentaire du schéma SANS le traiter. Même mécanisme en
+cause, cas desktop à part, sur un territoire à l'agenda très court (aucun événement à venir) : la
+rangée entière se tassait sur la hauteur de l'état vide de l'agenda (`AgendaList.tsx`), quelques
+dizaines de pixels.
+
+**Corrigé** par un plancher `min-h-[20rem]` sur la boîte de la carte en `fillParent`, qui REMPLACE le
+`min-h-0` existant (lui-même insuffisant, pas en plus) — `src/modules/search/SearchProStatic.tsx`.
+Fonctionne dans les deux sens : en-dessous de `sm` (mobile) la carte garde ses 20rem même seule dans
+sa rangée ; au-dessus, `align:"stretch"` continue de l'aligner sur l'agenda voisin dès que celui-ci
+dépasse 20rem (vérifié : 404px mesurés sur un agenda vide, les deux colonnes toujours égales). Le
+mode LISTE n'était pas concerné (contenu en flux normal, pas absolu — sa hauteur intrinsèque n'est
+jamais nulle, confirmé en relisant le code, pas supposé).
+
+Pas de nouveau test unitaire (même choix que §9sexagies/9octoquadragies : `SearchProStatic.tsx` n'a
+aucun test dédié, une collision de classes Tailwind `min-h-0`/`min-h-[20rem]` n'est de toute façon
+pas détectable en jsdom, qui ne calcule pas de vraie mise en page) — vérifié par capture Playwright
+réelle à 390px (la carte s'affiche, mesurée à 320px = 20rem pile) et à 1280px avec un agenda vide
+(404px mesurés, colonnes toujours égales), scripts nettoyés après coup.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (ciblé) | ✅ 0 erreur |
+| `npx vitest run src/modules/search` | ✅ 817 tests, 74 fichiers, tous verts |
+| `config:validate` / `audit:config` | ✅ RAS |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+| Vérification navigateur (mobile 390px + desktop agenda vide) | ✅ carte visible dans les deux cas, scripts et captures nettoyés |
 
 ## 10. Checklist d'avancement
 
