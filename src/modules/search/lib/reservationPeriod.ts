@@ -3,10 +3,12 @@ import getDateFnsLocale from "@/dateFns";
 import type { useT } from "@/hooks/useT";
 
 /**
- * Formatage de la PÉRIODE de validité d'une réservation, partagé par les deux
- * presenters qui l'affichent : la section réservations d'une fiche équipement
- * (`PreviewReservations`) et la section « équipements réservés » d'une fiche
- * organisation (`PreviewBookedResources`).
+ * Formatage de la PÉRIODE de validité d'une réservation, partagé par ceux qui
+ * l'affichent : la section réservations d'une fiche équipement
+ * (`PreviewReservations`), la section « équipements réservés » d'une fiche
+ * organisation (`PreviewBookedResources`) et la pastille du filtre de
+ * disponibilité (`SearchHeaderSection`), dont la période se lit comme celle
+ * d'une réservation.
  *
  * Les libellés restent sous les clés `PreviewReservations.*` : une même phrase
  * traduite deux fois finirait par diverger.
