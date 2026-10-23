@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
 import { toValidDate } from "@/helpers/formatDate";
-import { isTrue } from "@/modules/search/lib/poiAmenities";
+import { isProvided, isTrue } from "@/modules/search/lib/poiAmenities";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
@@ -95,8 +95,9 @@ interface PoiDetail {
   largeur?: string;
   eclairage?: string;
   libreAccess?: string;
-  partenariat?: string;
-  typePartenariat?: string;
+  /** `inst_part_type` — type de PARTICULARITÉ de l'installation (établissement scolaire, complexe
+   *  sportif…), pas un partenariat : le libellé « Partenariat » était un contresens. */
+  typeParticularite?: string;
   equipPropNom?: string;
   entrepriseFonciere?: string;
   equipGestType?: string;
@@ -120,6 +121,8 @@ interface PoiDetail {
   equipPshsVest?: string;
   equipPshsSign?: string;
   equipNumero?: string;
+  instSiret?: string;
+  instUai?: string;
   address: PoiAddress;
   geo?: PoiGeo;
 }
@@ -192,8 +195,7 @@ function toPoi(item: Poi): PoiDetail {
     largeur: str(sd.equip_larg),
     eclairage: str(sd.equip_eclair),
     libreAccess: str(sd.equip_acc_libre),
-    partenariat: str(sd.inst_part_bool),
-    typePartenariat: str(sd.inst_part_type),
+    typeParticularite: str(sd.inst_part_type),
     equipPropNom: str(sd.equip_prop_nom),
     entrepriseFonciere: str(sd.equip_prop_type),
     equipGestType: str(sd.equip_gest_type),
@@ -217,6 +219,8 @@ function toPoi(item: Poi): PoiDetail {
     equipPshsVest: str(sd.equip_pshs_vest),
     equipPshsSign: str(sd.equip_pshs_sign),
     equipNumero: str(sd.equip_numero),
+    instSiret: str(sd.inst_siret),
+    instUai: str(sd.inst_uai),
     address: {
       streetAddress: str(address?.streetAddress),
       postalCode: str(address?.postalCode),
@@ -568,10 +572,19 @@ export default function PreviewPoiAmenities({ item, preview, onClose }: PreviewP
                   <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.general")}</h2>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  {/* Valeurs cliquables : seulement si un dropdownFilter du site indexe le champ ET en
+                      reconnaît la valeur (ClickableFacet) — « Donnée non renseignée » n'étant jamais une
+                      option, elle reste du texte. */}
                   <ClickableFilterValue
-                    label={t("PreviewPoiAmenities.fields.category")}
+                    label={t("PreviewPoiAmenities.fields.type")}
                     value={poi.category}
                     field="equip_type_name"
+                    onClose={onClose}
+                  />
+                  <ClickableFilterValue
+                    label={t("PreviewPoiAmenities.fields.category")}
+                    value={poi.categorie}
+                    field="categorie"
                     onClose={onClose}
                   />
                   <InfoRow label={t("PreviewPoiAmenities.fields.family")} value={poi.familleEquipement || "—"} />
@@ -592,6 +605,14 @@ export default function PreviewPoiAmenities({ item, preview, onClose }: PreviewP
                       )
                     }
                   />
+                  <div className="sm:col-span-2">
+                    <ClickableFilterValue
+                      label={t("PreviewPoiAmenities.fields.particularity")}
+                      value={poi.typeParticularite}
+                      field="inst_part_type"
+                      onClose={onClose}
+                    />
+                  </div>
                   <div className="sm:col-span-2">
                     <InfoRow label={t("PreviewPoiAmenities.fields.sport")} value={poi.sportPratiquer || "—"} />
                   </div>
@@ -754,12 +775,6 @@ export default function PreviewPoiAmenities({ item, preview, onClose }: PreviewP
                     <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.width")}</span>
                     <span className="font-medium text-foreground">{largeurLabel}</span>
                   </div>
-                  <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.partnership")}</span>
-                    <span className="font-medium text-foreground">
-                      {isTrue(poi.partenariat) ? poi.typePartenariat || t("PreviewPoiAmenities.yes") : t("PreviewPoiAmenities.no")}
-                    </span>
-                  </div>
                 </div>
               </section>
 
@@ -817,6 +832,24 @@ export default function PreviewPoiAmenities({ item, preview, onClose }: PreviewP
                     {t("PreviewPoiAmenities.equipNumero.link")}
                     <span className="ml-1 font-mono text-xs opacity-70">{poi.equipNumero}</span>
                   </a>
+                  {/* Identifiants de l'installation, avec le bouton seulement. « Donnée non renseignée »
+                      est le marqueur d'absence du recensement : n'afficher que les vraies valeurs. */}
+                  {(isProvided(poi.instSiret) || isProvided(poi.instUai)) && (
+                    <dl className="mt-3 space-y-1 text-xs">
+                      {isProvided(poi.instSiret) && (
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="text-muted-foreground">{t("PreviewPoiAmenities.equipNumero.siret")}</dt>
+                          <dd className="font-mono text-foreground">{poi.instSiret}</dd>
+                        </div>
+                      )}
+                      {isProvided(poi.instUai) && (
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="text-muted-foreground">{t("PreviewPoiAmenities.equipNumero.uai")}</dt>
+                          <dd className="font-mono text-foreground">{poi.instUai}</dd>
+                        </div>
+                      )}
+                    </dl>
+                  )}
                 </section>
               )}
             </aside>
