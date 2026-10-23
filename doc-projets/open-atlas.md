@@ -10,10 +10,10 @@
 > [Module Profil](../doc/08-module-profil.md) · dossier voisin [Fédération des CAE](federation-des-cae.md)
 > (même gabarit, AAC en service). Mémoire : `[[project-open-atlas]]`.
 
-Dernière mise à jour : **2026-10-22** (fiche des projets : `cagnotteModuleConfig.defaultType: "aac"`,
-enveloppe lue sur le formulaire du projet — l'hôte en porte trois —, verrou du double clic
-« Activer financement » ; commité sur `aac-dev` le 22/10, §10. Le formulaire de contact n'a toujours
-**pas de destinataire** tant que `costum.contactMail` n'est pas renseigné, cf. §13).
+Dernière mise à jour : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et poussées : statut
+« terminée » lu sans tenir compte de la casse, date des actions dans la langue active, §10. Le
+formulaire de contact n'a toujours **pas de destinataire** tant que `costum.contactMail` n'est pas
+renseigné, cf. §13).
 
 ---
 
@@ -64,6 +64,7 @@ communauté, les projets par AAC, et plus tard les pages d'outils.
 | 20/10 | Anatole + Claude | Fiche des projets sans actions : `cagnotteModuleConfig.defaultType: "aac"` ; enveloppe lue sur le formulaire du projet et sa seule réponse ; verrou du double clic « Activer financement » ; correctifs backend des doublons (§10) |
 | 21/10 | Claude | Revue avant commit : le champ coform des dépenses lit aussi le formulaire rendu, l'enveloppe attend l'id de la réponse, commentaires condensés — non commités |
 | 22/10 | Claude | Suites du 20-21/10 commitées et poussées sur `aac-dev` ; fusion à blanc avec `main` sans conflit, portes vertes sur le résultat |
+| 23/10 | Claude | Suites de la revue de la MR `aac-dev` : « terminée » lu sans tenir compte de la casse du statut (compteurs, filtre, « Clôturer ») ; date des actions dans la langue active ; dépendance backend notée en doc/34 §9 — commitées et poussées (§10) |
 
 ---
 
@@ -470,6 +471,27 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | `npm run build` | ✅ ; `lazy-entry-facades`, `aac-variants`, `i18n-files` ✅ sur ce build |
 | Rendu navigateur | non fait — à voir en connecté sur un projet avec jalons et actions |
 
+### 23/10 — suites de la revue de la MR `aac-dev` (commité et poussé)
+
+- **Statut « terminée »** : l'adaptateur de la cagnotte recopiait le statut d'une action tel que le
+  backend le renvoie. Une action en « Done » s'affichait cochée, mais n'était ni comptée ni masquée par
+  « Masquer les terminées », et elle bloquait « Clôturer » sur son palier. L'adaptateur
+  (`normalizeRawAction`) ramène désormais le statut à `todo` | `done`, pour toutes les vues : fiche
+  (deux interfaces), carte de financement, formulaire des dépenses.
+- **Date des actions** : dans la langue active (`i18n.language`) ; en français, toujours « 15/11/2023 ».
+- **Backend** : `params.answerId` est géré depuis citizenToolKit `a897bcae` (avril). La fiche de la
+  réponse `6a21b925…` (`financer` stocké en objet) attend `43a52369` (§12) ; d'ici là, elle retombe
+  sur `getEnvelopeData`, sans actions (doc/34 §9).
+- **Gates** (23/10, local) :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 8 pages, 30 sections |
+| `typecheck` | ✅ |
+| `lint` | ✅ 0 erreur · 23 avertissements antérieurs, aucun dans les fichiers touchés |
+| `vitest` unitaires + préflights | ✅ 8 611 (657 fichiers), 1 ignoré · 1 ❌ **local** (`site-assets` : `public/images/proceco/`, dossier vide non suivi) |
+| Rendu navigateur | non fait — actions visibles en connecté seulement |
+
 ---
 
 ## 11. Checklist d'avancement
@@ -488,7 +510,7 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | 8 | Projets — dépôt | ❌ | formulaire fermé |
 | 9 | Pages d'outils | 🟡 | page `/outils` (lot 6) avec ses volets « En savoir plus » ; anglais à relire, date de création à trancher (§14) |
 | 10 | Déploiement | 🟡 | entrée Coolify `site-json-open-atlas` et domaine `open-atlas.00.re` posés sur `main` le 16/10 (`a84735a3`) ; mise en ligne à confirmer |
-| 11 | Commit | 🟡 | lots 1-6 et interface `editorial` (`03d8d203`) fusionnés dans `main` ; suites du 20-21/10 (fiche des projets) commitées sur `aac-dev` le 22/10, MR vers `main` à ouvrir |
+| 11 | Commit | 🟡 | lots 1-6 et interface `editorial` (`03d8d203`) fusionnés dans `main` ; suites du 20-21/10 (fiche des projets) commitées sur `aac-dev` le 22/10, MR vers `main` à ouvrir ; suites de la revue (23/10) commitées et poussées |
 | 12 | Fiche des projets — jalons et actions | 🟡 | type `aac`, enveloppe du formulaire du projet (20/10) ; tests ✅ ; **à voir en connecté** sur un projet avec jalons et actions |
 
 ---

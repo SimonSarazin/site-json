@@ -17,7 +17,7 @@ const NewsTab = lazy(() => import("../tabs/NewsTab"));
 const StructuresTab = lazy(() => import("../tabs/StructuresTab"));
 import { useLocalization } from "@/hooks/useLocalization";
 import { StructuresTabPropsSchema } from "../../schema";
-import { isTabVisible } from "../../lib/tabVisibility";
+import { isTabAvailable } from "../../lib/tabVisibility";
 
 /**
  * Template dynamique de profil avec tabs configurables
@@ -25,10 +25,11 @@ import { isTabVisible } from "../../lib/tabVisibility";
  * Ce template remplace ProfileTemplateDefault et utilise la configuration
  * des tabs définie dans le schema JSON au lieu de tabs hardcodés.
  *
- * Les tabs sont filtrés selon leur `condition` (cf. `isTabVisible`) :
+ * Les tabs sont filtrés selon leur `condition` (cf. `isTabAvailable`) :
  * - le type d'entité (citoyens, organizations, projects, events, poi) ;
  * - le contexte (son propre profil ou celui d'un autre) et l'authentification, tranchés après
- *   l'hydratation. `permissions` est déclaré au schéma mais pas encore implémenté.
+ *   l'hydratation. `permissions` est déclaré au schéma mais pas encore implémenté ;
+ * - sur un projet sans réponse liée, les onglets à section cagnotte sont retirés d'office.
  */
 export default function ProfileTemplateDynamic() {
   const { entity, config } = useProfileEntity();
@@ -52,8 +53,14 @@ export default function ProfileTemplateDynamic() {
     if (!config.tabs || config.tabs.length === 0) {
       return [];
     }
-    const contexte = { entityType: entity?.getEntityType?.(), hydrated, me, entitySlug: entity?.slug };
-    return config.tabs.filter((tab) => isTabVisible(tab.condition, contexte));
+    const contexte = {
+      entityType: entity?.getEntityType?.(),
+      hydrated,
+      me,
+      entitySlug: entity?.slug,
+      answerId: String((entity?.serverData as { answer?: unknown } | undefined)?.answer ?? "").trim() || null,
+    };
+    return config.tabs.filter((tab) => isTabAvailable(tab, contexte));
   }, [config.tabs, entity, me, hydrated]);
 
   // Garde-fou URL directe : si on arrive sur `/profil/x/finance` en anonyme alors

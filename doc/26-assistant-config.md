@@ -330,7 +330,7 @@ Deux catalogues à exposer à la skill :
 | **search** | `searchPro`, `searchProStatic`, `filters`, `searchHeader`, `cardCountCT`, `thematics` | `baseParams` (`sourceKey[]`, `defaultTypes[]`, `locality`), `list` (card/detailsMode/preview) | entité + données indexées (sourceKey) |
 | **news** | `news` | `props.entitySlug`, `maxItems`, `showComments/Reactions` | entité avec fil d'actus |
 | **coform** | routes `/coform` + sections form | réf. de formulaire | CoForm défini côté Communecter |
-| **cagnotte** | `actions`, `finance`, `*-summary`, `cagnotte-layout` | `idProjet`, layouts | projet + moyens de paiement Stripe/HelloAsso configurés sur l'entité (`fundingEnvelope`) |
+| **cagnotte** | `actions`, `finance`, `*-summary`, `cagnotte-layout`, boutons du header | `idProjet`, layouts, `header.utilities.piggyBank` (tirelire) / `header.utilities.pledge` (« Mes promesses », membres connectés) | projet + moyens de paiement Stripe/HelloAsso configurés sur l'entité (`fundingEnvelope`) |
 | **profil** | `/profil/:slug` + `member`, profile-header/info | `config.profiles` (tabs, editModal, addConfig) | types d'entités du backend |
 | **auth** | `loginForm/registerForm/recoverPasswordForm` + `<AuthMenu>` | `config.auth` (variant, menu, SSO), `header.utilities.auth` | SSO/comptes Communecter |
 | **notification** | cloche header + section `notifications` | `header.utilities.notifications` | notifications backend |

@@ -155,6 +155,9 @@ function enrichMilestones(
   });
 }
 
+/** Repli stable : un `[]` neuf à chaque rendu relancerait les `useMemo` des consommateurs. */
+const NO_PROJECTS: OrgProject[] = [];
+
 /**
  * Charge tous les projets cagnotte-enabled d'une organisation et croise avec
  * leurs réponses CoForm pour calculer `currentFunding` par milestone à partir
@@ -298,7 +301,7 @@ export function useOrganizationProjectsWithAnswers({
   });
 
   return {
-    projects: data ?? [],
+    projects: data ?? NO_PROJECTS,
     isLoading,
     error,
     refetch,
