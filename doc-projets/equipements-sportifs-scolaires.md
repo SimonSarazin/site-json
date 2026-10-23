@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-08-06** (création du site — lot 1 livré, gates au vert).
+Dernière mise à jour : **2026-10-23** (lot 7 — ajout de créneaux par période : prise de réservation par les admins, filtre « du … au … », période propre à chaque créneau, chevauchements refusés) ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
 
 ---
 
@@ -35,7 +35,7 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 |---|---|
 | Slug | `ESS974` |
 | Entité backend | `projects` · `6a69e64c7f77a86acc6c9e38` · « ESS974 Equipepement Sportif Scolaire Réunion » |
-| Config | [`../config.prod.equipements-Sportifs-Scolaire.json`](../config.prod.equipements-Sportifs-Scolaire.json) — 164 Ko, 8 pages, 15 sections |
+| Config | [`../config.prod.equipements-Sportifs-Scolaire.json`](../config.prod.equipements-Sportifs-Scolaire.json) — 186 Ko, 9 pages, 14 sections (20/10) |
 | CSS | [`../src/index-equipements-sportifs.css`](../src/index-equipements-sportifs.css) — **partagé** avec le site parent et Saint-Paul Sport (jamais modifié : la palette vit dans `theme`, propre au site) |
 | Images | `public/images/equipementsSportifs974/` — **mutualisées** avec le site parent |
 | Langues | `fr` (défaut) + `en` |
@@ -68,8 +68,9 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 ```
                  ┌────────────────────────────────────────────┐
    Visiteur ───► │  SiteForge (site-json) — slug ESS974       │
-                 │   8 pages · 13 sections                    │
+                 │   9 pages · 14 sections                    │
                  │   /equipements-sportifs  ← recherche       │
+                 │   /annuaire  ← associations usagères       │
                  │   /observatoire  ← tableau de bord         │
                  │   /data          ← table brute + export    │
                  └──────────────┬─────────────────────────────┘
@@ -91,37 +92,50 @@ le scoping vient du contexte costum de l'entité résolue par `VITE_SLUG` au boo
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 8 pages
+### 4.1 Les 9 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
 | `/` | 5 | `hero-parallax` · `categories-grid` · `searchProStatic` · `hero-quick-access` · `gridLayout` — cf. §4.4 |
-| `/equipements-sportifs` | 2 | `searchHeader` + `searchProStatic` — la recherche |
-| `/observatoire` | 2 | `searchHeader` + `data-observatory` — le tableau de bord |
+| `/equipements-sportifs` | 2 | `searchHeader` + `searchProStatic` — la recherche ; vue carte en liste + carte (icône et couleur par type), vue observatoire intégrée (§9 lot 4) |
+| `/annuaire` | 2 | `searchHeader` + `searchProStatic` — les associations usagères des équipements scolaires (périmètre calculé, §9 lot 3) |
+| `/observatoire` | 2 | `searchHeader` + `data-observatory` — le tableau de bord, avec les heures réservées (§9 lot 6) |
 | `/data` | 2 | `searchHeader` + `data-observatory` — la table brute |
 | `/rejoindre` | 1 | `registerForm` |
 | `/mentions-legales` · `/confidentialite` · `/accessibilite` | 1 chacune | socle légal |
 
 Structure **identique au site parent**. L'observatoire reprend ses 13 dimensions, 7 KPI,
-5 graphes et sa table à 9 colonnes sans modification.
+5 graphes et sa table à 9 colonnes ; `/observatoire` y ajoute 2 KPI d'heures réservées (lot 6).
 
-### 4.2 Les 5 filtres, dimensionnés sur la donnée réelle
+### 4.2 Les 8 filtres, dimensionnés sur la donnée réelle
 
-| Filtre | Champ | Options | vs parent |
+> Mis à jour le 15/10/2026 (lot 2 — fiche équipement, filtres multi-valeurs et communes, cf. §9).
+> L'état d'origine (06/08) comptait 5 filtres.
+
+| Filtre | Champ | Options | Comparaison |
 |---|---|---|---|
-| `poi-postalCode` | `address.postalCode` | **27** | 25 → **+6 CP réels manquants**, −4 sans donnée |
-| `type` | `equip_type_name` | **34** | 109 → réduit aux types présents |
-| `poi-amenities` | 5 booléens | **5** | inchangé — tous discriminants (sondés) |
-| `propertyType` | `equip_prop_type` | **6** | 12 → réduit |
-| `availableSpaces` | `equip_loc_type` | **10** | inchangé, **1 valeur corrigée** |
+| `poi-postalCode` | `address.postalCode` | **23 communes** (les 27 codes regroupés) | exacte, `values` par commune |
+| `type` — « Type d'équipement » | `equip_type_name` | **34** | exacte |
+| `categorie` — « Catégorie » | `categorie` | **2** (structurant, proximité) | exacte |
+| `particularite` — « Type de particularité » | `inst_part_type` | **5** (valeurs présentes) | **jeton** |
+| `poi-amenities` | 5 booléens | **5** | inchangé |
+| `propertyType` | `equip_prop_type` | **6** | exacte |
+| `utilisateur` — « Type d'utilisateur » | `equip_utilisateur` | **9** (repris du parent) | **jeton** |
+| `availableSpaces` | `equip_loc_type` | **10**, 1 valeur corrigée | **jeton** |
 
-Le filtre `utilisateur` du parent a été **retiré** : non discriminant sur ce périmètre
-(~92 % des POI portent « Scolaires,universités »), et sa valeur contient une virgule —
-incompatible avec le format d'URL `?param=v1,v2`.
+Le filtre `utilisateur` avait été **retiré** le 06/08 (non discriminant — ~92 % des POI portent
+« Scolaires » — et une valeur à virgule jugée incompatible avec l'URL). **Rétabli le 15/10 à la
+demande de Peterson** : les options utilisent des identifiants sans virgule (`scolaires-universites`),
+et la comparaison par jeton rend les autres options utiles (Clubs sportifs 163, Individuel(s) 190).
 
 `availableSpaces` : la valeur `"Salle(s) de réunion / cours"` du parent ne matche **aucun**
-document (la donnée écrit `"Salle(s) de réunion/cours"`, sans espaces). Corrigée ici ; le
-défaut subsiste côté parent.
+document (la donnée écrit `"Salle(s) de réunion/cours"`, sans espaces). Corrigée ici le 06/08 ; le
+parent et Saint-Paul sont corrigés le 15/10 en interrogeant les deux graphies (`values`), celle du
+formulaire de saisie comprise — sans objet ici tant que la saisie reste bloquée (§12).
+
+À ces 8 dropdowns s'ajoute, depuis le 20/10, le filtre **« Créneau disponible »** (`slotFilter`,
+param `?creneau=`) : une plage horaire, des jours de la semaine et une période facultative, il retire
+les équipements réservés sur ce créneau hebdomadaire — §9, lot 5.
 
 ### 4.3 Accès rapides
 
@@ -183,6 +197,7 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 | **Bloc `reservations` conservé** | Les 708 POI sont les **mêmes documents** que ceux du parent : le CoForm de réservation reste pertinent. |
 | **Images et CSS mutualisés** | Même charte, même thème. Un dossier d'images dédié serait vide. |
 | **Ids de sections renommés** | Le parent traîne `hero-rezo-la-mer` et `hero-sport-sante`, vestiges de copier-coller. Fichier neuf ⇒ `hero-accueil`, `piliers`, `acces-rapide`. |
+| **Carte sans contours de bassins de vie** (lot 4, décision de Peterson du 16/10) | Les seuls contours en base (`zoniris`, spec `bassins_vie_saintpaul`) sont les 7 bassins de vie de Saint-Paul ; le site couvre toute l'île — ils ne dessineraient que Saint-Paul. |
 
 ---
 
@@ -198,6 +213,298 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### Conformité aux règles d'aboire — suite du préflight (2026-10-23)
+
+Le préflight du 23/10 a relevé un vrai écart du lot 3. Il a été lancé sans écriture ni réseau, avec
+l'accord de Peterson. Le préchargement SSR du périmètre « organisations usagères »
+(`prefetch/prefetchReservationUsers.ts`) appelait `initApi()` lui-même. Le garde-fou
+`ssr-init-api-unique` d'aboire (15/10) l'interdit : chaque init directe recrée un client API et refait
+la résolution du porteur à chaque page servie. Le préchargement passe désormais par l'init de la requête
+(`ensureInitApi(queryClient)`, partagée avec entry-server et les autres loaders) ; un test est ajouté
+dans `prefetch/__tests__/`. Dans la même passe :
+- un test est ajouté à `lib/reservationPeriod.ts`, helper pur sans test depuis le 23/09 (§9 des bonnes
+  pratiques), dont le cas « date seule lue à minuit local » ;
+- les fixtures `effective-config` des 3 sites équipements sont resynchronisées. Leurs écarts, tous
+  voulus, viennent des lots 3 à 6 : `inst_siret`/`inst_uai`, `equip_numero`, page `/annuaire` ;
+  `periods` n'y est pas projeté ;
+- l'exemple `data-observatory` de l'assistant config est resynchronisé lui aussi.
+
+**Validation** :
+- préflight ✅ 889/894. Restent les 4 échecs d'environnement (§12) ; le test réseau est écarté ;
+- tests ✅ 28/28 (préchargements, période, périmètre usagers) ;
+- typecheck ✅ · lint ✅ (0 erreur) · `config:validate` ✅ sur les 3 configs équipements.
+
+### Lot 7 — ajout de créneaux par période (2026-10-23)
+
+**Ce qui change** (non committé) : les admins ajoutent des créneaux depuis la fiche équipement, et un
+créneau ne bloque plus que SA période.
+
+- **Filtre « du … au … »** dans la section Réservations de la fiche : ne restent que les créneaux dont
+  la période recouvre l'intervalle. Sans date, les créneaux en cours ou à venir (décision de Peterson,
+  la règle du filtre « Créneau disponible » et des heures). La liste des clubs, le nombre de créneaux,
+  les heures et la grille suivent.
+- **Prise de réservation** (grille horaire, cases « + ») activée sur les 4 points d'entrée de la fiche
+  (Équipements, Observatoire, Data, palette de recherche), réservée aux admins du site (ceux du projet
+  `ESS974` et, par la hiérarchie, ceux de DRAJES ES974). Une case n'est occupée que par un créneau de la
+  période choisie : un créneau d'août à septembre ne bloque plus octobre à décembre. Le formulaire
+  s'ouvre avec Date début / Date fin pré-remplies (la période choisie ; sans date, Date début =
+  aujourd'hui).
+- **Période propre à chaque créneau** (décision de Peterson du 23/10 : une réservation par saison,
+  chaque créneau porte sa période — contrat partagé avec l'import des créneaux des communes,
+  communecter-php74, plan `import-creneaux-ess974-communes.md` § 5.5) : dans le formulaire, chaque
+  créneau reçoit deux dates facultatives (vides = toute la réservation) ; elle s'affiche à côté du
+  créneau sur les fiches équipement et association quand elle diffère de celle de la réservation ;
+  conflits, filtre « Créneau disponible » et heures la prennent en compte partout.
+- **Enregistrement refusé** (formulaire laissé ouvert, message clair) : sans Date début et Date fin,
+  ou fin avant début ; période d'un créneau à l'envers ou hors de la réservation ; deux créneaux du
+  formulaire qui se chevauchent ; créneau qui chevauche un créneau déjà enregistré sur l'équipement
+  (même jour, heures sécantes, périodes communes — l'occupant et sa période sont nommés).
+
+**Côté moteur** (cf. [doc/07](../doc/07-module-search.md), « Périodes — `reservations.periods` », et
+[doc/21](../doc/21-module-coform.md)) : option `reservations.periods` (opt-in, exige les champs de
+dates) ; lecture de la période par créneau (`slotPeriod`) pour tous les sites ; logique de la prise de
+réservation dans `lib/reservationBooking.ts` (testée) ; deux options facultatives du formulaire générique,
+`beforeSubmit` et `slotPeriods`, inactives par défaut — les formulaires de créneaux de SSBE (424
+réponses) et du Tampon (65), qui partagent le champ, ne changent pas. Aucune modification de l'API
+client ni du backend.
+
+**Prérequis données** : le formulaire « Formulaire créneaux E.S. » doit accepter plusieurs réponses par
+personne. Avec `oneAnswerPerPers: true` (valeur du dump de production du 20/10), le serveur refuse
+toute nouvelle réservation à un compte qui en a déjà une (« Vous avez déjà soumis une réponse à ce
+formulaire »), alors que la fenêtre s'ouvre normalement. Décoché en local le 23/10 (avec le compte de
+test rendu admin du projet `ESS974`) ; à faire en production (§13).
+
+**À savoir** : aucun contrôle serveur des chevauchements — deux admins qui enregistrent au même
+instant peuvent encore se chevaucher (fenêtre réduite par les relectures). Le formulaire PHP de
+communecter.org efface encore la période d'un créneau modifié : chantier d'import (décision de Peterson).
+Saint-Paul reçoit la même gestion des périodes (décision de Peterson, cf. son §9).
+
+**Validation** (base locale `prod201026`, Chrome sans fenêtre, fiche « Salle EPS / expression
+corporelle ») : par défaut, 5 clubs de la saison en cours et le mardi 19 h–20 h libre (Karaté Club Léo
+l'occupait la saison passée) ; période du 01/03 au 30/06/2026 : 6 clubs, case occupée par Karaté Club
+Léo ; formulaire ouvert avec Date début = 23/10/2026 et les dates par créneau ; enregistrement refusé
+sans date de fin, puis « Mardi 19:00 – 21:00 est déjà réservé par UNIVERS METISS (Du 18 août 2026 au
+10 août 2027) », puis réservation 19 h–20 h enregistrée (dates et créneau au format des réponses
+importées) et case devenue occupée ; cette réponse de test a été supprimée ensuite de la base locale.
+Filtre lisible en 1440 et 390 px, sans défilement horizontal ;
+message « La date de fin doit suivre la date de début » sur une saisie inversée. Tests ✅ 227/227
+(13 fichiers des réservations, fiches et observatoire) et ✅ 289/289 (6 fichiers du module formulaire,
+dont 16 cas ajoutés ; tests de Juda, Cael et Thomas lancés avec l'accord de Peterson) · typecheck ✅ · lint ✅ (0 erreur, aucun avertissement sur les fichiers touchés) ·
+`config:validate` ✅ (9 pages, 14 sections) · `audit:config` RAS. Préflight et fixtures
+`effective-config` repassés le même jour (entrée « Conformité » ci-dessus).
+
+### Lot 6 — volume horaire des réservations (2026-10-20)
+
+**Ce qui change** (non committé) : le volume horaire réservé s'affiche en deux valeurs — **par
+semaine** (somme des durées des créneaux hebdomadaires) et **cumulé** (chaque créneau multiplié par le
+nombre de fois où son jour tombe réellement dans la période de la réservation, bornes incluses) :
+
+- fiche **association** (`/annuaire`) : le total de l'association sur les équipements listés, puis
+  celui de chaque équipement ;
+- fiche **équipement** : le total de l'équipement sous le titre « Réservations », puis celui de chaque
+  association, sur une ligne sous sa rangée ;
+- **observatoire** (`/observatoire`) : deux cartes, « Heures réservées / semaine » et « Heures
+  réservées cumulées », recalculées sur les équipements affichés (filtres, recherche, sélection).
+
+**Règle tranchée par Peterson (20/10)** : seules comptent les réservations **en cours ou à venir** —
+celle du filtre « Créneau disponible » (lot 5). Deux saisons coexistent en base (janv.–août 2026,
+terminée ; août 2026–août 2027, en cours) : compter la saison passée doublerait l'hebdomadaire d'un
+club qui a reconduit ses créneaux (277,9 h au lieu de 135). Deux cartes plutôt qu'une seule à deux
+valeurs (Peterson).
+
+- **Moteur** (opt-in, cf. [doc/07](../doc/07-module-search.md), « Volume horaire », et
+  [doc/27](../doc/27-module-observatoire.md), « KPI `reservationHours` ») : `reservations.hours`,
+  `bookedResources.hours` et le KPI `reservationHours` (`period`). Logique pure dans
+  `lib/reservationHours.ts`, testée ; arrondi au dixième d'heure. Le KPI lit les réservations du
+  formulaire de la fiche de la page (`rowAction.preview.reservations`), chargées seulement s'il est
+  déclaré, par la requête du filtre créneau. Aucune modification de l'API client ni du backend.
+- **Config** : `hours: true` sur les 4 blocs de fiche équipement (Équipements, Observatoire, Data,
+  palette de recherche) et sur `bookedResources` de l'Annuaire ; 2 KPI ajoutés à `/observatoire`.
+- **5 cartes par ligne** (Peterson, 21/10) : les 9 KPI de `/observatoire` se répartissent 5 + 4 dès
+  1024 px — option moteur `kpiColumns` (3 à 6, opt-in, section `data-observatory` seule), posée sur
+  cette page uniquement ; la vue observatoire intégrée à la page Équipements garde la grille
+  automatique. Sans l'option, la grille se remplissait seule et laissait la 9ᵉ carte seule sur sa
+  ligne en pleine largeur.
+
+**À savoir** : le temps « effectivement utilisé » du cahier des charges n'est pas mesurable — le champ
+« Valide » vaut « Non » sur toutes les réservations (non filtré, décision antérieure). **Tranché par
+Peterson (21/10)** : on affiche le seul temps OCCUPÉ PAR LES RÉSERVATIONS — ce que fait le lot. Ni
+jours fériés ni vacances ne sont déduits du cumul (aucune donnée) ; deux réservations qui se
+chevauchent s'additionnent, le total restant la somme des lignes. Le nombre de créneaux affiché à côté
+compte toutes les réservations listées, saison passée comprise ; les heures, non. À 1024 px, la
+valeur « 174 / 534 » (Intérieur) frôle son icône — même largeur de carte qu'avec la grille
+automatique, donc préexistant.
+
+**Régressions à revalider** : fiches et observatoire sont partagés ; sans l'option, ils rendent le
+même balisage (ajouts conditionnels uniquement) — vérifié sur Saint-Paul : fiches équipement et
+association rendues sans heures, observatoire sans carte d'heures, aucune erreur.
+
+**Validation** (base `prod230926`, Chrome sans fenêtre), contre un calcul indépendant en base — 26
+réservations scolaires en cours ou à venir : observatoire sans filtre 135 h/sem · 7 044 h ; nature
+« Découvert » 8,5 · 442 ; type « Salle multisports (gymnase) » 73,3 · 3 817 ; fiche « Salle de
+danse » total 27,5 h/sem · 1 440 h, AD2S 5,5 · 288, TWIRL CLUB OUEST 974 6 · 318, EKOP REUNION
+1,8 · 91 ; fiche « Centre étude karaté Saline » total 4,8 · 247, Salle de danse 3,5 · 182, Salle EPS
+1,3 · 65 ; mobile : lignes d'heures entières, pas de défilement horizontal de la page. Tests unitaires
+✅ 155/155 (6 fichiers) · typecheck ✅ · lint ✅ · knip : rien sur le lot · `config:validate` ✅
+(9 pages, 14 sections) · `audit:config` ESS974 RAS. Préflight et fixtures `effective-config` à
+repasser avec l'acquittement en attente. Grille des KPI (21/10) : 5 + 4 à 1440 et 1024 px, 3 + 3 + 3
+à 800 px, 2 par ligne à 390 px, aucun défilement horizontal ni erreur ; Saint-Paul (sans l'option) :
+classes de la grille inchangées, 7 cartes sur une ligne. Tests ✅ 40/40 (`dashboard.test.ts`, cas
+`kpiColumns` compris) · typecheck ✅ · lint ✅ · `config:validate` ✅.
+
+### Lot 5 — filtre « Créneau disponible » (2026-10-20)
+
+**Ce qui change** (non committé) : le bandeau de `/equipements-sportifs` reçoit un filtre de
+disponibilité, `slotFilter` (param `?creneau=`), à la suite des 8 dropdowns. Une réservation étant un
+créneau **hebdomadaire** valable sur une période, on y cherche comme on réserve : une **plage
+horaire** (critère principal), des **jours de la semaine** et, au besoin, une **période** — « chaque
+lundi et chaque jeudi de 15 h à 18 h, du 17/08/2026 au 12/08/2027 ». **Règles tranchées par Peterson
+(20/10)**, qui remplacent le jour même, à sa demande, une première version à jour daté : plusieurs
+jours → libre **chacun** d'eux, aucun jour → les 7 ; début seul → jusqu'à 22 h, fin seule → depuis
+8 h (amplitude déclarée), aucune heure → toute la journée ; période facultative qui, sans début, part
+d'aujourd'hui — une réservation **terminée** ne bloque plus, une réservation **à venir** bloque déjà ;
+une période de moins d'une semaine ne garde que ses jours ; un équipement **sans réservation
+enregistrée est disponible** — le filtre ne retire que les occupés.
+
+- **Moteur** (opt-in, cf. [doc/07](../doc/07-module-search.md), « Filtre créneau ») : occupé = une
+  réservation du formulaire dont un créneau chevauche la plage l'un des jours cherchés et dont la
+  période recouvre celle de la recherche — la détection de conflit de la prise de réservation,
+  réutilisée. Les occupés partent en `_id: {$nin}` par `searchByFieldsToQuery` : le filtre se combine
+  en ET avec les autres, et la liste, son compteur, la carte, l'observatoire intégré et l'export CSV
+  le suivent.
+  Même URL, même pastille, même compteur et même réinitialisation que les dropdowns. Aucune
+  modification de l'API client ni du backend.
+- **Réservations chargées à la demande** (ouverture du filtre, ou créneau dans l'URL) : les 192
+  réponses du formulaire qui pointent un équipement, tous sites confondus — les occupés hors
+  périmètre sont sans effet sur la liste.
+- **Config** : `slotFilter` avec le bloc `reservations` de la liste et `amplitude` 8 → 22.
+- **Prise de réservation** (« l'ajout d'un créneau doit contenir la période », Peterson, 20/10) :
+  c'est déjà le cas. Le formulaire « Formulaire créneaux E.S. » porte « Date début » et « Date fin »
+  juste après les horaires, et « Ajouter un créneau » pour d'autres jours — vérifié à l'écran sur
+  Saint-Paul (compte admin local, ouverture depuis une case libre de la grille, rien enregistré). Sur
+  ESS974, la fiche n'a pas de prise de réservation : `booking` n'est pas activé, le site est en
+  consultation.
+
+**Régressions à revalider** : le bandeau est partagé par tous les sites ; sans `slotFilter`, il rend
+la même barre, la même requête au caractère près (tests de `searchByFieldsToQuery`) — vérifié sur
+Saint-Paul (cf. son §9 du 20/10).
+
+**Validation** (base `prod230926`, Chrome sans fenêtre), contre un calcul indépendant en base — 7
+équipements scolaires ont des réservations : lundi 14:00–17:00 → 708 (aucune réservation le lundi
+avant 17 h) ; lundi + jeudi 15:00–18:00 → 702 ; 17:00–17:30 : lundi 704, jeudi 704, les deux 703 ;
+sans jour 18:00–20:00 → 702 ; début seul 20:30 → 704 ; fin seule 09:00 → 706 ; lundi seul → 702 ;
+lundi 17:00–17:30 sur la saison passée (01/02 → 30/06/2026) → 706 ; sans jour 17:00–17:30 sur le seul
+lundi 26/10 → 704 ; lundi + jeudi 15–18 du 17/08/2026 au 12/08/2027 → 702 ; avec le type « Salle
+multisports (gymnase) » 55 → 52, pastille du créneau retirée → 55, type conservé ; « Réinitialiser »
+→ 708, URL vidée ; « expression corporelle » : 0 le lundi 18–20 h, 1 de 20:30 à 22:00 ; lien partagé
+avec période → 702 et pastille ; observatoire sous le créneau : 702 ; heures inversées, période
+inversée, jour absent de la période : refusés par le formulaire et ignorés dans l'URL, ancien format
+compris ; mobile : fenêtre dans l'écran, 702, pas de défilement horizontal. Tests unitaires ✅
+318/318 (18 fichiers : circuit des filtres et routage) · typecheck ✅ · lint ✅ 0 erreur · knip :
+rien sur le lot · `config:validate` ✅ 18 configs · `config:render` ✅ 17/18 sites (seul échec : la 404 préexistante de `nos-commune` `/manifeste`), ESS974 9/9 pages, Saint-Paul 12/12, sans erreur serveur. Préflight à
+repasser avec l'acquittement du lot 3.
+
+**Limite constatée** : en local, le premier chargement des réservations prend ~12 s (2 appels de
+~6 s). `answerslist` joint à chaque réponse ses documents, et le dump n'a pas d'index sur
+`documents.id` (97 345 documents parcourus par réponse). La production a probablement cet index —
+non vérifié. Pendant l'attente, le bouton affiche un indicateur et aucune pastille ne paraît.
+
+### Lot 4 — page Équipements alignée sur Saint-Paul (2026-10-16)
+
+**Ce qui change** (branche `peter-dev`, non committé) : à la demande de Peterson, la section
+`section-equipements-cards` de `/equipements-sportifs` reprend **tels quels** trois blocs de la même
+section de Saint-Paul Sport. 100 % config, aucun fichier de `src/` touché.
+
+- **Bouton « Fiche » de chaque association** dans la fiche équipement
+  (`list.preview.reservations.orgaLink` → `/annuaire`) : il ouvre la fiche de l'association dans
+  l'annuaire du lot 3. Toute organisation qui a un créneau sur un équipement scolaire est, par
+  construction, dans cet annuaire, et `/annuaire` porte `list.previewFetch` : le lien aboutit
+  toujours. Pas d'organisation reliée (2 réservations aujourd'hui), pas de bouton — comme à Saint-Paul.
+- **Vue carte** : `map.layout: "split"` + `splitRatio: "30-70"` (liste resserrée à gauche, carte
+  synchronisée à droite) et marqueurs à **icône et couleur par type** (`marker.by` sur
+  `equip_type_name`, table de 109 types de Saint-Paul — elle couvre les 41 types du périmètre).
+  **Sans** les contours des bassins de vie (§7).
+- **Vue observatoire intégrée** (`observatory`, bouton « Observatoire ») : 7 KPI et 5 graphes calculés
+  sur les résultats et les filtres en cours, sélection au clic et drill-down. Tous les champs lus
+  sont déjà projetés par la liste et renseignés sur les 708 équipements.
+
+Poids : environ 10 Ko de plus dans la page servie (config compacte), 25 Ko dans le fichier (indentation).
+
+**Régressions à revalider** : aucune — une seule section de cette config ; la garde d'impact
+(`effective-config`) ne projette ni la carte, ni l'observatoire, ni ce lien.
+
+**Validation** (base `prod230926`, Chrome sans fenêtre) : vue carte en liste + carte, carte à 70 % de
+la largeur, épingles à pictogramme par type ; observatoire : 708 équipements, 27 communes
+(`address.addressLocality`, comme la page `/observatoire`), graphes rendus ; fiche « Salle EPS /
+expression corporelle » : 7 associations, 7 boutons « Fiche » — clic → `/annuaire?preview=<id>`,
+fiche de CENTRE ETUDE KARATE SALINE ouverte ; mobile 390 px (liste, carte, observatoire) sans
+défilement horizontal ; aucune erreur navigateur. `config:validate` ✅ 9 pages, 14 sections ·
+`audit:config` RAS · `config:render` ✅ 9/9 pages, aucune erreur serveur. Préflight à repasser avec
+l'acquittement du lot 3.
+
+### Lot 3 — annuaire des associations usagères (2026-10-16)
+
+**Ce qui change** (branche `peter-dev`, non committé) : nouvelle page `/annuaire` (recette
+`page-recherche` : bandeau de recherche + liste) et entrée de menu « Annuaire » / « Directory »
+entre « Equipements » et « Observatoire ». **Règle métier (Peterson, 16/10)** : la page liste les
+organisations usagères d'**au moins un créneau sur un équipement scolaire** — 23 aujourd'hui (base
+locale), toutes à Saint-Paul (lycées Evariste de Parny et Vue Belle). La liste est **générique** :
+elle suit seule les nouveaux créneaux, saisis ou importés, les nouvelles organisations et les
+équipements nouvellement étiquetés `ESS974`.
+
+- **Moteur** : périmètre calculé `searchProStatic.reservationUsers` (réservations rattachées à une
+  organisation → équipements du site parmi ceux réservés → organisations), préchargé au SSR sous la
+  clé du client — cf. [doc/07-module-search.md](../doc/07-module-search.md), « Annuaire des
+  organisations usagères ». Aucune modification de l'API client ni du backend.
+- **Fiche organisation** : modale centrée (`structure`), section « Équipements réservés » restreinte
+  aux équipements scolaires (`bookedResources.poiFilters`, option B de Peterson) — une association
+  réserve aussi des salles municipales, qui n'y figurent plus.
+- **`/equipements-sportifs`** reçoit `list.previewFetch: "poi"` : le bouton « Fiche » d'un équipement
+  réservé ouvre sa fiche même hors de la tranche déjà chargée.
+
+**Régressions à revalider** : aucune attendue ailleurs — les deux réglages sont opt-in et seule cette
+config les déclare ; vérifié sur Saint-Paul (cf. son §9 du 16/10).
+
+**Validation** (base `prod230926`) : au navigateur, page servie DÉJÀ restreinte (compteur 23, les 23
+noms, aucune des 225 autres organisations taguées « usager ») ; même liste après hydratation, sans
+flash ; fiche GRS LA SALINE : ses 2 équipements scolaires sur 4 ; bouton « Fiche » → fiche
+équipement ouverte ; lien `?preview=<id>` ; mobile 390 px sans défilement horizontal ; aucune erreur
+de page, d'hydratation ni du backend. `config:validate` ✅ 9 pages, 14 sections · `audit:config` RAS ·
+`config:render` ✅ 9/9 pages · tests unitaires ✅ 319/319 (23 fichiers) · préflight 845/851 : 2 échecs
+préexistants (`bundle-size` sur un `dist` de juillet, guillemets du `.env`) et 4 écarts VOULUS à acquitter
+— fixtures `__effective__` des 3 sites équipements, exemple `data-observatory` de l'assistant.
+
+**20/10, après la fusion de `main` par Peterson** : le commit de Thomas `8984670a` charge le module
+prefetch dans le loader serveur, hors du bundle client. La fusion avait laissé à côté l'import statique
+de ce lot (`prefetchReservationUsers`) : 4 imports morts au typecheck, et le module de nouveau dans le
+bundle client. `prefetchReservationUsers` rejoint l'import dynamique de Thomas — typecheck ✅, test du
+routage de Thomas (`buildRoutes.test.tsx`) ✅.
+
+### Lot 2 — fiche équipement, filtres multi-valeurs et communes (2026-10-15)
+
+**Ce qui change** : lot commun aux trois sites équipements (branche `peter-dev`, non committé) —
+fiche, moteur et justification détaillés dans le §9 de [saint-paul-sport.md](saint-paul-sport.md).
+Ici, les filtres passent de 5 à 8 (tableau du §4.2) :
+
+- **codes postaux regroupés par commune** : les 27 codes deviennent 23 options « Commune (codes) » —
+  ex. « Saint-Denis (97400, 97490) », « Le Tampon (97418, 97430) » — portées par `values` (cf.
+  [doc/07-module-search.md](../doc/07-module-search.md), « Option à plusieurs valeurs »). Rattachement
+  code → commune tiré de la donnée (`address.localityId` → `cities`), noms officiels reconstitués
+  depuis `cities.name` et l'article de `cities.alternateName`. Les communes partitionnent exactement
+  le périmètre (somme = 708). ⚠ Les listes de codes de `cities.postalCodes` ne sont PAS fiables :
+  97411 y figure aussi sous Saint-Leu ;
+- **Type d'utilisateur rétabli** (cf. §4.2), en `match: "token"` : « Scolaires » 661 ;
+- « Catégorie » et « Type de particularité » ajoutés ; « Locaux disponibles » en `match: "token"`.
+
+**Régressions à revalider** : les anciens liens `?poi-postalCode=97400` retombent sur la commune
+(résultat élargi à Saint-Denis entier, voulu) ; la facette code postal de la fiche aussi.
+
+**Validation** (base `prod230926`, navigateur) : Saint-Denis 102 ; ancien lien 97400 → 102 ;
+Saint-Denis ET Scolaires 94 ; « Complexe sportif » 172 ; « structurant » 129 ; menu à 23 communes,
+aucun ancien libellé « 97xxx - Quartier » ; clic sur « 97410 SAINT-PIERRE » dans une fiche → toute la
+commune (89). `config:validate` ✅ 8 pages, 12 sections · `audit:config` RAS ; gates de code : cf. §9
+de [saint-paul-sport.md](saint-paul-sport.md).
 
 ### Lot 1 — création du site (2026-08-06)
 
@@ -218,15 +525,21 @@ repassent au vert.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Config valide (Zod) | ✅ | 8 pages, 13 sections |
+| 1 | Config valide (Zod) | ✅ | 9 pages, 14 sections (16/10) |
 | 2 | Audit qualité | ✅ | **RAS** — 0 constat (i18n, liens, assets, thème, prérequis) |
-| 3 | Rendu SSR | ✅ | 8/8 pages en 200, **13/13 sections** avec du contenu |
+| 3 | Rendu SSR | ✅ | 9/9 pages en 200 (16/10) |
 | 4 | Périmètres de données | ✅ | **3/3 à 708 résultats** (annuaire, observatoire, data) |
 | 5 | Filtres alignés sur la donnée | ✅ | 0 valeur orpheline, 0 type réel sans option, 0 virgule |
-| 6 | Préflight | 🟡 | 434/438 — **4 échecs tous préexistants** (§12) |
-| 7 | Aperçu navigateur | ❌ | jamais ouvert |
+| 6 | Préflight | ✅ | 889/894 (23/10) — seuls les 4 échecs d'environnement (§12) ; écarts voulus acquittés (§9, « Conformité ») |
+| 7 | Aperçu navigateur | 🟡 | Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
 | 8 | Déploiement | ❌ | à faire |
 | 9 | Saisie / back-office | ❌ | **bloqué backend** (§12) |
+| 10 | Fiche équipement, filtres multi-valeurs, communes | ✅ | Lot 2, vérifié au navigateur le 15/10 (§9) |
+| 11 | Annuaire des associations usagères | ✅ | Lot 3 : 23 organisations, liste générique, fiche en modale, équipements réservés restreints au scolaire — vérifié au navigateur le 16/10 (§9) |
+| 12 | Page Équipements alignée sur Saint-Paul | ✅ | Lot 4 : carte liste + carte à icônes par type (sans contours), observatoire intégré, bouton « Fiche » de l'association — vérifié au navigateur le 16/10 (§9) |
+| 13 | Filtre « Créneau disponible » | ✅ | Lot 5 : plage horaire, jours de la semaine (libre chacun d'eux) et période facultative, combiné aux autres filtres — vérifié au navigateur le 20/10 contre un calcul indépendant en base (§9) |
+| 14 | Volume horaire des réservations | ✅ | Lot 6 : fiches association et équipement (par semaine et cumulé, par ligne et total), 2 KPI d'observatoire qui suivent les filtres — vérifié au navigateur le 20/10 contre un calcul indépendant en base (§9) |
+| 15 | Ajout de créneaux par période | ✅ | Lot 7 : prise de réservation par les admins, filtre « du … au … », période propre à chaque créneau, chevauchements refusés à l'enregistrement — vérifié au navigateur le 23/10, réservation de test enregistrée en local (§9). En production : décocher « une réponse par personne » (§13) |
 
 ---
 
@@ -264,6 +577,13 @@ Avec `action: "add-poi"` seul (sans `modal`), il ouvre le formulaire POI **stand
 champs `equip_*`. Même comportement que sur Saint-Paul Sport. À arbitrer : le retirer, ou
 l'assumer jusqu'au lot 2.
 
+### Débordements en mobile préexistants (constatés le 20/10, lot 6)
+
+Sur téléphone (390 px), dans la fiche équipement, la rangée d'une association au nom long passe sous
+le bouton « Fiche » (balisage committé le 23/09, inchangé par le lot 6) ; la fiche organisation est
+plus large que son dialogue (480 px pour 358) et se décale — c'est le bloc de la fiche qui déborde, pas
+les lignes d'heures (mesuré). Non traités : hors périmètre du lot, à arbitrer.
+
 ### Écueil d'outillage — dossier d'images fantôme
 
 `config:render` **et** `npm run dev` créent `public/images/<VITE_SLUG>/` au montage du
@@ -274,9 +594,13 @@ l'origine du `public/images/saintpaulSport1/` vide qui traîne depuis le 16/07.
 
 ### Échecs préflight préexistants (4, vérifiés hors périmètre)
 
-`bundle-size` (2,44 Mo > 2 Mo) · `environment` (`VITE_BASE_URL_BACKEND` guillemeté dans `.env`) ·
-`site-assets` (`public/images/saintpaulSport1/` vide et non déclaré) · `skill-integrity`
-(agent `siteforge-config-auditor` absent).
+Au 23/10 :
+- `environment` : `VITE_BASE_URL_BACKEND` est entre guillemets dans `.env` ;
+- `bundle-size` (2,44 Mo > 2 Mo) et `lazy-entry-facades` ×2 : ils lisent le build `dist/` du 24/07,
+  antérieur au code actuel.
+
+`site-assets` (dossier désormais déclaré dans `sites.json`) et `skill-integrity`, rouges au 16/10,
+passent.
 
 ### Données sondées sur l'instance de **dev**
 
@@ -302,6 +626,9 @@ revanche pertinent pour un site scolaire.
 | Compléter les marqueurs légaux (directeur de publication, hébergeur, contact RGPD) — commun aux 3 sites équipements | Peterson |
 | Poser le DNS `equipements-sportifs-scolaires.00.re` et déployer | Peterson |
 | Vérifier les volumes réels en production | Peterson |
+| Formulaire « Formulaire créneaux E.S. » en production : décocher « Une reponse par personne » (sans quoi chaque admin ne peut enregistrer qu'une réservation), et, si besoin, rendre Peterson admin du projet `ESS974` | Peterson |
+| Formulaire de communecter.org (PHP) : conserver la période d'un créneau modifié — chantier d'import des créneaux des communes (plan communecter-php74, § 5.5) | Peterson (autre session) |
+| Mise à jour depuis dataES, préparée le 21/10 côté communecter-php74 (`/co2/migration/majess974dataes`, plan `maj-ess974-dataes.md`) : en production, importer d'abord les 19 nouveaux équipements, puis lancer l'action, qui pose et retire elle-même la clé `ESS974` (ne plus lancer `addsourcekeyess974`). Le périmètre passera de 708 à 703 équipements : les 694 de dataES + 9 équipements de collèges sans numéro, gardés ; 26 fiches absentes de dataES quittent le site scolaire (aucune réservation). La part « Donnée non renseignée » quittera les graphiques | Peterson |
 
 ## Observatoire en split view (2026-09-10)
 

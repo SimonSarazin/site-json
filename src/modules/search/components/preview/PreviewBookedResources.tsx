@@ -8,8 +8,12 @@ import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useOrgaReservationsQuery } from "../../hooks/useOrgaReservationsQuery";
-import { groupReservationsByResource } from "../../lib/reservations";
+import { useResourcesInPerimeterQuery } from "../../hooks/useResourcesInPerimeterQuery";
+import { groupReservationsByResource, ownSlotPeriod } from "../../lib/reservations";
+import { keepInPerimeter } from "../../lib/reservationUsers";
 import { formatReservationPeriod } from "../../lib/reservationPeriod";
+import { formatReservationHours, sumReservationHours } from "../../lib/reservationHours";
+import { localIsoDay } from "../../lib/slotFilter";
 import {
   DEFAULT_PREVIEW_PARAM,
   type BookedResourcesConf,
@@ -39,9 +43,28 @@ export default function PreviewBookedResources({
 }) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
-  const { data, isLoading, isError } = useOrgaReservationsQuery({ orgaId, conf });
+  const { data, isLoading: reservationsLoading, isError: reservationsError } = useOrgaReservationsQuery({ orgaId, conf });
 
-  const groups = useMemo(() => groupReservationsByResource(data ?? []), [data]);
+  const allGroups = useMemo(() => groupReservationsByResource(data ?? []), [data]);
+  // Périmètre du site (`booked.poiFilters`, opt-in) : une organisation réserve aussi AILLEURS — on ne
+  // garde que les équipements du site, ceux dont le bouton « fiche » ouvre bien une fiche ici.
+  // Sans périmètre : aucune requête de plus, tous les équipements (comportement historique).
+  const resourceIds = useMemo(() => allGroups.map((g) => g.resourceId), [allGroups]);
+  const perimetre = useResourcesInPerimeterQuery(resourceIds, booked);
+  const groups = useMemo(() => keepInPerimeter(allGroups, perimetre.allowed), [allGroups, perimetre.allowed]);
+  const isLoading = reservationsLoading || perimetre.isLoading;
+  const isError = reservationsError || perimetre.isError;
+
+  // Volume horaire (opt-in `booked.hours`) : celui de chaque équipement LISTÉ, dans l'ordre de
+  // `groups`, et le total de l'organisation sur ces seuls équipements — la somme des lignes.
+  const hours = useMemo(() => {
+    if (!booked.hours) return null;
+    const today = localIsoDay(new Date());
+    return {
+      total: sumReservationHours(groups.flatMap((g) => g.reservations), today),
+      byGroup: groups.map((g) => sumReservationHours(g.reservations, today)),
+    };
+  }, [booked.hours, groups]);
   const link = booked.link;
   const previewParam = link?.previewParam ?? DEFAULT_PREVIEW_PARAM;
 
@@ -59,6 +82,9 @@ export default function PreviewBookedResources({
         </h2>
         {groups.length > 0 && <Badge variant="secondary">{groups.length}</Badge>}
       </div>
+      {hours && !isLoading && !isError && (
+        <p className="mt-1 text-sm text-muted-foreground">{formatReservationHours(hours.total, t, true)}</p>
+      )}
 
       {isLoading ? (
         <div className="mt-4 space-y-2">
@@ -71,7 +97,7 @@ export default function PreviewBookedResources({
         </p>
       ) : (
         <ul className="mt-4 space-y-3">
-          {groups.map((g) => (
+          {groups.map((g, gi) => (
             <li
               key={g.resourceId}
               className="rounded-lg border border-border/60 bg-background/60 p-3"
@@ -107,6 +133,15 @@ export default function PreviewBookedResources({
                 </div>
               </div>
 
+              {/* Volume horaire de l'équipement, sur SA ligne (alignée sur les réservations) : à
+                  droite avec le nombre de créneaux, il élargissait la rangée au point de pousser le
+                  bouton « Fiche » hors de la fiche en mobile. */}
+              {hours && (
+                <p className="mt-1 pl-6 text-xs text-muted-foreground">
+                  {formatReservationHours(hours.byGroup[gi], t)}
+                </p>
+              )}
+
               <div className="mt-2 space-y-2 pl-6">
                 {g.reservations.map((r, ri) => (
                   <div key={r.id || `res-${ri}`} className="text-sm">
@@ -120,12 +155,18 @@ export default function PreviewBookedResources({
                       </p>
                     )}
                     <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                      {r.slots.map((s, i) => (
-                        <li key={i}>
-                          <span className="font-medium text-foreground">{t(`days.${s.day}`)}</span>{" "}
-                          {s.start} – {s.end}
-                        </li>
-                      ))}
+                      {r.slots.map((s, i) => {
+                        // Même règle que la fiche équipement : la période propre d'un créneau, seulement
+                        // quand elle diffère de celle de la réservation.
+                        const own = ownSlotPeriod(s, r);
+                        return (
+                          <li key={i}>
+                            <span className="font-medium text-foreground">{t(`days.${s.day}`)}</span>{" "}
+                            {s.start} – {s.end}
+                            {own && ` · ${formatReservationPeriod(own, t)}`}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 ))}

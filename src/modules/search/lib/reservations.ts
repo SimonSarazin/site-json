@@ -22,6 +22,11 @@ export interface ReservationSlot {
   /** Minutes depuis minuit — clés de tri de la grille et calcul de durée. */
   startMinutes: number;
   endMinutes: number;
+  /** Période PROPRE du créneau (ISO), telle qu'enregistrée sur l'objet `timeSlots` — par l'import, qui
+   *  date chaque cycle d'une saison, ou par la saisie au formulaire. Absente = toute la période de la
+   *  réservation : la période qui compte est celle de `slotPeriod`, jamais ces seules bornes. */
+  periodStart?: string;
+  periodEnd?: string;
 }
 
 /** Ressource pointée par le finder d'une réservation. */
@@ -137,6 +142,24 @@ function parseSlot(raw: unknown): ReservationSlot | null {
     end: formatSlotTime(s?.endHour, s?.endMinute),
     startMinutes,
     endMinutes,
+    periodStart: str(s?.periodStart),
+    periodEnd: str(s?.periodEnd),
+  };
+}
+
+/**
+ * Période EFFECTIVE d'un créneau : la sienne, borne par borne, sinon celle de sa réservation. Une
+ * réservation vaut pour une saison et ses créneaux peuvent n'en occuper qu'un cycle (« du 24/08 au
+ * 14/12 ») ; un créneau sans période — tous ceux d'avant cette convention — vaut pour toute la
+ * réservation. Borne par borne : un créneau qui ne porte que sa fin commence avec la réservation.
+ */
+export function slotPeriod(
+  slot: { periodStart?: string; periodEnd?: string },
+  reservation: { periodStart?: string; periodEnd?: string },
+): { periodStart?: string; periodEnd?: string } {
+  return {
+    periodStart: slot.periodStart ?? reservation.periodStart,
+    periodEnd: slot.periodEnd ?? reservation.periodEnd,
   };
 }
 
@@ -339,8 +362,9 @@ export function buildWeeklyGrid(groups: UserReservations[]): WeeklyGridDay[] {
           user: g.user,
           activity: r.activity,
           bookingType: r.bookingType,
-          periodStart: r.periodStart,
-          periodEnd: r.periodEnd,
+          // La période du BLOC est celle du créneau : celle de la réservation dirait « toute la saison »
+          // d'un créneau qui n'en occupe qu'un cycle.
+          ...slotPeriod(s, r),
           colorIndex: g.colorIndex,
         });
       });
@@ -361,11 +385,14 @@ export function buildWeeklyGrid(groups: UserReservations[]): WeeklyGridDay[] {
 
 /* ── Détection de conflit ──────────────────────────────────────────────── */
 
-/** Créneau candidat : le minimum nécessaire au calcul (pas de libellés). */
+/** Créneau candidat : le minimum nécessaire au calcul (pas de libellés). Sa période propre, s'il en a
+ *  une, prime sur celle de la réservation envisagée (cf. `slotPeriod`). */
 export interface CandidateSlot {
   day: DayKey;
   startMinutes: number;
   endMinutes: number;
+  periodStart?: string;
+  periodEnd?: string;
 }
 
 /** Réservation envisagée — créneaux hebdo + période de validité (bornes ISO). */
@@ -420,10 +447,12 @@ export function slotsOverlap(a: CandidateSlot, b: CandidateSlot): boolean {
 }
 
 /**
- * Réservations existantes en conflit avec une réservation envisagée : il faut
- * un chevauchement du créneau HEBDOMADAIRE **et** un recouvrement de la
- * PÉRIODE — deux clubs sur le même créneau à des saisons disjointes ne se
- * gênent pas.
+ * Réservations existantes en conflit avec une réservation envisagée : il faut,
+ * sur un MÊME couple de créneaux, un chevauchement HEBDOMADAIRE **et** un
+ * recouvrement des PÉRIODES — la période effective de chaque créneau
+ * (`slotPeriod`), pas celle de sa réservation. Deux clubs sur le même créneau
+ * à des saisons disjointes ne se gênent pas ; un cycle d'août à novembre ne
+ * bloque pas le même créneau de décembre, même dans une réservation de saison.
  *
  * `existing` est la liste DÉJÀ restreinte à la ressource visée (c'est ce que
  * `useReservationsQuery` retourne) : la fonction ne refiltre pas sur
@@ -434,11 +463,50 @@ export function reservationConflicts(
   existing: Reservation[],
 ): Reservation[] {
   if (candidate.slots.length === 0) return [];
-  return existing.filter(
-    (r) =>
-      periodsOverlap(candidate, r)
-      && r.slots.some((rs) => candidate.slots.some((cs) => slotsOverlap(cs, rs))),
+  return existing.filter((r) =>
+    r.slots.some((rs) =>
+      candidate.slots.some(
+        (cs) => slotsOverlap(cs, rs) && periodsOverlap(slotPeriod(cs, candidate), slotPeriod(rs, r)),
+      ),
+    ),
   );
+}
+
+/**
+ * Filtre « du … au … » de la section réservations : chaque réservation ne garde
+ * que ses créneaux dont la période EFFECTIVE recouvre `period`, bornes incluses
+ * (`periodsOverlap`) ; une réservation sans créneau restant disparaît. Une
+ * réservation SANS créneau lisible (donnée dégradée) se juge sur sa propre
+ * période : l'écarter d'office la ferait disparaître de toute fiche filtrée.
+ */
+export function reservationsInPeriod(
+  list: readonly Reservation[],
+  period: { periodStart?: string; periodEnd?: string },
+): Reservation[] {
+  const out: Reservation[] = [];
+  for (const r of list) {
+    if (r.slots.length === 0) {
+      if (periodsOverlap(r, period)) out.push(r);
+      continue;
+    }
+    const slots = r.slots.filter((s) => periodsOverlap(slotPeriod(s, r), period));
+    // Même objet quand rien n'est retiré : les regroupements en aval gardent leurs références.
+    if (slots.length === r.slots.length) out.push(r);
+    else if (slots.length > 0) out.push({ ...r, slots });
+  }
+  return out;
+}
+
+/** Période propre d'un créneau quand elle DIFFÈRE de celle de sa réservation — à afficher à côté du
+ *  créneau ; `null` sinon (répéter la période de la réservation sur chaque ligne n'apprend rien). */
+export function ownSlotPeriod(
+  slot: ReservationSlot,
+  reservation: { periodStart?: string; periodEnd?: string },
+): { periodStart?: string; periodEnd?: string } | null {
+  const effective = slotPeriod(slot, reservation);
+  return effective.periodStart === reservation.periodStart && effective.periodEnd === reservation.periodEnd
+    ? null
+    : effective;
 }
 
 /* ── Grille de réservation (échelle horaire) ───────────────────────────── */
@@ -475,8 +543,10 @@ export interface BookingAmplitude {
   slotMinutes?: number;
 }
 
-const DEFAULT_START_HOUR = 8;
-const DEFAULT_END_HOUR = 22;
+/** Amplitude par défaut (8 h → 22 h), partagée avec le filtre créneau (`slotFilter.ts`) : une même
+ *  journée de référence pour la grille de réservation et pour compléter un créneau à une seule borne. */
+export const DEFAULT_START_HOUR = 8;
+export const DEFAULT_END_HOUR = 22;
 const DEFAULT_SLOT_MINUTES = 60;
 /** Plafond d'une grille : une journée. Borne l'élargissement automatique des bornes. */
 const JOURNEE_MINUTES = 24 * 60;

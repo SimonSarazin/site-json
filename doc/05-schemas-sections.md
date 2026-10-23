@@ -1725,6 +1725,7 @@ export const SearchProStaticSectionSchema = z.object({
 - **Defaults differents** : `useFilter: false`, `showActiveFiltersTypes: false`, `showActiveFiltersTags: false`
 - **Placeholder optionnel** : contrairement a `searchPro` ou il est obligatoire
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
+- **`reservationUsers`** (`ReservationUsersConfSchema`) : périmètre CALCULÉ — organisations usagères d'au moins une réservation sur un équipement du site (`reservations` + `poiFilters` + `sourceKey?`), préchargé au SSR. Cf. `doc/07-module-search.md`, « Annuaire des organisations usagères »
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
 - **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.
 - **Alignement de l'en-tête** : titre et boutons sont alignés sur les bords de la grille de résultats (ni `container` ni marge latérale, `mb-3`) — pas de réglage. Avant 09/2026, l'en-tête était rentré dans un `container` avec `px-*` : il ne commençait pas au même bord que les cartes.
@@ -2248,6 +2249,7 @@ const SearchHeaderProps = z.object({
     })
   ).optional(),
   dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
+  slotFilter: SlotFilterSchema.optional(),
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),
@@ -2271,7 +2273,8 @@ export const SearchHeaderSectionSchema = z.object({
 | `subheadClassName` | `string?`         | Override de la classe couleur du sous-titre (def. `text-foreground`) ; `""` pour ne rien forcer |
 | `filtersClassName` | `string?`         | Override du conteneur flex de la rangee de filtres (def. `flex flex-col lg:flex-row lg:items-center`) |
 | `types`            | `array?`          | Types de filtre (id, label)            |
-| `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `allLabel?`, `options[]`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
+| `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `match?` — `exact` \| `token`, `allLabel?`, `options[]` — dont `values?`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
+| `slotFilter`       | `object?`         | Filtre « créneau » (disponibilité) : une plage horaire, des jours de la semaine (aucun = les 7) et une période facultative ; retire les ressources réservées sur ce créneau hebdomadaire (`id`, `label`, `reservations` — même bloc que `list.preview.reservations`, `amplitude?` — `{startHour?, endHour?}`, défaut 8 → 22). Combiné en ET aux dropdowns, même URL, pastilles et réinitialisation — cf. `doc/07-module-search.md`, « Filtre créneau » |
 | `buttons`          | `ActionButton[]?` | Boutons d'action. Un bouton de modale (`action: "add-*"` ou `modal`) est réservé aux admins du site sauf `requiresAdmin: false` (un visiteur non connecté passe alors par la connexion, puis la modale s'ouvre). `createDefaults` sème des valeurs dans la modale d'ajout (ex. `{ "type": "Cooperative" }`) ; une clé que le formulaire ne déclare pas est ignorée |
 | `showSearch`       | `boolean?`        | Afficher le champ de recherche         |
 | `searchPlaceholder` | `LocalizedString?` | Placeholder de la recherche          |

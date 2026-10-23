@@ -346,6 +346,23 @@ export const ReservationsConfSchema = z.object({
    */
   orgaLink: EntitySheetLinkSchema.optional(),
   /**
+   * Volume horaire sur la fiche équipement (OPT-IN) : total de l'équipement sous le titre, et
+   * celui de chaque usager sur sa rangée — par semaine et cumulé sur la période des créneaux
+   * EN COURS OU À VENIR (`lib/reservationHours.ts`). Absent = fiche inchangée.
+   */
+  hours: z.boolean().optional(),
+  /**
+   * Gestion des PÉRIODES sur la fiche équipement (OPT-IN). La section réservations gagne un filtre
+   * « du … au … » : ne restent que les créneaux dont la période — la leur, sinon celle de leur
+   * réservation (`slotPeriod`) — recouvre l'intervalle ; sans date, les créneaux en cours ou à venir.
+   * Avec `booking`, la prise de réservation suit la période choisie : une case n'est occupée que par
+   * un créneau affiché, Date début / Date fin sont pré-remplies, chaque créneau du formulaire peut
+   * recevoir sa période, et l'enregistrement est refusé sans période ou en cas de chevauchement
+   * (`lib/reservationBooking.ts`). Exige `fields.periodStart` et `fields.periodEnd`. Absent = section et
+   * prise de réservation historiques (toute réservation, terminée comprise, occupe sa case).
+   */
+  periods: z.boolean().optional(),
+  /**
    * Prise de réservation depuis la fiche (OPT-IN). Absent = comportement
    * historique : grille hebdo en blocs empilés, lecture seule. Présent = grille
    * à l'échelle horaire, cases libres cliquables ouvrant le formulaire CoForm
@@ -375,7 +392,13 @@ export const ReservationsConfSchema = z.object({
       { message: "booking.startHour doit être strictement inférieur à booking.endHour", path: ["startHour"] },
     )
     .optional(),
-});
+})
+  // Sans les deux champs de dates, une réservation n'a pas de période : le filtre ne pourrait que tout
+  // garder et le contrôle d'enregistrement tout refuser. À `config:validate` de le dire, pas au rendu.
+  .refine((c) => !c.periods || Boolean(c.fields.periodStart && c.fields.periodEnd), {
+    message: "reservations.periods exige fields.periodStart et fields.periodEnd",
+    path: ["periods"],
+  });
 export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
 
 /**
@@ -435,8 +458,47 @@ export const BookedResourcesConfSchema = z.object({
   link: EntitySheetLinkSchema.optional(),
   /** Titre de la section. Défaut : libellé i18n du module search. */
   label: LocalizedString.optional(),
+  /**
+   * Ne garder que les équipements de CE périmètre (ex. `{ "type": "recoveryCenter" }`, scopé au
+   * costum du site) : une organisation réserve aussi AILLEURS — sur un site scolaire, ses salles
+   * municipales n'ont rien à faire dans sa fiche, et leur bouton « fiche » n'ouvrirait rien.
+   * Même sémantique que `installationDashboard.poiFilters`. Absent = toutes ses réservations.
+   */
+  poiFilters: z.record(z.string(), z.unknown()).optional(),
+  /** Costum des équipements quand ils vivent sous un AUTRE costum que le site (cf.
+   *  `installationDashboard.sourceKey`). Absent → costum du site. Sans effet sans `poiFilters`. */
+  sourceKey: z.array(z.string()).optional(),
+  /** Volume horaire (OPT-IN) : total de l'organisation sur les équipements listés, et celui de
+   *  chaque équipement — même calcul que `reservations.hours`. Absent = section inchangée. */
+  hours: z.boolean().optional(),
 });
 export type BookedResourcesConf = z.infer<typeof BookedResourcesConfSchema>;
+
+/**
+ * Périmètre CALCULÉ d'une liste d'organisations (`searchProStatic.reservationUsers`) : les
+ * usagères d'au moins une réservation portant sur un équipement du périmètre du site — ex. sur un
+ * site scolaire, les clubs qui ont un créneau dans un établissement. Aucun filtre de la recherche
+ * ne sait relier réservation, équipement et organisation : la liste est calculée côté client ET au
+ * prefetch SSR (même clé), puis envoyée en `_id: {$in}`. Elle suit seule les nouveaux créneaux,
+ * les nouvelles organisations et les équipements nouvellement rattachés au site.
+ */
+export const ReservationUsersConfSchema = z
+  .object({
+    /** Ancrage du formulaire des réservations — le même bloc que `preview.reservations`. */
+    reservations: ReservationsConfSchema,
+    /** Équipements qui comptent (ex. `{ "type": "recoveryCenter" }`), scopés au costum du site —
+     *  même sémantique que `installationDashboard.poiFilters`. */
+    poiFilters: z.record(z.string(), z.unknown()),
+    /** Cf. `installationDashboard.sourceKey`. Absent → costum du site. */
+    sourceKey: z.array(z.string()).optional(),
+  })
+  // Seul le finder `userOrga` relie une réservation à une organisation PAR IDENTIFIANT : sans lui,
+  // le périmètre serait toujours vide. C'est à `config:validate` de l'attraper, pas au rendu.
+  .refine((c) => Boolean(c.reservations.fields.userOrga), {
+    message: "reservationUsers.reservations.fields.userOrga est requis (finder de l'organisation usagère)",
+    path: ["reservations", "fields", "userOrga"],
+  });
+export type ReservationUsersConf = z.infer<typeof ReservationUsersConfSchema>;
 
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "resource-directory", "structure"]).default("default"),
@@ -1324,6 +1386,11 @@ export const SearchProStaticSectionSchema = z.object({
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
     baseParams: SearchBaseParamsSchema.optional(),
+    /**
+     * Restreint la liste aux organisations usagères des réservations du site (cf.
+     * {@link ReservationUsersConfSchema}). Absent = périmètre de `baseParams` seul.
+     */
+    reservationUsers: ReservationUsersConfSchema.optional(),
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
@@ -1608,6 +1675,10 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
   id: z.string(),
   label: LocalizedString,
   value: z.string().optional(),
+  /** Valeurs interrogées ENSEMBLE par l'option (en OU), qui priment sur `value` — ex. une commune et
+   *  tous ses codes postaux. Un jeton égal à l'une d'elles désigne l'option (facette cliquable, ancien
+   *  lien `?filtre=97460`). Déclaré en config ; distinct des `variants` d'une source dynamique. */
+  values: z.array(z.string()).optional(),
   field: z.string().optional(),
   icon: z.string().optional(),
 });
@@ -1617,6 +1688,10 @@ const TitleWithFiltersDropdownSchema = z.object({
   label: LocalizedString,
   field: z.string().optional(),
   multiple: z.boolean().optional(),
+  /** Comparaison des valeurs cochées. `exact` (défaut CÔTÉ CODE) : égalité stricte (`$in`).
+   *  `token` : la valeur est un élément ENTIER d'une liste « a, b » stockée en chaîne — pour les champs
+   *  multi-valeurs, où `exact` ignore toute fiche qui porte plusieurs valeurs (cf. `lib/tokenMatch.ts`). */
+  match: z.enum(["exact", "token"]).optional(),
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
   optionsFrom: OptionsFromSchema.optional(),
@@ -1630,6 +1705,35 @@ const TitleWithFiltersDropdownSchema = z.object({
    *  de la page n'a pas de sens, contrairement à `public`/`territoire` qui restent des affinages. */
   hidden: z.boolean().optional(),
 });
+
+/**
+ * Filtre « créneau » du bandeau (disponibilité) : un JOUR et une PLAGE HORAIRE ; la liste ne garde que
+ * les ressources sans réservation sur ce créneau — règles et contrats dans `lib/slotFilter.ts`.
+ * Producteur du `PageFiltersContext` comme les dropdowns : il se combine en ET avec eux et partage
+ * leur URL, leurs pastilles, leur compteur et leur réinitialisation.
+ */
+export const SlotFilterSchema = z.object({
+  /** Param d'URL (`?<id>=`) et préfixe de l'entrée `searchByFields` — distinct des `id` de
+   *  `dropdownFilters`, dont le nettoyage par préfixe effacerait le créneau. */
+  id: z.string(),
+  label: LocalizedString,
+  /** Formulaire des réservations dont on déduit l'occupation — même bloc que
+   *  `list.preview.reservations` de la liste. */
+  reservations: ReservationsConfSchema,
+  /** Journée de référence qui complète un créneau à une seule borne : début seul → jusqu'à `endHour`,
+   *  fin seule → depuis `startHour`. Défaut code : 8 → 22. Comme `booking`, une grille de référence :
+   *  aucun horaire d'ouverture n'existe en base. */
+  amplitude: z.object({
+    startHour: z.number().int().min(0).max(23).optional(),
+    endHour: z.number().int().min(1).max(24).optional(),
+  })
+    .refine(
+      (a) => a.startHour === undefined || a.endHour === undefined || a.startHour < a.endHour,
+      { message: "slotFilter.amplitude.startHour doit être strictement inférieur à endHour", path: ["startHour"] },
+    )
+    .optional(),
+});
+export type SlotFilterConf = z.infer<typeof SlotFilterSchema>;
 
 // Props partagées entre le type canonique `searchHeader` et son alias.
 const SearchHeaderProps = z.object({
@@ -1663,6 +1767,8 @@ const SearchHeaderProps = z.object({
     })
   ).optional(),
   dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
+  /** Filtre « créneau » (disponibilité), à droite des dropdowns — cf. {@link SlotFilterSchema}. */
+  slotFilter: SlotFilterSchema.optional(),
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),

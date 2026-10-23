@@ -125,7 +125,9 @@
             "tracking": "Suivi"
         },
         "fields": {
+            "type": "Type d'équipement",
             "category": "Catégorie",
+            "particularity": "Type de particularité",
             "family": "Famille d'équipement",
             "installation": "Installation",
             "sport": "Sport pratiqué",
@@ -140,8 +142,7 @@
             "floor": "Revêtement",
             "surface": "Surface",
             "length": "Longueur",
-            "width": "Largeur",
-            "partnership": "Partenariat"
+            "width": "Largeur"
         },
         "features": {
             "pmr": "Accès PMR",
@@ -175,7 +176,9 @@
             "lastUpdate": "Dernière mise à jour"
         },
         "equipNumero": {
-            "link": "Voir la fiche nationale"
+            "link": "Voir la fiche nationale",
+            "siret": "SIRET",
+            "uai": "UAI"
         },
         "installationDashboard": {
             "open": "Voir le tableau de bord de l'installation"
@@ -206,6 +209,7 @@
     "PreviewReservations": {
         "title": "Réservations",
         "empty": "Aucune réservation enregistrée pour cet équipement.",
+        "emptyPeriod": "Aucun créneau sur cette période.",
         "error": "Impossible de charger les réservations.",
         "unknownUser": "Usager non renseigné",
         "slotCount_one": "{{count}} créneau",
@@ -224,7 +228,20 @@
         "conflict": "Ce créneau est déjà réservé par {{user}}.",
         "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert.",
         "orgaSheet": "Fiche",
-        "orgaSheetAria": "Ouvrir la fiche de {{name}} dans l'annuaire"
+        "orgaSheetAria": "Ouvrir la fiche de {{name}} dans l'annuaire",
+        "filterLabel": "Période",
+        "filterFrom": "Du",
+        "filterTo": "Au",
+        "filterReset": "Effacer",
+        "filterHint": "Sans date : les créneaux en cours ou à venir.",
+        "filterInvalid": "La date de fin doit suivre la date de début.",
+        "issue": {
+            "period": "Indiquez la date de début et la date de fin de la réservation, la fin après le début.",
+            "slotPeriod": "La période du créneau {{slot}} doit aller dans le bon sens et rester dans celle de la réservation.",
+            "overlap": "Deux créneaux du formulaire se chevauchent : {{slot}}.",
+            "taken": "{{slot}} est déjà réservé par {{user}} ({{period}}).",
+            "noPeriod": "sans limite de dates"
+        }
     },
     "PreviewBookedResources": {
         "title": "Équipements réservés",
@@ -234,6 +251,31 @@
         "slotCount_other": "{{count}} créneaux",
         "sheet": "Fiche",
         "sheetAria": "Ouvrir la fiche de {{name}}"
+    },
+    "ReservationHours": {
+        "summary": "{{weekly}} h/sem · {{cumulative}} h cumulées",
+        "total": "Total : {{weekly}} h/sem · {{cumulative}} h cumulées"
+    },
+    "SlotFilter": {
+        "from": "De",
+        "to": "À",
+        "days": "Jours",
+        "everyDay": "Tous les jours",
+        "period": "Période (facultatif)",
+        "periodStart": "Du",
+        "periodEnd": "Au",
+        "hint": "Début seul : jusqu'à {{close}}. Fin seule : depuis {{open}}. Sans jour : tous les jours. Sans période : à partir d'aujourd'hui.",
+        "invalidRange": "L'heure de fin doit suivre l'heure de début.",
+        "invalidPeriod": "La fin de la période doit suivre son début (aujourd'hui s'il est vide).",
+        "noDayInPeriod": "Aucun des jours choisis ne tombe dans cette période.",
+        "apply": "Appliquer",
+        "clear": "Effacer",
+        "loading": "Chargement des réservations…",
+        "error": "Impossible de charger les réservations.",
+        "retry": "Réessayer",
+        "summary": "{{days}} · {{start}}–{{end}}",
+        "chip": "Libre : {{days}} · {{start}}–{{end}}",
+        "chipPeriod": "Libre : {{days}} · {{start}}–{{end}} · {{period}}"
     },
     "Filtres actifs :": "Filtres actifs :",
     "À partir du": "À partir du",

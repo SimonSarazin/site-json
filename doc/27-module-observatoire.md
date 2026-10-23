@@ -120,6 +120,7 @@ salles/tarifs) ne sont pas encore lus.
     ],
     "maxWidth": "8xl",                           // largeur du conteneur (4xl…8xl, full) — défaut 8xl
     "kpiLayout": "inline",                       // "cards" (défaut) ou "inline" (chiffres tabulaires)
+    "kpiColumns": 5,                             // opt-in : cartes par ligne dès 1024 px (3 à 6)
     "export": { "filename": "mon-export" },     // opt-in : bouton CSV (filtré/trié)
     "drilldown": true,                           // opt-in : clic part/barre = filtre
     "table": {
@@ -157,7 +158,7 @@ ouvre le détail du module search (le comportement de la liste
 `/equipements-sportifs` au clic sur une carte — `SwitchDetailsMode` réutilisé).
 
 Formes — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`, `top`,
-`sum`, `avg` (+ `unit`) ·
+`sum`, `avg` (+ `unit`), `reservationHours` (+ `period`, `unit`) ·
 graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups` ·
 colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs en
 **jetons de thème** uniquement (`chart-1..5`, `primary`, `accent`, `muted`)
@@ -171,6 +172,19 @@ toujours le bon — pour une série unique, la longueur des barres encode déjà
 valeur. **Toujours nommer les valeurs** plutôt que compter sur le repli
 automatique : celui-ci colore par RANG dans la liste triée, si bien qu'une
 valeur change de couleur dès que les comptes bougent.
+
+**KPI `reservationHours`** — heures réservées sur les équipements AFFICHÉS,
+par semaine (`period: "weekly"`, défaut) ou cumulées sur la période de chaque
+créneau — la sienne, sinon celle de sa réservation (`"cumulative"`) —, créneaux
+en cours ou à venir seulement (la règle du filtre « Créneau disponible »). Il ne lit aucune dimension : la section
+charge les réservations du formulaire de SA fiche (`rowAction.preview.reservations`,
+requis — sinon la carte reste à « — », avec un avertissement en dev), seulement
+si un tel KPI est déclaré, par la requête du filtre créneau (cache partagé). Les
+heures sont sommées sur les identifiants des entités filtrées : la valeur suit
+filtres, recherche et sélection. Calcul dans `search/lib/reservationHours.ts`
+(cf. `doc/07-module-search.md`, « Volume horaire »). Deux KPI (hebdo + cumul)
+s'ajoutent aux autres cartes : au-delà de 8 cartes, la grille automatique passe à
+la ligne — `kpiColumns` fixe alors le nombre de cartes par ligne.
 
 ## Split view : la liste à gauche, les graphes à droite
 
@@ -254,6 +268,13 @@ plusieurs sections, reprendre la largeur des voisines (souvent `5xl` ou `6xl`)
 **`kpiLayout: "inline"`** rend les KPI en ligne de chiffres tabulaires au lieu
 de grandes cartes : préférable pour un résumé posé en accueil, où trois cartes
 pleine largeur écrasent le reste de la page.
+**`kpiColumns`** (3 à 6, opt-in) fixe le nombre de cartes par ligne à partir de
+1024 px. Sans lui, la grille se remplit seule (cartes d'au moins 150 px) : en
+pleine largeur, 9 KPI donnent 8 cartes puis une seule sur sa ligne — `5` les
+répartit en 5 + 4. Téléphone (2) et tablette (3) restent inchangés. Les classes
+sont écrites en entier dans `KpiCards` (Tailwind ne génère que ce qu'il lit) ;
+section `data-observatory` seule, le panneau embarqué garde le remplissage
+automatique.
 
 L'exemple complet en production : la page `/observatoire` de
 `config.prod.equipements-Sportifs.json` (dataset RES — 12 dimensions,
@@ -284,7 +305,9 @@ filtrées serveur.
 `results` (des entités du module search) et une conf `{dimensions, kpis,
 charts}`, applique la convention `serverData` (`toItems`, partagée avec le
 hook de la section) et rend KPI puis graphes. **Ni requête, ni état, ni
-filtres** — c'est ce qui le rend appelable ailleurs.
+filtres** — c'est ce qui le rend appelable ailleurs. Conséquence : le KPI
+`reservationHours`, qui a besoin des réservations, n'y est pas alimenté (la
+carte resterait à « — ») — il est lu par la section `data-observatory` seule.
 
 Premier appelant : `searchProStatic.observatory` (cf.
 [doc/07](./07-module-search.md#vue-observatoire--le-tableau-de-bord-dans-la-section)),

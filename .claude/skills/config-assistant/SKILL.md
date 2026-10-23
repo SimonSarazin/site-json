@@ -319,6 +319,25 @@ qui ne porte que le nom saisi à la main n'a pas de bouton — jamais de rapproc
 approximatif. ⚠ La page VISÉE doit déclarer `list.previewFetch`
 (`poi`\|`organizations`\|…), sinon `?preview=<id>` ne trouve l'item que dans la
 tranche déjà chargée (10 résultats) et le lien reste sans effet.
+`bookedResources.poiFilters` ne garde que les équipements du site (une organisation
+réserve aussi ailleurs). `reservations.hours` / `bookedResources.hours` (opt-in)
+affichent le volume horaire (par semaine + cumulé, créneaux en cours ou à venir) ;
+`reservations.periods` (opt-in, exige `fields.periodStart`/`periodEnd`) : un créneau
+n'occupe que sa période, filtre « du … au … » dans la section et, avec `booking`,
+prise de réservation par période (dates pré-remplies, chevauchement refusé à
+l'enregistrement) — le formulaire doit accepter plusieurs réponses par personne ;
+côté observatoire, KPI `{kind:"reservationHours", period:"weekly"|"cumulative"}` —
+`data-observatory` seule, exige `rowAction.preview.reservations`. **Annuaire des usagers** : `searchProStatic.reservationUsers`
+`{reservations, poiFilters, sourceKey?}` restreint une liste d'organisations à celles
+qui ont au moins un créneau sur un équipement du site — périmètre calculé (client +
+SSR), qui suit seul les nouveaux créneaux ; `fields.userOrga` requis. **Filtre de
+disponibilité** : `searchHeader.slotFilter` `{id, label, reservations, amplitude?}`
+retire de la liste les ressources réservées sur une plage horaire, des jours de la
+semaine (aucun = les 7, libre chacun d'eux) et une période facultative (début absent →
+aujourd'hui) ; début seul → jusqu'à `amplitude.endHour`, fin seule → depuis `startHour`,
+défaut 8 → 22 ;
+combiné en ET aux dropdowns (URL, pastilles, réinitialisation) ; `id` distinct de ceux
+des `dropdownFilters`.
 
 Variantes transverses : `preview.width` (`sm`…`5xl`\|`full`, défaut code `5xl`, dialog
 seulement) ; `card.variant` surcharge `card.type` pour le dispatch (sous-ensemble

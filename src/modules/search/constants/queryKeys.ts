@@ -125,6 +125,34 @@ export const SEARCH_QUERY_KEYS = {
   ORGA_RESERVATIONS: (formId: string, orgaId: string) =>
     ["search-orga-reservations", formId, orgaId] as const,
   /**
+   * Périmètre « organisations usagères » d'une liste (`searchProStatic.reservationUsers`) :
+   * organisations retenues + équipements du site réservés.
+   *
+   * Producteurs : `useReservationUsersQuery` ET le prefetch SSR (`prefetchReservationUsers`) — la
+   * MÊME clé, sinon la liste préchargée ne serait pas celle du client. Données PUBLIQUES
+   * (answerslist et recherche publics → pas de dimension userId). Invalidation : aucune, comme
+   * `RESERVATIONS` — staleTime + refetch au remontage suffisent.
+   */
+  RESERVATION_USERS: (formId: string, perimeter: Record<string, unknown>) =>
+    ["search-reservation-users", formId, perimeter] as const,
+  /**
+   * Parmi des équipements, ceux d'un périmètre (`preview.bookedResources.poiFilters`).
+   *
+   * Producteur : `useResourcesInPerimeterQuery`. Données publiques. Identifiants TRIÉS par
+   * l'appelant : même ensemble, même clé.
+   */
+  RESOURCES_IN_PERIMETER: (ids: readonly string[], perimeter: Record<string, unknown>) =>
+    ["search-resources-in-perimeter", ids, perimeter] as const,
+  /**
+   * Réservations d'un FORMULAIRE qui pointent une ressource, d'où le filtre créneau du bandeau
+   * (`searchHeader.slotFilter`) déduit les ressources occupées.
+   *
+   * Producteur : `useSlotReservationsQuery`. Données publiques (answerslist public → pas de dimension
+   * userId). Invalidation : aucune, comme `RESERVATIONS` — staleTime + refetch au remontage suffisent.
+   */
+  RESERVATION_SLOTS: (formId: string, scope: Record<string, unknown>) =>
+    ["search-reservation-slots", formId, scope] as const,
+  /**
    * Entité chargée par IDENTIFIANT pour ouvrir sa fiche depuis l'URL
    * (`list.previewFetch`), quand la liste affichée ne la porte pas.
    *

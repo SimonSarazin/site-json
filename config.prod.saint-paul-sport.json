@@ -529,8 +529,8 @@
               {
                 "id": "type",
                 "label": {
-                  "fr": "Catégorie",
-                  "en": "Category"
+                  "fr": "Type d'équipement",
+                  "en": "Equipment type"
                 },
                 "field": "equip_type_name",
                 "multiple": true,
@@ -1410,6 +1410,93 @@
                 ]
               },
               {
+                "id": "categorie",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "categorie",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "structurant",
+                    "value": "structurant",
+                    "label": {
+                      "fr": "Structurant",
+                      "en": "Major facility"
+                    }
+                  },
+                  {
+                    "id": "proximite",
+                    "value": "proximité",
+                    "label": {
+                      "fr": "Proximité",
+                      "en": "Local facility"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "particularite",
+                "label": {
+                  "fr": "Type de particularité",
+                  "en": "Particularity type"
+                },
+                "field": "inst_part_type",
+                "multiple": true,
+                "match": "token",
+                "options": [
+                  {
+                    "id": "etablissement-scolaire",
+                    "value": "Etablissement scolaire",
+                    "label": {
+                      "fr": "Établissement scolaire",
+                      "en": "School"
+                    }
+                  },
+                  {
+                    "id": "complexe-sportif",
+                    "value": "Complexe sportif",
+                    "label": {
+                      "fr": "Complexe sportif",
+                      "en": "Sports complex"
+                    }
+                  },
+                  {
+                    "id": "piscine",
+                    "value": "Piscine",
+                    "label": {
+                      "fr": "Piscine",
+                      "en": "Swimming pool"
+                    }
+                  },
+                  {
+                    "id": "base-plein-air-loisirs",
+                    "value": "Base de plein air et/ou de loisirs",
+                    "label": {
+                      "fr": "Base de plein air et/ou de loisirs",
+                      "en": "Outdoor / leisure centre"
+                    }
+                  },
+                  {
+                    "id": "creps-ecole-nationale",
+                    "value": "CREPS ou Ecole nationale",
+                    "label": {
+                      "fr": "CREPS ou École nationale",
+                      "en": "CREPS or national school"
+                    }
+                  },
+                  {
+                    "id": "aerodrome-aeroport",
+                    "value": "Aérodrome/aéroport",
+                    "label": {
+                      "fr": "Aérodrome / aéroport",
+                      "en": "Airfield / airport"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "poi-amenities",
                 "label": {
                   "fr": "Aménagements",
@@ -1585,6 +1672,7 @@
                 },
                 "field": "equip_utilisateur",
                 "multiple": true,
+                "match": "token",
                 "options": [
                   {
                     "id": "individuels",
@@ -1668,6 +1756,7 @@
                 },
                 "field": "equip_loc_type",
                 "multiple": true,
+                "match": "token",
                 "options": [
                   {
                     "id": "reception-accueil",
@@ -1720,6 +1809,10 @@
                   {
                     "id": "salle-reunion-cours",
                     "value": "Salle(s) de réunion / cours",
+                    "values": [
+                      "Salle(s) de réunion/cours",
+                      "Salle(s) de réunion / cours"
+                    ],
                     "label": {
                       "fr": "Salle(s) de réunion / cours",
                       "en": "Meeting / class rooms"
@@ -1845,7 +1938,10 @@
                 "geoPosition",
                 "parent",
                 "source",
-                "reference"
+                "reference",
+                "equip_numero",
+                "inst_siret",
+                "inst_uai"
               ],
               "searchBy": [
                 "name",
@@ -1883,6 +1979,7 @@
                     "periodEnd": "mrc4259ir2xnu4vp2fq",
                     "bookingType": "mrc3zgl902y2fpfcby3y"
                   },
+                  "periods": true,
                   "booking": {
                     "startHour": 8,
                     "endHour": 22,
@@ -2885,7 +2982,9 @@
                 "geoPosition",
                 "parent",
                 "source",
-                "reference"
+                "reference",
+                "inst_siret",
+                "inst_uai"
               ]
             },
             "dimensions": {
@@ -3683,6 +3782,7 @@
                     "periodEnd": "mrc4259ir2xnu4vp2fq",
                     "bookingType": "mrc3zgl902y2fpfcby3y"
                   },
+                  "periods": true,
                   "booking": {
                     "startHour": 8,
                     "endHour": 22,
@@ -3821,7 +3921,9 @@
                 "geoPosition",
                 "parent",
                 "source",
-                "reference"
+                "reference",
+                "inst_siret",
+                "inst_uai"
               ]
             },
             "dimensions": {
@@ -4107,6 +4209,7 @@
                       "periodEnd": "mrc4259ir2xnu4vp2fq",
                       "bookingType": "mrc3zgl902y2fpfcby3y"
                     },
+                    "periods": true,
                     "booking": {
                       "startHour": 8,
                       "endHour": 22,
@@ -5004,6 +5107,7 @@
               "periodEnd": "mrc4259ir2xnu4vp2fq",
               "bookingType": "mrc3zgl902y2fpfcby3y"
             },
+            "periods": true,
             "booking": {
               "startHour": 8,
               "endHour": 22,

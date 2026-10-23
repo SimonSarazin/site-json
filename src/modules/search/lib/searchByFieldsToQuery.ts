@@ -1,5 +1,11 @@
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 import { ANSWER_PATH_TYPE, answerFilterClause } from "./answerFilterClause";
+import { TOKEN_MATCH_TYPE, tokenMatchPattern } from "./tokenMatch";
+
+/** Type d'entrée `searchByFields` d'une EXCLUSION : `value` = valeurs à écarter du champ, traduites en
+ *  `$nin`. Défini ICI, chez le traducteur, et non chez son producteur (`slotFilter.ts`) : ce module est
+ *  chargé par toutes les listes, il ne doit pas tirer la logique des réservations. */
+export const EXCLUDE_TYPE = "exclude";
 
 /**
  * Traduit le `searchByFields` du `PageFilters` (filtres dynamiques : answers
@@ -21,7 +27,8 @@ export interface SearchTargetQuery {
 export function searchByFieldsToQuery(
   searchByFields: Record<string, SearchByFieldValue> = {},
 ): {
-  /** `$in` (tags/valeurs) et opérateurs date (`$gt`/`$lte`) — envoyés tels quels au backend. */
+  /** `$in` (tags/valeurs), `$nin` (exclusions calculées), opérateurs date (`$gt`/`$lte`) et
+   *  `$or: { $and }` (facettes sur réponses, champs multi-valeurs `token`) — envoyés tels quels au backend. */
   filters: Record<string, Record<string, unknown>>;
   locality: Record<string, unknown>;
   sourceKeys: string[];
@@ -36,6 +43,9 @@ export function searchByFieldsToQuery(
   // Facettes sur une liste d'`answers` : valeurs cochées regroupées PAR CHAMP de
   // réponse (clé = chemin). Assemblées après la boucle en ET de OU (cf. plus bas).
   const answerGroups = new Map<string, string[]>();
+  // Champs MULTI-VALEURS (`match: "token"`) : valeurs cochées regroupées par champ, comparées
+  // élément par élément d'une liste « a, b » au lieu d'à l'identique (cf. tokenMatch.ts).
+  const tokenGroups = new Map<string, string[]>();
 
   for (const { field, type, value } of Object.values(searchByFields)) {
     if (type === "scopeList") {
@@ -74,6 +84,23 @@ export function searchByFieldsToQuery(
       }
       continue;
     }
+    if (type === TOKEN_MATCH_TYPE) {
+      // Pas d'écriture directe dans `filters` : un `$in` comparerait à l'identique.
+      if (Array.isArray(value) && value.length > 0) {
+        tokenGroups.set(field, [...(tokenGroups.get(field) ?? []), ...(value as string[])]);
+      }
+      continue;
+    }
+    if (type === EXCLUDE_TYPE) {
+      // Exclusion CALCULÉE par son producteur (filtre créneau : ressources occupées) → `$nin`, cumulée
+      // avec une exclusion du même champ et compatible avec un `$in` (le backend applique les deux).
+      // Vide — rien d'occupé — : aucune clause, la liste reste entière.
+      if (Array.isArray(value) && value.length > 0) {
+        const existing = (filters[field]?.$nin as string[] | undefined) ?? [];
+        filters[field] = { ...(filters[field] ?? {}), $nin: Array.from(new Set([...existing, ...value])) };
+      }
+      continue;
+    }
     if (Array.isArray(value) && value.length > 0) {
       if (!filters[field]) {
         filters[field] = { $in: value };
@@ -107,7 +134,15 @@ export function searchByFieldsToQuery(
     }
     if (clauses.length > 0) answerAnd.push({ $or: clauses });
   }
-  if (answerAnd.length > 0) filters.$or = { $and: answerAnd };
+  // Un `$regex` par champ multi-valeurs (ses valeurs cochées en OU dans le motif), membre du MÊME ET
+  // que les facettes sur réponses : c'est le seul canal que le backend recopie brut jusqu'à Mongo.
+  // Sans filtre `token` coché, la sortie est identique octet pour octet à ce qu'elle était.
+  const tokenAnd: unknown[] = [];
+  for (const [field, values] of tokenGroups) {
+    tokenAnd.push({ [field]: { $regex: tokenMatchPattern(Array.from(new Set(values))) } });
+  }
+  const andClauses = [...answerAnd, ...tokenAnd];
+  if (andClauses.length > 0) filters.$or = { $and: andClauses };
 
   return { filters, locality, sourceKeys, searchTarget };
 }
