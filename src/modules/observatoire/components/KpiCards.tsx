@@ -1,9 +1,21 @@
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
-import type { DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
+import type { DataObservatorySectionProps, DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
 import { TOKEN_TINT_CLASSES, dimensionLabel, type LabelMaps } from "../dimensions";
 import { computeKpiValue } from "../dashboard";
+import type { ReservationHours } from "@/modules/search/lib/reservationHours";
+
+type KpiColumns = NonNullable<DataObservatorySectionProps["kpiColumns"]>;
+
+/** Colonnes dès 1024 px quand la config les fixe (`kpiColumns`). Classes ÉCRITES EN ENTIER : Tailwind
+ *  ne génère que celles qu'il lit dans le code ; le `Record` oblige à couvrir chaque valeur du schéma. */
+const LG_COLUMNS: Record<KpiColumns, string> = {
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-5",
+  6: "lg:grid-cols-6",
+};
 
 /** Taille de police adaptée à la longueur de la valeur. */
 function valueClass(value: string): string {
@@ -49,6 +61,10 @@ interface KpiCardsProps {
   kpis: readonly KpiDef[];
   /** Libellés canoniques (dimensions à `keyPaths`). */
   labels?: LabelMaps;
+  /** Heures réservées sur `data`, pour les KPI `reservationHours` — absentes pendant le chargement. */
+  reservationHours?: ReservationHours;
+  /** Cartes par ligne dès 1024 px (`kpiColumns`) ; absent = remplissage automatique. */
+  columns?: KpiColumns;
   /**
    * Densité de rendu. `cards` (défaut) = une carte par indicateur, pour une
    * page d'observatoire où le tableau de bord EST le sujet. `inline` = une
@@ -59,7 +75,7 @@ interface KpiCardsProps {
   layout?: "cards" | "inline";
 }
 
-export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: KpiCardsProps) {
+export function KpiCards({ data, dimensions, kpis, labels, reservationHours, columns, layout = "cards" }: KpiCardsProps) {
   const t = useT("modules/observatoire");
 
   const entries = kpis.map((def, i) => ({
@@ -72,7 +88,7 @@ export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: K
         : def.dimension
           ? dimensionLabel(t, dimensions, def.dimension)
           : "",
-    value: computeKpiValue(def, data, dimensions, labels),
+    value: computeKpiValue(def, data, dimensions, labels, reservationHours),
     accentClasses: TOKEN_TINT_CLASSES[def.accent ?? "primary"],
   }));
 
@@ -90,7 +106,9 @@ export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: K
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
+    <div
+      className={`grid grid-cols-2 md:grid-cols-3 gap-4 ${columns ? LG_COLUMNS[columns] : "lg:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]"}`}
+    >
       {entries.map((e) => (
         <KpiCard
           key={e.key}

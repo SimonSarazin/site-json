@@ -91,7 +91,10 @@ export const ColorTokenSchema = z.enum([
 
 /** KPI déclaratif : une FORME de calcul appliquée à une dimension. */
 export const KpiDefSchema = z.object({
-  kind: z.enum(["count", "distinct", "percentTrue", "valueSplit", "top", "sum", "avg"]),
+  /** `reservationHours` ne lit aucune dimension : il somme les heures réservées sur les items
+   *  affichés, d'après le formulaire de la fiche (`rowAction.preview.reservations`) — lu par la
+   *  section `data-observatory` seule. */
+  kind: z.enum(["count", "distinct", "percentTrue", "valueSplit", "top", "sum", "avg", "reservationHours"]),
   /** Dimension consommée (requise sauf pour `count`). */
   dimension: z.string().optional(),
   /** `valueSplit` : valeur comptée (affiché « n / total−n »). */
@@ -101,8 +104,11 @@ export const KpiDefSchema = z.object({
   /** Nom d'icône lucide (kebab-case) — rendu via DynamicIcon. */
   icon: z.string().optional(),
   accent: ColorTokenSchema.optional(),
-  /** Unité affichée après la valeur (`sum`/`avg` — ex. "m²"). */
+  /** Unité affichée après la valeur (`sum`/`avg`/`reservationHours` — ex. "m²"). */
   unit: z.string().optional(),
+  /** `reservationHours` : heures par semaine (`weekly`, défaut) ou cumulées sur la période des
+   *  réservations (`cumulative`). */
+  period: z.enum(["weekly", "cumulative"]).optional(),
 });
 export type KpiDef = z.infer<typeof KpiDefSchema>;
 
