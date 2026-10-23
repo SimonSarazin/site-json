@@ -283,6 +283,12 @@ footer nav { font-family: var(--font-serif); }
      commentaire/parent62-unite-couleurs-home.md. Fixes clair/sombre. */
   --p62-marine: #2c3e50;
   --p62-turquoise: #4ecdc4;
+  /* Encre des pastilles « texte » en marine (« Vous êtes… », territoires, « À la une ») : sans fond,
+     posées à même le fond de PAGE — qui, lui, suit le mode (`--background`). `--p62-marine` reste fixe
+     clair/sombre (couleur de marque, cf. ci-dessus) ; cette variable-ci en hérite en clair mais bascule
+     blanc en sombre (bloc `.dark` plus bas), où `--background` est un marine quasi identique en teinte
+     et en clarté (oklch 0.22 250 vs #2c3e50 ≈ oklch 0.28 250) — le texte y disparaissait. */
+  --p62-pastille-encre: var(--p62-marine);
 
   /* Case « Parent » du bloc « Vous êtes… » (accueil) : fond plein vert de marque et son texte noir,
      le plus lisible sur ce vert : 7,56:1 (AAA). Le blanc n'y tient que 2,78:1, sous AA. Fixes clair/sombre. */
@@ -310,6 +316,7 @@ footer nav { font-family: var(--font-serif); }
   --p62-map-bg-from: #146e60;
   --p62-map-bg-to: #567a62;
   --p62-map-bg-encre: #ffffff;
+  --p62-pastille-encre: #ffffff;
 }
 
 /* Panneau sombre de la bande « Votre territoire » (charte parent62.org). */
@@ -320,6 +327,60 @@ footer nav { font-family: var(--font-serif); }
 .p62-deep h2 {
   color: #4fc3c3;
   text-align: center;
+}
+
+/* Section « Zoom sur le réseau » (accueil, `articleTeaser` id="zoom-reseau") : demande explicite d'Open
+   Sans sur le titre de bandeau ET le titre de chaque carte d'actualité, SCOPÉ à cette seule section — pas
+   `theme.typography` (s'applique déjà à tout le site). Le `id` de la section est rendu tel quel sur le
+   <section> DOM (`ArticleTeaser.tsx`), donc ciblable sans changement de composant.
+   - `h2` : le badge de titre porte `font-serif` (`sectionBadgeClass`, classe partagée) → sans cette
+     règle il hériterait de Playpen Sans (actuel `--font-serif` du thème) au lieu d'Open Sans.
+   - `h3` : le titre de chaque carte (`TeaserCard`) n'a pas de classe de police propre, il hérite déjà du
+     `--font-sans` ambiant (Open Sans, cf. `theme.typography`) — règle posée ici en EXPLICITE pour ne plus
+     en dépendre si `theme.typography.sans` change un jour. */
+#zoom-reseau h2,
+#zoom-reseau h3 {
+  font-family: "Open Sans", sans-serif;
+}
+
+/* 9 pages `/territoire/*` : rangée agenda+acteurs (gridLayout 2 colonnes, §9sexagies de
+   doc-projets/parent62.md). Demande explicite d'aligner le rayon des cartes événement de l'agenda
+   sur celui de la carte des acteurs voisine. `--radius` est posé par `theme.borderRadius.base` de
+   CETTE config (`1rem` sur parent62, PAS le défaut Tailwind) — une valeur en dur (`0.25rem`, posée
+   ici en 1ʳᵉ intention) divergeait donc du jeton réel du thème une fois vérifiée en navigateur
+   (`getComputedStyle`, 21/10/2026) : corrigée en `var(--radius)`, qui suit le thème si la valeur
+   change un jour. `CardEvent.tsx` est partagé par TOUT le site — jamais touché ici, SCOPÉ par CSS
+   via l'id de la section agenda (`/territoire/<slug>-agenda`, rendu tel quel sur le <section> DOM
+   par `AgendaSection.tsx`) : sélecteur par attribut plutôt que 9 règles — aucune autre section de
+   la config ne porte un id qui commence par `/territoire/` ET finit par `-agenda`. DEUX variantes
+   de carte à couvrir (vérifié en lisant `CardEvent.tsx`, une image de territoire n'ayant pas de
+   visuel) :
+   - SANS image (`EventCardPlain`, le cas réel ici) : shadcn `<Card>` (`data-slot="card"`, qui pose
+     `rounded-xl` par défaut, jamais surchargé par ce composant) ;
+   - AVEC image : `<div class="... h-72 rounded-xl ...">` brut, sans `data-slot`. */
+section[id^="/territoire/"][id$="-agenda"] [data-slot="card"],
+section[id^="/territoire/"][id$="-agenda"] .h-72.rounded-xl {
+  border-radius: var(--radius);
+}
+
+/* 9 pages `/territoire/*` : section « Les communes du territoire » (accordéon, 2ᵉ section de la
+   page depuis le 21/10, cf. §9septuagies de doc-projets/parent62.md). Demande explicite : même
+   couleur que le bandeau hero (1ʳᵉ section, `html`, fond plein `var(--territoire-<slug>)`) —
+   `bg:"page-accent"` (conservé en config) ne pose qu'un ALPLAT LÉGER (`--page-accent-soft`,
+   `sectionBg.ts`), pas la couleur pleine du bandeau. `--page-accent` (posé sur le `<main>` par
+   `pageAccentVars`, depuis `page.accent` — déjà réglé à `var(--territoire-<slug>)` sur ces 9 pages)
+   porte la couleur PLEINE : un seul sélecteur suffit pour les 9 territoires, pas de couleur en dur.
+   Spécificité (2 attributs + balise) > la classe Tailwind `bg-[var(--page-accent-soft,…)]`, pas
+   besoin de `!important`. Le texte (titre de l'accordéon) vit sur `bg-card` à l'intérieur, jamais
+   directement sur ce fond — aucun ajustement de contraste à faire ici.
+   `padding-top` réduit (`py-16` du composant = 4rem en haut ET en bas) : même couleur que le
+   bandeau hero juste au-dessus (qui porte déjà son propre `py-14` ≈ 3,5rem en bas), les deux
+   `padding` cumulés créaient un vide qui les lisait comme deux bandes distinctes au lieu d'une
+   seule. Seul `padding-top` est réduit — `padding-bottom` reste à 4rem, c'est lui qui sépare
+   proprement cette section de la suivante (couleur différente). */
+section[id^="/territoire/"][id$="-communes"] {
+  background: var(--page-accent, transparent);
+  padding-top: 0.5rem;
 }
 
 /* Bulle territoire : cercle plein coloré (taille via --s), libellé centré. */

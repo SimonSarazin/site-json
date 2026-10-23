@@ -577,6 +577,104 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     );
   }
 
+  // En-tête `customHeader` (titre + compteur + boutons de bascule) — SOURCE UNIQUE, réutilisée dans
+  // la vue liste ET la vue carte. Avant cette extraction, ce bloc ne vivait que dans la branche
+  // liste : passer `defaultViewMode: "map"` avec un `customHeader` (ex. la carte des acteurs d'un
+  // territoire, parent62) perdait le titre, invisible jusqu'au retour en liste.
+  //
+  // Fonction (pas une simple valeur) À CAUSE de `hideMapToggle` (relecture MR, bloquant,
+  // 23/10/2026) : dans la branche carte, `panelViewSwitch("map")` pose DÉJÀ un bouton « Voir en
+  // liste » flottant dans le coin — le propre bouton « Carte » de cet en-tête y fait doublon (actif,
+  // il ramène aussi à la liste). Pas opt-in : 20 sections `searchProStatic` à `customHeader` +
+  // `enableMap` dans 9 configs du parc héritaient de ce doublon. Dans la branche liste, en revanche,
+  // ce bouton reste l'UNIQUE chemin vers la carte (pas de `panelViewSwitch` flottant là) — d'où le
+  // paramètre plutôt qu'un retrait pur et simple.
+  const customHeaderBar = (hideMapToggle?: boolean) => customHeader && (
+    // Ni `container` ni marge latérale : l'en-tête s'aligne sur les bords de la grille de
+    // résultats, qui remplit ce même bloc. Un `container` (max 1280) l'aurait rentré de 64 px à
+    // 1440 — titre et cartes ne commençaient pas au même bord.
+    <div className="flex justify-between items-center mb-3">
+      <div>
+        {customHeader.title && (
+          <h2 className="text-2xl font-extrabold text-foreground">
+            {typeof customHeader.title === "string"
+              ? customHeader.title
+              : t(customHeader.title)}
+            {(() => {
+              // En mode thematics, le compteur reflète le nombre de
+              // thématiques (pas les orgas du moteur de recherche).
+              const headerCount = viewMode === "thematics" ? thematicCount : totalCount;
+              return headerCount !== undefined && headerCount !== null && headerCount > 0 ? (
+                <span className="ml-2 text-base font-normal text-muted-foreground">
+                  ({headerCount})
+                </span>
+              ) : null;
+            })()}
+          </h2>
+        )}
+      </div>
+      <div className="flex items-center space-x-2">
+        {enableMap && !hideMapToggle && (
+          <Button
+            variant={viewMode === mapView ? "default" : "outline"}
+            size="sm"
+            aria-label={mapView === "split" ? t("Liste + carte") : t("Carte")}
+            onClick={() => (viewMode === mapView ? setViewMode("list") : openMapView())}
+          >
+            <Map className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
+          </Button>
+        )}
+        {observatoryButtonElement}
+        {addButtonElement}
+        {customHeader.linkText && viewAllHref && (
+          // `text-foreground` : le lien est un <a> (asChild) → sinon il hérite
+          // du style global `a { text-primary }` et tranche avec les autres boutons.
+          <Button asChild variant="outline" size="sm" className="text-foreground">
+            <Link to={viewAllHref}>
+              {customHeader.linkIcon ? (
+                <DynamicIcon name={customHeader.linkIcon} className="h-4 w-4 sm:mr-1" />
+              ) : (
+                <ArrowRight className="h-4 w-4 sm:mr-1" />
+              )}
+              <span className="hidden sm:inline">
+                {typeof customHeader.linkText === "string"
+                  ? customHeader.linkText
+                  : t(customHeader.linkText)}
+              </span>
+            </Link>
+          </Button>
+        )}
+        {enableRegions && (
+          <Button
+            variant={viewMode === "regions" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode(viewMode === "regions" ? "list" : "regions")}
+          >
+            {viewMode === "regions" ? (
+              <><List className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Liste")}</span></>
+            ) : (
+              <><MapPin className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Carte")}</span></>
+            )}
+          </Button>
+        )}
+        {showDetailedViewToggle && viewMode !== "regions" && viewMode !== "thematics" && (
+          <Button
+            variant={isDetailedView ? "default" : "outline"}
+            size="sm"
+            onClick={() => setIsDetailedView(!isDetailedView)}
+          >
+            {isDetailedView ? (
+              <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
+            ) : (
+              <><List className="mr-2 h-4 w-4" /> Détails</>
+            )}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div
       className="pageContent flex-1 w-full h-full overflow-hidden"
@@ -897,12 +995,37 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             </div>
           </div>
         ) : viewMode === "map" && enableMap ? (
-          /* Hauteur EXPLICITE (MAP_VIEW_HEIGHT) : l'écran visible sous la barre
-             de navigation. Pas de `flex-1` : dans cette colonne flex sans hauteur
-             définie, sa base de 0 % ferait ignorer la hauteur, et la boîte — dont
-             la carte est en absolu — s'effondrerait. */
-          <div ref={mapViewRef} className={`relative w-full overflow-hidden ${MAP_VIEW_HEIGHT}`}>
-            <div className="absolute top-2 right-2 z-50">{panelViewSwitch("map")}</div>
+          <>
+            {/* `customHeaderBar` manquait ici avant cette correction : son seul autre point de
+                rendu est la branche liste ci-dessous, donc un `customHeader.title` restait
+                invisible tant que la vue carte était affichée (cas `defaultViewMode: "map"`). Padding
+                posé ICI (`p-4 pb-0`) plutôt que sur la boîte de la carte elle-même, qui n'en a pas.
+                `hideMapToggle` : le bouton « Voir en liste » de `panelViewSwitch("map")` (ci-dessous)
+                couvre déjà le retour à la liste — pas la peine d'un second bouton « Carte » ici. */}
+            {customHeader && <div className="p-4 pb-0">{customHeaderBar(true)}</div>}
+            {/* Hauteur EXPLICITE (MAP_VIEW_HEIGHT) : l'écran visible sous la barre
+               de navigation. Pas de `flex-1` : dans cette colonne flex sans hauteur
+               définie, sa base de 0 % ferait ignorer la hauteur, et la boîte — dont
+               la carte est en absolu — s'effondrerait.
+               Exception `fillParent` : le parent (ex. `gridLayout` en `align:"stretch"`) impose
+               déjà une hauteur contrainte — la colonne flex ambiante (`className="flex flex-col
+               flex-1 w-full h-full overflow-hidden"`, plus haut dans ce composant) a alors une
+               vraie base, et `flex-1` aligne la carte sur elle plutôt que sur l'écran.
+               `min-h-[20rem]` PLANCHER, remplace un `min-h-0` insuffisant (relecture MR, bloquant,
+               23/10/2026) : `fillParent` suppose un
+               voisin de rangée qui lui donne une hauteur via `gridLayout.align:"stretch"` — mais
+               `align-items:stretch` sur une grille CSS ne joue qu'ENTRE colonnes de la MÊME rangée. Sous
+               `sm` (640px), `GridLayoutSection` empile les colonnes en `grid-cols-1` : chaque section
+               devient alors SEULE dans sa propre rangée implicite, sans personne à qui s'aligner — la
+               carte (contenu `position:absolute`, donc 0 hauteur intrinsèque) s'effondrait à 0px sur
+               mobile. Le même plancher protège aussi le cas desktop d'un agenda voisin très court (ex.
+               aucun événement à venir) : sans lui la rangée entière se tassait sur la hauteur de l'état
+               vide de l'agenda, quelques dizaines de pixels. */}
+            <div
+              ref={mapViewRef}
+              className={`relative w-full overflow-hidden ${props.fillParent ? "flex-1 min-h-[20rem]" : MAP_VIEW_HEIGHT}`}
+            >
+              <div className="absolute top-2 right-2 z-50">{panelViewSwitch("map")}</div>
 
             {/* Progression du chargement par pages + alerte plafond. */}
             <MapProgress
@@ -942,7 +1065,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             ) : (
               <MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />
             )}
-          </div>
+            </div>
+          </>
         ) : viewMode === "graph" && enableGraph ? (
           <div className="relative flex-1 h-full w-full overflow-hidden p-4">
             {loadingMap && (
@@ -996,92 +1120,22 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             )}
           </div>
         ) : (
-          <div className="p-4 overflow-y-auto mx-auto w-full max-w-[1536px]">
-            {customHeader && (
-              // Ni `container` ni marge latérale : l'en-tête s'aligne sur les bords de la grille
-              // de résultats, qui remplit ce même bloc. Un `container` (max 1280) l'aurait rentré
-              // de 64 px à 1440 — titre et cartes ne commençaient pas au même bord.
-              <div className="flex justify-between items-center mb-3">
-                <div>
-                  {customHeader.title && (
-                    <h2 className="text-2xl font-extrabold text-foreground">
-                      {typeof customHeader.title === "string"
-                        ? customHeader.title
-                        : t(customHeader.title)}
-                      {(() => {
-                        // En mode thematics, le compteur reflète le nombre de
-                        // thématiques (pas les orgas du moteur de recherche).
-                        const headerCount = viewMode === "thematics" ? thematicCount : totalCount;
-                        return headerCount !== undefined && headerCount !== null && headerCount > 0 ? (
-                          <span className="ml-2 text-base font-normal text-muted-foreground">
-                            ({headerCount})
-                          </span>
-                        ) : null;
-                      })()}
-                    </h2>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  {enableMap && (
-                    <Button
-                      variant={viewMode === mapView ? "default" : "outline"}
-                      size="sm"
-                      aria-label={mapView === "split" ? t("Liste + carte") : t("Carte")}
-                      onClick={() => (viewMode === mapView ? setViewMode("list") : openMapView())}
-                    >
-                      <Map className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">{mapView === "split" ? t("Liste + carte") : t("Carte")}</span>
-                    </Button>
-                  )}
-                  {observatoryButtonElement}
-                  {addButtonElement}
-                  {customHeader.linkText && viewAllHref && (
-                    // `text-foreground` : le lien est un <a> (asChild) → sinon il hérite
-                    // du style global `a { text-primary }` et tranche avec les autres boutons.
-                    <Button asChild variant="outline" size="sm" className="text-foreground">
-                      <Link to={viewAllHref}>
-                        {customHeader.linkIcon ? (
-                          <DynamicIcon name={customHeader.linkIcon} className="h-4 w-4 sm:mr-1" />
-                        ) : (
-                          <ArrowRight className="h-4 w-4 sm:mr-1" />
-                        )}
-                        <span className="hidden sm:inline">
-                          {typeof customHeader.linkText === "string"
-                            ? customHeader.linkText
-                            : t(customHeader.linkText)}
-                        </span>
-                      </Link>
-                    </Button>
-                  )}
-                  {enableRegions && (
-                    <Button
-                      variant={viewMode === "regions" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setViewMode(viewMode === "regions" ? "list" : "regions")}
-                    >
-                      {viewMode === "regions" ? (
-                        <><List className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Liste")}</span></>
-                      ) : (
-                        <><MapPin className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Carte")}</span></>
-                      )}
-                    </Button>
-                  )}
-                  {showDetailedViewToggle && viewMode !== "regions" && viewMode !== "thematics" && (
-                    <Button
-                      variant={isDetailedView ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setIsDetailedView(!isDetailedView)}
-                    >
-                      {isDetailedView ? (
-                        <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
-                      ) : (
-                        <><List className="mr-2 h-4 w-4" /> Détails</>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
+          /* Vue liste (branche par défaut, inclut aussi « regions »/« thematics ») : hauteur libre,
+             qui grandit avec le contenu — SAUF `fillParent`.
+             `flex-1 min-h-0` SEUL ne suffit pas ici (contrairement à la vue carte ci-dessus) : cette
+             liste est du contenu EN FLUX NORMAL (pas `position:absolute` comme la carte Leaflet), donc
+             sa hauteur NATURELLE (tout le contenu, sans plafond) entre dans le calcul de la rangée
+             CSS Grid du `gridLayout` parent — une grille à rangées implicites (`auto`) se dimensionne
+             sur le CONTENU le plus haut, jamais l'inverse : une longue liste fait grandir TOUTE la
+             rangée (donc l'agenda voisin aussi) au lieu d'être plafonnée à sa hauteur. D'où le
+             `max-h-[32rem]` explicite, qui plafonne la contribution de CET élément au calcul de la
+             rangée (mesuré 21/10/2026 : la rangée agenda+acteurs fait ~512px/32rem sur un agenda à
+             6 événements — approximatif, pas un miroir pixel-perfect du voisin, CSS seul ne peut pas
+             lire la hauteur rendue d'un frère sans JS). */
+          <div className={`p-4 mx-auto w-full max-w-[1536px] overflow-y-auto ${props.fillParent ? "flex-1 min-h-0 max-h-[32rem]" : ""}`}>
+            {/* Pas de `hideMapToggle` ici : cette branche (liste/regions/thematics) n'a PAS de
+                `panelViewSwitch` flottant — ce bouton « Carte » reste l'UNIQUE chemin vers la carte. */}
+            {customHeaderBar()}
 
             {viewMode === "regions" && (
               <ClientOnly>

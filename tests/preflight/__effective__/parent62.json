@@ -501,6 +501,61 @@
     "/territoire/arrageois/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Arrageois"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/arrageois/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -541,7 +596,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/arrageois/searchProStatic#1": {
+    "/territoire/arrageois/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -595,6 +650,61 @@
     "/territoire/artois/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Artois"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/artois/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -635,7 +745,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/artois/searchProStatic#1": {
+    "/territoire/artois/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -689,6 +799,61 @@
     "/territoire/audomarois/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Audomarois"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/audomarois/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -729,7 +894,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/audomarois/searchProStatic#1": {
+    "/territoire/audomarois/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -783,6 +948,61 @@
     "/territoire/boulonnais/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Boulonnais"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/boulonnais/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -823,7 +1043,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/boulonnais/searchProStatic#1": {
+    "/territoire/boulonnais/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -877,6 +1097,61 @@
     "/territoire/calaisis/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Calaisis"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/calaisis/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -917,7 +1192,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/calaisis/searchProStatic#1": {
+    "/territoire/calaisis/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -971,6 +1246,61 @@
     "/territoire/entre-mer-et-terres/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Entre Mer et Terres"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/entre-mer-et-terres/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -1011,7 +1341,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/entre-mer-et-terres/searchProStatic#1": {
+    "/territoire/entre-mer-et-terres/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -1065,6 +1395,61 @@
     "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Hénin Carvin"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -1105,7 +1490,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic#1": {
+    "/territoire/familles-en-sol-mineur-henin-carvin/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -1159,6 +1544,61 @@
     "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Familles en sol mineur Lens Liévin"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -1199,7 +1639,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic#1": {
+    "/territoire/familles-en-sol-mineur-lens-lievin/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -1253,6 +1693,61 @@
     "/territoire/ternois-bruaysis/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
+          "organizations"
+        ],
+        "sourceKey": [
+          "parent62"
+        ],
+        "costumSlug": "parent62",
+        "defaultFilters": {
+          "tags": {
+            "$nin": [
+              "Partenaires"
+            ]
+          },
+          "territoires": {
+            "$in": [
+              "Ternois Bruaysis"
+            ]
+          }
+        },
+        "defaultFields": [
+          "name",
+          "slug",
+          "type",
+          "collection",
+          "source",
+          "reference",
+          "shortDescription",
+          "description",
+          "email",
+          "telephone",
+          "url",
+          "address",
+          "geo",
+          "geoPosition",
+          "territoires",
+          "categoryThematic",
+          "typeAction",
+          "publicCible",
+          "profilThumbImageUrl",
+          "profilMediumImageUrl",
+          "profilImageUrl"
+        ],
+        "searchBy": [
+          "name",
+          "shortDescription",
+          "description"
+        ],
+        "defaultSortBy": {
+          "name": 1
+        },
+        "indexStepList": 4
+      }
+    },
+    "/territoire/ternois-bruaysis/searchProStatic#1": {
+      "baseParams": {
+        "defaultTypes": [
           "poi"
         ],
         "sourceKey": [
@@ -1293,7 +1788,7 @@
         "indexStepList": 3
       }
     },
-    "/territoire/ternois-bruaysis/searchProStatic#1": {
+    "/territoire/ternois-bruaysis/searchProStatic#2": {
       "baseParams": {
         "defaultTypes": [
           "projects"
@@ -1371,9 +1866,13 @@
           "parent62"
         ],
         "costumSlug": "parent62",
-        "defaultTags": [
-          "Partenaires"
-        ],
+        "defaultFilters": {
+          "tags": {
+            "$in": [
+              "Partenaires"
+            ]
+          }
+        },
         "defaultFields": [
           "name",
           "slug",
@@ -1438,6 +1937,7 @@
           "address",
           "geo",
           "geoPosition",
+          "territoires",
           "categoryThematic",
           "typeAction",
           "publicCible",

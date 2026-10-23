@@ -18,8 +18,6 @@ import type { ArticleData } from "../hooks/useArticle";
 
 const DEFAULT_LIMIT = 6;
 const BASE = "/blog";
-/** Même découpe asymétrique que la vignette de `FeaturedCarouselSlide` (carrousel « à la une »). */
-const PHOTO_ROUNDING = "rounded-[0px_60px_0_60px]";
 
 function TeaserSkeleton() {
   return (
@@ -27,7 +25,7 @@ function TeaserSkeleton() {
       <span className="sr-only">Chargement…</span>
       {Array.from({ length: DEFAULT_LIMIT }).map((_, i) => (
         <div key={i} className="relative flex items-start gap-4">
-          <Skeleton className={cn("z-10 h-28 w-28 shrink-0", PHOTO_ROUNDING)} />
+          <Skeleton className="z-10 h-28 w-28 shrink-0" />
           <div className="flex-1 space-y-2 pt-1">
             <Skeleton className="h-4 w-4/5" />
             <Skeleton className="h-4 w-3/5" />
@@ -45,9 +43,11 @@ interface TeaserCardProps {
   ctaLabel: string;
   accentColor?: string;
   accentTextColor?: string;
+  /** `cover` (défaut, historique) ou `contain` — cf. `ArticleTeaserSectionSchema.imageFit`. */
+  imageFit?: "cover" | "contain";
 }
 
-function TeaserCard({ article, href, ctaLabel, accentColor, accentTextColor }: TeaserCardProps) {
+function TeaserCard({ article, href, ctaLabel, accentColor, accentTextColor, imageFit = "cover" }: TeaserCardProps) {
   const image = article.profilMediumImageUrl || article.profilImageUrl;
   // Fond et encre de l'accent, pilotés par la config (cf. `accentStyle`).
   const styleAccent = accentStyle(accentColor, accentTextColor);
@@ -56,9 +56,19 @@ function TeaserCard({ article, href, ctaLabel, accentColor, accentTextColor }: T
       to={href}
       className="group relative flex items-start gap-4 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
-      <div className={cn("z-10 h-28 w-28 shrink-0 overflow-hidden bg-muted", PHOTO_ROUNDING)}>
+      <div className="z-10 h-28 w-28 shrink-0 overflow-hidden bg-muted">
         {image
-          ? <OptimizedImage src={image} alt="" width={224} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          ? (
+            <OptimizedImage
+              src={image}
+              alt=""
+              width={224}
+              className={cn(
+                "h-full w-full transition-transform duration-300 group-hover:scale-105",
+                imageFit === "contain" ? "object-contain" : "object-cover",
+              )}
+            />
+          )
           : <div className="flex h-full w-full items-center justify-center text-muted-foreground/70">—</div>}
       </div>
       <div className="min-w-0 flex-1 pt-1">
@@ -117,8 +127,9 @@ function Teaser({ props }: { props: ArticleTeaserSectionProps }) {
           article={a}
           href={articleHref(a, BASE)}
           ctaLabel={ctaLabel}
-          accentColor={props.accentColor}
-          accentTextColor={props.accentTextColor}
+          accentColor={props.itemAccentColor ?? props.accentColor}
+          accentTextColor={props.itemAccentTextColor ?? props.accentTextColor}
+          imageFit={props.imageFit}
         />
       ))}
     </div>
