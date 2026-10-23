@@ -43,6 +43,18 @@ export default function DetailsModeDialog({ openDetails, setOpenDetails, item, p
               inatteignable au clic. */}
           <DialogContent
             aria-describedby={undefined}
+            // Sans le preventDefault, Radix pose le focus initial sur le premier élément focusable du
+            // CONTENU (une preview peut en avoir un dès son en-tête, ex. le bouton « agrandir l'image »
+            // de `PreviewTestimonialBubble`) plutôt que sur le dialogue lui-même. MAIS un preventDefault
+            // seul laisse le focus nulle part : dans le FocusScope de Radix, tout le repli (y compris le
+            // focus du conteneur) vit dans le `if (!defaultPrevented)` — empêcher l'événement désarme
+            // aussi ce repli. Repris de `DiscussionModalShell.tsx` (seul precedent MODAL du repo —
+            // `CommonTableField`/`MentionInput`/`TagsInput` sont des popovers sur un champ qui doit
+            // garder SON focus, pas des dialogues) : on repose le focus explicitement sur le conteneur.
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              (e.currentTarget as HTMLElement | null)?.focus();
+            }}
             className={cn(
               "p-0 gap-0 max-h-[90vh] overflow-hidden",
               "[&>[data-slot=dialog-close]]:z-20 [&>[data-slot=dialog-close]]:rounded-full [&>[data-slot=dialog-close]]:bg-background/80",

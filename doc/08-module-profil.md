@@ -797,8 +797,9 @@ carré transparent (PNG, image entière centrée — `padFileToSquare`) : elle s
 `object-cover` hors de l'en-tête et le backend en tire une miniature 50×50 recadrée au centre. Le carré
 est plafonné à 1024 px (`MAX_SQUARE_SIDE`, image réduite en gardant ses proportions) : sans plafond, une
 photo 4000×3000 donnait un PNG de plusieurs dizaines de Mo, et Safari iOS refuse d'exporter un canvas
-au-delà de 16,7 Mpx. La photo est d'abord allégée (`lightenImage`, comme la bannière) : une photo déjà
-carrée, ou dont la mise au carré échoue, part donc allégée et non à pleine taille. Après un échec d'envoi,
+au-delà de 16,7 Mpx. La mise au carré plafonnant déjà la taille, la photo n'est allégée
+(`lightenImage`, comme la bannière) que lorsqu'elle la rend telle quelle — photo déjà carrée, ou mise au
+carré en échec : un seul passage canvas dans le cas courant, jamais un envoi à pleine taille. Après un échec d'envoi,
 le champ fichier est remis à zéro pour qu'on puisse rechoisir la même photo. La bannière,
 elle, est allégée avant l'envoi (`lightenImage` : au-delà de 1 Mo, plus grand côté ramené à 1920 px,
 JPEG 0,85) et sa zone de recadrage (`cropW`/`cropH`) suit les dimensions du fichier envoyé (`fitWithin`) :
@@ -1308,9 +1309,13 @@ PROVENANCE de la fiche (`source.key`). Quand la fiche vient d'ailleurs — cas d
 tiers-lieux.org a `source.key: "laRosee"`, `"franceTierslieux"`… —, le costum du FORMULAIRE n'est jamais
 chargé, `setCostumScope` épingle un contexte NU (aucun champ) et l'enregistrement rejette
 `holderOrganization` (59 lieux sur 59 mesurés). Dans ce mode, `pinSchemaCostumScope` appelle d'abord
-`entity.loadCostumScope(slug)` (charge le costum du formulaire en live, cache de session, puis épingle) et
-ne retombe sur `setCostumScope` que si ce chargement échoue ou ne rend rien. Une fiche dont la provenance
-EST le costum du formulaire (parent62) ne dépendait pas de ce chargement. Hors mode live : inchangé.
+`entity.loadCostumScope(slug)` (charge le costum du FORMULAIRE en live, dédupliqué par la lib dans le TTL
+du cache, 5 min), PUIS `setCostumScope(slug, { pinSchema: true })` dans tous les cas : lui seul passe
+`serverData.type` et garde la variante du sous-type de l'entité (`loadCostumScope` résout par slug et
+collection). Un échec du chargement est non bloquant : l'épingle est posée quand même, et si le cache est
+resté froid, l'enregistrement échoue sur l'erreur de champ. Même cause sur le formulaire citoyen SSBE
+(`typepro` refusé). Une fiche dont la provenance EST le costum du formulaire (parent62) ne dépendait pas de
+ce chargement. Hors mode live : inchangé (registre bundlé, aucun appel réseau).
 
 ---
 

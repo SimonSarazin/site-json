@@ -93,5 +93,8 @@
   "Cette page est réservée.": "Cette page est réservée.",
   "Votre compte a été créé. Vous pourrez vous connecter dès que vous aurez validé votre adresse e-mail (un message vient de vous être envoyé).": "Votre compte a été créé. Vous pourrez vous connecter dès que vous aurez validé votre adresse e-mail (un message vient de vous être envoyé).",
   "Le champ « {{field}} » est requis": "Le champ « {{field}} » est requis",
-  "Sélectionnez une option": "Sélectionnez une option"
+  "Sélectionnez une option": "Sélectionnez une option",
+  "Connexion en cours…": "Connexion en cours…",
+  "Connexion annulée.": "Connexion annulée.",
+  "Lien de connexion invalide ou expiré.": "Lien de connexion invalide ou expiré."
 }

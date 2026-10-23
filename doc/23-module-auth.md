@@ -51,7 +51,7 @@ personnaliser textes, header/footer et SEO via la section `config.auth`.
 ```
 src/modules/auth/
   module.config.ts          { name: "auth", type: "core", enabled: true }
-  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 11 routes (10 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
+  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 12 routes (11 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
   index.ts                  barrel (composants, contexte, hooks, sections, schema…)
   i18n.ts                   addResourceBundle("fr"/"en", "modules/auth", …, true, true)
   i18n/{fr,en}.json
@@ -86,6 +86,7 @@ src/modules/auth/
     ValidateInvitationPage.tsx   passerelle d'invitation → inscription
     AcceptInvitationPage.tsx     réponse Accepter/Refuser d'une invitation par e-mail
     JoinByLinkPage.tsx           lien d'adhésion partageable (connect/ref/:ref)
+    SsoCallbackPage.tsx          retour SSO hors popup (sso/callback#code=…) → échange du code contre les JWT
   lib/
     reponseParMail.ts       lecture du lien Accepter/Refuser (lireSegment, lireReponse) + charge utile (chargeReponseParMail)
   sections/
@@ -228,6 +229,7 @@ une de ses routes. `src/modules/auth/routes.tsx:32-80` déclare :
 | `co2/person/validateinvitation/user/:user/validationKey/:validationKey` (+ splat `/*`) | `ValidateInvitationPage` | passerelle d'invitation vers l'inscription (compte *pending*) |
 | `co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*` | `AcceptInvitationPage` | réponse Accepter/Refuser reçue par e-mail : à une invitation, ou à une **demande** d'adhésion/d'administration (voir ci-dessous) |
 | `co2/link/connect/ref/:ref` | `JoinByLinkPage` | lien d'adhésion partageable (`costum.invitationLink`) |
+| `sso/callback` | `SsoCallbackPage` | retour SSO **hors popup** : code d'échange en fragment `#code=` (ou `#error=`), troqué contre les JWT (voir [SSO → Retour hors popup](#retour-hors-popup-ssocallback)) |
 
 Les deux formes (moderne et legacy) sont servies pour que les e-mails **déjà
 envoyés** restent valides quand le domaine d'un costum pointe sur site-json.
@@ -870,7 +872,12 @@ interface SSOAuthResult {
 
 `openSSOPopup(service)` :
 1. Ouvre une popup vers `{backendUrl}/co2/sso/services?authclient={service}&origin={origin}`
-   centrée (600×700).
+   centrée (600×700). L'URL porte aussi le **costum du site** — `costumSlug`, plus
+   `costumId`/`costumType` quand l'entité porteuse est résolue (`getSiteCostumContext`, même trio
+   que `register`) : un compte **créé** par le SSO est alors estampillé `source.key` comme une
+   inscription classique depuis ce site. Un site sans slug n'envoie rien (la sentinelle `default`
+   est neutralisée). Le contexte est lu via une ref, pour que `openSSOPopup` garde la même
+   identité quand l'entité se résout (l'auto-trigger de `LoginForm` l'a en dépendance).
 2. En cas de popup bloqué par le navigateur : résout immédiatement `{ success: false, error: "Popup bloqué par le navigateur" }`.
 3. Écoute `window.addEventListener("message")` ; filtre strictement sur
    `event.origin === backendOrigin` (sécurité CSRF).
@@ -886,9 +893,48 @@ interface SSOAuthResult {
    `useEffect` se contente de la déclencher si elle existe.
 
 Le hook est testé par `hooks/__tests__/useSSOAuth.test.ts` (Vitest + jsdom,
-`@testing-library/react`). Les cas couverts : ouverture popup, encodage service,
-popup bloqué, filtrage d'origine, payload SSO_AUTH_SUCCESS/ERROR, type inconnu
-ignoré, fermeture manuelle, apiClient null, cleanup au démontage.
+`@testing-library/react`). Les cas couverts : ouverture popup, encodage service
+(`URLSearchParams` : `provider%2Fwith+space`), popup bloqué, filtrage d'origine,
+payload SSO_AUTH_SUCCESS/ERROR, type inconnu ignoré, fermeture manuelle, apiClient
+null, cleanup au démontage.
+
+### Retour hors popup (`/sso/callback`)
+
+Le retour du provider n'arrive pas toujours dans la popup. Cas réel (federationDesCae,
+Keycloak avec vérification d'e-mail obligatoire) : à l'inscription, le lien « Verify email » du
+mail s'ouvre dans un **nouvel onglet**, sans `opener` — le backend ne pouvait rien poster et
+renvoyait l'accueil de Communecter, jetons perdus. Depuis la lib **1.0.203** :
+
+1. Le backend (legacy `co2/views/oauth/redirect.php`, Node `sso.routes.ts`) détecte l'absence
+   d'`opener` et renvoie le navigateur sur `<origin>/sso/callback#code=<code>` — un **code
+   d'échange** à usage unique (2 min), lié à l'origine du site, en **fragment** d'URL : jamais
+   envoyé au serveur, jamais journalisé. En erreur : `#error=<code provider>`.
+2. `SsoCallbackPage` lit le fragment, l'efface aussitôt de l'historique
+   (`history.replaceState(window.history.state, "", pathname)` — l'état react-router est conservé),
+   puis appelle `userApi.loginWithSsoCode(code)` (contrat `SSO_EXCHANGE`,
+   `POST /api/cocolight/ssoexchange`). Les `postActions` de l'endpoint posent les jetons et
+   émettent `userLoggedIn`, exactement comme un login classique ; la page redirige vers `/`.
+3. En échec : icône, message et bouton « Se connecter ». Le message vient du serveur
+   (`ApiResponseError` : code invalide, expiré, déjà utilisé, origine différente) ou d'une
+   traduction locale — le texte de `#error=` n'est **jamais** affiché tel quel (un lien forgé
+   afficherait n'importe quoi sous l'en-tête du site) ; seul `access_denied` est reconnu
+   (« Connexion annulée. »).
+
+L'onglet d'**origine** (celui qui a ouvert la popup) apprend la connexion par l'événement
+`storage` : `CocolightProvider` écoute la clé `cocolight_tokens_<baseURL du site>` — celle de
+**son** backend seulement —, recharge les jetons dans le client et rejoue `userLoggedIn`. La lib
+écrit l'access puis le refresh en deux écritures, donc deux événements : le second arrive
+connecté, et le refresh est adopté s'il diffère de celui déjà pris (sans ça, cet onglet vivait
+10 min sans refresh). La popup, elle, reste sur la page du provider : l'utilisateur la ferme, et
+`openSSOPopup` se résout en annulation silencieuse.
+
+Hors de ce cas, le flux popup est inchangé. Depuis un **autre appareil**, Keycloak confirme
+l'e-mail et s'arrête (« Your email address has been verified ») sans rediriger : la fenêtre
+d'origine, rechargée, reprend le flux — rien à faire côté site.
+
+**Déploiement** : la page est inerte tant que le backend ne redirige pas vers elle. Déployer
+site-json **avant ou avec** le legacy, sinon le repli tombe en 404. Côté legacy, l'origine du
+site doit être autorisée (`costum.host` en base ou `params['sso']['allowedOrigins']`).
 
 Pour le flux complet, voir aussi [API & Authentification](11-api-authentification.md#sso--single-sign-on).
 

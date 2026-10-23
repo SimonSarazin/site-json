@@ -88,6 +88,11 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
   useEffect(() => {
     onMarkerFocusRef.current = onMarkerFocus;
   }, [onMarkerFocus]);
+  /** Type de popup, en ref pour la même raison (lu par handleSelect). */
+  const popupTypeRef = useRef(mapConf?.popup?.type);
+  useEffect(() => {
+    popupTypeRef.current = mapConf?.popup?.type;
+  }, [mapConf?.popup?.type]);
   /** Idem pour l'action de popup surchargée : gardée en ref pour qu'un appelant
    *  qui recrée son handler à chaque rendu ne réinstancie pas handlePopupAction. */
   const onItemActionRef = useRef(onItemAction);
@@ -184,6 +189,14 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
     // Synchro carte→liste : clic marqueur → remonte l'id (highlight liste, mode split).
     const id = getEntryId(entry);
     if (id) onMarkerFocusRef.current?.(id);
+    // Popup d'un lieu (`resource-place`) : une LISTE, plus haute que la popup par défaut — au-dessus d'un
+    // repère situé haut dans la carte, elle débordait du cadre (coupée, services inatteignables au clic).
+    // On descend le repère près du bas de la carte pour lui laisser toute la hauteur.
+    const map = mapRef.current?.getMap();
+    if (map && popupTypeRef.current === "resource-place") {
+      const h = map.getContainer().clientHeight;
+      map.easeTo({ center: [coords[0], coords[1]], offset: [0, Math.max(0, h / 2 - 60)], duration: 300 });
+    }
     setSelected({ entry, lng: coords[0], lat: coords[1] });
   }, []);
 
@@ -449,6 +462,7 @@ export default function SearchMap({ results, card, preview, list, map: mapConf, 
                     // La conf de carte de CET item (règles `itemRules` comprises) : ses chips suivent la liste.
                     tagColors={selectedAction?.itemList?.card?.tagColors}
                     onAction={() => handlePopupAction(selected.entry)}
+                    onOpenItem={handlePopupAction}
                   />
                 </Suspense>
               </Popup>

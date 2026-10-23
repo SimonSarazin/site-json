@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
-import { ArrowRight, X } from "lucide-react";
+import { Suspense, useMemo, useState } from "react";
+import { lazy } from "vite-preload";
+import { ArrowRight, List, Map as MapIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavLink from "@/components/layout/NavLink";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
-import { getBaseUrl } from "@/lib/constant/common";
+import { ClientOnly } from "@/components/layout/ClientOnly";
 import "@/modules/search/i18n";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
@@ -21,33 +22,38 @@ import {
   type ActiveResourceParent,
 } from "../contexts/resourceDirectory";
 import FiltersSection from "./FiltersSection";
+import { useResourceDirectoryItems, type ResourceDirectorySource } from "../hooks/useResourceDirectoryItems";
+import MapSkeleton from "../components/MapSkeleton";
+import {
+  matchesResourceSearch,
+  resolveServicePoints,
+  resourceDisplayName,
+  groupServicesByPoint,
+} from "../lib/resourceDirectorySearch";
+import { getEntryCoords } from "../lib/searchMapSelection";
 import SearchListView from "../components/SearchListView";
 import SearchListSkeleton from "../components/SearchListSkeleton";
-import { useSearchQuery } from "../hooks/useSearchQuery";
-import { useResourceParentsQuery } from "../hooks/useResourceParentsQuery";
 import { searchByFieldsToQuery } from "../lib/searchByFieldsToQuery";
-import { canonicalSearchProStaticBaseParams } from "../lib/canonicalBaseParams";
-import { getEntryId } from "../lib/searchMapSelection";
-import {
-  PRICE_FILTER_GROUPS,
-  buildResourceDirectoryFilters,
-  parseResourceDirectoryItem,
-} from "../lib/resourceDirectory";
 import {
   CAPACITY_FILTER_RANGES,
   defaultOpenFilterGroups,
   matchesCapacity,
+  matchesTypologies,
   matchesZones,
   parentIdsFilter,
   resourceCapacity,
   selectedZones,
+  narrowResourceTypes,
   thematicParentIds,
 } from "../lib/resourceDirectoryFilters";
+import { PRICE_FILTER_GROUPS } from "../lib/resourceDirectory";
+import { useSearchParams } from "react-router";
+import { decodeCsvParam } from "../lib/urlCsv";
 
-const RD_LIST_PREFIX = "resource-directory-list";
-// L'éclatement « 1 salle = 1 réponse » de `getRessourceTL` fait qu'une page de N
-// answers ≠ N cartes : on charge l'ensemble (un annuaire de ressources est borné).
-const RD_PAGE_SIZE = 500;
+// Vue carte en lazy (vite-preload) : le chunk Leaflet/maplibre n'est chargé qu'au passage en carte.
+const SearchMapWrapper = lazy(() => import("../components/SearchMapWrapper"));
+const MAP_FILL = "absolute inset-0 z-10 rounded shadow overflow-hidden";
+
 
 /**
  * Section `coform-resource-directory` — annuaire à plat des ressources d'un
@@ -58,8 +64,8 @@ const RD_PAGE_SIZE = 500;
  * **3 facettes prix** CÔTÉ SERVEUR (heure / demi-journée / journée, calquées sur
  * Communecter — `priceFilters`, défaut true). En option : **réseaux thématiques**
  * du lieu porteur (`thematicFilter`, CÔTÉ SERVEUR via `parentId`), **capacité**
- * (`capacityFilter`) et **zone** du lieu porteur (`regionFilter`), CÔTÉ CLIENT.
- * Pas de recherche texte.
+ * (`capacityFilter`) et **zone** du lieu porteur (`regionFilter`), **recherche texte**
+ * (`searchFilter`) et **vue carte** (`showMap`), CÔTÉ CLIENT.
  */
 export default function CoformResourceDirectorySection({
   id,
@@ -91,41 +97,31 @@ export default function CoformResourceDirectorySection({
     capacityFilter = false,
     regionFilter,
     thematicFilter,
+    typologyFilter,
+    searchFilter = false,
+    showMap = false,
   } = props;
 
-  const addressLevel1 = scope?.addressLevel1;
-  const fixedFilters = useMemo(
-    () => ({
-      ...buildResourceDirectoryFilters(resourceTypes, finderSuffix),
-      ...(addressLevel1 ? { "address.level1": addressLevel1 } : {}),
-    }),
-    [resourceTypes, finderSuffix, addressLevel1],
+  // Ce qu'il faut pour charger les ressources (`useResourceDirectoryItems`) — référence stable.
+  const source = useMemo<ResourceDirectorySource>(
+    () => ({ resourceTypes, finderSuffix, fieldSuffixes, costumSlug, contextId, contextType, scope, limit }),
+    [resourceTypes, finderSuffix, fieldSuffixes, costumSlug, contextId, contextType, scope, limit],
   );
 
-  const baseParams = useMemo(
-    () => ({
-      defaultTypes: ["answers"] as const,
-      defaultFilters: fixedFilters,
-      // `form` : indispensable à l'éclatement serveur des salles et au filtre
-      // prix par formulaire (`Navigator::getRessourceTL`).
-      defaultFields: ["name", "description", "answers", "collection", "form"],
-      indexStepList: Math.min(limit ?? RD_PAGE_SIZE, RD_PAGE_SIZE),
-      notSourceKey: true,
-      ...(costumSlug ? { costumSlug } : {}),
-      ...(contextId ? { contextId } : {}),
-      ...(contextType ? { contextType } : {}),
-    }),
-    [fixedFilters, costumSlug, contextId, contextType, limit],
-  );
-
-  // `order` : Type, Thématique, Capacité, Zone, puis les prix — les groupes « par réponses »
+  // `order` : Type, Thématique ou Typologies (rang 1), Capacité, Zone, puis les prix — les groupes « par réponses »
   // (`filtersByPath`) se rangent avec les autres sur cette même clé.
   const filtersProps = useMemo<FiltersSectionProps>(
     () => ({
       title: filtersTitle,
-      hideSearch: true,
+      hideSearch: !searchFilter,
+      // La recherche de l'annuaire porte sur le lieu (nom, ville, code postal), pas sur un nom seul.
+      searchPlaceholder: {
+        fr: "Lieu, ville, code postal…",
+        en: "Place, city, ZIP code…",
+      },
       defaultOpenGroups: defaultOpenFilterGroups({
         thematic: !!thematicFilter,
+        typology: !!typologyFilter,
         capacity: capacityFilter,
         region: !!regionFilter,
         priceGroupIds: priceFilters ? PRICE_FILTER_GROUPS.map((g) => g.field) : [],
@@ -142,6 +138,21 @@ export default function CoformResourceDirectorySection({
           order: 0,
           options: resourceTypes.map((rt) => ({ id: rt.id, label: rt.label, name: rt.id })),
         },
+        ...(typologyFilter
+          ? [
+              {
+                // Id `typologies` et `name` = tag, comme le groupe de `/lieux` : même `?typologies=`.
+                // Sans `field` : `selectedFilters.typologies` → filtre CÔTÉ CLIENT (tags du lieu porteur).
+                id: "typologies",
+                label: typologyFilter.label,
+                type: "filters" as const,
+                optionStyle: "check" as const,
+                keepOptionOrder: true,
+                order: 1,
+                options: typologyFilter.options,
+              },
+            ]
+          : []),
         ...(capacityFilter
           ? [
               {
@@ -213,7 +224,7 @@ export default function CoformResourceDirectorySection({
           }
         : {}),
     }),
-    [resourceTypes, filtersTitle, priceFilters, capacityFilter, regionFilter, thematicFilter],
+    [resourceTypes, filtersTitle, priceFilters, capacityFilter, regionFilter, thematicFilter, typologyFilter, searchFilter],
   );
 
   const listConf = useMemo<ListConf>(
@@ -263,16 +274,12 @@ export default function CoformResourceDirectorySection({
             {showFilters && <aside className="lg:col-span-1"><FiltersSection id={id ? `${id}-filters` : undefined} props={filtersProps} /></aside>}
             <div className={showFilters ? "lg:col-span-3" : undefined}>
               <ResourceDirectoryList
-                baseParams={baseParams}
+                source={source}
                 listConf={listConf}
-                resourceTypes={resourceTypes}
-                finderSuffix={finderSuffix}
-                fieldSuffixes={fieldSuffixes}
-                costumSlug={costumSlug}
-                contextId={contextId}
-                contextType={contextType}
                 limit={limit}
                 showFilters={showFilters}
+                // La popup filtre la liste sur le lieu : sans filtres, ce filtre n'existe pas.
+                showMap={showMap && showFilters}
               />
             </div>
           </div>
@@ -283,29 +290,19 @@ export default function CoformResourceDirectorySection({
 }
 
 interface ResourceDirectoryListProps {
-  baseParams: Record<string, unknown>;
+  source: ResourceDirectorySource;
   listConf: ListConf;
-  resourceTypes: CoformResourceDirectorySectionProps["resourceTypes"];
-  finderSuffix: string;
-  fieldSuffixes: CoformResourceDirectorySectionProps["fieldSuffixes"];
-  costumSlug?: string;
-  contextId?: string;
-  contextType?: string;
   limit?: number;
   showFilters?: boolean;
+  showMap?: boolean;
 }
 
 function ResourceDirectoryList({
-  baseParams,
+  source,
   listConf,
-  resourceTypes,
-  finderSuffix,
-  fieldSuffixes,
-  costumSlug,
-  contextId,
-  contextType,
   limit,
   showFilters,
+  showMap,
 }: ResourceDirectoryListProps) {
   const t = useT("modules/search");
   const pf = usePageFilters();
@@ -315,8 +312,8 @@ function ResourceDirectoryList({
   // depuis les cartes via `ResourceDirectoryActionsProvider`.
   const [activeParent, setActiveParent] = useState<ActiveResourceParent | null>(null);
 
-  // Facettes prix (`field`) → `searchByFields` → filtres SERVEUR. Réseaux thématiques : `_id` (lieux
-  // membres) n'existe pas sur une réponse → renvoyé en `parentId`, croisé avec le lieu cliqué.
+  // Facettes prix (`field`) → `searchByFields` → filtres SERVEUR. Réseaux thématiques : posés en
+  // `parentId` (lieux membres, `filterTarget: "parentId"`), recomposés ici avec le lieu cliqué.
   const { filters } = useMemo(
     () => searchByFieldsToQuery(pf.searchByFields ?? {}),
     [pf.searchByFields],
@@ -324,6 +321,20 @@ function ResourceDirectoryList({
   const lieuxFiltres = useMemo(
     () => parentIdsFilter(thematicParentIds(pf.searchByFields), showFilters && activeParent ? activeParent.id : null),
     [pf.searchByFields, activeParent, showFilters],
+  );
+  // Sans colonne de filtres, le type peut venir de l'URL de la page (`?resourceType=coworking`) — posé par
+  // les boutons d'un `hero-search` placé au-dessus (`ctaButtons[].filters`), comme sur l'accueil pour la
+  // liste des lieux. Avec la colonne, c'est elle qui lit l'URL (`FiltersSection`).
+  const [searchParams] = useSearchParams();
+  const typesDeLUrl = useMemo(
+    () => (showFilters ? [] : decodeCsvParam(searchParams.get("resourceType"))),
+    [showFilters, searchParams],
+  );
+  // Ce type filtre la REQUÊTE (formulaires du type seulement), pas la liste reçue : avec `limit`, la
+  // section ne charge que N ressources — les filtrer côté navigateur n'en garderait qu'une partie.
+  const sourceDeLaRequete = useMemo(
+    () => ({ ...source, resourceTypes: narrowResourceTypes(source.resourceTypes, typesDeLUrl) }),
+    [source, typesDeLUrl],
   );
   // Aucun lieu possible (cf. `parentIdsFilter`) : pas de requête — un `$in` vide serait ignoré par le
   // backend, qui rendrait tout l'annuaire — et liste vide.
@@ -334,84 +345,94 @@ function ResourceDirectoryList({
     void _reseaux;
     return { ...rest, ...(lieuxFiltres && lieuxFiltres.length > 0 ? { parentId: { $in: lieuxFiltres } } : {}) };
   }, [filters, lieuxFiltres]);
-  const mergedBaseParams = useMemo(
-    () => canonicalSearchProStaticBaseParams(baseParams, serverFilters, {}),
-    [baseParams, serverFilters],
-  );
 
   const {
-    transformedResults,
+    items,
+    parents,
+    parentsLoading,
+    parentsError,
+    refetchParents,
     lastItemRef,
     isPending,
     isFetchingNextPage,
     error,
-  } = useSearchQuery({
-    queryKeyPrefix: RD_LIST_PREFIX,
-    searchText: "",
-    searchTags: {},
-    searchType: { type: ["answers"] },
-    mapUsed: false,
-    baseParams: mergedBaseParams,
-    variant: "navigator-tl-ressource",
-    enabled: !aucunLieu,
-  });
-
-  const parseOpts = useMemo(
-    () => ({
-      resourceTypes,
-      finderSuffix,
-      fieldSuffixes: { finder: finderSuffix, ...fieldSuffixes },
-      baseUrl: getBaseUrl(),
-    }),
-    [resourceTypes, finderSuffix, fieldSuffixes],
-  );
-
-  // `getRessourceTL` éclate 1 salle = 1 réponse : plusieurs cartes partagent le
-  // `_id` de l'answer source. On re-clé sur `_id` + `roomIndex` pour que les
-  // clés React et le deep-link `?resource=` restent uniques (item léger : la
-  // carte / le détail ne lisent que `serverData`).
-  const items = useMemo(
-    () =>
-      transformedResults.map((r) => {
-        const serverData = (r?.serverData ?? {}) as Record<string, unknown>;
-        const model = parseResourceDirectoryItem(serverData, parseOpts);
-        const baseId = getEntryId(r) ?? "";
-        const uid = model.roomIndex ? `${baseId}-room${model.roomIndex}` : baseId;
-        return {
-          id: uid,
-          serverData,
-          getEntityType: () => "answers" as const,
-          model,
-        };
-      }),
-    [transformedResults, parseOpts],
-  );
-
-  // Lieux porteurs de TOUTES les ressources chargées (et pas des seules affichées) : le filtre de zone
-  // en a besoin pour décider de ce qui s'affiche. `model.parent` = `resolveAnswerParent`, déjà résolu
-  // par `parseResourceDirectoryItem`.
-  const parentIds = useMemo(
-    () => items.map((it) => it.model.parent?.id).filter((v): v is string => !!v),
-    [items],
-  );
-  const { parents, isLoading: parentsLoading, isError: parentsError } = useResourceParentsQuery(parentIds, { costumSlug, contextId, contextType });
+    refetch,
+  } = useResourceDirectoryItems(sourceDeLaRequete, { serverFilters, enabled: !aucunLieu });
 
   // Facettes CLIENT : type (`selectedFilters.resourceType`), capacité (`selectedFilters.capacity`),
-  // zone du lieu porteur (`searchByFields`, type `scopeList`).
+  // typologies du lieu porteur (`selectedFilters.typologies`, ses tags),
+  // zone du lieu porteur (`searchByFields`, type `scopeList`), recherche texte (`searchQuery`, champ de
+  // la colonne de filtres : service, lieu porteur, ville, code postal).
   const selectedFilters = pf.selectedFilters;
+  const searchQuery = pf.searchQuery;
   const zones = useMemo(() => selectedZones(pf.searchByFields), [pf.searchByFields]);
   const visible = useMemo(() => {
     if (aucunLieu) return [];
-    const typeSel = selectedFilters?.resourceType ?? [];
+    const typeSel = selectedFilters?.resourceType?.length ? selectedFilters.resourceType : typesDeLUrl;
     const capacitySel = selectedFilters?.capacity ?? [];
+    const typologySel = selectedFilters?.typologies ?? [];
     const filtered = items.filter((it) => {
       if (typeSel.length > 0 && !(it.model.type && typeSel.includes(it.model.type.id))) return false;
       if (!matchesCapacity(resourceCapacity(it.model.stats[0]), capacitySel)) return false;
       const parentId = it.model.parent?.id;
-      return matchesZones(parentId ? parents.get(parentId)?.zones : undefined, zones);
+      const parent = parentId ? parents.get(parentId) : undefined;
+      if (!matchesZones(parent?.zones, zones)) return false;
+      if (!matchesTypologies(parent?.tags, typologySel)) return false;
+      if (!searchQuery.trim()) return true;
+      const parentName = parent?.name ?? it.model.parent?.name;
+      return matchesResourceSearch(
+        [resourceDisplayName(it.model, t, parentName), parentName, parent?.addressLocality, parent?.postalCode],
+        searchQuery,
+      );
     });
     return limit === undefined ? filtered : filtered.slice(0, limit);
-  }, [aucunLieu, items, selectedFilters, zones, parents, limit]);
+  }, [aucunLieu, items, selectedFilters, typesDeLUrl, zones, searchQuery, parents, limit, t]);
+
+  // Vue carte : un repère par LIEU (cf. `groupServicesByPoint`), sa popup liste ses services
+  // (`map.popup.type: "resource-place"`) ; chacun ouvre sa fiche (même détail que la liste : `listConf`).
+  const [view, setView] = useState<"list" | "map">("list");
+  const { placeItems, placedCount } = useMemo(() => {
+    if (!showMap || view !== "map") return { placeItems: [], placedCount: 0 };
+    // Position du service, sinon de son lieu porteur, sinon d'un service voisin (cf. `resolveServicePoints`).
+    const points = resolveServicePoints(
+      visible.map((it) => {
+        const c = getEntryCoords(it as unknown as SearchEntity);
+        const parentId = it.model.parent?.id;
+        return {
+          id: it.id,
+          parentId,
+          own: c ? { lng: c[0], lat: c[1] } : null,
+          parent: (parentId ? parents.get(parentId)?.coords : null) ?? null,
+        };
+      }),
+    );
+    const parId = new Map(visible.map((it) => [it.id, it]));
+    // Libellé du type (« Salle de réunion »…) : sur la conf des types, pas sur le modèle.
+    const libelleType = new Map(source.resourceTypes.map((rt) => [rt.id, t(rt.label)]));
+    const placeItems = groupServicesByPoint(points).map((groupe) => {
+      const services = groupe.ids.map((id) => parId.get(id)!);
+      const premier = services[0];
+      const parentId = premier.model.parent?.id;
+      const parent = parentId ? parents.get(parentId) : undefined;
+      const parentName = parent?.name ?? premier.model.parent?.name;
+      return {
+        id: parentId ?? `${groupe.lng},${groupe.lat}`,
+        serverData: {
+          name: parentName,
+          address: premier.serverData.address,
+          geo: { latitude: groupe.lat, longitude: groupe.lng },
+          geoPosition: { type: "Point", coordinates: [groupe.lng, groupe.lat] },
+        },
+        resources: services.map((it) => ({
+          entry: it as unknown as SearchEntity,
+          name: resourceDisplayName(it.model, t, parentName),
+          typeLabel: libelleType.get(it.model.type?.id ?? ""),
+        })),
+        getEntityType: () => "organizations" as const,
+      };
+    });
+    return { placeItems, placedCount: points.length };
+  }, [showMap, view, visible, parents, source.resourceTypes, t]);
 
   return (
     <ResourceDirectoryActionsProvider value={showFilters ? { activeParent, setActiveParent } : null}>
@@ -433,13 +454,49 @@ function ResourceDirectoryList({
         <p className="text-sm text-muted-foreground">
           {t("resourceDirectory.count", undefined, { count: visible.length })}
         </p>
+        {showMap && (
+          <div className="ml-auto flex gap-1" role="group" aria-label={t("resourceDirectory.viewMode")}>
+            <Button
+              type="button"
+              size="sm"
+              variant={view === "list" ? "default" : "outline"}
+              aria-pressed={view === "list"}
+              onClick={() => setView("list")}
+            >
+              <List className="mr-1 h-4 w-4" />
+              {t("resourceDirectory.viewList")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={view === "map" ? "default" : "outline"}
+              aria-pressed={view === "map"}
+              onClick={() => setView("map")}
+            >
+              <MapIcon className="mr-1 h-4 w-4" />
+              {t("resourceDirectory.viewMap")}
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Zone cochée : elle se juge sur l'adresse des lieux porteurs — s'ils n'ont pas pu être lus, la
-          liste vide serait un « Aucun résultat » faux. */}
+      {/* Échec de chargement : un message d'ERREUR (et non « Aucun résultat », qui dirait qu'il n'y a rien)
+          et de quoi réessayer. Zone cochée : elle se juge sur l'adresse des lieux porteurs — s'ils n'ont
+          pas pu être lus, la liste vide serait un « Aucun résultat » faux. */}
       {error || (zones.length > 0 && parentsError) ? (
-        <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          {t("Aucun résultat trouvé.")}
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          <span>{t(error ? "resourceDirectory.loadError" : "resourceDirectory.parentsError")}</span>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => void (error ? refetch() : refetchParents())}
+          >
+            {t("resourceDirectory.retry")}
+          </Button>
         </div>
       ) : !aucunLieu && (isPending || (zones.length > 0 && parentsLoading)) ? (
         // Zone cochée : tant que les lieux porteurs ne sont pas lus, aucune ressource ne passe le filtre —
@@ -449,13 +506,41 @@ function ResourceDirectoryList({
         <div className="py-8 text-center text-sm text-muted-foreground">
           {t("Aucun résultat trouvé.")}
         </div>
+      ) : view === "map" ? (
+        <div className="space-y-2">
+          <div className="relative h-[60vh] min-h-[420px]">
+            <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />}>
+              {() => (
+                <Suspense fallback={<MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />}>
+                  <ResourceParentsProvider value={parents}>
+                    <SearchMapWrapper
+                      results={placeItems as unknown as SearchEntity[]}
+                      map={{ popup: { type: "resource-place" } }}
+                      card={listConf.card}
+                      preview={listConf.preview}
+                      list={listConf}
+                      containerClass={MAP_FILL}
+                    />
+                  </ResourceParentsProvider>
+                </Suspense>
+              )}
+            </ClientOnly>
+          </div>
+          {/* Services sans aucune position connue (ni la leur, ni celle de leur lieu ou d'un service
+              voisin) : absents de la carte — on le dit plutôt que de laisser croire la carte complète. */}
+          {placedCount < visible.length && (
+            <p className="text-sm text-muted-foreground">
+              {t("resourceDirectory.mapUnplaced", undefined, { count: visible.length - placedCount })}
+            </p>
+          )}
+        </div>
       ) : (
         <ResourceParentsProvider value={parents}>
           <SearchListView results={visible as unknown as SearchEntity[]} list={listConf} />
         </ResourceParentsProvider>
       )}
 
-      {limit === undefined && (
+      {limit === undefined && view === "list" && (
         <>
           <div ref={lastItemRef} className="h-12" />
           {isFetchingNextPage && (
