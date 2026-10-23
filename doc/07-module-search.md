@@ -581,11 +581,24 @@ jointure sur le lieu porteur + garde région + éclatement, pour quoi
 | `columns` | `{ sm?, md?, lg?, xl? }` | Grille de résultats (déf. `1/2/3`) |
 | `customHeader` | `{ title?, linkText?, linkHref? }` | En-tête : titre à gauche et bouton de lien vers la page complète à droite |
 | `limit` | entier ≥ 1 | Nombre maximal de cartes affichées ; borne aussi la requête initiale et désactive le scroll infini. La limite s'applique après l'éclatement des salles |
-| `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes |
+| `showFilters` | boolean (défaut `true`) | `false` masque les facettes type/prix et désactive le filtre par lieu porteur piloté depuis les cartes ; le type se lit alors dans l'URL de la page (`?resourceType=<id>,…`, posé par les boutons `ctaButtons[].filters` d'un `hero-search`) et filtre la **requête** (formulaires du type seulement, `narrowResourceTypes`) — avec `limit`, un filtre côté navigateur ne verrait que les N ressources chargées |
 | `priceFilters` | boolean (défaut `true`) | `false` retire les 3 groupes prix |
 | `thematicFilter` | `{ label, thematicPath, finderPath }` | Facette « réseaux thématiques » du lieu porteur (même réglage que `filtersByPath` de la section `filters`). Absente : pas de facette |
+| `typologyFilter` | `{ label, options: [{ id, label, name }] }` | Facette « typologies » du lieu porteur : mêmes options que le groupe `typologies` de `/lieux` (`name` = tag de l'organisation), groupe d'id `typologies` donc même `?typologies=`. Absente : pas de facette |
 | `capacityFilter` | boolean (défaut `false`) | Facette « Capacité d'accueil » (`1-10` / `10-30` / `30-50` / `50-`) |
 | `regionFilter` | `{ label, countryCode, level }` | Facette de zone (`scopeList`, ex. `level: ["3"]` = régions) sur l'adresse du lieu porteur. Absente : pas de facette |
+| `searchFilter` | boolean (défaut `false`) | Champ de recherche texte dans la colonne de filtres (`?search=`, donc relu depuis un lien, ex. `hero-search.searchHref`) : nom du service, nom du lieu porteur, ville, code postal — **CÔTÉ CLIENT**, sans accents ni casse, tous les mots requis |
+| `showMap` | boolean (défaut `false`) | Bascule Liste / Carte (`SearchMapWrapper` en `lazy` vite-preload) : **un repère par lieu** : chaque service est placé à sa position, sinon à celle de son lieu porteur, sinon à celle d'un service du même lieu (`resolveServicePoints`), puis les services d'un même point sont regroupés sous un seul repère (`groupServicesByPoint`). Popup `map.popup.type: "resource-place"` (`MapPopupResourcePlace`) = nom et adresse du lieu, nombre de services, liste défilante des services (nom, type) ; chacun ouvre sa fiche (`onOpenItem`, même détail que la liste). Au clic, la carte descend le repère vers son bas pour que la liste tienne dans le cadre. Sous la carte, le nombre de services sans aucune position (lieu non géolocalisé). Ignoré sans `showFilters` |
+
+Le chargement (requête, lecture, lieux porteurs) vit dans `hooks/useResourceDirectoryItems.ts`
+(`buildResourceDirectoryBaseParams`), partagé avec les suggestions de services du `hero-search`
+(`useServiceSuggestions`). Champ de recherche : texte d'aide « Lieu, ville, code postal… »
+(`FiltersSection.searchPlaceholder`, option du panneau de filtres, défaut « Rechercher par nom… »).
+
+Les lieux porteurs sont lus pour **toutes** les ressources chargées (filtre de zone, recherche sur leur
+nom et leur ville). Logique pure dans `lib/resourceDirectorySearch.ts`
+(`matchesResourceSearch`, `resolveServicePoints`, `groupServicesByPoint`, et `resourceDisplayName`, le nom
+affiché d'une ressource partagé par la carte, l'aperçu, la recherche et la vue carte).
 
 Le filtre Mongo FIXE (`buildResourceDirectoryFilters`) émet `form.$in` + un `$or`
 en **forme MAP** (`{ "answers.<step>.finder…": { "$exists": true }, … }`) — **pas
@@ -601,7 +614,11 @@ tient l'état `activeParent` et le distribue aux cartes via
 `ResourceDirectoryActionsProvider` ; une puce « Ressources portées par {nom} ✕ »
 au-dessus de la grille le retire. La facette « type » (client) s'applique par-dessus.
 
-**Facettes optionnelles** (ordre d'affichage : type, thématique, capacité, zone, prix) :
+**Facettes optionnelles** (ordre d'affichage : type, thématique ou typologies, capacité, zone, prix) :
+- **`typologyFilter`** — groupe `typologies` sans `field` : sélection dans `selectedFilters.typologies`
+  (noms d'options = tags), filtre **CÔTÉ CLIENT** sur les `tags` du lieu porteur (lus par
+  `useResourceParentsQuery`) : un service passe si son lieu porte l'une des typologies cochées
+  (`matchesTypologies`) ; lieu inconnu ou sans tag écarté dès qu'une typologie est cochée.
 - **`thematicFilter`** — `filtersByPath` du panneau en `filterTarget: "parentId"` : chaque réseau
   thématique porte la liste de ses lieux membres, posée en **`parentId`** → filtre **CÔTÉ SERVEUR** ;
   croisée avec le lieu cliqué sur une carte (`parentIdsFilter`). Réseaux cochés lus dans
@@ -618,9 +635,11 @@ au-dessus de la grille le retire. La facette « type » (client) s'applique par-
 - **`regionFilter`** — groupe `scopeList` (zones chargées par `FiltersSection`) ; la sélection
   (`locality`) n'est PAS envoyée (une réponse n'a pas d'adresse) : filtre **CÔTÉ CLIENT** sur
   `address.level*` du lieu porteur — l'id coché est cherché parmi TOUTES les zones de l'adresse,
-  quel qu'en soit le niveau (dans les DOM, une même zone sert de pays, de région et de département).
-  Si les lieux porteurs n'ont pas pu être lus, la liste affiche une erreur plutôt qu'un « Aucun
-  résultat » faux. Les lieux porteurs sont donc lus pour TOUTES les ressources
+  quel qu'en soit le niveau (`addressZoneIds` : `level1`…`level5` et `localityId`, la commune — dans
+  les DOM, une même zone sert de pays, de région et de département).
+  Échec de chargement : message d'ERREUR dédié (`resourceDirectory.loadError`, ou
+  `resourceDirectory.parentsError` quand une zone est cochée et que les lieux porteurs n'ont pas pu
+  être lus) avec un bouton « Réessayer », jamais le « Aucun résultat » de la liste vide. Les lieux porteurs sont donc lus pour TOUTES les ressources
   chargées, pas seulement celles affichées.
 
 Groupes ouverts à l'arrivée : les deux premiers groupes RÉELLEMENT déclarés, dans cet ordre
@@ -1835,7 +1854,9 @@ Icon / Avatar) —
 popup : `SearchMapPopup` dispatche sur `map.popup.type` vers
 `mapPopup/MapPopup<X>.tsx` en **`lazy()`** (un chunk par page, comme
 `SearchCardDetailed`). Pour ajouter une vue : créer le fichier variant
-(`export default`), l'importer dans le dispatcher, ajouter le `case`.
+(`export default`), l'importer dans le dispatcher, ajouter le `case`. Variantes : `default`,
+`resource-place` (lieu de l'annuaire des ressources : liste de ses services ; chaque ligne appelle
+`onOpenItem(entry)`, qui ouvre le détail de CETTE entité et non de l'item du repère).
 
 > ⚠️ Ne pas confondre avec `ProfileMapLeaflet` (module profil) qui reste sur
 > **Leaflet** (`loadLeaflet.ts`, `lib/mapTiles.ts` — tuiles **raster**). Les

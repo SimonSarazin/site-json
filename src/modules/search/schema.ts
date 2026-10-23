@@ -241,6 +241,8 @@ export const FiltersSectionSchema = z.object({
     className: z.string().optional(),
     /** Masque le champ de recherche texte du panneau (ne garde que les groupes de filtres). */
     hideSearch: z.boolean().optional(),
+    /** Texte d'aide du champ de recherche. Absent : « Rechercher par nom… ». */
+    searchPlaceholder: LocalizedString.optional(),
   }),
 });
 
@@ -986,7 +988,9 @@ export const MapConfSchema = z.object({
    *  Pilote aussi les colonnes de la liste. */
   splitRatio: z.enum(["30-70", "40-60", "50-50", "60-40"]).optional(),
   popup: z.object({
-    type: z.enum(["default"]).default("default"),
+    /** `resource-place` : popup d'un LIEU listant ses services (annuaire des ressources), chacun
+     *  ouvrant sa fiche — l'item porte `resources` (cf. `MapPopupResourcePlace`). */
+    type: z.enum(["default", "resource-place"]).default("default"),
   }).partial().optional(),
   /** Action du bouton de la popup : détail du module search (défaut
    *  `preview` — `SwitchDetailsMode` avec `list.card`/`list.preview`) ou
@@ -1473,6 +1477,27 @@ export const CoformResourceDirectorySectionSchema = z.object({
       thematicPath: z.string(),
       finderPath: z.string(),
     }).optional(),
+    /**
+     * Facette « typologies » du lieu porteur — mêmes options que le groupe `typologies` de `/lieux` :
+     * `name` = tag de l'organisation (« Ateliers artisanaux partagés »…). Groupe `typologies`, donc
+     * même paramètre d'URL (`?typologies=`). Filtre CÔTÉ NAVIGATEUR sur les tags du lieu porteur
+     * (un service passe si son lieu porte l'une des typologies cochées). Absente : pas de facette.
+     */
+    typologyFilter: z.object({
+      label: LocalizedString,
+      options: z.array(z.object({ id: z.string(), label: LocalizedString, name: z.string() })),
+    }).optional(),
+    /**
+     * Champ de recherche texte dans la colonne de filtres (relu/écrit en `?search=`) : nom du service,
+     * nom du lieu porteur, ville, code postal — filtre CÔTÉ NAVIGATEUR (le backend ne sait pas
+     * chercher par lieu). Défaut : false.
+     */
+    searchFilter: z.boolean().optional(),
+    /**
+     * Bascule Liste / Carte au-dessus des résultats : un repère par lieu porteur, sa popup liste ses
+     * services ; « En savoir plus » filtre la liste sur ce lieu. Défaut : false.
+     */
+    showMap: z.boolean().optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });
@@ -1908,6 +1933,9 @@ export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   actionKind?: "profil" | "preview";
   /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */
   onAction?: () => void;
+  /** Ouvre le détail d'UNE entité donnée (même cascade que `onAction`) — pour une popup qui liste
+   *  plusieurs entités (`resource-place`). Fourni par SearchMap. */
+  onOpenItem?: (entry: SearchEntity) => void;
   /** Chips de tags : la MÊME conf que la carte de liste (`list.card.tagColors`) — un tag masqué en liste l'est aussi ici. */
   tagColors?: TagColorsConf;
 }

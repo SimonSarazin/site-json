@@ -1,5 +1,6 @@
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 import { answerToggleArgs, type AnswerGroupConf } from "./answerFilterClause";
+import { decodeCsvParam } from "./urlCsv";
 
 /**
  * Forme minimale d'un groupe de filtres (sous-ensemble de `FiltersSectionProps`).
@@ -124,12 +125,8 @@ export function computeFiltersFromUrl(
   });
 
   searchParams.forEach((rawValue, groupId) => {
-    // Décodage par segment, pendant de l'encodage à l'écriture : une valeur issue d'une source
-    // dynamique peut contenir une virgule, qui couperait sinon la liste en deux.
-    const values = rawValue
-      .split(",")
-      .map((v) => { const t = v.trim(); try { return decodeURIComponent(t); } catch { return t; } })
-      .filter(Boolean);
+    // Décodage par segment, pendant de l'encodage à l'écriture (cf. `decodeCsvParam`).
+    const values = decodeCsvParam(rawValue);
     if (values.length === 0) return;
 
     const group = filterGroups.find((g) => g.id === groupId);

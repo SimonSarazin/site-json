@@ -55,6 +55,17 @@ export function matchesCapacity(capacity: { min: number; max: number } | null, r
   });
 }
 
+/** Clés de zone d'une adresse, de la plus large à la plus fine — `localityId` = la commune (options `cities`). */
+const ZONE_KEYS = ["level1", "level2", "level3", "level4", "level5", "localityId"] as const;
+
+/**
+ * Ids de TOUTES les zones d'une adresse (pays, région, département… commune) : une facette de zone
+ * se compare à n'importe lequel (cf. `matchesZones`), quel que soit le niveau de ses options.
+ */
+export function addressZoneIds(address: Record<string, unknown> | undefined): string[] {
+  return ZONE_KEYS.map((cle) => address?.[cle]).filter((v): v is string => typeof v === "string" && v !== "");
+}
+
 /** Ids des zones cochées dans un groupe `scopeList` (`{ id, type: "level3" }`) — lus dans `searchByFields`. */
 export function selectedZones(searchByFields: Record<string, SearchByFieldValue> | undefined): string[] {
   const ids: string[] = [];
@@ -80,8 +91,10 @@ export function matchesZones(zonesOfParent: readonly string[] | undefined, zoneI
 
 /**
  * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `parentId` du groupe
- * `filtersByPath` en `filterTarget: "parentId"`, champ propre à cette cible : aucun autre groupe ne
- * l'écrit) — et non dans `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau coché SANS
+ * `filtersByPath` en `filterTarget: "parentId"`). ⚠ TOUTE entrée `parentId` sans `type` est prise pour un
+ * réseau : un autre groupe de la page déclaré en `filterTarget: "parentId"` serait croisé avec le lieu
+ * cliqué comme un réseau. Seule la facette thématique de l'annuaire le déclare aujourd'hui — et non dans
+ * `searchByFieldsToQuery`, qui saute les tableaux vides : un réseau coché SANS
  * lieu membre y disparaîtrait et le filtre avec. `null` = aucun réseau coché ; `[]` = des réseaux
  * cochés, mais aucun lieu membre.
  */
@@ -108,19 +121,39 @@ export function parentIdsFilter(thematicIds: readonly string[] | null, activePar
 }
 
 /**
+ * Le lieu porteur porte-t-il l'une des typologies cochées (tags de l'organisation, comme sur `/lieux`) ?
+ * Rien de coché : tout passe. Lieu inconnu ou sans tag avec une typologie cochée : écarté.
+ */
+export function matchesTypologies(parentTags: readonly string[] | undefined, selected: readonly string[]): boolean {
+  if (selected.length === 0) return true;
+  return (parentTags ?? []).some((tag) => selected.includes(tag));
+}
+
+/**
  * Groupes de filtres ouverts à l'arrivée : les `count` premiers groupes RÉELLEMENT déclarés, dans
- * l'ordre d'affichage (type, thématique, capacité, zone, prix) — jamais un groupe absent, et la
+ * l'ordre d'affichage (type, thématique, typologies, capacité, zone, prix) — jamais un groupe absent, et la
  * seule facette configurée n'arrive pas repliée.
  */
 export function defaultOpenFilterGroups(
-  declared: { thematic: boolean; capacity: boolean; region: boolean; priceGroupIds: readonly string[] },
+  declared: { thematic: boolean; typology?: boolean; capacity: boolean; region: boolean; priceGroupIds: readonly string[] },
   count = 2,
 ): string[] {
   return [
     "resourceType",
     ...(declared.thematic ? ["thematic"] : []),
+    ...(declared.typology ? ["typologies"] : []),
     ...(declared.capacity ? ["capacity"] : []),
     ...(declared.region ? ["region"] : []),
     ...declared.priceGroupIds,
   ].slice(0, count);
+}
+
+/**
+ * Types de ressource à INTERROGER : ceux dont l'id est demandé, ou tous si la demande est vide ou ne
+ * désigne aucun type connu (une URL fautive ne vide pas l'annuaire).
+ */
+export function narrowResourceTypes<T extends { id: string }>(types: readonly T[], ids: readonly string[]): T[] {
+  if (ids.length === 0) return [...types];
+  const retenus = types.filter((t) => ids.includes(t.id));
+  return retenus.length > 0 ? retenus : [...types];
 }

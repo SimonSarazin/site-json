@@ -12,12 +12,15 @@ import type { MapConf, MapPopupProps } from "../schema";
  * `MapPopupDefault` (comportement actuel préservé).
  */
 const MapPopupDefault = lazy(() => import("./mapPopup/MapPopupDefault"));
+const MapPopupResourcePlace = lazy(() => import("./mapPopup/MapPopupResourcePlace"));
 
 export default function SearchMapPopup({
   popup,
   ...props
 }: MapPopupProps & { popup?: MapConf["popup"] }) {
   switch (popup?.type) {
+    case "resource-place":
+      return <MapPopupResourcePlace {...props} />;
     case "default":
     default:
       return <MapPopupDefault {...props} />;

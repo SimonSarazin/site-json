@@ -214,6 +214,31 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 22/10bis — l'annuaire des ressources devient la page `/services`
+
+**Fait** : la page `/annuaire-ressources` s'appelle désormais **`/services`**, titre « Services ». Tous les
+liens de la config suivent : menu « Les services » et ses entrées par type, bandeaux de l'accueil et de
+`/reservation`, recherche du hero et ses suggestions de services. L'exemple `header-mega-menu` du skill
+config-assistant suit l'en-tête. Les ids de sections (`annuaire-ressources-tl`…) sont inchangés.
+L'ancienne adresse n'est pas redirigée : le moteur n'a pas de redirection déclarative.
+
+**Vérifié** au navigateur (backend local) : `/services` → 25 ressources, titre « Services » ;
+`/services?typologies=Autre%2520famille%2520de%2520tiers-lieux` → 8. `config:validate` ✅ — 19 pages,
+44 sections ; préflight `archetypes` ✅.
+
+### 22/10 — annuaire des ressources : « Thématique du lieu » liste les typologies
+
+**Fait** (`/services`) : le filtre « Thématique du lieu » liste les 8 **typologies** du filtre
+de `/lieux` (Ateliers artisanaux partagés, Bureaux partagés / Coworking…) au lieu des réseaux
+thématiques ; un service passe si son lieu porteur porte l'une des typologies cochées (tags du lieu).
+Même paramètre d'URL que `/lieux` (`?typologies=`). Moteur : option `typologyFilter` de
+`coform-resource-directory`, absente par défaut — autres sites inchangés ; `thematicFilter` reste
+disponible.
+
+**Vérifié** au navigateur (backend local) : 25 ressources ; `?typologies=Ateliers%2520artisanaux%2520partag%25C3%25A9s`
+→ 6 ; « Autre famille de tiers-lieux » → 8, au clic comme par l'URL. `config:validate` ✅. Tests de
+`matchesTypologies` vérifiés en échec.
+
 ### 14/10 — accueil : bandeau « Trouver un service », libellés de menu (MR 92, Simon)
 
 L'accueil affiche désormais, sous « Découvrir les lieux », le même bandeau `coform-resource-directory`
@@ -596,6 +621,38 @@ de l'e-mail ramenait à l'accueil.
 redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lieux 48/49 (`<title>`,
 aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
 
+
+### 14/10bis — services : recherche depuis /reservation, recherche par lieu, carte
+
+**Fait** :
+- `/reservation` : pendant la saisie, la liste propose des **services** (nom, lieu porteur · ville) ;
+  en choisir un ouvre son détail dans l'annuaire (option `serviceSuggestions` du `hero-search`).
+- `/reservation` : « Se réunir », « Coworker », « Séjourner » filtrent la liste de services de la page
+  (`?resourceType=…`, comme les boutons de l'accueil pour les lieux), « + » ouvre l'annuaire ;
+  « Rechercher » ouvre `/annuaire-ressources` avec le texte saisi et le type choisi ; placeholder « Lieu,
+  ville, code postal ».
+- `/annuaire-ressources` : champ de recherche (nom du service, du lieu porteur, ville, code postal) et
+  vue **Carte** (un repère par lieu ; sa popup liste les services du lieu, chacun ouvre sa fiche ; sous la carte, le nombre de services dont le lieu n'est pas
+  géolocalisé) ; texte d'aide « Lieu, ville, code postal… ». Options moteur `searchFilter` et
+  `showMap` de `coform-resource-directory`, défaut false — autres sites inchangés.
+
+**Vérifié** au navigateur (backend local) : sur `/reservation`, « Coworker » → la liste passe à 5 coworkings (filtre de la requête), « Se réunir » → 5 salles ; « Lille » depuis
+`/reservation` → 14 ; « corout » sur `/reservation` → 3 services suggérés, le choix ouvre la fiche
+du service ; l'accueil suggère toujours des lieux ; « coroutine » → 3 ; « 59000 » → 8 ; carte : 15 services placés sur 25 (les 10 autres
+appartiennent à 3 lieux sans géolocalisation — La Coroutine, Coopérative Baraka, La Plume à Loup —,
+signalés sous la carte), un repère par lieu, popup du lieu dans le cadre de la carte (repère le plus haut compris), clic sur le 2e service → sa fiche. Clair, sombre, mobile. Tests de
+`lib/resourceDirectorySearch.ts` et de `MapPopupResourcePlace` vérifiés en échec.
+
+### 14/10 — accueil : « Rechercher » ouvre /lieux
+
+**Fait** : sur l'accueil, « Rechercher » (et Entrée) ouvre `/lieux` avec le texte saisi et le filtre
+de catégorie actif (« Coworker », « Se réunir »…), même champ vide — au lieu de filtrer les 5 lieux
+mis en avant. Option moteur `searchHref` du bloc `hero-search` (absente : comportement inchangé) ;
+`/reservation`, qui a le même bloc, n'est pas modifiée.
+
+**Vérifié** au navigateur : champ vide → `/lieux` ; « Coworker » + « Lille » →
+`/lieux?typologies=Bureaux partagés / Coworking&search=Lille`, recherche et filtre repris (33 lieux).
+Tests de `HeroSearch` (3).
 
 ### 12/10 — annuaire des ressources : filtres Thématique, Capacité, Géographique
 

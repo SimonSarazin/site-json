@@ -3,7 +3,7 @@
  * Pendant de `entityDuplicates.ts` (qui classe ce que la requête a ramené). Aucune dépendance
  * React — testé à part.
  */
-import { walkSections, type SectionLike } from "@/lib/sectionContainers";
+import { findSectionByRef } from "@/lib/sectionContainers";
 import { mergeMongoFilters } from "@/modules/search/lib/mongoFilters";
 import { SearchBaseParamsSchema, type SearchBaseParams, type SearchType } from "@/modules/search/schema";
 import type { SiteConfig } from "@/types/site";
@@ -54,8 +54,6 @@ export function toSearchTerm(name: unknown): string {
     .trim();
 }
 
-const hasId = (section: SectionLike): section is SectionLike & { id: unknown } => "id" in section;
-
 /**
  * `baseParams` BRUTS d'une section de recherche du site, désignée par le chemin de sa PAGE et son
  * id. Le chemin est requis : un id de section n'est pas unique dans une config (sur le site des
@@ -63,13 +61,8 @@ const hasId = (section: SectionLike): section is SectionLike & { id: unknown } =
  * si rien ne correspond.
  */
 export function resolveSectionBaseParams(config: DuplicateSiteConfig, ref: { page: string; sectionId: string }): unknown {
-  const page = config?.pages?.find((p) => p.path === ref.page);
-  if (!page) return null;
-  for (const section of walkSections(page.sections)) {
-    const baseParams = section.props?.baseParams;
-    if (hasId(section) && section.id === ref.sectionId && baseParams && typeof baseParams === "object") return baseParams;
-  }
-  return null;
+  const baseParams = findSectionByRef(config?.pages, ref)?.props?.baseParams;
+  return baseParams && typeof baseParams === "object" ? baseParams : null;
 }
 
 /**
