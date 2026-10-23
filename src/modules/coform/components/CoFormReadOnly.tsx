@@ -10,7 +10,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolightOptional } from "@/hooks/useCocolight";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
-import { dayI18nKey, normalizeSlot, toTimeString } from "../utils/timeSlots";
+import { dayI18nKey, formatSlotPeriod, normalizeSlot, toTimeString } from "../utils/timeSlots";
 import { parseStoredToEntries } from "../utils/coformLocality";
 import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue, CommonTableValue, CategorizedCheckboxValue, TimeSlotValue, DynamicFieldsRow, TagsValue } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
@@ -646,12 +646,18 @@ function ReadOnlyTimeSlots({ field, value, widthClass }: { field: FormFieldMappi
           <span className="text-muted-foreground/50 italic">—</span>
         ) : (
           <div className="flex flex-wrap gap-1.5">
-            {slots.map((slot, index) => (
-              <Badge key={index} variant="secondary" className="font-normal text-xs px-2 py-0.5">
-                {t(`coform.timeSlots.days.${dayI18nKey(slot.day)}`)}{" "}
-                {toTimeString(slot.startHour, slot.startMinute)} – {toTimeString(slot.endHour, slot.endMinute)}
-              </Badge>
-            ))}
+            {slots.map((slot, index) => {
+              // Période propre du créneau (cycle d'une saison) : sans elle, « Lundi 08:00 – 10:00 »
+              // laisserait croire à un créneau valable toute la période de la réponse.
+              const period = formatSlotPeriod(slot, t);
+              return (
+                <Badge key={index} variant="secondary" className="font-normal text-xs px-2 py-0.5">
+                  {t(`coform.timeSlots.days.${dayI18nKey(slot.day)}`)}{" "}
+                  {toTimeString(slot.startHour, slot.startMinute)} – {toTimeString(slot.endHour, slot.endMinute)}
+                  {period && ` · ${period}`}
+                </Badge>
+              );
+            })}
           </div>
         )}
       </dd>

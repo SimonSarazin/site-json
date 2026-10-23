@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { resolveMultiDecide } from "./multiDecide";
 import type { CoFormData, CoFormInputField, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue, CategorizedCheckboxConfig, CategorizedCheckboxSource, CategorizedCheckboxValue, TimeSlotsConfig, DynamicFieldsConfig } from "../types";
-import { isSlotComplete, isSlotOrdered } from "./timeSlots";
+import { isSlotComplete, isSlotOrdered, isSlotPeriodOrdered } from "./timeSlots";
 
 // ─── Configuration des préfixes de champs ────────────────────────
 // Certains types de champs PHP stockent leurs données avec un préfixe
@@ -1621,6 +1621,9 @@ export function generateZodSchema(
             endMinute: z.string(),
             startAmPm: z.string().optional(),
             endAmPm: z.string().optional(),
+            // Période propre du créneau (jours ISO), cf. `TimeSlotValue`.
+            periodStart: z.string().optional(),
+            periodEnd: z.string().optional(),
           });
           const slotsSchema = z
             .array(slotSchema)
@@ -1629,6 +1632,9 @@ export function generateZodSchema(
             })
             .refine((slots) => slots.every(isSlotOrdered), {
               message: t("coform.validation.timeSlotOrder", "L'heure de fin doit être après l'heure de début"),
+            })
+            .refine((slots) => slots.every(isSlotPeriodOrdered), {
+              message: t("coform.validation.timeSlotPeriodOrder", "La date de fin d'un créneau doit suivre sa date de début"),
             });
           schemaShape[field.name] = field.isRequired
             ? slotsSchema.refine((slots) => slots.length > 0, {

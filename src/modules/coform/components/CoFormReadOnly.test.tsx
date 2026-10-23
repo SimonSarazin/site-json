@@ -70,3 +70,33 @@ describe("CoFormReadOnly — dynamicFields", () => {
     expect(container.querySelectorAll(".bg-muted\\/30")).toHaveLength(1);
   });
 });
+
+describe("CoFormReadOnly — timeSlots", () => {
+  const FORM_CRENEAUX = {
+    id: "form2",
+    _id: { _str: "form2" },
+    name: "Créneaux",
+    inputs: {
+      step1: {
+        inputs: { creneaux: { type: "tpls.forms.cplx.timeSlots", label: "Horaire de réservation", position: 0 } },
+      },
+    },
+  } as unknown as CoFormData;
+  const SLOT = { day: "Monday", startHour: "08", startMinute: "00", endHour: "10", endMinute: "00" };
+
+  it("affiche la période propre d'un créneau à côté de lui, et rien de plus sans période", () => {
+    const { container } = render(
+      <CoFormReadOnly
+        formData={FORM_CRENEAUX}
+        answerData={{
+          step1: { creneaux: [{ ...SLOT, periodStart: "2026-08-19", periodEnd: "2026-10-10" }, SLOT] },
+        } as unknown as AllStepsData}
+        hideBanner
+        hideMetadata
+      />,
+    );
+    const badges = [...container.querySelectorAll("dd span, dd div > *")].map((b) => b.textContent ?? "");
+    expect(badges.some((b) => b.includes("08:00 – 10:00 · coform.timeSlots.period"))).toBe(true);
+    expect(badges.filter((b) => b.includes("coform.timeSlots.period"))).toHaveLength(1);
+  });
+});

@@ -137,7 +137,8 @@ src/modules/coform/
 │   ├── CoFormProvider.tsx   # Provider : état multi-étapes, navigation, stepsDataRef, brouillon localStorage
 │   ├── CoFormProvider.test.tsx # Tests unitaires CoFormProvider
 │   ├── CommonTableCatalogsContext.ts   # Contexte des catalogues collaboratifs commonTable
-│   └── CommonTableCatalogsProvider.tsx
+│   ├── CommonTableCatalogsProvider.tsx
+│   └── TimeSlotPeriodsContext.ts       # Saisie de période par créneau (`slotPeriods` de l'appelant)
 ├── hooks/
 │   ├── useCategorizedCheckboxOptions.ts # Arbre d'options (liste manuelle ∪ questions commonTable distantes)
 │   ├── useCoForm.tsx            # useCoForm() + useOptionalCoForm()
@@ -306,8 +307,17 @@ interface SmartCoFormProps {
   baseUpdatedAt?: number | null;// `answer.updated` — OBLIGATOIRE dès qu'on passe `answerId`
   lockedFields?: string[];      // Champs en lecture seule (pointer-events-none)
   hiddenFields?: readonly string[]; // Champs MASQUÉS par l'appelant, valeur conservée (cf. DynamicCoForm)
+  beforeSubmit?: (allData) => Promise<string | null> | string | null; // Contrôle métier avant enregistrement
+  slotPeriods?: boolean;        // Période saisissable sur chaque créneau des champs timeSlots
 }
 ```
+
+**Contrôle de l'appelant — `beforeSubmit`.** Rejoué juste avant l'enregistrement, sur les données au format
+serveur (étapes emballées, `denormalizeAnswerData` appliqué), sur les deux chemins. Un message REFUSE : il
+s'affiche (toast), rien ne part au serveur et la saisie est gardée — le formulaire simple résout `false`
+(`DynamicCoForm` garde le brouillon), le wizard lève (`CoFormProvider.submitAllData` ne purge pas). `null`
+laisse passer. Le contrôle ne doit pas lever : c'est à lui de trancher quand il ne peut pas conclure. Premier
+consommateur : la prise de réservation par période (`search`, `reservations.periods`).
 
 **Logique de sélection du mode :**
 
@@ -416,6 +426,8 @@ export interface CoFormModalProps {
   className?: string;
   lockedFields?: string[];
   hiddenFields?: readonly string[]; // transmis à SmartCoForm (cf. plus haut)
+  beforeSubmit?: (allData) => Promise<string | null> | string | null; // idem
+  slotPeriods?: boolean;            // idem
 }
 ```
 
@@ -831,6 +843,15 @@ Format de sauvegarde = legacy (vérifié sur les answers réelles) : jour en ang
 heures et minutes en chaînes zéro-paddées séparées. `startAmPm`/`endAmPm` n'existent que dans les données legacy
 saisies en 12 h — ils sont **lus** puis résolus en 24 h à l'édition, jamais ré-écrits. Logique pure et testée :
 `utils/timeSlots.ts`.
+
+**Période propre d'un créneau** (`periodStart` / `periodEnd`, jours ISO) : contrat des créneaux de réservation
+datés par cycle d'une saison ; absente, le créneau vaut pour toute la période de la réponse. Comme toute clé du
+créneau (`duree`, `prix`…), elle est **conservée** à l'édition (`normalizeSlot`, schéma `looseObject`) : changer
+une heure ne la perd pas. Le champ l'affiche en lecture (« Du 19/08/2026 au 10/10/2026 », `formatSlotPeriod`),
+de même que `CoFormReadOnly` ; elle n'est SAISISSABLE (deux dates par créneau, facultatives) que si l'appelant
+l'active — `slotPeriods` de `SmartCoForm` / `CoFormModal`, transmis par `TimeSlotPeriodsContext`, parce que le
+même champ sert à des formulaires qui ne datent pas leurs créneaux (SSBE, Le Tampon). Une période à l'envers est
+signalée sous le créneau et refusée par le schéma.
 
 ---
 
@@ -1530,7 +1551,7 @@ Convertit une URL d'image absolue en chemin relatif (`pathname + search`) pour u
 | `SimpleTableConfig` | `{ tableName, columns, rows, activeNewLine, singleAnswerByLine, editInModal }` |
 | `CategorizedCheckboxConfig` | `{ dataSourceToUse, list, sublist, formParamsSource, questionsParamsSource }` (+ `CategorizedCheckboxValue` `{list, sublist}`, `CategorizedCheckboxOption`/`Child` pour l'arbre rendu) |
 | `CommonTableConfig` | `{ showColumns, labels, usages[] }` (+ `CommonTableValue` `{scores, myCatalog}`, `CommonTableSolution`, `CommonTableMyCatalogEntry`, `CommonTableCatalog(s)`, `HappinessValue`) |
-| `TimeSlotsConfig` | `{ enableMultipleSlots?, timeFormat?, minuteStep?, defaultStartTime?, defaultEndTime? }` (+ `TimeSlotValue`) |
+| `TimeSlotsConfig` | `{ enableMultipleSlots?, timeFormat?, minuteStep?, defaultStartTime?, defaultEndTime? }` (+ `TimeSlotValue`, période propre `periodStart?` / `periodEnd?` comprise) |
 | `DynamicFieldsConfig` | `{ enableMultipleRows?, minRows?, maxRows?, fieldsConfig[], layout?, ui? }` (+ `DynamicFieldsSubField`, `DynamicFieldsRow`) |
 | `CoFormDraft` | Brouillon localStorage : `{ version:1, data, currentStepIndex, completedSteps, addedOptions, timestamp, baseUpdatedAt }` |
 | `UploaderConfig` | `{ docType, itemLimit, sizeLimit, formats?, displayMode? }` |

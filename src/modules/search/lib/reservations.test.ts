@@ -13,7 +13,11 @@ import {
   periodsOverlap,
   buildBookingGrid,
   minutesToLabel,
+  slotPeriod,
+  reservationsInPeriod,
+  ownSlotPeriod,
   type Reservation,
+  type ReservationSlot,
   type CandidateSlot,
   type ReservationCandidate,
 } from "./reservations";
@@ -697,5 +701,103 @@ describe("minutesToLabel", () => {
     expect(minutesToLabel(0)).toBe("00:00");
     expect(minutesToLabel(540)).toBe("09:00");
     expect(minutesToLabel(1230)).toBe("20:30");
+  });
+});
+
+/* ── Période propre d'un créneau ─────────────────────────────────────────── */
+
+/** Créneau du lundi 17 h–19 h, avec sa période propre éventuelle. */
+function lundi(period: Partial<Pick<ReservationSlot, "periodStart" | "periodEnd">> = {}): ReservationSlot {
+  return { day: "monday", start: "17:00", end: "19:00", startMinutes: 1020, endMinutes: 1140, ...period };
+}
+
+const SAISON = { periodStart: "2026-08-17", periodEnd: "2027-07-02" };
+
+describe("période propre d'un créneau", () => {
+  it("parseReservationAnswer lit la période posée sur le créneau, et la laisse absente sinon", () => {
+    const r = parseReservationAnswer(
+      answerData({
+        [FIELDS.slots]: [
+          { ...slot("monday", "09", "40", "12", "00"), duree: 8400, periodStart: "2026-08-24", periodEnd: "2026-12-14" },
+          slot("thursday", "17", "00", "19", "00"),
+        ],
+        [FIELDS.periodStart]: SAISON.periodStart,
+        [FIELDS.periodEnd]: SAISON.periodEnd,
+      }),
+      CONF,
+    )!;
+    expect(r.slots[0]).toMatchObject({ periodStart: "2026-08-24", periodEnd: "2026-12-14" });
+    expect(r.slots[1].periodStart).toBeUndefined();
+    expect(r.slots[1].periodEnd).toBeUndefined();
+  });
+
+  it("slotPeriod : la période du créneau, borne par borne, sinon celle de la réservation", () => {
+    expect(slotPeriod(lundi(), SAISON)).toEqual(SAISON);
+    expect(slotPeriod(lundi({ periodStart: "2026-08-24", periodEnd: "2026-12-14" }), SAISON)).toEqual({
+      periodStart: "2026-08-24",
+      periodEnd: "2026-12-14",
+    });
+    expect(slotPeriod(lundi({ periodEnd: "2026-12-14" }), SAISON)).toEqual({
+      periodStart: "2026-08-17",
+      periodEnd: "2026-12-14",
+    });
+  });
+
+  it("le bloc de la grille porte la période du créneau, pas celle de la saison", () => {
+    const groups = groupReservationsByUser([
+      reservation({ ...SAISON, slots: [lundi({ periodStart: "2026-08-24", periodEnd: "2026-12-14" })] }),
+    ]);
+    expect(buildWeeklyGrid(groups)[0].blocks[0]).toMatchObject({
+      periodStart: "2026-08-24",
+      periodEnd: "2026-12-14",
+    });
+  });
+
+  it("reservationConflicts : un cycle d'août à novembre ne bloque pas le même créneau en décembre", () => {
+    const cycle = existing({ ...SAISON, slots: [lundi({ periodStart: "2026-08-24", periodEnd: "2026-11-30" })] });
+    expect(reservationConflicts(candidat(1020, 1140, { periodStart: "2026-12-01", periodEnd: "2026-12-18" }), [cycle])).toEqual([]);
+    expect(reservationConflicts(candidat(1020, 1140, { periodStart: "2026-11-30", periodEnd: "2026-12-18" }), [cycle])).toHaveLength(1);
+  });
+
+  it("reservationConflicts : la période propre du créneau candidat prime sur celle de la réservation envisagée", () => {
+    const cycle = existing({ ...SAISON, slots: [lundi({ periodStart: "2026-08-24", periodEnd: "2026-11-30" })] });
+    const candidate = {
+      ...SAISON,
+      slots: [{ day: "monday" as const, startMinutes: 1020, endMinutes: 1140, periodStart: "2026-12-01" }],
+    };
+    expect(reservationConflicts(candidate, [cycle])).toEqual([]);
+  });
+
+  it("reservationsInPeriod : ne garde que les créneaux de la période, et les réservations qui en gardent un", () => {
+    const deuxCycles = reservation({
+      id: "deux",
+      ...SAISON,
+      slots: [lundi({ periodStart: "2026-08-24", periodEnd: "2026-11-30" }), lundi({ periodStart: "2026-12-01" })],
+    });
+    const passee = reservation({ id: "passee", periodStart: "2026-01-05", periodEnd: "2026-08-12", slots: [lundi()] });
+    const decembre = reservationsInPeriod([deuxCycles, passee], { periodStart: "2026-12-01", periodEnd: "2026-12-31" });
+    expect(decembre.map((r) => r.id)).toEqual(["deux"]);
+    expect(decembre[0].slots).toEqual([lundi({ periodStart: "2026-12-01" })]);
+  });
+
+  it("reservationsInPeriod : rend la réservation elle-même quand rien n'est retiré", () => {
+    const r = reservation({ ...SAISON, slots: [lundi()] });
+    expect(reservationsInPeriod([r], { periodStart: "2026-10-23" })[0]).toBe(r);
+  });
+
+  it("reservationsInPeriod : une réservation sans créneau lisible se juge sur sa propre période", () => {
+    const vide = reservation({ ...SAISON, slots: [] });
+    expect(reservationsInPeriod([vide], { periodStart: "2026-10-23" })).toEqual([vide]);
+    expect(reservationsInPeriod([vide], { periodStart: "2027-08-01" })).toEqual([]);
+  });
+
+  it("ownSlotPeriod : la période du créneau seulement quand elle diffère de celle de la réservation", () => {
+    const r = reservation({ ...SAISON });
+    expect(ownSlotPeriod(lundi(), r)).toBeNull();
+    expect(ownSlotPeriod(lundi({ ...SAISON }), r)).toBeNull();
+    expect(ownSlotPeriod(lundi({ periodEnd: "2026-12-14" }), r)).toEqual({
+      periodStart: "2026-08-17",
+      periodEnd: "2026-12-14",
+    });
   });
 });

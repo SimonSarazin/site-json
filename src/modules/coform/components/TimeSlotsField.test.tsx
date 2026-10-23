@@ -9,6 +9,7 @@ vi.mock("@/hooks/useT", () => ({
 }));
 
 import { TimeSlotsField } from "./TimeSlotsField";
+import { TimeSlotPeriodsContext } from "../contexts/TimeSlotPeriodsContext";
 import { DynamicFieldsField } from "./DynamicFieldsField";
 import type { DynamicFieldsRow, FormFieldMapping, TimeSlotValue } from "../types";
 
@@ -88,6 +89,70 @@ describe("TimeSlotsField", () => {
       />,
     );
     expect(queryByRole("button", { name: /addSlot/ })).toBeNull();
+  });
+});
+
+describe("TimeSlotsField — période propre d'un créneau", () => {
+  const DATE: TimeSlotValue = { ...REAL_SLOT, periodStart: "2026-08-24", periodEnd: "2026-12-14" };
+
+  it("sans saisie de période (défaut) : la période d'un créneau s'affiche en lecture, sans champ date", () => {
+    const { container, getByText } = render(<TimeSlotsField field={makeField({})} errors={{}} value={[DATE]} />);
+    expect(container.querySelectorAll('input[type="date"]')).toHaveLength(0);
+    expect(getByText("coform.timeSlots.period")).toBeTruthy();
+  });
+
+  it("saisie activée par l'appelant : deux dates par créneau, reprises de la valeur", () => {
+    const { container, getByText } = render(
+      <TimeSlotPeriodsContext.Provider value>
+        <TimeSlotsField field={makeField({})} errors={{}} value={[DATE]} />
+      </TimeSlotPeriodsContext.Provider>,
+    );
+    const dates = container.querySelectorAll('input[type="date"]');
+    expect(dates).toHaveLength(2);
+    expect((dates[0] as HTMLInputElement).value).toBe("2026-08-24");
+    expect((dates[1] as HTMLInputElement).value).toBe("2026-12-14");
+    expect(getByText("coform.timeSlots.periodHint")).toBeTruthy();
+  });
+
+  it("émet la période saisie sur le créneau, et la retire quand on vide la date", () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <TimeSlotPeriodsContext.Provider value>
+        <TimeSlotsField field={makeField({})} errors={{}} value={[REAL_SLOT]} onChange={onChange} />
+      </TimeSlotPeriodsContext.Provider>,
+    );
+    const debut = container.querySelectorAll('input[type="date"]')[0] as HTMLInputElement;
+    fireEvent.change(debut, { target: { value: "2026-10-01" } });
+    expect(onChange).toHaveBeenLastCalledWith([{ ...REAL_SLOT, periodStart: "2026-10-01" }]);
+
+    onChange.mockClear();
+    const { container: date } = render(
+      <TimeSlotPeriodsContext.Provider value>
+        <TimeSlotsField field={makeField({})} errors={{}} value={[DATE]} onChange={onChange} />
+      </TimeSlotPeriodsContext.Provider>,
+    );
+    fireEvent.change(date.querySelectorAll('input[type="date"]')[1], { target: { value: "" } });
+    const [emis] = onChange.mock.lastCall![0] as TimeSlotValue[];
+    expect(emis.periodEnd).toBeUndefined();
+    expect(emis.periodStart).toBe("2026-08-24");
+  });
+
+  it("garde la période quand une heure change", () => {
+    const onChange = vi.fn();
+    const { container } = render(<TimeSlotsField field={makeField({})} errors={{}} value={[DATE]} onChange={onChange} />);
+    fireEvent.change(container.querySelectorAll('input[type="time"]')[1], { target: { value: "10:30" } });
+    expect(onChange).toHaveBeenCalledWith([{ ...DATE, endHour: "10", endMinute: "30" }]);
+  });
+
+  it("signale inline une période à l'envers", () => {
+    const { getByText } = render(
+      <TimeSlotsField
+        field={makeField({})}
+        errors={{}}
+        value={[{ ...REAL_SLOT, periodStart: "2026-12-14", periodEnd: "2026-08-24" }]}
+      />,
+    );
+    expect(getByText("coform.validation.timeSlotPeriodOrder").getAttribute("role")).toBe("alert");
   });
 });
 

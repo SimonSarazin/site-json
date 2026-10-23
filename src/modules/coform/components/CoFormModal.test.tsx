@@ -21,6 +21,8 @@ const capte = vi.hoisted(() => ({
   onDirtyChange: null as ((dirty: boolean) => void) | null,
   rejeterBrouillon: vi.fn(),
   hiddenFields: undefined as readonly string[] | undefined,
+  beforeSubmit: undefined as unknown,
+  slotPeriods: undefined as boolean | undefined,
 }));
 
 vi.mock("./SmartCoForm", async () => {
@@ -30,9 +32,13 @@ vi.mock("./SmartCoForm", async () => {
       onDirtyChange?: (dirty: boolean) => void;
       discardDraftRef?: { current: (() => void) | null };
       hiddenFields?: readonly string[];
+      beforeSubmit?: unknown;
+      slotPeriods?: boolean;
     }) => {
       capte.onDirtyChange = props.onDirtyChange ?? null;
       capte.hiddenFields = props.hiddenFields;
+      capte.beforeSubmit = props.beforeSubmit;
+      capte.slotPeriods = props.slotPeriods;
       const ref = props.discardDraftRef;
       useEffect(() => {
         if (!ref) return;
@@ -115,5 +121,14 @@ describe("CoFormModal — champs masqués", () => {
   it("transmet `hiddenFields` au formulaire", () => {
     render(<CoFormModal formId="f1" open onOpenChange={vi.fn()} hiddenFields={["findercle"]} />);
     expect(capte.hiddenFields).toEqual(["findercle"]);
+  });
+});
+
+describe("CoFormModal — contrôle et période des créneaux", () => {
+  it("transmet `beforeSubmit` et `slotPeriods` au formulaire", () => {
+    const beforeSubmit = vi.fn();
+    render(<CoFormModal formId="f1" open onOpenChange={vi.fn()} beforeSubmit={beforeSubmit} slotPeriods />);
+    expect(capte.beforeSubmit).toBe(beforeSubmit);
+    expect(capte.slotPeriods).toBe(true);
   });
 });

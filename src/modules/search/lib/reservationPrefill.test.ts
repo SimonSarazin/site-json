@@ -103,3 +103,39 @@ describe("buildReservationPrefill ⇄ parseReservationAnswer (aller-retour)", ()
     expect(reservation.slots[0].endMinutes).toBe(19 * 60 + 30);
   });
 });
+
+describe("buildReservationPrefill — période choisie (`reservations.periods`)", () => {
+  const AVEC_DATES = { ...CONF, fields: { ...CONF.fields, periodStart: "fStart", periodEnd: "fEnd" } };
+
+  it("pose Date début / Date fin de la RÉSERVATION, pas sur le créneau cliqué", () => {
+    const { defaultValues } = buildReservationPrefill(AVEC_DATES, {
+      resourceId: "poi1",
+      slot: { day: "monday", startMinutes: 1080, endMinutes: 1140 },
+      period: { periodStart: "2026-10-01", periodEnd: "2026-12-18" },
+    });
+    expect(defaultValues.step2026_0["step2026_0fStart"]).toBe("2026-10-01");
+    expect(defaultValues.step2026_0["step2026_0fEnd"]).toBe("2026-12-18");
+    const [creneau] = defaultValues.step2026_0["step2026_0fSlots"] as Array<Record<string, unknown>>;
+    expect(creneau.periodStart).toBeUndefined();
+    // Aller-retour : la réservation relue porte la période choisie.
+    const relue = parseReservationAnswer({ answers: defaultValues }, AVEC_DATES)!;
+    expect(relue).toMatchObject({ periodStart: "2026-10-01", periodEnd: "2026-12-18" });
+  });
+
+  it("laisse à saisir une borne absente", () => {
+    const { defaultValues } = buildReservationPrefill(AVEC_DATES, {
+      resourceId: "poi1",
+      period: { periodStart: "2026-10-23" },
+    });
+    expect(defaultValues.step2026_0["step2026_0fStart"]).toBe("2026-10-23");
+    expect(defaultValues.step2026_0).not.toHaveProperty("step2026_0fEnd");
+  });
+
+  it("n'écrit aucune date quand la config ne mappe pas les champs de période", () => {
+    const { defaultValues } = buildReservationPrefill(CONF, {
+      resourceId: "poi1",
+      period: { periodStart: "2026-10-01", periodEnd: "2026-12-18" },
+    });
+    expect(Object.keys(defaultValues.step2026_0)).toEqual(["finderstep2026_0fFinder"]);
+  });
+});

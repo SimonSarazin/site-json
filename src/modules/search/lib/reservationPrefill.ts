@@ -36,6 +36,9 @@ export interface ReservationPrefillTarget {
   resourceName?: string;
   /** Créneau cliqué. Absent = formulaire ouvert sans créneau pré-choisi. */
   slot?: { day: DayKey; startMinutes: number; endMinutes: number };
+  /** Période choisie dans la section (`reservations.periods`) : Date début / Date fin du formulaire,
+   *  jours ISO. Une borne absente reste à saisir. */
+  period?: { periodStart?: string; periodEnd?: string };
 }
 
 export interface ReservationPrefill {
@@ -74,5 +77,11 @@ export function buildReservationPrefill(
       },
     ];
   }
+  // Les dates vont sur la RÉSERVATION, pas sur le créneau cliqué : un créneau sans période vaut pour
+  // toute la réservation, la répéter sur lui ne dirait rien de plus. Le format des champs date du
+  // formulaire est celui du `<input type="date">`, le jour ISO.
+  const { periodStart, periodEnd } = target.period ?? {};
+  if (periodStart && fields.periodStart) values[`${step}${fields.periodStart}`] = periodStart;
+  if (periodEnd && fields.periodEnd) values[`${step}${fields.periodEnd}`] = periodEnd;
   return { defaultValues: { [step]: values }, lockedFields: [finderKey] };
 }

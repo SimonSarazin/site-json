@@ -868,6 +868,13 @@ export interface TimeSlotValue {
   endMinute: string;
   startAmPm?: string;
   endAmPm?: string;
+  /**
+   * Période PROPRE du créneau, jours ISO (« 2026-08-24 ») — contrat des créneaux de réservation datés par
+   * cycle (import ESS974, saisie quand l'appelant l'active : `slotPeriods`). Absente = toute la période de
+   * la réponse. Préservée à l'édition comme toute clé du créneau (cf. `normalizeSlot`).
+   */
+  periodStart?: string;
+  periodEnd?: string;
 }
 
 /** Config du champ (params legacy `timeSlots{fieldKey}`), valeurs numériques déjà coercées. */

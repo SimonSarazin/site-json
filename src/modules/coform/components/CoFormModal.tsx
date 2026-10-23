@@ -87,6 +87,11 @@ export interface CoFormModalProps {
    * formulaires de CRÉATION ouverts au public.
    */
   unknownFieldVariant?: "error" | "placeholder";
+  /** Contrôle métier juste avant l'enregistrement : un message refuse, le modal reste ouvert sur la
+   *  saisie (cf. `SmartCoForm`). */
+  beforeSubmit?: (allData: AllStepsData) => Promise<string | null> | string | null;
+  /** Saisie d'une période sur chaque créneau des champs `timeSlots` (cf. `TimeSlotPeriodsContext`). */
+  slotPeriods?: boolean;
 }
 
 /**
@@ -113,6 +118,8 @@ export function CoFormModal({
   elementId,
   elementType,
   unknownFieldVariant,
+  beforeSubmit,
+  slotPeriods,
 }: CoFormModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -230,6 +237,8 @@ export function CoFormModal({
               elementId={elementId}
               elementType={elementType}
               unknownFieldVariant={unknownFieldVariant}
+              beforeSubmit={beforeSubmit}
+              slotPeriods={slotPeriods}
             />
           </div>
         </DialogContent>
