@@ -8,6 +8,7 @@ import ValidateInvitationPage from "./pages/ValidateInvitationPage";
 import AcceptInvitationPage from "./pages/AcceptInvitationPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import JoinByLinkPage from "./pages/JoinByLinkPage";
+import SsoCallbackPage from "./pages/SsoCallbackPage";
 
 /**
  * Routes du module auth, injectées dans le router via la découverte de modules
@@ -21,6 +22,7 @@ import JoinByLinkPage from "./pages/JoinByLinkPage";
  * - /validate/:user/:validationKey        (liens du backend Node)
  * - /co2/person/activate/user/:user/validationKey/:validationKey/*  (liens LEGACY)
  * - /co2/link/connect/ref/:ref            (lien d'invitation partageable, cf. docs/25)
+ * - /sso/callback                         (retour SSO hors popup : code d'échange en fragment, cf. SsoCallbackPage)
  *
  * Les deux formes de liens de validation sont servies pour que les e-mails DÉJÀ
  * ENVOYÉS restent valides quand le domaine d'un costum pointe sur site-json
@@ -77,4 +79,5 @@ export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] 
     element: <AcceptInvitationPage />,
   },
   { path: "co2/link/connect/ref/:ref", element: <JoinByLinkPage /> },
+  { path: "sso/callback", element: <SsoCallbackPage /> },
 ];

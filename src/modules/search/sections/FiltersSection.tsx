@@ -172,7 +172,7 @@ export function FiltersSection({
     const v = (s ?? "").trim();
     return v ? v.charAt(0).toUpperCase() + v.slice(1) : v;
   };
-  const { title, filterGroups: propsFiltersGroupsBruts, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className, hideSearch } = props;
+  const { title, filterGroups: propsFiltersGroupsBruts, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className, hideSearch, searchPlaceholder } = props;
   // Options DYNAMIQUES résolues AVANT l'enrichissement : l'effet ci-dessous dépend de cette liste, il se
   // rejoue donc quand les valeurs arrivent, `setFilterGroups` suit, et la synchro URL — déjà continue
   // ici — restaure le deep-link. Un groupe sans `optionsFrom` traverse inchangé, sans aucune requête.
@@ -635,7 +635,7 @@ export function FiltersSection({
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="text"
-        placeholder={t("Rechercher par nom...")}
+        placeholder={searchPlaceholder ? t(searchPlaceholder) : t("Rechercher par nom...")}
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         className="pl-9"
@@ -856,8 +856,9 @@ export function FiltersSection({
           const answerConf = isPathGroup ? filtersByPathOptions[group] : filtersByAnswersOptions[group];
           const answerLoading = isPathGroup ? filterByPathResult.isLoading : filterAnswerResult.isLoading;
           const answerOptionNames = groupData ? Object.keys(groupData.values) : [];
-          // Cible du groupe : éléments liés (`_id`/orgaNameArray, défaut historique)
-          // ou réponses elles-mêmes (prédicat de chemin) — cf. answerFilterClause.
+          // Cible du groupe : éléments liés (`_id`/orgaNameArray, défaut historique), documents
+          // rattachés (`parentId`/orgaNameArray) ou réponses elles-mêmes (prédicat de chemin)
+          // — cf. answerFilterClause.
           const toggleAnswerOption = (
             optionKey: string,
             option: { name?: string; orgaNameArray?: string[] },
@@ -886,7 +887,8 @@ export function FiltersSection({
           );
           // Widget COMPACT déclaré en config (filtersByAnswers/Path[group].select) :
           // remplace l'accordéon. La sélection des groupes « par réponses » vit
-          // dans searchByPath/_id (orgaNameArray) — isFilterSelected en tient compte.
+          // dans searchByFields, clé = option (`_id`/`parentId` + orgaNameArray, ou chemin
+          // de réponse) — isFilterSelected en tient compte.
           const answerSelectConf = filtersByAnswersOptions[group]?.select ?? filtersByPathOptions[group]?.select;
           if (answerSelectConf) {
             const fieldOptions = [...answerOptionNames]

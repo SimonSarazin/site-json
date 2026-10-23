@@ -8,6 +8,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { getBaseUrl } from "@/lib/constant/common";
 import type { SearchCardProps } from "../../schema";
 import { parseResourceDirectoryItem, type ResourceKind } from "../../lib/resourceDirectory";
+import { resourceDisplayName } from "../../lib/resourceDirectorySearch";
 import { formatCapacityRange } from "../../helpers/servicePricingAnswers";
 import {
   useResourceDirectoryActions,
@@ -56,11 +57,7 @@ export default function CardResourceDirectory({ item, onClick, list }: SearchCar
   const parentName = parent?.name ?? model.parent?.name;
   const KindIcon = model.type ? KIND_ICON[model.type.kind] : Building2;
 
-  const name =
-    model.name ??
-    (model.nameFallback ? t(model.nameFallback.key, undefined, model.nameFallback.params) : undefined) ??
-    parentName ??
-    t("resourceDirectory.unknownPlace");
+  const name = resourceDisplayName(model, t, parentName);
 
   const locality = [parent?.streetAddress, parent?.postalCode, parent?.addressLocality]
     .filter(Boolean)

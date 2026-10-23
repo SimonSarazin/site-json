@@ -29,7 +29,7 @@ import {PledgeFundingToast} from "./parts/PledgeFundingToast.tsx";
 import {CagnotteItemList} from "./parts/CagnotteItemList.tsx";
 import {CagnotteResourceProgressCard} from "./parts/CagnotteResourceProgressCard.tsx";
 import {CagnotteContributeButton} from "./parts/CagnotteContributeButton";
-import {useFundingEnvelope} from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import {useFundingEnvelope, type FundingEnvelopeForm} from "@/modules/cagnotte/hooks/useFundingEnvelope";
 import {useResourceModalPreference} from "@/modules/cagnotte/hooks/useResourceModalPreference";
 import {useCagnottePermissions} from "@/modules/cagnotte/hooks/useCagnottePermissions";
 import {useCagnotteContextSafe} from "@/modules/cagnotte/hooks/useCagnotteContext";
@@ -85,6 +85,11 @@ interface CagnotteDialogProps {
          * sélectionnée comme les autres.
          */
         resource?: CagnotteResource;
+        /**
+         * Formulaire que l'enveloppe doit lire (`useFundingEnvelope`, option `form`). Avec
+         * `answerId`, l'enveloppe ne porte que cette ressource : à réserver à `hideResourceSelect`.
+         */
+        envelopeForm?: FundingEnvelopeForm | null;
     };
     cagnotteType?: CagnotteType;
 }
@@ -211,7 +216,7 @@ const CagnotteDialogContent = ({
     // d'un 2e hook global — voir doc/refactor-useOrganizationProjectsWithAnswers-lazy.md §9.
     const {data: fundingEnvelope, isLoading: isEnvelopeLoading} = useFundingEnvelope(
         selectedResourceId || undefined,
-        {hostEntity: openContext?.hostEntity},
+        {hostEntity: openContext?.hostEntity, form: openContext?.envelopeForm},
     );
     const siteConfig = useSite();
 

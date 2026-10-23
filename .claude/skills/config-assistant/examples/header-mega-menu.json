@@ -19,7 +19,7 @@
           "en": "Services"
         },
         "icon": "building-2",
-        "path": "/annuaire-ressources",
+        "path": "/services",
         "featured": true,
         "children": [
           {
@@ -31,7 +31,7 @@
               "fr": "Découvrez tous les services disponibles dans les tiers-lieux",
               "en": "Discover all services available at third places"
             },
-            "path": "/annuaire-ressources"
+            "path": "/services"
           },
           {
             "label": {
@@ -42,7 +42,7 @@
               "fr": "Trouver la salle de réunion pour vous accueillir.",
               "en": "Find the meeting room to host you."
             },
-            "path": "/annuaire-ressources?resourceType=meeting-room"
+            "path": "/services?resourceType=meeting-room"
           },
           {
             "label": {
@@ -53,7 +53,7 @@
               "fr": "Les bureaux partagés et espaces de Coworking.",
               "en": "Shared offices and coworking spaces."
             },
-            "path": "/annuaire-ressources?resourceType=coworking"
+            "path": "/services?resourceType=coworking"
           },
           {
             "label": {
@@ -64,14 +64,14 @@
               "fr": "Les lieux pouvant vous accueillir pour plusieurs jours.",
               "en": "Places that can host you for several days."
             },
-            "path": "/annuaire-ressources?resourceType=accommodation"
+            "path": "/services?resourceType=accommodation"
           },
           {
             "label": {
               "fr": "Coworking, salles & hébergements",
               "en": "Coworking, rooms & stays"
             },
-            "path": "/annuaire-ressources"
+            "path": "/services"
           },
           {
             "label": {
@@ -391,7 +391,8 @@
       "search": true,
       "auth": true,
       "cart": false,
-      "notifications": true
+      "notifications": true,
+      "pledge": true
     }
   }
 }

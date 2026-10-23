@@ -12,19 +12,22 @@ export const CAGNOTTE_QUERY_KEYS = {
   // FundingEnvelope — récupère la "fundingEnvelope" complète d'un projet
   // (milestones, actions, contributors, funders, finance, rawEnvelope).
   // Producteur : useFundingEnvelope
-  // Préfixe complet pour les producteurs : ["funding-envelope", entityId, contextType, projectId, profileSlug, userId]
+  // Préfixe complet pour les producteurs : ["funding-envelope", entityId, contextType, projectId, profileSlug, userId, formId, formAnswerId]
   //
   // `userId` est inclus car `useFundingEnvelope` enrichit la réponse via `getFormData`
   // côté backend en passant `financerId: me.id` (cf. useFundingEnvelope.ts). Sans cette
   // dimension dans la clé, deux utilisateurs distincts dans la même session pourraient
   // se voir servir les données enrichies du premier depuis le cache.
+  // `formId`/`formAnswerId` : formulaire et réponse imposés à `getFormData` (option `form`).
   FUNDING_ENVELOPE: (
     entityId: string | null,
     contextType: string | null,
     projectId: string | null,
     profileSlug: string | null = null,
-    userId: string | null = null
-  ) => ["funding-envelope", entityId, contextType, projectId, profileSlug, userId] as const,
+    userId: string | null = null,
+    formId: string | null = null,
+    formAnswerId: string | null = null
+  ) => ["funding-envelope", entityId, contextType, projectId, profileSlug, userId, formId, formAnswerId] as const,
   // Préfixe minimaliste pour invalidations cross-contexte (matche toutes les fundingEnvelope)
   FUNDING_ENVELOPE_PREFIX: () => ["funding-envelope"] as const,
 

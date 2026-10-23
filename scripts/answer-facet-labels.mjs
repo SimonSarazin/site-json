@@ -39,6 +39,7 @@ export function groupesCiblantLesAnswers(configs) {
     if (!noeud || typeof noeud !== "object") return;
     for (const cle of ["filtersByAnswers", "filtersByPath"]) {
       for (const [id, conf] of Object.entries(noeud[cle] ?? {})) {
+        // Seule la cible `answers` filtre par libellé ; `linkedElements` et `parentId` filtrent par ids.
         if (conf?.filterTarget !== "answers") continue;
         const chemin = conf.path ?? conf.thematicPath;
         if (!chemin || !conf.forms) continue; // sans form, rien à interroger

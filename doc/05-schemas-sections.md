@@ -1776,6 +1776,8 @@ export const HeroSearchSchema = z.object({
       .optional(),
     // Id de la section vers laquelle scroller au lancement d'une recherche.
     scrollTarget: z.string().optional(),
+    searchHref: z.string().optional(),
+    serviceSuggestions: z.object({ page: z.string(), sectionId: z.string() }).optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
     // Scope de l'autocompletion — aligner sur le searchProStatic de la page
@@ -1802,6 +1804,8 @@ export const HeroSearchSchema = z.object({
 | `ctaButtons[].filters` | `{param, values[]}[]?` | Pose des query params `?param=v1,v2` (format pluriel de `computeFiltersFromUrl`, identique a la sidebar `/lieux`) |
 | `ctaButtons[].href` | `string?` | Navigue (ex. « + » → page de recherche complete) |
 | `scrollTarget` | `string?` | Id de la section vers laquelle defiler au lancement d'une recherche (ex. le `searchProStatic` de la page). Absent = pas de defilement |
+| `searchHref` | `string?` | Page de recherche complète (ex. `/lieux`). Renseignée, « Rechercher » / Entrée y mènent avec le texte (`?search=`) et les filtres actifs de la page (`buildViewAllHref`, comme le lien « voir tous » des listes) — même champ vide — au lieu de filtrer la liste de la page et d'y défiler. Les boutons de catégorie filtrent toujours la page. Absent = comportement historique |
+| `serviceSuggestions` | `{ page, sectionId }?` | Suggestions de **services** pendant la saisie, au lieu des fiches : l'annuaire `coform-resource-directory` désigné par sa page et son id (sa config est reprise via `findSectionByRef`, rien n'est recopié ; chargé à la 1ʳᵉ saisie de 2 caractères, cache partagé avec l'annuaire). Mêmes champs que la recherche de l'annuaire (service, lieu porteur, ville, code postal) ; une suggestion ouvre le détail du service (`<page>?resource=<id>`). Absent = suggestions de fiches |
 | `placeholder` | `LocalizedString?` | Placeholder du champ de recherche |
 | `searchButtonText` | `LocalizedString?` | Texte du bouton de recherche |
 | `searchVariant` | `"default" \| "navigator-tl"` | Variant SDK de l'endpoint backend pour l'autocompletion |

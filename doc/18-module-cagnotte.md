@@ -255,6 +255,23 @@ serait neuve à chaque recalcul du memo.
 ⚠️ Le **header** (`PiggyBankHeaderButton`) et **`CagnotteDialog`** ne réparent plus rien. Tout passage
 disant que la réparation part « au rendu » ou « à l'ouverture de la modale » est faux.
 
+**Une dépense ↔ un jalon.** Le sens inverse (jalon du projet sans dépense) est réparé par le legacy
+`budgetmilestoneV2.js` (compact, fiche projet, budget ocecoform). Il ajoutait des dépenses sans
+`milestone`, de façon asynchrone ; `Aap::generateMilestones` les rattachait plus tard par nom.
+Chaque affichage intermédiaire en ajoutait une de plus, d'où des dépenses en double sur un même
+jalon, qui portent les mêmes actions.
+
+Depuis le correctif :
+- le legacy appelle `coremuoperation` `generateDepenses` (`Aap::ensureMilestoneDepenses`), qui
+  ajoute des dépenses déjà liées, sous un filtre atomique ;
+- `generateMilestones` ne rattache plus par nom un jalon déjà pris ;
+- les doublons existants se retirent avec `/co2/admin/aapduplicates` (`op=report|apply`,
+  super-admin), une fois ce correctif déployé.
+
+Côté site-json, `uniqueActionRows` (`aac/lib/objectiveHelpers.ts`) ne compte chaque action qu'une
+fois, même sur des données encore en double : liste `CommunActionsFeed` et avancement des actions de
+`CommunFinancingCard`.
+
 > Le nom `aapStep1` vient de « Appel À Projet, étape 1 ». Le module suppose que le CoForm cible contient cette structure. **Non généralisé** pour d'autres structures.
 
 ### Types canoniques (`types.ts`)

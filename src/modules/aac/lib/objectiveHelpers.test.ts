@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  actionCreatedLabel,
   canManageObjectiveActions,
   normalizeActionForEdit,
   resolveCommunOwnerIds,
   fundableItemToMilestone,
   fundableItemToMilestoneRef,
   toMilestoneStatus,
+  uniqueActionRows,
 } from "./objectiveHelpers";
-import type { CagnotteFundableItem } from "@/modules/cagnotte/types";
+import type { CagnotteFundableItem, FundingAction } from "@/modules/cagnotte/types";
 
 describe("resolveCommunOwnerIds", () => {
   it("retient le déposant, quel que soit le visiteur", () => {
@@ -134,5 +136,38 @@ describe("toMilestoneStatus", () => {
     expect(toMilestoneStatus(undefined)).toBe("open");
     expect(toMilestoneStatus("")).toBe("open");
     expect(toMilestoneStatus("archivé")).toBe("open");
+  });
+});
+
+describe("actionCreatedLabel", () => {
+  const label = (created?: string | number) =>
+    actionCreatedLabel({ id: "a1", name: "Atelier", credits: 0, status: "todo", tags: [], contributors: [], created });
+
+  // 15/11/2023 à midi UTC.
+  it("lit des secondes (`time()` PHP), des millisecondes ou une chaîne", () => {
+    expect(label(1700049600)).toBe("15/11/2023");
+    expect(label(1700049600000)).toBe("15/11/2023");
+    expect(label("1700049600")).toBe("15/11/2023");
+    expect(label("2023-11-15T12:00:00Z")).toBe("15/11/2023");
+  });
+
+  it("vide si absente ou illisible", () => {
+    expect(label(undefined)).toBe("");
+    expect(label("")).toBe("");
+    expect(label("pas une date")).toBe("");
+  });
+});
+
+describe("uniqueActionRows", () => {
+  const action = (id: string): FundingAction => ({ id, name: id, credits: 0, status: "todo", tags: [], contributors: [] });
+  const item = (itemId: string, actions: FundingAction[]) => ({ itemId, actions }) as unknown as CagnotteFundableItem;
+
+  it("chaque action une seule fois, avec le premier palier qui la porte", () => {
+    const rows = uniqueActionRows([item("25", [action("a1"), action("a2")]), item("30", [action("a1"), action("a3")])]);
+    expect(rows.map((row) => `${row.item.itemId}:${row.action.id}`)).toEqual(["25:a1", "25:a2", "30:a3"]);
+  });
+
+  it("garde toutes les actions sans id", () => {
+    expect(uniqueActionRows([item("1", [action(""), action("")])])).toHaveLength(2);
   });
 });

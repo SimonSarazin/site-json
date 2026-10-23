@@ -548,6 +548,19 @@ sont rendus que si **`config.aac.detail.demoBlocks: true`** (faux par défaut, `
 coupés, les onglets Maturation et Coopérations disparaissent aussi. **À couper avant la mise en
 ligne d'un site réel** : un visiteur y lirait des dons et des chiffres qui n'existent pas.
 
+**Jalons et actions** (onglet « Passage à l'action » de l'interface `editorial`). Deux colonnes à
+partir de `lg`, sur le même contrôleur et les mêmes droits que `CommunActionsSection` (interface par
+défaut) : `CommunMilestonesList` (frise des paliers, gestion au survol, « Ajouter un palier ») et
+`CommunActionsFeed` (toutes les actions à plat, commandes en ligne), dans
+`components/pageDetail/CommunActionsLists.tsx`. Les dialogues d'action (`CommunActionDialogs`) sont
+montés une fois par la page (`AacCommunDetailPage`), à côté de `CommunMilestoneDialogs`, pour toutes
+les interfaces : une vue ne les monte pas. La liste ne montre chaque action qu'une fois
+(`uniqueActionRows`, `lib/objectiveHelpers.ts`). Un clic sur un palier filtre la liste des actions sur
+ce palier, un second clic ou « Toutes les actions » retire le filtre. L'état vit dans l'interface
+(`selectedMilestoneId`/`onSelectMilestone`, `milestoneFilter`/`onClearMilestoneFilter`) ; sans ces
+props, les deux listes restent sans filtre. Les actions terminées sont masquées par défaut :
+l'interrupteur « Masquer les terminées (n) », état local de `CommunActionsFeed`, les réaffiche.
+
 **Actualités et agenda** (onglet « Actus et agenda » de l'interface `editorial`). Ils sont ceux du
 **projet lié** au commun, donc rendus en phase `project` seulement (`vm.objectives.news` /
 `.agenda`, `{ projectId }`) :
@@ -973,6 +986,15 @@ mentionne pour ces deux surfaces est périmée.
    (`config.roles.depenseStepKey`) aux replis document, `buildResourceFromAnswer` comme
    `useCommunRawDepenses`, plutôt que de laisser jouer leur défaut `DEFAULT_AAC_STEP`.
    Sur les limites du repli lui-même (index Mongo, suppression refusée) : `doc/18` §Pièges n°2bis.
+
+   L'hôte ne suffit pas : il peut porter plusieurs appels (Open Atlas en a trois), et
+   `getFormData` lit par défaut le premier, le plus récent. Les lecteurs de la fiche passent donc
+   `form: { id: useCommunFundingContext().formId, answerId }` à `useFundingEnvelope`
+   (`openContext.envelopeForm` pour `CagnotteDialog`) ; le champ coform `MilestoneListField` passe
+   le formulaire qu'il rend (`formId`). L'enveloppe ne lit alors que la réponse du commun, et une
+   réponse illisible ailleurs dans le formulaire ne la fait plus échouer. Le contrôleur des paliers
+   n'interroge l'enveloppe qu'une fois l'id de la réponse connu : sans lui, `getFormData` lirait tout
+   le formulaire.
 10. **Les `.default()` des schémas de section ne jouent PAS à l'exécution** (la config n'est jamais
    parsée par Zod au runtime — cf. `doc/05`, encadré d'en-tête). Un sous-objet de la config arrive
    donc **tel quel**, et un défaut de destructuration (`filters = {…}`) ne joue que s'il est

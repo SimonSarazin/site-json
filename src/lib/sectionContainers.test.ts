@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { enfantsDeSection, findSectionsOfTypes, walkSections, type SectionLike } from "./sectionContainers";
+import { enfantsDeSection, findSectionByRef, findSectionsOfTypes, walkSections, type SectionLike } from "./sectionContainers";
 
 /**
  * Le registre des containers est le point de rendez-vous du prefetch SSR et des gardes : une
@@ -87,5 +87,21 @@ describe("walkSections", () => {
       "agenda",
       "member",
     ]);
+  });
+});
+
+describe("findSectionByRef", () => {
+  const pages = [
+    { path: "/", sections: [{ type: "agenda", id: "section-events", props: { a: 1 } }] },
+    { path: "/lieux", sections: [{ type: "gridLayout", props: { rightSection: { type: "searchProStatic", id: "section-events", props: { b: 2 } } } }] },
+  ];
+  it("trouve la section par page ET id, même dans un container", () => {
+    expect(findSectionByRef(pages, { page: "/lieux", sectionId: "section-events" })?.props).toEqual({ b: 2 });
+    expect(findSectionByRef(pages, { page: "/", sectionId: "section-events" })?.props).toEqual({ a: 1 });
+  });
+  it("null si la page ou l'id n'existent pas", () => {
+    expect(findSectionByRef(pages, { page: "/x", sectionId: "section-events" })).toBeNull();
+    expect(findSectionByRef(pages, { page: "/", sectionId: "nope" })).toBeNull();
+    expect(findSectionByRef(undefined, { page: "/", sectionId: "a" })).toBeNull();
   });
 });
