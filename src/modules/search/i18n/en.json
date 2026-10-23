@@ -297,6 +297,8 @@
   "card.servicePricing.price.room": "{{price}}€ per private room",
   "resourceDirectory.count": "{{count}} resource",
   "resourceDirectory.count_other": "{{count}} resources",
+  "resourceDirectory.placeServices": "{{count}} service",
+  "resourceDirectory.placeServices_other": "{{count}} services",
   "resourceDirectory.mapUnplaced": "{{count}} service is not on the map: its place has no location.",
   "resourceDirectory.mapUnplaced_other": "{{count}} services are not on the map: their place has no location.",
   "resourceDirectory.loadError": "Resources could not be loaded.",

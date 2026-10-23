@@ -3,6 +3,7 @@ import {
   addressZoneIds,
   defaultOpenFilterGroups,
   matchesCapacity,
+  matchesTypologies,
   matchesZones,
   narrowResourceTypes,
   parentIdsFilter,
@@ -83,6 +84,18 @@ describe("selectedZones / matchesZones", () => {
   });
 });
 
+describe("matchesTypologies", () => {
+  it("rien de coché : tout passe, même lieu inconnu", () => {
+    expect(matchesTypologies(undefined, [])).toBe(true);
+  });
+  it("garde un lieu portant l'une des typologies cochées, écarte les autres et les lieux inconnus", () => {
+    const tags = ["Association", "Ateliers artisanaux partagés"];
+    expect(matchesTypologies(tags, ["Tiers-lieu culturel", "Ateliers artisanaux partagés"])).toBe(true);
+    expect(matchesTypologies(tags, ["Tiers-lieu culturel"])).toBe(false);
+    expect(matchesTypologies(undefined, ["Tiers-lieu culturel"])).toBe(false);
+  });
+});
+
 describe("parentIdsFilter", () => {
   it("sans réseau : le lieu cliqué seul, ou aucun filtre", () => {
     expect(parentIdsFilter(null, "p1")).toEqual(["p1"]);
@@ -131,6 +144,11 @@ describe("defaultOpenFilterGroups", () => {
     expect(defaultOpenFilterGroups({ thematic: false, capacity: false, region: false, priceGroupIds: [] })).toEqual([
       "resourceType",
     ]);
+  });
+  it("typologies : rangées après la thématique, avant la capacité", () => {
+    expect(
+      defaultOpenFilterGroups({ thematic: false, typology: true, capacity: true, region: true, priceGroupIds: [] }),
+    ).toEqual(["resourceType", "typologies"]);
   });
   it("tiers-lieux : type + thématique (ordre d'affichage)", () => {
     expect(defaultOpenFilterGroups({ thematic: true, capacity: true, region: true, priceGroupIds: [] })).toEqual([

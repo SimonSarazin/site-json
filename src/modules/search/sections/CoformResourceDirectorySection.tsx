@@ -28,7 +28,7 @@ import {
   matchesResourceSearch,
   resolveServicePoints,
   resourceDisplayName,
-  spreadServicePoints,
+  groupServicesByPoint,
 } from "../lib/resourceDirectorySearch";
 import { getEntryCoords } from "../lib/searchMapSelection";
 import SearchListView from "../components/SearchListView";
@@ -38,6 +38,7 @@ import {
   CAPACITY_FILTER_RANGES,
   defaultOpenFilterGroups,
   matchesCapacity,
+  matchesTypologies,
   matchesZones,
   parentIdsFilter,
   resourceCapacity,
@@ -96,6 +97,7 @@ export default function CoformResourceDirectorySection({
     capacityFilter = false,
     regionFilter,
     thematicFilter,
+    typologyFilter,
     searchFilter = false,
     showMap = false,
   } = props;
@@ -106,7 +108,7 @@ export default function CoformResourceDirectorySection({
     [resourceTypes, finderSuffix, fieldSuffixes, costumSlug, contextId, contextType, scope, limit],
   );
 
-  // `order` : Type, Thématique, Capacité, Zone, puis les prix — les groupes « par réponses »
+  // `order` : Type, Thématique ou Typologies (rang 1), Capacité, Zone, puis les prix — les groupes « par réponses »
   // (`filtersByPath`) se rangent avec les autres sur cette même clé.
   const filtersProps = useMemo<FiltersSectionProps>(
     () => ({
@@ -119,6 +121,7 @@ export default function CoformResourceDirectorySection({
       },
       defaultOpenGroups: defaultOpenFilterGroups({
         thematic: !!thematicFilter,
+        typology: !!typologyFilter,
         capacity: capacityFilter,
         region: !!regionFilter,
         priceGroupIds: priceFilters ? PRICE_FILTER_GROUPS.map((g) => g.field) : [],
@@ -135,6 +138,21 @@ export default function CoformResourceDirectorySection({
           order: 0,
           options: resourceTypes.map((rt) => ({ id: rt.id, label: rt.label, name: rt.id })),
         },
+        ...(typologyFilter
+          ? [
+              {
+                // Id `typologies` et `name` = tag, comme le groupe de `/lieux` : même `?typologies=`.
+                // Sans `field` : `selectedFilters.typologies` → filtre CÔTÉ CLIENT (tags du lieu porteur).
+                id: "typologies",
+                label: typologyFilter.label,
+                type: "filters" as const,
+                optionStyle: "check" as const,
+                keepOptionOrder: true,
+                order: 1,
+                options: typologyFilter.options,
+              },
+            ]
+          : []),
         ...(capacityFilter
           ? [
               {
@@ -206,7 +224,7 @@ export default function CoformResourceDirectorySection({
           }
         : {}),
     }),
-    [resourceTypes, filtersTitle, priceFilters, capacityFilter, regionFilter, thematicFilter, searchFilter],
+    [resourceTypes, filtersTitle, priceFilters, capacityFilter, regionFilter, thematicFilter, typologyFilter, searchFilter],
   );
 
   const listConf = useMemo<ListConf>(
@@ -342,6 +360,7 @@ function ResourceDirectoryList({
   } = useResourceDirectoryItems(sourceDeLaRequete, { serverFilters, enabled: !aucunLieu });
 
   // Facettes CLIENT : type (`selectedFilters.resourceType`), capacité (`selectedFilters.capacity`),
+  // typologies du lieu porteur (`selectedFilters.typologies`, ses tags),
   // zone du lieu porteur (`searchByFields`, type `scopeList`), recherche texte (`searchQuery`, champ de
   // la colonne de filtres : service, lieu porteur, ville, code postal).
   const selectedFilters = pf.selectedFilters;
@@ -351,12 +370,14 @@ function ResourceDirectoryList({
     if (aucunLieu) return [];
     const typeSel = selectedFilters?.resourceType?.length ? selectedFilters.resourceType : typesDeLUrl;
     const capacitySel = selectedFilters?.capacity ?? [];
+    const typologySel = selectedFilters?.typologies ?? [];
     const filtered = items.filter((it) => {
       if (typeSel.length > 0 && !(it.model.type && typeSel.includes(it.model.type.id))) return false;
       if (!matchesCapacity(resourceCapacity(it.model.stats[0]), capacitySel)) return false;
       const parentId = it.model.parent?.id;
       const parent = parentId ? parents.get(parentId) : undefined;
       if (!matchesZones(parent?.zones, zones)) return false;
+      if (!matchesTypologies(parent?.tags, typologySel)) return false;
       if (!searchQuery.trim()) return true;
       const parentName = parent?.name ?? it.model.parent?.name;
       return matchesResourceSearch(
@@ -367,12 +388,11 @@ function ResourceDirectoryList({
     return limit === undefined ? filtered : filtered.slice(0, limit);
   }, [aucunLieu, items, selectedFilters, typesDeLUrl, zones, searchQuery, parents, limit, t]);
 
-  // Vue carte : un repère par SERVICE (cf. `spreadServicePoints` : ceux d'un même lieu s'écartent en
-  // cercle autour de lui). Popup = nom du service, lieu porteur, adresse ; son bouton ouvre la fiche du
-  // service (même détail que la liste : `listConf`).
+  // Vue carte : un repère par LIEU (cf. `groupServicesByPoint`), sa popup liste ses services
+  // (`map.popup.type: "resource-place"`) ; chacun ouvre sa fiche (même détail que la liste : `listConf`).
   const [view, setView] = useState<"list" | "map">("list");
-  const servicePoints = useMemo(() => {
-    if (!showMap || view !== "map") return [];
+  const { placeItems, placedCount } = useMemo(() => {
+    if (!showMap || view !== "map") return { placeItems: [], placedCount: 0 };
     // Position du service, sinon de son lieu porteur, sinon d'un service voisin (cf. `resolveServicePoints`).
     const points = resolveServicePoints(
       visible.map((it) => {
@@ -386,25 +406,33 @@ function ResourceDirectoryList({
         };
       }),
     );
-    const positions = spreadServicePoints(points);
     const parId = new Map(visible.map((it) => [it.id, it]));
-    return points.map(({ id }) => {
-      const it = parId.get(id)!;
-      const pos = positions.get(id)!;
-      const parentId = it.model.parent?.id;
-      const parentName = (parentId ? parents.get(parentId)?.name : undefined) ?? it.model.parent?.name;
+    // Libellé du type (« Salle de réunion »…) : sur la conf des types, pas sur le modèle.
+    const libelleType = new Map(source.resourceTypes.map((rt) => [rt.id, t(rt.label)]));
+    const placeItems = groupServicesByPoint(points).map((groupe) => {
+      const services = groupe.ids.map((id) => parId.get(id)!);
+      const premier = services[0];
+      const parentId = premier.model.parent?.id;
+      const parent = parentId ? parents.get(parentId) : undefined;
+      const parentName = parent?.name ?? premier.model.parent?.name;
       return {
-        ...it,
+        id: parentId ?? `${groupe.lng},${groupe.lat}`,
         serverData: {
-          ...it.serverData,
-          name: resourceDisplayName(it.model, t, parentName),
-          shortDescription: parentName ? t("resourceDirectory.by", undefined, { name: parentName }) : undefined,
-          geo: { latitude: pos.lat, longitude: pos.lng },
-          geoPosition: { type: "Point", coordinates: [pos.lng, pos.lat] },
+          name: parentName,
+          address: premier.serverData.address,
+          geo: { latitude: groupe.lat, longitude: groupe.lng },
+          geoPosition: { type: "Point", coordinates: [groupe.lng, groupe.lat] },
         },
+        resources: services.map((it) => ({
+          entry: it as unknown as SearchEntity,
+          name: resourceDisplayName(it.model, t, parentName),
+          typeLabel: libelleType.get(it.model.type?.id ?? ""),
+        })),
+        getEntityType: () => "organizations" as const,
       };
     });
-  }, [showMap, view, visible, parents, t]);
+    return { placeItems, placedCount: points.length };
+  }, [showMap, view, visible, parents, source.resourceTypes, t]);
 
   return (
     <ResourceDirectoryActionsProvider value={showFilters ? { activeParent, setActiveParent } : null}>
@@ -486,7 +514,8 @@ function ResourceDirectoryList({
                 <Suspense fallback={<MapSkeleton label={t("Chargement de la carte…")} containerClass={MAP_FILL} />}>
                   <ResourceParentsProvider value={parents}>
                     <SearchMapWrapper
-                      results={servicePoints as unknown as SearchEntity[]}
+                      results={placeItems as unknown as SearchEntity[]}
+                      map={{ popup: { type: "resource-place" } }}
                       card={listConf.card}
                       preview={listConf.preview}
                       list={listConf}
@@ -499,9 +528,9 @@ function ResourceDirectoryList({
           </div>
           {/* Services sans aucune position connue (ni la leur, ni celle de leur lieu ou d'un service
               voisin) : absents de la carte — on le dit plutôt que de laisser croire la carte complète. */}
-          {servicePoints.length < visible.length && (
+          {placedCount < visible.length && (
             <p className="text-sm text-muted-foreground">
-              {t("resourceDirectory.mapUnplaced", undefined, { count: visible.length - servicePoints.length })}
+              {t("resourceDirectory.mapUnplaced", undefined, { count: visible.length - placedCount })}
             </p>
           )}
         </div>

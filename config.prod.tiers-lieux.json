@@ -39,7 +39,7 @@
           "en": "Services"
         },
         "icon": "building-2",
-        "path": "/annuaire-ressources",
+        "path": "/services",
         "featured": true,
         "children": [
           {
@@ -51,7 +51,7 @@
               "fr": "Découvrez tous les services disponibles dans les tiers-lieux",
               "en": "Discover all services available at third places"
             },
-            "path": "/annuaire-ressources"
+            "path": "/services"
           },
           {
             "label": {
@@ -62,7 +62,7 @@
               "fr": "Trouver la salle de réunion pour vous accueillir.",
               "en": "Find the meeting room to host you."
             },
-            "path": "/annuaire-ressources?resourceType=meeting-room"
+            "path": "/services?resourceType=meeting-room"
           },
           {
             "label": {
@@ -73,7 +73,7 @@
               "fr": "Les bureaux partagés et espaces de Coworking.",
               "en": "Shared offices and coworking spaces."
             },
-            "path": "/annuaire-ressources?resourceType=coworking"
+            "path": "/services?resourceType=coworking"
           },
           {
             "label": {
@@ -84,14 +84,14 @@
               "fr": "Les lieux pouvant vous accueillir pour plusieurs jours.",
               "en": "Places that can host you for several days."
             },
-            "path": "/annuaire-ressources?resourceType=accommodation"
+            "path": "/services?resourceType=accommodation"
           },
           {
             "label": {
               "fr": "Coworking, salles & hébergements",
               "en": "Coworking, rooms & stays"
             },
-            "path": "/annuaire-ressources"
+            "path": "/services"
           },
           {
             "label": {
@@ -796,7 +796,7 @@
                 "fr": "Voir tous les résultats",
                 "en": "View all results"
               },
-              "linkHref": "/annuaire-ressources"
+              "linkHref": "/services"
             },
             "finderSuffix": "miem3epsztzcm9dgim",
             "fieldSuffixes": {
@@ -916,7 +916,7 @@
                   "fr": "Trouver une salle de réunion",
                   "en": "Find a meeting room"
                 },
-                "href": "/annuaire-ressources?resourceType=meeting-room"
+                "href": "/services?resourceType=meeting-room"
               },
               {
                 "iconSvg": "<svg width=\"80\" height=\"66\" viewBox=\"0 0 80 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M51.9856 22.8031L55.7558 0.376221H11.5726C8.66415 0.376221 6.18658 2.48211 5.70184 5.34397L0.603088 35.6544H11.3572L10.1184 43.088L22.4882 35.6544H28.4847L24.7683 57.9913H52.0933L63.2424 65.4249L64.4991 57.9913H68.9695C71.8779 57.9913 74.3555 55.8854 74.8402 53.0235L79.8851 22.8031H51.9856Z\" fill=\"#FFD836\"></path></svg>",
@@ -1071,7 +1071,7 @@
           "type": "html",
           "id": "tiers-lieux-actions",
           "props": {
-            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <a href=\"/lieux\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/annuaire-ressources?resourceType=meeting-room\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/lieux?licoop=Oui\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n</div></div>"
+            "html": "<div class=\"container mx-auto px-6\"><div class=\"grid md:grid-cols-3 gap-8\">\n  <a href=\"/lieux\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/services?resourceType=meeting-room\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n\n  <a href=\"/lieux?licoop=Oui\" class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary\">\n    <div class=\"w-14 h-14 bg-warning rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-6 h-6 text-warning-foreground\" aria-hidden=\"true\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/></svg>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-5 h-5 text-gray-900 dark:text-gray-300\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg>\n    </div>\n  </a>\n</div></div>"
           }
         },
         {
@@ -1306,12 +1306,12 @@
                   "fr": "+",
                   "en": "+"
                 },
-                "href": "/annuaire-ressources"
+                "href": "/services"
               }
             ],
-            "searchHref": "/annuaire-ressources",
+            "searchHref": "/services",
             "serviceSuggestions": {
-              "page": "/annuaire-ressources",
+              "page": "/services",
               "sectionId": "annuaire-ressources-tl"
             },
             "placeholder": {
@@ -1489,7 +1489,7 @@
                 "fr": "Voir tous les résultats",
                 "en": "View all results"
               },
-              "linkHref": "/annuaire-ressources"
+              "linkHref": "/services"
             },
             "finderSuffix": "miem3epsztzcm9dgim",
             "fieldSuffixes": {
@@ -3185,10 +3185,10 @@
       ]
     },
     {
-      "path": "/annuaire-ressources",
+      "path": "/services",
       "title": {
-        "fr": "Annuaire des ressources",
-        "en": "Resources directory"
+        "fr": "Services",
+        "en": "Services"
       },
       "layout": "fullwidth",
       "sections": [
@@ -3214,13 +3214,77 @@
             "contextId": "649ed498f93ee7202e6c8b12",
             "contextType": "projects",
             "priceFilters": false,
-            "thematicFilter": {
+            "typologyFilter": {
               "label": {
                 "fr": "Thématique du lieu",
                 "en": "Place theme"
               },
-              "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
-              "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl"
+              "options": [
+                {
+                  "id": "ateliers-artisanaux",
+                  "label": {
+                    "fr": "Ateliers artisanaux partagés",
+                    "en": "Shared craft workshops"
+                  },
+                  "name": "Ateliers artisanaux partagés"
+                },
+                {
+                  "id": "coworking",
+                  "label": {
+                    "fr": "Bureaux partagés / Coworking",
+                    "en": "Shared offices / Coworking"
+                  },
+                  "name": "Bureaux partagés / Coworking"
+                },
+                {
+                  "id": "foodlab",
+                  "label": {
+                    "fr": "Cuisine partagée / Foodlab",
+                    "en": "Shared kitchen / Foodlab"
+                  },
+                  "name": "Cuisine partagée / Foodlab"
+                },
+                {
+                  "id": "fablab",
+                  "label": {
+                    "fr": "Fablab / Makerspace / Hackerspace",
+                    "en": "Fablab / Makerspace / Hackerspace"
+                  },
+                  "name": "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
+                },
+                {
+                  "id": "livinglab",
+                  "label": {
+                    "fr": "LivingLab / Innovation sociale",
+                    "en": "LivingLab / Social innovation"
+                  },
+                  "name": "LivingLab / Laboratoire d'innovation sociale"
+                },
+                {
+                  "id": "nourricier",
+                  "label": {
+                    "fr": "Tiers-lieu nourricier",
+                    "en": "Food-producing third place"
+                  },
+                  "name": "Tiers-lieu nourricier"
+                },
+                {
+                  "id": "culturel",
+                  "label": {
+                    "fr": "Tiers-lieu culturel",
+                    "en": "Cultural third place"
+                  },
+                  "name": "Tiers-lieu culturel / Lieux intermédiaires et indépendants"
+                },
+                {
+                  "id": "autre",
+                  "label": {
+                    "fr": "Autre famille de tiers-lieux",
+                    "en": "Other third place types"
+                  },
+                  "name": "Autre famille de tiers-lieux"
+                }
+              ]
             },
             "capacityFilter": true,
             "regionFilter": {

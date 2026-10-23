@@ -46,7 +46,7 @@ function coordsOf(sd: Record<string, unknown>): { lat: number; lng: number } | n
 
 /**
  * Résout EN UN APPEL les tiers-lieux porteurs (`_id: {$in: ids}`) d'un lot de
- * ressources : nom, slug, image, adresse et zones (`address.level1`…`level4`, filtre de zone de
+ * ressources : nom, slug, image, tags (facette typologies), adresse et zones (`address.level1`…`level4`, filtre de zone de
  * l'annuaire) et coordonnées. Pendant client de la remontée serveur que fait
  * `Navigator::getRessourceTL` (`PHDB::findOneById(... profilImageUrl, address, geo)`).
  */
@@ -67,7 +67,7 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
         indexStep: Math.min(sortedIds.length, 500),
         searchType: ["organizations"],
         filters: { _id: { $in: sortedIds } },
-        fields: ["name", "slug", "profilImageUrl", "address", "geo", "geoPosition"],
+        fields: ["name", "slug", "profilImageUrl", "address", "geo", "geoPosition", "tags"],
         notSourceKey: true,
         ...(opts.costumSlug ? { costumSlug: opts.costumSlug } : {}),
         ...(opts.contextId ? { contextId: opts.contextId } : {}),
@@ -91,6 +91,7 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
           postalCode: str(addr?.postalCode),
           addressLocality: str(addr?.addressLocality),
           zones: addressZoneIds(addr),
+          tags: Array.isArray(sd.tags) ? sd.tags.filter((tag): tag is string => typeof tag === "string") : [],
           coords: coordsOf(sd),
         });
       }

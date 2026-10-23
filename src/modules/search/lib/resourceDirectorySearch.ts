@@ -78,40 +78,21 @@ export function resolveServicePoints(
   });
 }
 
-/** Écart entre deux services voisins sur le cercle, en mètres. */
-const ECART_SERVICES_M = 15;
-/** Rayon minimal du cercle, en mètres. */
-const RAYON_MIN_M = 20;
-const METRES_PAR_DEGRE = 111_320;
-
 /**
- * Un repère par SERVICE, sans qu'ils se cachent : les services d'un même lieu partagent ses coordonnées
- * (le backend leur reporte celles du lieu porteur) et des repères exactement superposés restent
- * indissociables même au zoom maximal. Ceux qui partagent un point sont donc répartis sur un cercle
- * autour de lui, d'autant plus large qu'ils sont nombreux (`ECART_SERVICES_M` entre voisins) ; un
- * service seul garde sa position exacte. Rend la position de chaque service, par id.
+ * Un repère par LIEU, et non par service : les services d'un même lieu partagent ses coordonnées (le
+ * backend leur reporte celles du lieu porteur) et des repères superposés restent indissociables même au
+ * zoom maximal — un lieu en porte jusqu'à une vingtaine. Regroupe les services par point exact, dans
+ * l'ordre d'arrivée ; la popup du repère les liste (`MapPopupResourcePlace`).
  */
-export function spreadServicePoints(points: readonly ServicePoint[]): Map<string, { lng: number; lat: number }> {
-  const groupes = new Map<string, ServicePoint[]>();
+export function groupServicesByPoint(points: readonly ServicePoint[]): Array<{ lng: number; lat: number; ids: string[] }> {
+  const groupes = new Map<string, { lng: number; lat: number; ids: string[] }>();
   for (const p of points) {
     const cle = `${p.lng},${p.lat}`;
-    groupes.set(cle, [...(groupes.get(cle) ?? []), p]);
+    const g = groupes.get(cle);
+    if (g) g.ids.push(p.id);
+    else groupes.set(cle, { lng: p.lng, lat: p.lat, ids: [p.id] });
   }
-  const positions = new Map<string, { lng: number; lat: number }>();
-  for (const groupe of groupes.values()) {
-    if (groupe.length === 1) {
-      positions.set(groupe[0].id, { lng: groupe[0].lng, lat: groupe[0].lat });
-      continue;
-    }
-    const rayon = Math.max(RAYON_MIN_M, (groupe.length * ECART_SERVICES_M) / (2 * Math.PI));
-    groupe.forEach((p, i) => {
-      const angle = (2 * Math.PI * i) / groupe.length;
-      const dLat = (rayon * Math.sin(angle)) / METRES_PAR_DEGRE;
-      const dLng = (rayon * Math.cos(angle)) / (METRES_PAR_DEGRE * Math.cos((p.lat * Math.PI) / 180));
-      positions.set(p.id, { lng: p.lng + dLng, lat: p.lat + dLat });
-    });
-  }
-  return positions;
+  return [...groupes.values()];
 }
 
 export interface ServiceSuggestion {

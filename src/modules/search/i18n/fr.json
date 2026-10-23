@@ -297,6 +297,8 @@
     "card.servicePricing.price.room": "{{price}}€ la chambre individuelle",
     "resourceDirectory.count": "{{count}} ressource",
     "resourceDirectory.count_other": "{{count}} ressources",
+    "resourceDirectory.placeServices": "{{count}} service",
+    "resourceDirectory.placeServices_other": "{{count}} services",
     "resourceDirectory.mapUnplaced": "{{count}} service n'apparaît pas sur la carte : son lieu n'est pas géolocalisé.",
     "resourceDirectory.mapUnplaced_other": "{{count}} services n'apparaissent pas sur la carte : leur lieu n'est pas géolocalisé.",
     "resourceDirectory.loadError": "Les ressources n'ont pas pu être chargées.",

@@ -121,17 +121,27 @@ export function parentIdsFilter(thematicIds: readonly string[] | null, activePar
 }
 
 /**
+ * Le lieu porteur porte-t-il l'une des typologies cochées (tags de l'organisation, comme sur `/lieux`) ?
+ * Rien de coché : tout passe. Lieu inconnu ou sans tag avec une typologie cochée : écarté.
+ */
+export function matchesTypologies(parentTags: readonly string[] | undefined, selected: readonly string[]): boolean {
+  if (selected.length === 0) return true;
+  return (parentTags ?? []).some((tag) => selected.includes(tag));
+}
+
+/**
  * Groupes de filtres ouverts à l'arrivée : les `count` premiers groupes RÉELLEMENT déclarés, dans
- * l'ordre d'affichage (type, thématique, capacité, zone, prix) — jamais un groupe absent, et la
+ * l'ordre d'affichage (type, thématique, typologies, capacité, zone, prix) — jamais un groupe absent, et la
  * seule facette configurée n'arrive pas repliée.
  */
 export function defaultOpenFilterGroups(
-  declared: { thematic: boolean; capacity: boolean; region: boolean; priceGroupIds: readonly string[] },
+  declared: { thematic: boolean; typology?: boolean; capacity: boolean; region: boolean; priceGroupIds: readonly string[] },
   count = 2,
 ): string[] {
   return [
     "resourceType",
     ...(declared.thematic ? ["thematic"] : []),
+    ...(declared.typology ? ["typologies"] : []),
     ...(declared.capacity ? ["capacity"] : []),
     ...(declared.region ? ["region"] : []),
     ...declared.priceGroupIds,

@@ -5,7 +5,7 @@ import {
   normalizeSearchText,
   resolveServicePoints,
   resourceDisplayName,
-  spreadServicePoints,
+  groupServicesByPoint,
 } from "./resourceDirectorySearch";
 
 describe("resourceDisplayName", () => {
@@ -45,34 +45,21 @@ describe("matchesResourceSearch", () => {
   });
 });
 
-describe("spreadServicePoints", () => {
-  const distM = (a: { lng: number; lat: number }, b: { lng: number; lat: number }) =>
-    Math.hypot((a.lat - b.lat) * 111_320, (a.lng - b.lng) * 111_320 * Math.cos((a.lat * Math.PI) / 180));
-
-  it("un service seul garde sa position exacte", () => {
-    expect(spreadServicePoints([{ id: "a", lng: 3.06, lat: 50.6 }]).get("a")).toEqual({ lng: 3.06, lat: 50.6 });
-  });
-
-  it("services d'un même lieu : tous à des positions distinctes, en cercle autour du lieu", () => {
-    const lieu = { lng: 3.06, lat: 50.6 };
-    const pts = Array.from({ length: 18 }, (_, i) => ({ id: `s${i}`, ...lieu }));
-    const pos = spreadServicePoints(pts);
-    const uniques = new Set([...pos.values()].map((p) => `${p.lng.toFixed(7)},${p.lat.toFixed(7)}`));
-    expect(uniques.size).toBe(18);
-    const rayons = [...pos.values()].map((p) => distM(p, lieu));
-    expect(Math.max(...rayons) - Math.min(...rayons)).toBeLessThan(0.5); // même rayon
-    expect(rayons[0]).toBeGreaterThanOrEqual(20);
-    expect(rayons[0]).toBeLessThan(60); // reste au pied du lieu
-  });
-
-  it("deux lieux distincts ne se mélangent pas", () => {
-    const pos = spreadServicePoints([
-      { id: "a", lng: 3.06, lat: 50.6 },
-      { id: "b", lng: 3.06, lat: 50.6 },
-      { id: "c", lng: 2.3, lat: 48.8 },
+describe("groupServicesByPoint", () => {
+  it("un repère par point : les services d'un même lieu ensemble, dans l'ordre", () => {
+    expect(
+      groupServicesByPoint([
+        { id: "a", lng: 3.06, lat: 50.6 },
+        { id: "c", lng: 2.3, lat: 48.8 },
+        { id: "b", lng: 3.06, lat: 50.6 },
+      ]),
+    ).toEqual([
+      { lng: 3.06, lat: 50.6, ids: ["a", "b"] },
+      { lng: 2.3, lat: 48.8, ids: ["c"] },
     ]);
-    expect(pos.get("c")).toEqual({ lng: 2.3, lat: 48.8 });
-    expect(distM(pos.get("a")!, { lng: 3.06, lat: 50.6 })).toBeGreaterThanOrEqual(20);
+  });
+  it("aucun service : aucun repère", () => {
+    expect(groupServicesByPoint([])).toEqual([]);
   });
 });
 
