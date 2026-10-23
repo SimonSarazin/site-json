@@ -48,7 +48,7 @@ formulaire d'observatoire distinct de l'appel lui-même (cf. §5).
 | Formulaire de l'appel | `677e7e389058e31575550ac8` — « Les communs des CAEs » (type `aap`), **20 réponses** |
 | Formulaire d'observatoire | `6525865cdeaf281bbc7280e9` — « Observatoire des besoins et solutions des CAEs », **35 réponses** |
 | Branche | **`main`** depuis le 09/09 (merge `287bb35a` de `fix/mr-53-bloquants`) — le config venait de `aac-dev` |
-| SDK | `@communecter/cocolight-api-client` **1.0.196** (`package.json` : `^1.0.196`) |
+| SDK | `@communecter/cocolight-api-client` **1.0.203** (`package.json` : `^1.0.203`) — depuis le 23/10, `SSO_EXCHANGE` / `loginWithSsoCode` (cf. §10 22/10) |
 
 ⚠️ Les deux formulaires sont rattachés à **deux organisations différentes** : l'appel à la Fédération
 des CAE (`677e7e13…`), l'observatoire à « Communs des CAEs » (`65255cbf…`). Le catalogue d'usages
@@ -71,6 +71,7 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 01/10 | Schumann + Claude | Ajout d'une CAE depuis le finder « Partenaires du commun » ; modale de recherche des finders stabilisée (cf. §10 01/10) — commité le 01/10 sur `jdev` |
 | 06/10 | Aboire (SDK 1.0.196, formulaire CAE sur `main`) · Schumann + Claude (`jdev`) | `main` fusionné dans `jdev` : le formulaire « Créer votre CAE » de `main` remplace celui du 01/10, le finder y reste branché ; contournements retirés (cf. §10 06/10) |
 | 12/10 | Schumann + Claude, sur la revue de la MR !83 | Depuis un finder, un formulaire costum ne s'ouvre plus que déclaré ; déclaration erronée = pas de bouton ; pastille de statut commune à l'annuaire et à la fiche (cf. §10 12/10) |
+| 22-23/10 | Aboire + Claude, retour terrain de la Fédération | Inscription SSO : le lien de vérification d'e-mail aboutissait sur Communecter, compte non connecté — retour hors popup `/sso/callback`, `source.key` posé sur le compte créé, onglet d'origine connecté (branche `feat/sso-callback-hors-popup`, lib 1.0.203 ; cf. §10 22/10) |
 
 ---
 
@@ -288,6 +289,51 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 22/10 — inscription SSO : le lien de vérification d'e-mail aboutissait sur Communecter
+
+**Ce qui a été signalé.** « Après la création, la redirection va sur communecter » : une personne
+qui crée son compte via le SSO `lescaecoop` (Keycloak) n'est pas connectée sur le site.
+
+**Ce qui se passait.** Le flux SSO se joue dans une popup, qui se termine par un `postMessage` à
+l'onglet du site. Le realm Keycloak de la Fédération exige la **vérification de l'e-mail** : le
+lien « Verify email » du mail s'ouvre dans un **nouvel onglet**, sans `opener`. Le backend ne
+pouvait rien poster et renvoyait l'accueil de Communecter ; les jetons signés étaient perdus
+(BUG-L-287 du registre backend). Reproduit en local avec un Keycloak 26.3 et un MailHog devant
+le legacy ; sans vérification d'e-mail, l'inscription marchait déjà (vérifié aussi).
+
+**Ce qui change (moteur, tout le parc).**
+
+- Le backend (legacy `co2`, et le Node) renvoie l'onglet sans `opener` sur
+  `<site>/sso/callback#code=<code d'échange>` ; la page `SsoCallbackPage` du module auth troque
+  ce code à usage unique (2 min, lié à l'origine du site) contre les JWT (lib 1.0.203,
+  `userApi.loginWithSsoCode`) et redirige vers l'accueil, connecté.
+- L'onglet d'**origine** (celui de la popup) se connecte aussi, sans rechargement : il lit les
+  jetons par l'événement `storage` (`CocolightProvider`).
+- Un compte **créé** par le SSO reçoit désormais `source.key: "federationDesCae"` comme une
+  inscription classique : l'URL de la popup porte `costumSlug` (+ `costumId`/`costumType`)
+  (BUG-L-288). Les comptes SSO créés avant restent sans `source` — reprise non décidée.
+- Depuis un **autre appareil** (lien ouvert sur le téléphone), Keycloak confirme l'e-mail et
+  s'arrête sans rediriger ; la fenêtre d'origine rechargée reprend le flux. Comportement du
+  provider, non contournable côté site.
+
+Détail moteur : [doc/23](../doc/23-module-auth.md#retour-hors-popup-ssocallback) et
+[doc/11](../doc/11-api-authentification.md#single-sign-on-sso).
+
+**Sécurité (relecture adversariale).** L'origine passée au backend n'était pas vérifiée ; avec
+le repli par URL, un lien forgé aurait pu détourner la session vers un autre site. Fermé côté
+legacy et Node : origine autorisée seulement si `costum.host` (ici `communs.les-cae.coop`) ou
+liste de config, code lié à l'origine, en-tête `Origin` vérifié à l'échange, usage unique.
+
+**Vérifié.** Harnais local Keycloak + MailHog contre le legacy, puis contre le Node :
+inscription avec vérification → lien du mail → `/sso/callback` → connecté ; onglet d'origine
+connecté ; `source.key` posé. Lib testée via `npm pack` + `install --no-save` avant publication.
+`test` (auth 13/13), `typecheck`, `lint` verts ; base laissée à zéro résidu.
+
+**Non vérifié.** Le flux en **production** avec le realm de la Fédération (vérifier que la
+vérification d'e-mail y est bien exigée). **Prérequis prod** : legacy `co2` + `api` +
+`pixelhumain` et `jwt.exchangeTokenKey` déployés ; site-json déployé **avant ou avec** le
+legacy (sinon le repli tombe en 404).
 
 ### 12/10 — revue de la MR !83 : depuis un finder, un formulaire costum ne s'ouvre que déclaré
 

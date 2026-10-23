@@ -80,7 +80,8 @@ describe("useSSOAuth", () => {
       const { result } = renderHook(() => useSSOAuth());
       void result.current.openSSOPopup("provider/with space");
       const openCall = (window.open as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(openCall[0]).toContain("authclient=provider%2Fwith%20space");
+      // URLSearchParams : l'espace devient `+` (équivalent à %20 pour $_GET côté PHP)
+      expect(openCall[0]).toContain("authclient=provider%2Fwith+space");
     });
 
     it("retourne { success:false } si popup bloqué", async () => {
