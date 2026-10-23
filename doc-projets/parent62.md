@@ -15,12 +15,13 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-23** — 2 correctifs de relecture MR (bloquants) : la carte acteurs
-disparaissait sur mobile (sous `sm`, `gridLayout` empile ses colonnes, `fillParent` n'avait alors
-aucun voisin pour lui donner une hauteur — plancher `min-h-[20rem]` ajouté, détail §9nonagies) et le
-focus à l'ouverture d'un détail en `dialog` partait nulle part (`onOpenAutoFocus` avec
-`preventDefault` seul désarme le repli de focus de Radix — corrigé moteur, tout le parc,
-`DetailsModeDialog.tsx`, couverture de test rouverte, détail en §9octogies). Précédemment : **2026-10-22** — section « Les communes du territoire » reprend la couleur
+Dernière mise à jour : **2026-10-23** — 4 correctifs de relecture MR (dont 3 bloquants), moteur,
+tout le parc : doublon de bouton « Carte »/« Voir en liste » en vue carte (20 sections dans 9
+configs) et vignette `articleTeaser` changée en dur sans l'annoncer (`imageFit` rendu opt-in),
+détail §9centies ; carte acteurs disparue sur mobile (`fillParent` sans voisin de rangée sous `sm` —
+plancher `min-h-[20rem]`, détail §9nonagies) ; focus à l'ouverture d'un détail en `dialog` parti
+nulle part (`onOpenAutoFocus`/`preventDefault` désarme le repli de focus de Radix — corrigé,
+couverture de test rouverte, détail §9octogies). Précédemment : **2026-10-22** — section « Les communes du territoire » reprend la couleur
 pleine du bandeau hero (`--page-accent`, déjà réglé par territoire), « Les actions sur le
 territoire » reprend l'ancien alplat des communes (`page-accent`) ; conteneur de l'agenda territoire
 aligné (rayon+ombre) sur la carte acteurs voisine (découverte en vérifiant : `--radius` de ce thème
@@ -4554,6 +4555,10 @@ trancher avec l'équipe : soit confirmer qu'aucune organisation réelle n'est da
 prévoir un passage unique en base (poser le tag sur les organisations `source.key:"parent62"`
 antérieures à ce lot et non issues de l'import `youthCare`).
 
+**Résolu (23/10/2026, confirmé par l'utilisateur)** : avant ce lot, aucune organisation n'était
+référencée via `/annuaire` — le point ci-dessus est donc sans objet, rien à trancher ni à corriger en
+base avant déploiement.
+
 | Gate | Résultat |
 |---|---|
 | `typecheck` / `lint` | ✅ |
@@ -4981,6 +4986,45 @@ réelle à 390px (la carte s'affiche, mesurée à 320px = 20rem pile) et à 1280
 | `config:validate` / `audit:config` | ✅ RAS |
 | `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
 | Vérification navigateur (mobile 390px + desktop agenda vide) | ✅ carte visible dans les deux cas, scripts et captures nettoyés |
+
+## 9centies. Doublon « Carte »/« Voir en liste », vignette articleTeaser en dur (relecture MR, tout le parc)
+
+Deux constats supplémentaires de la même relecture, **non spécifiques à parent62** :
+
+**Doublon de bouton en vue carte.** `customHeaderBar` (§9octoquadragies/9sexagies), désormais rendu
+aussi en vue carte, embarque son propre bouton « Carte » (actif, qui ramène à la liste) alors que
+`panelViewSwitch("map")` pose DÉJÀ un bouton « Voir en liste » flottant dans le coin — deux chemins
+pour la même action, pas opt-in : **20 sections `searchProStatic` à `customHeader` + `enableMap`
+dans 9 configs du parc** héritaient du doublon (rezo-sante-reunion ×8, parent62 ×3,
+saint-paul-sport ×2, sport-sante-bien-etre ×2, equipements-Sportifs ×2, mss-le-tampon, relief,
+tiers-lieux). Corrigé en paramétrant `customHeaderBar` (devenue une fonction,
+`customHeaderBar(hideMapToggle?)`) : son propre bouton « Carte » est masqué dans la branche carte
+(où `panelViewSwitch` couvre déjà le retour), conservé dans la branche liste (son UNIQUE chemin vers
+la carte, pas de bouton flottant là). Vérifié en navigateur dans les deux sens (vue carte → un seul
+bouton « Voir en liste » ; vue liste → bouton « Carte » fonctionnel).
+
+**Vignette `articleTeaser` changée pour tout le moteur, en dur, sans l'annoncer.** Le commit
+`053fa84a` (hors de cette session, fait directement dans l'IDE) avait posé `object-contain` et
+`rounded-[0px]` (classe NO-OP) en DUR dans `ArticleTeaser.tsx` — un changement de DÉFAUT pour
+TOUTE section `articleTeaser` du parc, à la différence des props `itemAccentColor`/`accentColor` de
+la même section qui, elles, sont opt-in. Le commentaire au-dessus de la constante retirée affirmait
+en plus une découpe partagée avec `FeaturedCarouselSlide` devenue fausse (celui-ci garde sa découpe
+asymétrique `rounded-[0px_40px_0_40px]`). Corrigé : nouvelle prop `imageFit` opt-in
+(`ArticleTeaserSectionSchema`, défaut `cover` = comportement historique inchangé pour tout site qui
+ne la pose pas, même convention que `card.imageFit` des sections `search`) ; `imageFit:"contain"`
+posé explicitement sur `zoom-reseau` (parent62) pour garder le rendu voulu par `053fa84a` ; classe
+`rounded-[0px]` morte et commentaire faux retirés.
+
+**Point 5 de la relecture (organisations sans tag `"Partenaires"` avant ce lot)** : résolu, voir
+§9octoquadragies.6 — avant ce lot, aucune organisation n'était référencée via `/annuaire`.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (ciblé) | ✅ 0 erreur |
+| `npx vitest run src/modules/search src/modules/blog` | ✅ 817 + 68 tests, tous verts |
+| `config:validate` / `audit:config` | ✅ RAS |
+| `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+| Vérification navigateur | ✅ un seul bouton par sens de bascule carte/liste ; `zoom-reseau` inchangé visuellement (vignettes vides en local, pas de régression structurelle) |
 
 ## 10. Checklist d'avancement
 

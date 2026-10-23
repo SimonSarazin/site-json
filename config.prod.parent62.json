@@ -720,6 +720,7 @@
             },
             "viewAllHref": "/zoomcat",
             "maxWidth": "7xl",
+            "imageFit": "contain",
             "background": "var(--p62-marine)",
             "accentColor": "var(--p62-turquoise)",
             "accentTextColor": "#ffffff",

@@ -581,7 +581,15 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // la vue liste ET la vue carte. Avant cette extraction, ce bloc ne vivait que dans la branche
   // liste : passer `defaultViewMode: "map"` avec un `customHeader` (ex. la carte des acteurs d'un
   // territoire, parent62) perdait le titre, invisible jusqu'au retour en liste.
-  const customHeaderBar = customHeader && (
+  //
+  // Fonction (pas une simple valeur) À CAUSE de `hideMapToggle` (relecture MR, bloquant,
+  // 23/10/2026) : dans la branche carte, `panelViewSwitch("map")` pose DÉJÀ un bouton « Voir en
+  // liste » flottant dans le coin — le propre bouton « Carte » de cet en-tête y fait doublon (actif,
+  // il ramène aussi à la liste). Pas opt-in : 20 sections `searchProStatic` à `customHeader` +
+  // `enableMap` dans 9 configs du parc héritaient de ce doublon. Dans la branche liste, en revanche,
+  // ce bouton reste l'UNIQUE chemin vers la carte (pas de `panelViewSwitch` flottant là) — d'où le
+  // paramètre plutôt qu'un retrait pur et simple.
+  const customHeaderBar = (hideMapToggle?: boolean) => customHeader && (
     // Ni `container` ni marge latérale : l'en-tête s'aligne sur les bords de la grille de
     // résultats, qui remplit ce même bloc. Un `container` (max 1280) l'aurait rentré de 64 px à
     // 1440 — titre et cartes ne commençaient pas au même bord.
@@ -606,7 +614,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
         )}
       </div>
       <div className="flex items-center space-x-2">
-        {enableMap && (
+        {enableMap && !hideMapToggle && (
           <Button
             variant={viewMode === mapView ? "default" : "outline"}
             size="sm"
@@ -991,8 +999,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             {/* `customHeaderBar` manquait ici avant cette correction : son seul autre point de
                 rendu est la branche liste ci-dessous, donc un `customHeader.title` restait
                 invisible tant que la vue carte était affichée (cas `defaultViewMode: "map"`). Padding
-                posé ICI (`p-4 pb-0`) plutôt que sur la boîte de la carte elle-même, qui n'en a pas. */}
-            {customHeaderBar && <div className="p-4 pb-0">{customHeaderBar}</div>}
+                posé ICI (`p-4 pb-0`) plutôt que sur la boîte de la carte elle-même, qui n'en a pas.
+                `hideMapToggle` : le bouton « Voir en liste » de `panelViewSwitch("map")` (ci-dessous)
+                couvre déjà le retour à la liste — pas la peine d'un second bouton « Carte » ici. */}
+            {customHeader && <div className="p-4 pb-0">{customHeaderBar(true)}</div>}
             {/* Hauteur EXPLICITE (MAP_VIEW_HEIGHT) : l'écran visible sous la barre
                de navigation. Pas de `flex-1` : dans cette colonne flex sans hauteur
                définie, sa base de 0 % ferait ignorer la hauteur, et la boîte — dont
@@ -1122,7 +1132,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
              6 événements — approximatif, pas un miroir pixel-perfect du voisin, CSS seul ne peut pas
              lire la hauteur rendue d'un frère sans JS). */
           <div className={`p-4 mx-auto w-full max-w-[1536px] overflow-y-auto ${props.fillParent ? "flex-1 min-h-0 max-h-[32rem]" : ""}`}>
-            {customHeaderBar}
+            {/* Pas de `hideMapToggle` ici : cette branche (liste/regions/thematics) n'a PAS de
+                `panelViewSwitch` flottant — ce bouton « Carte » reste l'UNIQUE chemin vers la carte. */}
+            {customHeaderBar()}
 
             {viewMode === "regions" && (
               <ClientOnly>

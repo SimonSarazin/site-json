@@ -159,6 +159,13 @@ export const ArticleTeaserSectionSchema = z.object({
     /** Pastille de titre : `badge` (défaut, étiquette inclinée) ou `pill` — la même en arrondi droit, pour
      *  une page dont toutes les bandes portent le même repère. */
     headlineStyle: z.enum(["badge", "pill"]).optional(),
+    /** Cadrage de la vignette (112×112). `cover` (défaut, comportement historique) remplit le carré quitte
+     *  à rogner — adapté à une photo. `contain` montre l'image ENTIÈRE sur `bg-muted`, qu'un rognage
+     *  amputerait — à choisir pour un fil dont les visuels sont surtout des logos/affiches (relecture MR,
+     *  23/10/2026 : `object-contain` avait remplacé `cover` en dur pour TOUTE section `articleTeaser` du
+     *  parc, sans l'annoncer ; repli sur `cover` pour ne rien changer ailleurs que parent62, qui pose
+     *  explicitement `contain`). Même convention que `card.imageFit` des sections `search`. */
+    imageFit: z.enum(["cover", "contain"]).optional(),
     /** Largeur max du contenu (défaut `4xl`). À aligner sur les bandes voisines. */
     maxWidth: z.enum(["3xl", "4xl", "5xl", "6xl", "7xl", "full"]).optional(),
   }),
