@@ -21,7 +21,9 @@ import type { CagnotteResource } from "@/modules/cagnotte/types";
 
 const mocks = vi.hoisted(() => ({
   meProject: vi.fn<(args: { id: string }) => Promise<unknown>>(),
-  useFundingEnvelope: vi.fn<(answerId: string, opts?: { enabled?: boolean }) => { data: undefined; refetch: () => void }>(
+  useFundingEnvelope: vi.fn<
+    (answerId: string, opts?: { enabled?: boolean; form?: { id: string; answerId?: string } | null }) => { data: undefined; refetch: () => void }
+  >(
     () => ({ data: undefined, refetch: vi.fn() }),
   ),
 }));
@@ -62,7 +64,7 @@ vi.mock("@/modules/cagnotte/actions/mutations", () => {
   };
 });
 vi.mock("@/modules/aac/hooks/useCommunFundingContext", () => ({
-  useCommunFundingContext: () => ({ context: null }),
+  useCommunFundingContext: () => ({ context: null, formId: "form-annuaire" }),
 }));
 vi.mock("@/modules/aac/hooks/useCommunFundingHost", () => ({
   useCommunFundingHost: () => ({ hostEntity: null, isLoading: false }),
@@ -179,6 +181,9 @@ describe("useCommunObjectivesController — enveloppe du commun", () => {
 
   it("réponse lue : enveloppe de cette réponse", () => {
     poser({ id: "answer-1", userId: "u1" } as unknown as CoFormAnswer);
-    expect(mocks.useFundingEnvelope).toHaveBeenLastCalledWith("answer-1", expect.objectContaining({ enabled: true }));
+    expect(mocks.useFundingEnvelope).toHaveBeenLastCalledWith(
+      "answer-1",
+      expect.objectContaining({ enabled: true, form: { id: "form-annuaire", answerId: "answer-1" } }),
+    );
   });
 });

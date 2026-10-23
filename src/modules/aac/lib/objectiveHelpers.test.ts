@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   actionCreatedLabel,
   canManageObjectiveActions,
@@ -139,6 +139,10 @@ describe("toMilestoneStatus", () => {
   });
 });
 
+// La langue active, lue par `actionCreatedLabel`.
+const { mockI18n } = vi.hoisted(() => ({ mockI18n: { language: "fr" } }));
+vi.mock("@/i18n", () => ({ default: mockI18n }));
+
 describe("actionCreatedLabel", () => {
   const label = (created?: string | number) =>
     actionCreatedLabel({ id: "a1", name: "Atelier", credits: 0, status: "todo", tags: [], contributors: [], created });
@@ -155,6 +159,15 @@ describe("actionCreatedLabel", () => {
     expect(label(undefined)).toBe("");
     expect(label("")).toBe("");
     expect(label("pas une date")).toBe("");
+  });
+
+  it("suit la langue active", () => {
+    mockI18n.language = "en";
+    try {
+      expect(label(1700049600)).toBe("11/15/2023");
+    } finally {
+      mockI18n.language = "fr";
+    }
   });
 });
 

@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { CagnotteResource } from "@/modules/cagnotte/types";
 
 /**
  * Ce qui est verrouillé ici : une ressource désignée par un alias (projectId d'une proposition,
  * comme le passe le bouton du header) est sélectionnée par son id canonique, et le bouton
- * « Contribuer » apparaît. Les hooks data sont mockés à leur frontière.
+ * « Contribuer » apparaît ; les projets de l'organisation ne sont chargés qu'en mode `project`.
+ * Les hooks data sont mockés à leur frontière.
  */
 
 const state = vi.hoisted(() => {
@@ -36,7 +37,10 @@ const state = vi.hoisted(() => {
       allFunding: [],
     }],
   };
-  return { proposition: proposition as unknown as CagnotteResource };
+  return {
+    proposition: proposition as unknown as CagnotteResource,
+    useOrganizationProjectsWithAnswers: vi.fn(() => ({ projects: [], isLoading: false })),
+  };
 });
 
 vi.mock("@/hooks/useT", () => ({
@@ -54,7 +58,7 @@ vi.mock("@/modules/cagnotte/hooks/useFundingEnvelope", () => ({
   useFundingEnvelope: () => ({ data: undefined, isLoading: false }),
 }));
 vi.mock("@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers", () => ({
-  useOrganizationProjectsWithAnswers: () => ({ projects: [], isLoading: false }),
+  useOrganizationProjectsWithAnswers: state.useOrganizationProjectsWithAnswers,
 }));
 vi.mock("@/modules/cagnotte/hooks/useUserAdminOrganizations", () => ({
   useUserAdminOrganizations: () => [],
@@ -93,5 +97,30 @@ describe("CagnotteDialog — sélecteur de proposition", () => {
     fireEvent.click(await screen.findByRole("radio", { name: "10€" }));
 
     expect(await screen.findByRole("button", { name: /CagnotteDialog\.labels\.contribute/ })).toBeEnabled();
+  });
+});
+
+describe("CagnotteDialog — projets de l'organisation", () => {
+  async function ouvrir(cagnotteType: "aac" | "standard") {
+    state.useOrganizationProjectsWithAnswers.mockClear();
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <CagnotteDialog totalAmount={0} defaultResourceId="proj1" cagnotteType={cagnotteType}>
+          <button type="button">ouvrir</button>
+        </CagnotteDialog>
+      </QueryClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "ouvrir" }));
+    await waitFor(() => expect(state.useOrganizationProjectsWithAnswers).toHaveBeenCalled());
+  }
+
+  it("type aac : pas chargés, l'adaptateur ne les lit pas", async () => {
+    await ouvrir("aac");
+    expect(state.useOrganizationProjectsWithAnswers).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }));
+  });
+
+  it("cagnotte standard : chargés pour le sélecteur", async () => {
+    await ouvrir("standard");
+    expect(state.useOrganizationProjectsWithAnswers).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: true }));
   });
 });

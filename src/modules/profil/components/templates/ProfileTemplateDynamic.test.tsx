@@ -8,20 +8,27 @@ import { MemoryRouter, Route, Routes, useLocation } from "react-router";
  *  - un onglet réservé au propriétaire (`userContext: own`) n'est PAS rendu avant l'hydratation, ni
  *    pour le propriétaire (HTML serveur = 1er rendu client), puis apparaît pour lui seul ;
  *  - un visiteur arrivé par l'URL de cet onglet est renvoyé au profil ;
- *  - les props de `StructuresTab` sont revalidées à l'exécution : invalides, l'onglet ne rend rien.
+ *  - les props de `StructuresTab` sont revalidées à l'exécution : invalides, l'onglet ne rend rien ;
+ *  - sur un projet sans réponse liée, l'onglet cagnotte n'est jamais rendu, et son URL renvoie au profil.
  */
-const ctx = vi.hoisted(() => ({
-  hydrated: true,
-  me: { id: "u1", slug: "judi" } as { id: string; slug: string } | null,
-  tabs: [] as unknown[],
-  structuresProps: undefined as unknown,
-}));
+type EntiteProfil = { slug: string; getEntityType: () => string; serverData?: Record<string, unknown> };
+const ctx = vi.hoisted(() => {
+  const citoyen: EntiteProfil = { slug: "judi", getEntityType: () => "citoyens" };
+  return {
+    hydrated: true,
+    me: { id: "u1", slug: "judi" } as { id: string; slug: string } | null,
+    citoyen,
+    entity: citoyen,
+    tabs: [] as unknown[],
+    structuresProps: undefined as unknown,
+  };
+});
 
 vi.mock("@/hooks/useHydrated", () => ({ useHydrated: () => ctx.hydrated }));
 vi.mock("@/hooks/useCocolight", () => ({ useCocolight: () => ({ me: ctx.me }) }));
 vi.mock("@/hooks/useLocalization", () => ({ useLocalization: () => ({ t: (label: { fr: string }) => label.fr }) }));
 vi.mock("../../hooks/useProfileEntity", () => ({
-  useProfileEntity: () => ({ entity: { slug: "judi", getEntityType: () => "citoyens" }, config: { tabs: ctx.tabs } }),
+  useProfileEntity: () => ({ entity: ctx.entity, config: { tabs: ctx.tabs } }),
 }));
 vi.mock("../../ProfileSectionRenderer", () => ({ ProfileSectionRenderer: () => null }));
 vi.mock("../TabDetailRenderer", () => ({ TabDetailRenderer: () => null }));
@@ -76,6 +83,7 @@ function renderAt(url: string) {
 beforeEach(() => {
   ctx.hydrated = true;
   ctx.me = { id: "u1", slug: "judi" };
+  ctx.entity = ctx.citoyen;
   ctx.tabs = onglets();
   ctx.structuresProps = undefined;
 });
@@ -110,5 +118,46 @@ describe("ProfileTemplateDynamic — onglet réservé au propriétaire", () => {
     await waitFor(() => expect(warn).toHaveBeenCalled());
     expect(screen.queryByText("onglet structures")).toBeNull();
     warn.mockRestore();
+  });
+});
+
+describe("ProfileTemplateDynamic — onglets cagnotte d'un projet", () => {
+  const projet = (answer: unknown): EntiteProfil => ({ slug: "p", getEntityType: () => "projects", serverData: { answer } });
+
+  beforeEach(() => {
+    ctx.tabs = [
+      { id: "about", label: { fr: "À propos" }, sections: [{ type: "profile-about" }] },
+      {
+        id: "finance",
+        label: { fr: "Financements" },
+        condition: { auth: "required" },
+        sections: [{ type: "cagnotte-layout", props: { leftSections: [{ type: "finance" }] } }],
+      },
+    ];
+  });
+
+  it("sans réponse liée : pas d'onglet « Financements », avant comme après hydratation", () => {
+    ctx.entity = projet(null);
+    ctx.hydrated = false;
+    const { unmount } = renderAt("/profil/p");
+    expect(screen.getByRole("tab", { name: "À propos" })).toBeTruthy();
+    expect(screen.queryByRole("tab", { name: "Financements" })).toBeNull();
+    unmount();
+
+    ctx.hydrated = true;
+    renderAt("/profil/p");
+    expect(screen.queryByRole("tab", { name: "Financements" })).toBeNull();
+  });
+
+  it("sans réponse liée : l'URL de l'onglet renvoie au profil", async () => {
+    ctx.entity = projet("");
+    renderAt("/profil/p/finance");
+    await waitFor(() => expect(screen.getByTestId("chemin").textContent).toBe("/profil/p"));
+  });
+
+  it("relié à une réponse : l'onglet est proposé", () => {
+    ctx.entity = projet("answer-1");
+    renderAt("/profil/p");
+    expect(screen.getByRole("tab", { name: "Financements" })).toBeTruthy();
   });
 });
