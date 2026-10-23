@@ -112,6 +112,7 @@ src/modules/cagnotte/
 │
 ├── hooks/
 │   ├── useFundingEnvelope.ts           # Query React Query principale (envelope normalisée) + exports normalizeFundingEnvelope, extractFormIdFromEnvelope, mergeEnvelopePayloads
+│   ├── useSiteEnvelopeForm.ts          # Formulaire de l'enveloppe du site : `config.aac.formId` en type aac, sinon aucun
 │   ├── useCagnottePermissions.ts       # Wrapper typé sur usePermissions
 │   ├── useCagnotteContext.ts           # Accès au CagnotteProvider (safe + strict)
 │   ├── useActionGuards.ts              # requireConnected + requireApiContext
@@ -346,8 +347,9 @@ export function getServerData(value: unknown): UnknownRecord {
 | `readEntityPreferences(entity, source)` | Lit `entity.data.preferences` ou `entity.serverData.preferences` |
 
 > **`normalizeActionStatus` n'est plus une fonction privée de `useFundingEnvelope`.** Elle vit ici,
-> exportée, à côté de `resolveActionAuthorId`, et sert **les deux** lectures : l'enveloppe **et** la
-> fiche commun du module AAC (`normalizeActionForEdit`). Un statut lu différemment selon l'écran
+> exportée, à côté de `resolveActionAuthorId`, et sert **trois** lectures : l'enveloppe, l'adaptateur
+> (`normalizeRawAction`, d'où viennent les actions de la fiche AAC, de `CagnotteDialog` et de
+> `MilestoneListField`) **et** la fiche commun du module AAC (`normalizeActionForEdit`). Un statut lu différemment selon l'écran
 > donnerait des droits différents sur la même action — les gardes de permission testent des égalités
 > strictes (`status === "done"`, `status !== "todo"`).
 
@@ -626,7 +628,7 @@ lazy** — `src/components/layout/header/CagnotteHeaderButtons.tsx`, qui exporte
 Comportement du bouton lui-même :
 
 - Lit `entity.serverData.preferences.projectModalId` via `useReactiveProperty` (réactif aux mutations live)
-- Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture)
+- Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture). En type `aac`, l'enveloppe et la modale (`openContext.envelopeForm`) lisent le formulaire de l'annuaire (`useSiteEnvelopeForm`), comme `PledgeHeaderButton` : les deux boutons partagent une seule lecture
 - Affiche le montant `targetProject.totalFinancement` en temps réel (PiggyBank icon + montant en €)
 - Masqué si `me?.id` est nul (feature member-only, évite d'afficher "0 €" pour les anonymes)
 - Ouvre `<CagnotteDialog>` au clic avec `defaultResourceId` pré-sélectionné
@@ -643,6 +645,11 @@ Comportement du bouton lui-même :
   les siens (`scope: "mine"`, sans colonne Payeur).
 
 La modale s'ouvre sur les paiements quand il n'y a rien à régler.
+
+Les promesses viennent de l'enveloppe de l'entité du site. En type `aac`, `getFormData` y lit le
+formulaire de l'annuaire (`useSiteEnvelopeForm` : `config.aac.formId`), pas le premier de l'hôte. Les
+projets de l'organisation (`useOrganizationProjectsWithAnswers`) ne sont chargés qu'en type `standard`
+(`selectorType: "project"`), le seul où l'adaptateur s'en sert ; `CagnotteDialog` suit la même règle.
 
 ### `CagnotteDialog` — parts supplémentaires
 

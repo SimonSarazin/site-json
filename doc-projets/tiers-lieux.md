@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-10-07** (`/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page, cf. §9). Précédent : **2026-09-30**, `/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — rendu navigateur à valider.
+Dernière mise à jour : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -55,6 +55,7 @@ lieux**, pas un plan de rattrapage.
 | 29/09 | Peterson + Claude | Alerte non bloquante « tiers-lieu déjà existant » dans le wizard de création, confirmation à la soumission si nom et code postal coïncident — slot générique config-driven, aucun endpoint nouveau (cf. §9) |
 | 28/09 → 30/09 | Peterson + Claude | `/observatoire` en **split view**, sur le patron des équipements sportifs, tout le contenu conservé : table gardée SOUS le split (retouche moteur d'une ligne), graphes typologie/portage en pleine largeur. Branche `observatoire-split-view` (`d81b8880`). Cf. §9 30/09 |
 | 21/10 | Anatole + Claude | Bouton « Mes promesses » (promesses à régler et paiements) dans le header : `header.utilities.pledge`, désormais rendu par `HeaderMegaMenu` (barre desktop et mobile) ; `cagnotteModuleConfig.defaultType: "aac"` pour les communs de `/aac/communs`. Commité sur `aac-dev` le 22/10 |
+| 23/10 | Claude | Suites de la revue de la MR `aac-dev` : en type `aac`, « Mes promesses » ne charge plus les projets de l'organisation et lit l'enveloppe du formulaire de l'annuaire (`aac.formId`) — commitées et poussées (§9) |
 
 ---
 
@@ -214,6 +215,24 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 21-23/10 — bouton « Mes promesses » dans le header (`aac-dev`)
+
+- `header.utilities.pledge: true` : bouton « Mes promesses » (promesses à régler, paiements) pour un
+  membre connecté, dans les barres desktop et mobile de `HeaderMegaMenu` ;
+  `cagnotteModuleConfig.defaultType: "aac"` pour les communs de `/aac/communs` (commité le 22/10).
+- Suites de la revue (23/10, commitées et poussées) :
+  - en type `aac`, le bouton ne charge plus les projets de l'organisation (un `searchCostum`, puis un
+    `api.answer` par projet, dès qu'un membre est connecté), dont l'adaptateur ne se sert pas dans ce
+    mode ;
+  - son enveloppe lit le formulaire de l'annuaire (`aac.formId` `6438366673…`), au lieu du premier
+    formulaire AAP de l'hôte ;
+  - « Soutenir » sur la fiche d'un commun (`CagnotteDialog`) ne charge plus ces projets non plus, et une
+    action renvoyée en « Done » y compte comme terminée (l'adaptateur normalise le statut).
+- **À revalider en connecté** : le montant affiché par le bouton et le contenu de « Mes promesses ».
+- **Validation** (23/10, local) : `config:validate` ✅ — 19 pages, 44 sections ; typecheck ✅ ; lint ✅
+  (0 erreur) ; suite unitaire et préflights ✅ 8 611 tests, hors `site-assets` (dossier local vide).
+  Rendu navigateur non vérifié (pas de compte de test).
 
 ### 14/10 — accueil : bandeau « Trouver un service », libellés de menu (MR 92, Simon)
 

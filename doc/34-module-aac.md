@@ -995,6 +995,13 @@ mentionne pour ces deux surfaces est périmée.
    réponse illisible ailleurs dans le formulaire ne la fait plus échouer. Le contrôleur des paliers
    n'interroge l'enveloppe qu'une fois l'id de la réponse connu : sans lui, `getFormData` lirait tout
    le formulaire.
+
+   Backend : `params.answerId` est lu par `FundingEnvelopeAction` (`getFormData`, filtre `_id` de
+   `Aap::getEnvelopeFormData`) depuis citizenToolKit `a897bcae` (17/04/2026). Sans `43a52369`
+   (21/10/2026, déploiement à confirmer), une réponse dont un `financer` est stocké en objet fait
+   échouer `getFormData` sur toute lecture qui l'inclut : sa fiche, ou tout le formulaire pour les
+   boutons du header (tirelire, « Mes promesses »). L'enveloppe retombe alors sur `getEnvelopeData`,
+   sans projets, actions ni totaux.
 10. **Les `.default()` des schémas de section ne jouent PAS à l'exécution** (la config n'est jamais
    parsée par Zod au runtime — cf. `doc/05`, encadré d'en-tête). Un sous-objet de la config arrive
    donc **tel quel**, et un défaut de destructuration (`filters = {…}`) ne joue que s'il est

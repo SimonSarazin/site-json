@@ -4,6 +4,7 @@
  * lors de sa scission en 2 composants distincts (financement vs actions).
  */
 import type { Project } from "@communecter/cocolight-api-client";
+import i18n from "@/i18n";
 import type {
   FundingAction as ProjectAction,
   FundingMilestone as Milestone,
@@ -225,7 +226,7 @@ export function actionRights(permissions: MilestoneCardPermissions, action: Proj
 }
 
 /**
- * Date de création d'une action, vide si absente ou illisible.
+ * Date de création d'une action dans la langue active, vide si absente ou illisible.
  * `created` : secondes (PHP), millisecondes ou chaîne ; sous 1e12, des secondes.
  */
 export function actionCreatedLabel(action: ProjectAction): string {
@@ -233,7 +234,7 @@ export function actionCreatedLabel(action: ProjectAction): string {
   const created = typeof raw === "string" && /^\d+$/.test(raw) ? Number(raw) : raw;
   if (!created) return "";
   const date = new Date(typeof created === "number" && created < 1e12 ? created * 1000 : created);
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("fr-FR");
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString(i18n.language);
 }
 
 /** Actions des paliers, à plat, une fois chacune (deux dépenses d'un même jalon portent les mêmes actions). */

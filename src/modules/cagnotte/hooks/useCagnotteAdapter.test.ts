@@ -793,3 +793,37 @@ describe("useCagnotteAdapter — réparation d'une dépense orpheline (projet li
     );
   });
 });
+
+describe("useCagnotteAdapter — statut des actions normalisé", () => {
+  const actions = () => [
+    { id: "a1", name: "Atelier", status: "Done", milestone: { milestoneId: "m1" } },
+    { id: "a2", name: "Revue", status: "disabled", milestone: { milestoneId: "m1" } },
+  ];
+
+  it("proposition : un « Done » du backend sort en `done`, tout autre statut en `todo`", () => {
+    const enveloppe = {
+      rawEnvelope: {
+        projects: [{ id: "answer-1", projectId: "proj-1", titre: "Mon commun", depenses: [{ poste: "Dev", priceInt: 5000, milestone: "m1" }], actions: actions() }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    const { result } = renderAdapter(enveloppe, [], CAGNOTTE_TYPE_CONFIGS.aac, "answer-1");
+
+    expect(result.current.savedSelectedResource!.items[0].actions.map((a) => a.status)).toEqual(["done", "todo"]);
+  });
+
+  it("projet : idem sur les actions de la dépense appariée", () => {
+    const enveloppe = {
+      rawEnvelope: {
+        projects: [{ id: "answer-1", projectId: "proj-1", depenses: [{ poste: "Dev", priceInt: 5000, milestone: "m1", actions: actions() }] }],
+        links: {},
+      },
+    } as unknown as FundingEnvelopeNormalizedData;
+    const projets = [
+      { id: "proj-1", name: "Projet", answerId: "answer-1", milestones: [{ milestoneId: "m1", name: "Dev", price: 5000, status: "open" }], cagnotteTotalAmount: 0, cagnotteTargetAmount: 5000, rawProject: {} },
+    ] as unknown as OrgProject[];
+    const { result } = renderAdapter(enveloppe, projets, CAGNOTTE_TYPE_CONFIGS.standard, "proj-1");
+
+    expect(result.current.savedSelectedResource!.items[0].actions.map((a) => a.status)).toEqual(["done", "todo"]);
+  });
+});

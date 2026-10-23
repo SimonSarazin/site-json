@@ -4,14 +4,22 @@ import { render, screen, fireEvent } from "@testing-library/react";
 
 /**
  * Ce qui est verrouillé ici : le tooltip du bouton « promesses », le montant affiché (le solde à
- * régler), le bouton visible pour tout connecté même sans reste à régler (accès aux paiements) et
- * le fait que le clic ouvre toujours la modale. Les hooks data sont mockés à leur frontière.
+ * régler), le bouton visible pour tout connecté même sans reste à régler (accès aux paiements), le
+ * fait que le clic ouvre toujours la modale, et ce que le bouton lit (projets, formulaire de
+ * l'enveloppe) selon le type de cagnotte. Les hooks data sont mockés à leur frontière.
  */
 
 const state = vi.hoisted(() => {
   // Une promesse entamée : 1 000 € engagés, 600 € à régler.
   const promesse = { id: "p1", resourceId: "ans1", fundingAmount: 1000, remainingAmount: 600 };
-  return { promesse, loggedIn: true, pledges: [promesse] as Array<Record<string, unknown>> };
+  return {
+    promesse,
+    loggedIn: true,
+    pledges: [promesse] as Array<Record<string, unknown>>,
+    siteConfig: {} as Record<string, unknown>,
+    useFundingEnvelope: vi.fn(() => ({ data: undefined })),
+    useOrganizationProjectsWithAnswers: vi.fn(() => ({ projects: [] })),
+  };
 });
 
 // jsdom ne fournit pas ResizeObserver, dont le Popper de `TooltipContent` a besoin.
@@ -35,12 +43,12 @@ vi.mock("@/hooks/useCocolight", () => ({
   }),
 }));
 vi.mock("@/hooks/useReactiveProperty", () => ({ useReactiveProperty: () => ({}) }));
-vi.mock("@/hooks/useSite", () => ({ useSite: () => ({ config: {} }) }));
+vi.mock("@/hooks/useSite", () => ({ useSite: () => ({ config: state.siteConfig }) }));
 vi.mock("@/modules/cagnotte/hooks/useFundingEnvelope", () => ({
-  useFundingEnvelope: () => ({ data: undefined }),
+  useFundingEnvelope: state.useFundingEnvelope,
 }));
 vi.mock("@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers", () => ({
-  useOrganizationProjectsWithAnswers: () => ({ projects: [] }),
+  useOrganizationProjectsWithAnswers: state.useOrganizationProjectsWithAnswers,
 }));
 vi.mock("@/modules/cagnotte/hooks/useUserAdminOrganizations", () => ({
   useUserAdminOrganizations: () => [],
@@ -58,6 +66,9 @@ const { PledgeHeaderButton } = await import("./PledgeHeaderButton");
 afterEach(() => {
   state.loggedIn = true;
   state.pledges = [state.promesse];
+  state.siteConfig = {};
+  state.useFundingEnvelope.mockClear();
+  state.useOrganizationProjectsWithAnswers.mockClear();
 });
 
 describe("PledgeHeaderButton — tooltip", () => {
@@ -100,5 +111,22 @@ describe("PledgeHeaderButton — montant", () => {
     render(<PledgeHeaderButton />);
 
     expect(screen.queryByRole("button", { name: "Voir les promesses" })).not.toBeInTheDocument();
+  });
+});
+
+describe("PledgeHeaderButton — lectures", () => {
+  it("cagnotte standard : projets de l'organisation lus, premier formulaire de l'hôte", () => {
+    render(<PledgeHeaderButton />);
+
+    expect(state.useOrganizationProjectsWithAnswers).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: true }));
+    expect(state.useFundingEnvelope).toHaveBeenLastCalledWith(undefined, { form: null });
+  });
+
+  it("site AAC : aucun projet lu, enveloppe du formulaire de l'annuaire", () => {
+    state.siteConfig = { cagnotteModuleConfig: { defaultType: "aac" }, aac: { formId: "form-aac" } };
+    render(<PledgeHeaderButton />);
+
+    expect(state.useOrganizationProjectsWithAnswers).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }));
+    expect(state.useFundingEnvelope).toHaveBeenLastCalledWith(undefined, { form: { id: "form-aac" } });
   });
 });

@@ -12,10 +12,12 @@
 > [Fédération des CAE](federation-des-cae.md) (le seul autre site AAC, modèle de config).
 > Mémoire : `[[project-projetsre]]`. Plan approuvé : `plan-d-tail-pour-integrer-iterative-lemon.md`.
 
-Dernière mise à jour : **2026-10-21** — revue avant commit du lot 11 (onglet « Passage à l'action »
-de l'interface editorial en deux blocs, **Jalons** | **Actions**) : dialogues d'action montés par la
-page, date des actions lue en secondes, dédoublonnage partagé avec la carte de financement — non
-commité. Les lots 1 à 10 sont commités et fusionnés dans main (`ddfd7f49`, `840df9fb`, `671b6887`).
+Dernière mise à jour : **2026-10-23** — suites de la revue de la MR `aac-dev`, commitées et poussées (§10) :
+« terminée » lu sans tenir compte de la casse du statut, date des actions dans la langue active,
+tirelire et « Mes promesses » sur le formulaire de l'annuaire. Précédent : **2026-10-21**, revue avant
+commit du lot 11 (onglet « Passage à l'action » de l'interface editorial en deux blocs, **Jalons** |
+**Actions**), commité et poussé sur `aac-dev` le 22/10. Les lots 1 à 10 sont commités et fusionnés
+dans main (`ddfd7f49`, `840df9fb`, `671b6887`).
 
 Reste le déploiement — et l'interrupteur **`aac.detail.demoBlocks`**, allumé sur projets.re, est
 **à couper avant la mise en ligne**.
@@ -60,6 +62,7 @@ footer, pages de contenu) reste piloté par la config SiteForge.
 | 20/10 | Claude | Lot 11 : stash `action` appliqué sur `aac-dev` (indexé), puis filtre des actions par jalon, interrupteur « Masquer les terminées » et dédoublonnage des actions — non commités |
 | 21/10 | Claude | Revue avant commit du lot 11 : date des actions, dialogues d'action dans la coquille de la page, dédoublonnage partagé, ancre `actions`, commentaires condensés — non commités |
 | 22/10 | Claude | Lot 11 commité et poussé sur `aac-dev` ; fusion à blanc avec `main` sans conflit, portes vertes sur le résultat |
+| 23/10 | Claude | Suites de la revue de la MR `aac-dev` : « terminée » lu sans tenir compte de la casse (compteurs, filtre, « Clôturer ») ; date des actions dans la langue active ; tirelire et « Mes promesses » sur le formulaire de l'annuaire, sans charger les projets de l'organisation — commitées et poussées (§10) |
 
 ## 2. Objectifs de la configuration
 
@@ -435,6 +438,20 @@ fork : les deux blocs reçoivent une mise en page `layout="list"` (même princip
 - suite unitaire + préflights **6 469 tests / 558 fichiers** ✅ (1 ignoré), hors `site-assets`
   (dossiers vides locaux sous `public/images/`) ; `lazy-entry-facades`, `aac-variants`, `i18n-files` ✅
   sur ce build.
+
+**23/10 — suites de la revue de la MR `aac-dev` (commité et poussé).**
+- Onglet « Passage à l'action » : l'adaptateur de la cagnotte recopiait le statut d'une action tel
+  que le backend le renvoie. Une action en « Done » s'affichait cochée, sans être comptée ni masquée
+  par « Masquer les terminées », et elle bloquait « Clôturer ». L'adaptateur (`normalizeRawAction`)
+  ramène désormais le statut à `todo` | `done`, pour toutes les vues.
+- Date des actions dans la langue active (`i18n.language`) ; en français, toujours « 15/11/2023 ».
+- Header : la tirelire et « Mes promesses » lisent l'enveloppe du formulaire de l'annuaire
+  (`aac.formId`), une seule lecture pour les deux ; « Mes promesses » et « Soutenir » (`CagnotteDialog`)
+  ne chargent plus les projets de l'organisation, dont l'adaptateur ne se sert pas en type `aac`.
+- Gates (local) : `config:validate` ✅ — 4 pages, 7 sections ; `typecheck` ✅ ; `lint` ✅ 0 erreur
+  (23 avertissements antérieurs) ; suite unitaire + préflights **8 611 tests / 657 fichiers** ✅
+  (1 ignoré), hors `site-assets` (dossier vide local `public/images/proceco/`). Rendu navigateur non
+  vérifié.
 
 ## 11. Checklist d'avancement
 

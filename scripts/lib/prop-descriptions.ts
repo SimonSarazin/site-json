@@ -193,6 +193,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "utilities.auth": "Widget compte <AuthMenu> (login/avatar) — module auth.",
     "utilities.notifications": "Cloche de notifications — active le module notification (chunk lazy).",
     "utilities.piggyBank": "Cagnotte du header — module cagnotte (bloc header.piggyBank pour le contenu).",
+    "utilities.pledge": "Bouton « Mes promesses » (promesses à régler, paiements) — module cagnotte, membres connectés ; headers standard, transparent-scroll et mega-menu.",
     ctaButton: "Bouton d'appel à l'action de la barre (label + path).",
     urgenceButton: "Bouton d'urgence mis en avant (headers transparent-scroll/underline-nav).",
     announcement: "Bandeau d'annonce au-dessus de la barre (header standard) : texte, lien, variant info|success|warning|error, dismissible.",
@@ -531,7 +532,7 @@ export const BLOCK_NOTES: Record<string, string[]> = {
   ],
   header: [
     "Chaque NavItem exige au moins un de path | href | children | megaMenu (refinement).",
-    "utilities.* sont des GATES de modules : search→commandPalette, auth→AuthMenu, notifications→module notification, piggyBank→cagnotte.",
+    "utilities.* sont des GATES de modules : search→commandPalette, auth→AuthMenu, notifications→module notification, piggyBank/pledge→cagnotte.",
   ],
   theme: [
     "La config n'est jamais parsée par Zod au runtime : fournir chaque clé explicitement (les .default() ne s'appliquent pas).",

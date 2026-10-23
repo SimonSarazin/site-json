@@ -1,7 +1,7 @@
 {
   "feature": "header-mega-menu",
   "titre": "Header mega-menu",
-  "description": "La seule config qui utilise header.type mega-menu : nav riche à panneaux + utilities.",
+  "description": "La seule config qui utilise header.type mega-menu : nav riche à panneaux + utilities. utilities.pledge y allume « Mes promesses » (module cagnotte) : à couper sur un site sans cagnotte.",
   "source": "config.prod.tiers-lieux.json",
   "selector": "header",
   "snapshot": {

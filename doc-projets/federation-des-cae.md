@@ -16,12 +16,10 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-10-12** (revue de la MR !83 : depuis un finder, « Créer votre CAE » ne
-s'ouvre plus que pour la question qui le déclare — cf. §10 12/10). Précédent : **2026-10-06** (SDK
-1.0.196 : la règle « le contrat OU le costum » est publiée,
-la création d'une CAE avec horaires passe ; `main` fusionné dans `jdev`, formulaire « Créer votre CAE »
-de `main` retenu pour le finder « Partenaires du commun », contournements retirés — cf. §10 06/10 et
-§11 ; ajout depuis le finder et modale de recherche stabilisée, cf. §10 01/10).
+Dernière mise à jour : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et poussées : la
+tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans tenir compte de la
+casse — cf. §10 23/10). Précédent : **2026-10-12** (revue de la MR !83 : depuis un finder, « Créer
+votre CAE » ne s'ouvre plus que pour la question qui le déclare — cf. §10 12/10).
 
 ---
 
@@ -71,6 +69,7 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 01/10 | Schumann + Claude | Ajout d'une CAE depuis le finder « Partenaires du commun » ; modale de recherche des finders stabilisée (cf. §10 01/10) — commité le 01/10 sur `jdev` |
 | 06/10 | Aboire (SDK 1.0.196, formulaire CAE sur `main`) · Schumann + Claude (`jdev`) | `main` fusionné dans `jdev` : le formulaire « Créer votre CAE » de `main` remplace celui du 01/10, le finder y reste branché ; contournements retirés (cf. §10 06/10) |
 | 12/10 | Schumann + Claude, sur la revue de la MR !83 | Depuis un finder, un formulaire costum ne s'ouvre plus que déclaré ; déclaration erronée = pas de bouton ; pastille de statut commune à l'annuaire et à la fiche (cf. §10 12/10) |
+| 23/10 | Claude, sur la revue de la MR `aac-dev` | Tirelire et « Mes promesses » : enveloppe lue sur le formulaire de l'AAC (`aac.formId`), une seule lecture pour les deux boutons, plus de recherche des projets de l'organisation en type `aac` ; « terminée » lu sans tenir compte de la casse du statut (« n/m tâches », « Clôturer ») — commitées et poussées (§10) |
 
 ---
 
@@ -288,6 +287,19 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 23/10 — suites de la revue de la MR `aac-dev` (commité et poussé)
+
+- **Header** : la tirelire et « Mes promesses » lisent l'enveloppe du formulaire de l'AAC
+  (`aac.formId` `677e7e38…`) au lieu du premier formulaire AAP de l'hôte, avec une seule lecture pour
+  les deux boutons et la modale de la tirelire. « Mes promesses » et la modale de la cagnotte
+  (`CagnotteDialog`) ne chargent plus les projets de l'organisation, dont l'adaptateur ne se sert pas
+  en type `aac`.
+- **Fiche d'un commun** : une action renvoyée en « Done » compte comme terminée (« n/m tâches »,
+  « Clôturer » du palier) : l'adaptateur de la cagnotte normalise désormais le statut.
+- **Validation** (local) : `config:validate` ✅ — 6 pages, 10 sections ; typecheck ✅ ; lint ✅
+  (0 erreur) ; suite unitaire et préflights ✅ 8 611 tests, hors `site-assets` (dossier local vide).
+  Rendu navigateur non vérifié.
 
 ### 12/10 — revue de la MR !83 : depuis un finder, un formulaire costum ne s'ouvre que déclaré
 

@@ -199,16 +199,21 @@ const CagnotteDialogContent = ({
 
     // Récupérer l'entité depuis le contexte
     const { entity, me } = useCocolight();
+    const siteConfig = useSite();
 
-    // Récupérer TOUS les projets pour le SELECT.
-    // Le content n'est monté qu'à l'ouverture du dialog → fetch démarre ici,
-    // pas en background sur le header.
+    const {config: cagnotteConfig} = useCagnotteType({
+        propsOverride: propsType,
+        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
+    });
+
+    // Projets de l'organisation pour le sélecteur, en mode `project` seulement (le seul que lit
+    // l'adaptateur). Monté à l'ouverture du dialog : le fetch ne part pas du header.
     const {
         projects: allProjects,
         isLoading: allProjectsLoading,
     } = useOrganizationProjectsWithAnswers({
         entity: entity || null,
-        enabled: !!entity,
+        enabled: !!entity && cagnotteConfig.selectorType === "project",
     });
 
     // Un seul useFundingEnvelope() : il retourne `projects[]` complet ET
@@ -218,12 +223,6 @@ const CagnotteDialogContent = ({
         selectedResourceId || undefined,
         {hostEntity: openContext?.hostEntity, form: openContext?.envelopeForm},
     );
-    const siteConfig = useSite();
-
-    const {config: cagnotteConfig} = useCagnotteType({
-        propsOverride: propsType,
-        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
-    });
 
     //context => Pour personalisation des textes à afficher pour certain groupe d'organisation
     const context = siteConfig?.config?.cagnotteModuleConfig?.context ?? "";
