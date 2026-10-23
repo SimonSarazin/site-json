@@ -28,6 +28,8 @@ export interface UseCommunFundingContextResult {
   isCommunEtranger: boolean;
   /** Le formulaire d'origine d'un commun étranger est en cours de lecture. */
   isLoading: boolean;
+  /** Formulaire du commun, à passer à l'enveloppe ; celui de l'annuaire tant que la réponse n'est pas lue. */
+  formId: string | null;
 }
 
 /**
@@ -61,5 +63,6 @@ export function useCommunFundingContext(
     originFormName: isCommunEtranger ? (data?.name ?? null) : null,
     isCommunEtranger,
     isLoading: isCommunEtranger && isLoading,
+    formId: originFormId || directory.formId || null,
   };
 }

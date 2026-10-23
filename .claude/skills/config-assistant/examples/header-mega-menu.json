@@ -391,7 +391,8 @@
       "search": true,
       "auth": true,
       "cart": false,
-      "notifications": true
+      "notifications": true,
+      "pledge": true
     }
   }
 }

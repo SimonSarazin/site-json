@@ -54,6 +54,7 @@ lieux**, pas un plan de rattrapage.
 | 11/08 | Thomas + Claude | Demande SDK **livrée** : `normalizedName` sur `COSTUM_TOOL_USERS` (lib `d93c7c3`, npm `1.0.184`) + endpoints d'invitation (lib `ca7d65e`, même version). Réinstallation propre (`npm ci`), contenu du tarball vérifié, gates verts. Bump commité `c12f2e43` ; §11/§11.1 mises à jour |
 | 29/09 | Peterson + Claude | Alerte non bloquante « tiers-lieu déjà existant » dans le wizard de création, confirmation à la soumission si nom et code postal coïncident — slot générique config-driven, aucun endpoint nouveau (cf. §9) |
 | 28/09 → 30/09 | Peterson + Claude | `/observatoire` en **split view**, sur le patron des équipements sportifs, tout le contenu conservé : table gardée SOUS le split (retouche moteur d'une ligne), graphes typologie/portage en pleine largeur. Branche `observatoire-split-view` (`d81b8880`). Cf. §9 30/09 |
+| 21/10 | Anatole + Claude | Bouton « Mes promesses » (promesses à régler et paiements) dans le header : `header.utilities.pledge`, désormais rendu par `HeaderMegaMenu` (barre desktop et mobile) ; `cagnotteModuleConfig.defaultType: "aac"` pour les communs de `/aac/communs`. Commité sur `aac-dev` le 22/10 |
 
 ---
 

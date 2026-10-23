@@ -963,6 +963,7 @@ function MultiStepCoFormContent({
                           value={controllerField.value as DepenseEntry[]}
                           onChange={controllerField.onChange}
                           answerId={coform.answerId}
+                          formId={formId}
                           readOnly={isLocked}
                         />
                       )}

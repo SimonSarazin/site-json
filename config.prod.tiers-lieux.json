@@ -24,6 +24,9 @@
       "territoire"
     ]
   },
+  "cagnotteModuleConfig": {
+    "defaultType": "aac"
+  },
   "header": {
     "type": "mega-menu",
     "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
@@ -411,7 +414,8 @@
       "search": true,
       "auth": true,
       "cart": false,
-      "notifications": true
+      "notifications": true,
+      "pledge": true
     }
   },
   "pages": [

@@ -12,13 +12,13 @@
 > [Fédération des CAE](federation-des-cae.md) (le seul autre site AAC, modèle de config).
 > Mémoire : `[[project-projetsre]]`. Plan approuvé : `plan-d-tail-pour-integrer-iterative-lemon.md`.
 
-Dernière mise à jour : **2026-10-15** — suites de la revue de la MR `aac-dev` :
-- merge de main : `choose` n'est plus deviné, mais il est déjà déclaré ici ;
-- interrupteur **`aac.detail.demoBlocks`** : allumé sur projets.re, **à couper avant la mise en ligne** ;
-- formulaire **mesuré en DEV et en PROD** : 1 réponse, 0 visible pour un anonyme ;
-- chemin `adresse` corrigé : il désignait une question de l'ancien formulaire.
+Dernière mise à jour : **2026-10-21** — revue avant commit du lot 11 (onglet « Passage à l'action »
+de l'interface editorial en deux blocs, **Jalons** | **Actions**) : dialogues d'action montés par la
+page, date des actions lue en secondes, dédoublonnage partagé avec la carte de financement — non
+commité. Les lots 1 à 10 sont commités et fusionnés dans main (`ddfd7f49`, `840df9fb`, `671b6887`).
 
-Reste le déploiement.
+Reste le déploiement — et l'interrupteur **`aac.detail.demoBlocks`**, allumé sur projets.re, est
+**à couper avant la mise en ligne**.
 
 ---
 
@@ -57,6 +57,9 @@ footer, pages de contenu) reste piloté par la config SiteForge.
 | 29/09 | Claude | Revue avant commit des lots 3 à 9 : bloquants corrigés, paquet `funding.reactions`, commentaires condensés — non commité |
 | 29/09 | — | Entité et formulaire remplacés : org `projetsre1` (`6abb847d…`), formulaire `6abb8521…` ; slug du site → `projetsre1` |
 | 15/10 | Claude | Suites de la revue de la MR `aac-dev` : merge de main (résolution indexée, non commitée), interrupteur `demoBlocks`, mesure DEV/PROD, chemin `adresse`, correctifs (repli Suspense, requête désactivée ≠ erreur), nettoyages — non commités |
+| 20/10 | Claude | Lot 11 : stash `action` appliqué sur `aac-dev` (indexé), puis filtre des actions par jalon, interrupteur « Masquer les terminées » et dédoublonnage des actions — non commités |
+| 21/10 | Claude | Revue avant commit du lot 11 : date des actions, dialogues d'action dans la coquille de la page, dédoublonnage partagé, ancre `actions`, commentaires condensés — non commités |
+| 22/10 | Claude | Lot 11 commité et poussé sur `aac-dev` ; fusion à blanc avec `main` sans conflit, portes vertes sur le résultat |
 
 ## 2. Objectifs de la configuration
 
@@ -166,6 +169,7 @@ le compteur de membres retombe sur `user_count` du backend (la Fédération comp
 | Actus et agenda (lot 9) | `components/pageDetail/{CommunNewsSection,CommunAgendaSection}.tsx` (+ tests) · `hooks/useCommunProjectEvents.ts` (+ test) · `hooks/useCommunProjectEntity.ts` (`useCommunProjectEntityQuery`) · `lib/communEvents.ts` (+ test) · `constants/queryKeys.ts` (`COMMUN_EVENTS`) · `hooks/useCommunDetailController.ts` · `variants/editorial/CommunDetailEditorial.tsx` · `variants/editorial/demo/*` (démo actus/agenda retirée) · `src/modules/news/components/NewsFeed.tsx` (+ test, extrait de `sections/NewsSection.tsx`) |
 | Onglet argent en listes (29/09) | `components/pageDetail/{CommunFinancingSection,CommunCofinancersTable}.tsx` (+ tests) · `components/pageDetail/CommunSkeletons.tsx` (`ListRowsSkeleton`) · `variants/editorial/CommunDetailEditorial.tsx` · `i18n/{fr,en}.json` (`editorial.detail.expenses`, `detail.financing.expensesTotal`) |
 | Adresse & filtre Commune (lot 8) | `lib/communAddress.ts` (+ test) · `lib/parseAacAnswer.ts` · `lib/resolveAacCardFields.ts` · `lib/{filtersKey,filterCommuns,aacQueryParams,directoryFilters,directoryFilterActions}.ts` · `hooks/{useAacFacets,useAacDirectoryController}.ts` · `components/directory/AacDirectoryFilters.tsx` · `variants/editorial/{DirectoryShellEditorial,CommunCardEditorial,CommunRowEditorial,CommunDetailEditorial}.tsx` (+ `address.test.tsx`) · `schema.ts` · `i18n/{fr,en}.json` · `pages/AacPage.tsx` |
+| Onglet action en deux blocs (lot 11) | `components/pageDetail/CommunActionsLists.tsx` (+ test ; `CommunMilestonesList`, `CommunActionsFeed`) · `components/pageDetail/CommunActionsSection.tsx` (exporte `ActionRowButtons`, `AddMilestoneButton`, `MilestoneManageBar`) · `components/pageDetail/CommunActionDialogs.tsx` · `pages/AacCommunDetailPage.tsx` (monte `CommunActionDialogs`) · `lib/objectiveHelpers.ts` (`actionRights`, `actionCreatedLabel`, `uniqueActionRows`, + tests) · `components/pageDetail/CommunFinancingCard.tsx` · `variants/editorial/CommunDetailEditorial.tsx` · `i18n/{fr,en}.json` (`editorial.detail.{milestones,actions,actionsIntro,noMilestones,filterByMilestone,milestoneFilter,showAllActions,noMilestoneActions,hideDoneActions,allActionsDone}`) · tests `detail.conformance.test.tsx`, `CommunActionsSection.test.tsx`, `AacCommunDetailPage.test.tsx` |
 
 ## 8. Choix techniques et justifications
 
@@ -394,6 +398,44 @@ fork : les deux blocs reçoivent une mise en page `layout="list"` (même princip
   (build de `origin/main` seul, 15/10). Il est inscrit à `KNOWN_WITHOUT_FACADE`, avec la dette
   existante.
 
+**20/10 — onglet « Passage à l'action » en deux blocs (lot 11).** Travail du 29/09 resté en stash
+(`action`), appliqué sur `aac-dev` (`03d8d203`) ; commité le 22/10.
+- **Rendu** : l'onglet passe sur deux colonnes à partir de `lg`. À gauche, **Jalons**
+  (`CommunMilestonesList`) : la frise des paliers — état, description, avancement des tâches — avec
+  « Ajouter un palier » et la gestion au survol. À droite, **Actions** (`CommunActionsFeed`) : toutes
+  les actions à plat — palier, contributeurs, date, crédits, état — avec leurs commandes en ligne.
+  Sans projet lié, le message `noProject` couvre les deux colonnes.
+- **Même contrôleur, mêmes droits** que `CommunActionsSection`, dont l'interface par défaut garde le
+  rendu : les deux listes reçoivent `project.actions`, les droits passent par `actionRights`
+  (calculateur cagnotte). Les dialogues d'action sont sortis dans `CommunActionDialogs.tsx`, monté
+  une fois par la page (`AacCommunDetailPage`, à côté de `CommunMilestoneDialogs`) pour toutes les
+  interfaces : doc/36 §3, les overlays sans position restent dans la coquille.
+- **Filtre et interrupteur (20/10)** : un clic sur un jalon filtre la liste des actions (état
+  `milestoneFilter` de l'interface), un second clic ou « Toutes les actions » le retire ; un jalon
+  disparu ne filtre rien. Les actions terminées sont masquées par défaut, l'interrupteur « Masquer les
+  terminées (n) » les réaffiche.
+- **Dédoublonnage** : deux dépenses d'un même jalon portent les mêmes actions (doublons legacy,
+  doc/18) ; `uniqueActionRows` (`lib/objectiveHelpers.ts`) les compte une fois, dans la liste et dans
+  l'avancement de `CommunFinancingCard`.
+- **Revue avant commit (21/10)** : la date d'une action (`created`, en secondes côté backend)
+  sortait au 20/01/1970 — `actionCreatedLabel` lit secondes, millisecondes ou chaîne ; ancre `actions`
+  ajoutée à `SECTION_TAB` ; commentaires condensés.
+- **Conflit i18n résolu** : `aac-dev` avait ajouté `editorial.detail.noProjectCommunity` à l'endroit
+  où le lot ajoute `milestones`, `actions`, `actionsIntro` et `noMilestones`. Les cinq clés sont
+  gardées, sans doublon, parité fr/en vérifiée.
+- **Cohérence avec le reste d'`aac-dev`** : aucune autre collision. La barre de commandes
+  (`CommunActionBar`), l'interrupteur `demoBlocks` et l'onglet Communauté sont intacts, et l'onglet
+  action n'a pas de contenu de démonstration. Conformité : la liste des paliers tient lieu de bloc
+  « actions », la liste des actions reçoit les mêmes props, et aucune des deux ne s'affiche sans
+  projet lié ni pendant la résolution.
+
+**Gates (21/10, après la revue)** :
+- `typecheck` ✅ · `lint` sur les 30 fichiers `src/` touchés : 0 erreur, 1 avertissement antérieur
+  (`useAacFundingResource.ts:98`, React Compiler) · `npm run build` ✅ ;
+- suite unitaire + préflights **6 469 tests / 558 fichiers** ✅ (1 ignoré), hors `site-assets`
+  (dossiers vides locaux sous `public/images/`) ; `lazy-entry-facades`, `aac-variants`, `i18n-files` ✅
+  sur ce build.
+
 ## 11. Checklist d'avancement
 
 | # | Lot | État | Détail |
@@ -401,14 +443,15 @@ fork : les deux blocs reçoivent une mise en page `layout="list"` (même princip
 | 0 | Entité + formulaire Communecter | ✅ | `projetsre1` et formulaire `6abb8521…` présents en DEV et en PROD (mesurés le 15/10) ; 1 réponse, 0 sélectionnée |
 | 1 | Socle `src/lib/variants.ts` | ✅ | Commité `f97fc117` |
 | 2 | Fiche : contrôleur + vue | ✅ | Commité `cd7aea60` |
-| 3 | Registre de la fiche + préflight | ✅ | Non commité |
-| 4 | Annuaire : contrôleur + registres | ✅ | Non commité |
-| 5 | Interface `editorial` | ✅ | Non commité ; stories design-sync **non faites** (aucun composant AAC dans le bundle design-sync) |
-| 6 | Site `projetsre` | ✅ | Config, `sites.json`, logo, fixture `__effective__`, `.env` — non commités ; **déploiement à faire** |
+| 3 | Registre de la fiche + préflight | ✅ | Commité `ddfd7f49`, dans main |
+| 4 | Annuaire : contrôleur + registres | ✅ | Commité `ddfd7f49`, dans main |
+| 5 | Interface `editorial` | ✅ | Commité `ddfd7f49`, dans main ; stories design-sync **non faites** (aucun composant AAC dans le bundle design-sync) |
+| 6 | Site `projetsre` | ✅ | Config, `sites.json`, logo, fixture `__effective__`, `.env` — commités `ddfd7f49` (sauf `.env`, local) ; **déploiement à faire** |
 | 7 | Documentation | ✅ | doc/34 §3.4 et §3.1, doc/36, ce dossier, SKILL config-assistant |
-| 8 | Adresse + filtre « Commune » | ✅ | Rôle `adresse`, commune sur carte/ligne/fiche (`editorial`), filtre client — non commité ; **à voir sur des réponses réelles** (0 au 21/09) |
-| 9 | Onglet « Actus et agenda » réel | 🟡 | Fil d'actualités et agenda du projet lié — non commité ; tests ✅ ; **à voir sur un commun réel** (projet avec actus et événements) et en connecté (publication) |
-| 10 | Suites de la revue de la MR `aac-dev` (15/10) | 🟡 | Merge de main indexé (non commité), corrections non indexées — § 10 |
+| 8 | Adresse + filtre « Commune » | ✅ | Rôle `adresse`, commune sur carte/ligne/fiche (`editorial`), filtre client — commité `ddfd7f49` ; **à voir sur des réponses réelles** (0 au 21/09) |
+| 9 | Onglet « Actus et agenda » réel | 🟡 | Fil d'actualités et agenda du projet lié — commité `ddfd7f49` ; tests ✅ ; **à voir sur un commun réel** (projet avec actus et événements) et en connecté (publication) |
+| 10 | Suites de la revue de la MR `aac-dev` (15/10) | ✅ | Commités `840df9fb` + `671b6887`, fusionnés dans main (`de682f78`) — § 10 |
+| 11 | Onglet « Passage à l'action » en deux blocs | 🟡 | Stash `action` appliqué sur `aac-dev` le 20/10, conflit i18n résolu, filtre par jalon et interrupteur des terminées ; revue avant commit le 21/10, commité sur `aac-dev` le 22/10 ; tests ✅ ; **à voir sur un commun réel** (projet lié avec jalons et actions) — § 10 |
 
 ## 12. Dépendances SDK ↔ cocolight-api-client
 

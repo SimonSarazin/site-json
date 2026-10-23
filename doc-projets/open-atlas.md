@@ -10,10 +10,10 @@
 > [Module Profil](../doc/08-module-profil.md) · dossier voisin [Fédération des CAE](federation-des-cae.md)
 > (même gabarit, AAC en service). Mémoire : `[[project-open-atlas]]`.
 
-Dernière mise à jour : **2026-10-09** (lot 6 : page **`/outils`** d'après la maquette « Nos outils » —
-11 outils en 4 familles avec leurs volets « En savoir plus », méthode COEUR, usages ; lot 5 : accueil « Nuit », thème **sombre par défaut**,
-chiffres du réseau en direct. Le formulaire de contact n'a toujours **pas de destinataire** tant que
-`costum.contactMail` n'est pas renseigné, cf. §13).
+Dernière mise à jour : **2026-10-22** (fiche des projets : `cagnotteModuleConfig.defaultType: "aac"`,
+enveloppe lue sur le formulaire du projet — l'hôte en porte trois —, verrou du double clic
+« Activer financement » ; commité sur `aac-dev` le 22/10, §10. Le formulaire de contact n'a toujours
+**pas de destinataire** tant que `costum.contactMail` n'est pas renseigné, cf. §13).
 
 ---
 
@@ -43,7 +43,7 @@ communauté, les projets par AAC, et plus tard les pages d'outils.
 | Header / Footer | `transparent-scroll` (logo complet) / `sidebar-columns` (gabarit Rézo la mer) |
 | Mode par défaut | **sombre** depuis le lot 5 (clair au lot 1) — bascule clair/sombre conservée |
 | SDK | `@communecter/cocolight-api-client` **1.0.191** |
-| Branche | `openatlas` (créée depuis `fdev` le 01/10, poussée) — `465ed7e8` module AAC (`choose` optionnel), `371cdd73` le site, `8d60acf1` lot 4 (commit de Francki), puis lot 5 en deux commits (moteur `stats`, puis accueil « Nuit ») — non poussés |
+| Branche | `openatlas` (créée depuis `fdev` le 01/10) — `465ed7e8` module AAC (`choose` optionnel), `371cdd73` le site, `8d60acf1` lot 4 (commit de Francki), lot 5 en deux commits, lot 6 `1268781a` : tout est fusionné dans `main`. Depuis le 16/10, le site évolue aussi sur `aac-dev` : `03d8d203` interface AAC `editorial` (dans `main`), suites du 20-21/10 non commitées |
 
 ### Historique des chantiers
 
@@ -59,6 +59,11 @@ communauté, les projets par AAC, et plus tard les pages d'outils.
 | 15/10 | Francki + Claude | Suites de la revue MR 97 : l'étape de dépôt n'est jamais prise pour l'étape d'évaluation, compte des tuiles au cache des listes et invalidé avec elles, `group-hover:text-primary` sombre cède à un `hover:text-*` propre, état SSR sérialisé en un seul passage (72 ms au lieu de 170 sur `/communaute`) + test E2E de restitution, `config:probe` sans faux échec sur un site AAC sans périmètre |
 | 09/10 | Francki + Claude | Lot 6 : page `/outils` d'après une maquette reçue en capture (pas de HTML source) — sections `html` + feuille `oa-*`, accents cyan et vert ajoutés ; nav « Nos outils » (§10) |
 | 06/10 | Francki + Claude | Lot 5 : intégration de la maquette B — thème sombre par défaut, accueil en sections `html` stylées par `customCSS`, tuiles de chiffres vivantes (moteur : `stats` `design: "tiles"`, source `aacCommuns`) (§10) |
+| 16/10 | Anatole | Interface AAC `editorial` pour l'annuaire et la fiche (`03d8d203`) : `aac.directory.defaultCardVariant` / `defaultShellVariant` et `aac.detail.pageVariant` à `editorial`, `demoBlocks` non posé |
+| 16/10 | Aboire | Entrée de déploiement dans `sites.json` sur `main` (`a84735a3`) : Coolify `site-json-open-atlas`, domaine `open-atlas.00.re` — pas encore dans `aac-dev` |
+| 20/10 | Anatole + Claude | Fiche des projets sans actions : `cagnotteModuleConfig.defaultType: "aac"` ; enveloppe lue sur le formulaire du projet et sa seule réponse ; verrou du double clic « Activer financement » ; correctifs backend des doublons (§10) |
+| 21/10 | Claude | Revue avant commit : le champ coform des dépenses lit aussi le formulaire rendu, l'enveloppe attend l'id de la réponse, commentaires condensés — non commités |
+| 22/10 | Claude | Suites du 20-21/10 commitées et poussées sur `aac-dev` ; fusion à blanc avec `main` sans conflit, portes vertes sur le résultat |
 
 ---
 
@@ -125,8 +130,8 @@ Bloc `aac` :
 | `detail.gallery` | `aapStep1.image` | sous-clé des images d'un projet |
 
 Blocs racine : `version`, `meta`, `theme`, `header`, `footer`, `profiles` (`default` + `projects`),
-`aac`, `pages`. **Absents** : `auth`, `admin`, `commandPalette`, `costumForms`, `blog`,
-`cagnotteModuleConfig`.
+`aac`, `pages`, `cagnotteModuleConfig` (`defaultType: "aac"` seul, depuis le 20/10). **Absents** :
+`auth`, `admin`, `commandPalette`, `costumForms`, `blog`.
 
 Header : logo complet (`logo.png` en clair, `logo-dark.png` en sombre, `logoClass` en hauteur
 seule), nav Nos outils (`/outils`, depuis le lot 6 — remplace l'entrée externe Communecter.org) ·
@@ -233,10 +238,11 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | Domaine | Fichiers |
 |---|---|
 | Config | [`../config.prod.open-atlas.json`](../config.prod.open-atlas.json) |
-| Déclaration du site | [`../sites.json`](../sites.json) — entrée `openAtlas` (sans `coolifyApp`/`domain` pour l'instant) |
+| Déclaration du site | [`../sites.json`](../sites.json) — entrée `openAtlas` (sans `coolifyApp`/`domain` sur `aac-dev` ; posés sur `main` le 16/10, `a84735a3`) |
 | Assets | `../public/images/openAtlas/` : `logo.png`, `logo-dark.png`, `logo-symbol.png`, `logo-symbol-dark.png`, `logo-symbol-neutral.png`, `favicon.png`, `logo-symbol-lg.png` + `logo-symbol-dark-lg.png` (lot 5 : symbole du héro, 380 px recadrés du logo complet à sa résolution native) |
 | CSS | [`../src/index-open-atlas.css`](../src/index-open-atlas.css) — jetons `--oa-*`, encre `.text-primary` en sombre, blocs `oa-*` de l'accueil et de `/outils`, icônes en masque. Avant le 09/10 : `index-rezo-la-mer` partagée + `theme.customCSS` |
 | Code moteur (lot 5) | [`../src/components/sections/StatsSection.tsx`](../src/components/sections/StatsSection.tsx) (design `tiles`, chiffres comptés) · [`../src/components/sections/statSourceState.ts`](../src/components/sections/statSourceState.ts) (état d'une source compté : `value`, `unavailable`) · `../src/types/site-schema.ts` · tests `StatsSection.test.tsx`, `statSourceState.test.ts` · registre `../scripts/lib/prop-descriptions.ts` · story `../.design-sync/previews/StatsSection.tsx` · `../doc/34-module-aac.md` |
+| Code moteur (20-21/10, fiche des projets) | `../src/modules/cagnotte/hooks/useFundingEnvelope.ts` (option `form`) · `../src/modules/cagnotte/constants/queryKeys.ts` · `../src/modules/aac/hooks/useCommunFundingContext.ts` (`formId`) · lecteurs de la fiche (`useCommunDetailController`, `useCommunObjectivesController`, `useCommunDeletionPlan`, `CommunFinancingCard` → `CagnotteDialog` `envelopeForm`) · `../src/modules/coform/components/MilestoneListField.tsx` · `../src/modules/search/components/card/CardFunding.tsx` · tests `useFundingEnvelope.test.tsx`, `useCommunFundingContext.test.tsx`, `CardFunding.test.tsx` |
 | Tests | `../tests/preflight/__effective__/open-atlas.json` (instantané du préflight — ne projette pas le bloc `aac`) |
 
 ---
@@ -274,7 +280,8 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | Filtres `usage` et `maturity` coupés | Pas de catalogue d'usages ni de champ de maturité sur ce formulaire |
 | ~~`aac-highlight` en ton `muted`~~ (lot 2, retiré de l'accueil au lot 5) | En ton `primary`, la feuille Rézo force `text-foreground` sur `h2`/`p` (§13) ; le chiffre vit désormais dans la tuile `aacCommuns` |
 | `choose` réservé à la config (moteur) | Le module devinait `aapStep2.choose` sur tout formulaire : sur un AAP, chaque projet était « en attente » et l'annuaire public, restreint aux sélectionnés, sortait vide. Un AAC le déclare désormais (Fédération des CAE déjà ; `config.dev.acc.json` ajouté) |
-| `piggyBank`/`pledge` coupés, pas de `cagnotteModuleConfig` | Le financement reste visible sur la fiche d'un projet ; on n'ajoute pas d'entrée de cagnotte au header tant que la publication n'est pas décidée |
+| `piggyBank`/`pledge` coupés | Le financement reste visible sur la fiche d'un projet ; on n'ajoute pas d'entrée de cagnotte au header tant que la publication n'est pas décidée |
+| `cagnotteModuleConfig.defaultType: "aac"` (20/10) | Sans lui, la cagnotte part en type `standard` et cherche les ressources par **projet**, la fiche par **réponse** : jalons à 0/0 tâche, liste d'actions vide. Réglage de config, pas de type forcé dans le module (doc/34) |
 
 ---
 
@@ -434,6 +441,35 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | Build prod (copie temporaire, sans `tsc` bloqué par les 3 erreurs antérieures) | ✅ Open Atlas `144 · 91 · 18`, 0 erreur ; SSBE : 4 squelettes en SSR (au lieu de 4 × « 0 »), 0 chunk AAC préchargé |
 | Revue `revue-fonctionnalite` (partie moteur) | 4 majeurs + 6 mineurs → corrigés ; contre-revue 0 majeur, 4 mineurs → 3 corrigés, 1 en attente de décision (nommage) |
 
+### 20-21/10 — fiche des projets : type `aac`, formulaire de l'enveloppe, double clic (`aac-dev`, commité le 22/10)
+
+- **Constat (20/10)** : aucune action n'apparaissait sur la fiche d'un projet. Deux causes :
+  - pas de `cagnotteModuleConfig` : la cagnotte partait en type `standard` (ressources par projet,
+    fiche par réponse) → `cagnotteModuleConfig.defaultType: "aac"`, config seule, comme la Fédération
+    des CAE et projets.re ;
+  - l'hôte Open Atlas porte trois formulaires AAP et `getFormData` lisait le premier, le plus récent
+    (« OCECO » `6375be76…`), pas celui des projets (`618b7b4a…`) → option `form` de
+    `useFundingEnvelope` : la fiche, `CagnotteDialog` et `useCommunDeletionPlan` passent le formulaire
+    du projet et sa seule réponse (doc/34 §9). Côté backend, une réponse dont un `financer` est stocké
+    en objet faisait échouer `getEnvelopeFormData` (§12).
+- **Doublons** : « Activer financement » (`generateproposition`) pouvait partir deux fois sur un
+  double clic — doublon « Corner Dev », deux réponses à 32 ms d'écart → verrou synchrone dans
+  `CardFunding` (+ test) ; côté backend, proposition idempotente et nettoyage
+  `/co2/admin/aapduplicates` (§12, §13).
+- **Revue avant commit (21/10)** : le champ coform des dépenses (`MilestoneListField`) lit aussi le
+  formulaire qu'il rend ; le contrôleur des paliers attend l'id de la réponse avant de lire
+  l'enveloppe ; date des actions lue en secondes ; dialogues d'action montés par la page.
+- **Gates** (21/10, local) :
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 8 pages, 30 sections |
+| `typecheck` | ✅ |
+| `eslint` (fichiers touchés) | ✅ 0 erreur · 1 avertissement antérieur (`useAacFundingResource.ts:98`) |
+| `vitest` unitaires + préflights | ✅ 6 469 (558 fichiers) · 1 ❌ **local** (`site-assets` : dossiers vides sous `public/images/`) |
+| `npm run build` | ✅ ; `lazy-entry-facades`, `aac-variants`, `i18n-files` ✅ sur ce build |
+| Rendu navigateur | non fait — à voir en connecté sur un projet avec jalons et actions |
+
 ---
 
 ## 11. Checklist d'avancement
@@ -451,8 +487,9 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | 7 | Projets — publication | ✅ | 144 projets titrés publics (pas de sélection sur un AAP) |
 | 8 | Projets — dépôt | ❌ | formulaire fermé |
 | 9 | Pages d'outils | 🟡 | page `/outils` (lot 6) avec ses volets « En savoir plus » ; anglais à relire, date de création à trancher (§14) |
-| 10 | Déploiement | ❌ | entrée Coolify et domaine à décider |
-| 11 | Commit | 🟡 | lots 1-6 commités sur `openatlas` (lot 5 le 07/10, feuille propre `7ac0fc6c` et lot 6 le 12/10, **non poussés**) ; merge et déploiement à faire |
+| 10 | Déploiement | 🟡 | entrée Coolify `site-json-open-atlas` et domaine `open-atlas.00.re` posés sur `main` le 16/10 (`a84735a3`) ; mise en ligne à confirmer |
+| 11 | Commit | 🟡 | lots 1-6 et interface `editorial` (`03d8d203`) fusionnés dans `main` ; suites du 20-21/10 (fiche des projets) commitées sur `aac-dev` le 22/10, MR vers `main` à ouvrir |
+| 12 | Fiche des projets — jalons et actions | 🟡 | type `aac`, enveloppe du formulaire du projet (20/10) ; tests ✅ ; **à voir en connecté** sur un projet avec jalons et actions |
 
 ---
 
@@ -463,6 +500,7 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
 | `GET_COFORM_BY_ID` ne renvoie jamais `aapType` (même sur le form de la Fédération) | constaté le 30/09 ; sans effet bloquant |
 | `getformbyid` sur un `aapConfig` → **500 en DEV**, OK en PROD | correctif legacy (doc/34 §3) **non déployé en DEV** ; l'annuaire rend quand même (`useAacConfig` best-effort), erreur visible en console |
 | Poids SSR de `/communaute` | voir §13 |
+| Backend « projets et jalons en double » (21/10) : verrou de `generateproposition`, `generateDepenses`, `getEnvelopeFormData` tolérant un `financer` en objet, `/co2/admin/aapduplicates` | commités et poussés sur `master` (citizenToolKit `43a52369`, survey `7b2da776`, co2 `3006b218b`, costum `1bc6b1feb`) ; **déploiement à confirmer**, avant tout `op=apply` en PROD |
 
 ---
 
@@ -496,6 +534,15 @@ Tampon », « Corner Dev » ×2) et beaucoup de fiches sans description ni image
   image. C'est la donnée, pas le rendu : à nettoyer côté réponses, ou à trier autrement.
 - **Tuiles comptées côté client** : le HTML serveur porte un squelette à leur place (pas de
   préchargement SSR des comptes).
+- **Actions d'un projet en connecté seulement** : l'enveloppe (`useFundingEnvelope`) ne se lit
+  qu'avec un utilisateur connecté ; un visiteur anonyme voit les jalons (repli sur la réponse), sans
+  actions. Une action sans jalon n'apparaît nulle part : seules celles du jalon d'une dépense
+  remontent (`useCagnotteAdapter`).
+- **Doublons de projets** (ex. « Corner Dev », deux réponses créées à 32 ms d'écart) : à retirer
+  par `/co2/admin/aapduplicates` (super-admin, `op=report` puis `apply`) **après** déploiement du
+  backend, sinon le legacy recrée des copies. En attendant, la liste des actions de la fiche et
+  l'avancement de la carte de financement comptent chaque action une fois ; les jalons en double
+  restent affichés.
 - **Poids de la config dans chaque page** : la config entière est sérialisée dans le HTML de chaque
   page ; les sections `html` bilingues s'y paient partout (109 Ko de config au 09/10 après sortie des
   styles, dont ~44 Ko pour `/outils` avec ses volets). Problème moteur — une config par page ou un

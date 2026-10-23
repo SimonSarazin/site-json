@@ -9,7 +9,7 @@ import type {
   FundingMilestone as Milestone,
   CagnotteFundableItem,
 } from "@/modules/cagnotte/types";
-import type { CagnotteMilestoneStatus } from "@/modules/cagnotte/permissions/types";
+import type { CagnotteMilestoneStatus, MilestoneCardPermissions } from "@/modules/cagnotte/permissions/types";
 import {
   getEntityId,
   normalizeActionStatus,
@@ -208,3 +208,45 @@ export type {
   ActionPermissionInput,
   MilestoneCardPermissions,
 } from "@/modules/cagnotte/permissions/types";
+
+/** Ce que l'utilisateur peut faire sur une action, selon les droits cagnotte. */
+export function actionRights(permissions: MilestoneCardPermissions, action: ProjectAction) {
+  const actionLike = {
+    status: action.status,
+    contributorIds: action.contributors.map((contributor) => contributor.id),
+    authorId: action.authorId,
+  };
+  return {
+    canCandidate: permissions.canCandidateAction(actionLike),
+    canMarkDone: permissions.canMarkActionDone(actionLike),
+    canEdit: permissions.canEditAction(actionLike),
+    canDelete: permissions.canDeleteAction(actionLike),
+  };
+}
+
+/**
+ * Date de création d'une action, vide si absente ou illisible.
+ * `created` : secondes (PHP), millisecondes ou chaîne ; sous 1e12, des secondes.
+ */
+export function actionCreatedLabel(action: ProjectAction): string {
+  const raw = action.created;
+  const created = typeof raw === "string" && /^\d+$/.test(raw) ? Number(raw) : raw;
+  if (!created) return "";
+  const date = new Date(typeof created === "number" && created < 1e12 ? created * 1000 : created);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("fr-FR");
+}
+
+/** Actions des paliers, à plat, une fois chacune (deux dépenses d'un même jalon portent les mêmes actions). */
+export function uniqueActionRows(
+  items: CagnotteFundableItem[],
+): { item: CagnotteFundableItem; action: ProjectAction }[] {
+  const seen = new Set<string>();
+  return items
+    .flatMap((item) => (item.actions ?? []).map((action) => ({ item, action })))
+    .filter(({ action }) => {
+      if (!action.id) return true;
+      if (seen.has(action.id)) return false;
+      seen.add(action.id);
+      return true;
+    });
+}

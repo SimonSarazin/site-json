@@ -918,6 +918,7 @@ export function DynamicCoForm({
                           value={controllerField.value as DepenseEntry[]}
                           onChange={controllerField.onChange}
                           answerId={answerId}
+                          formId={formData.id}
                           readOnly={isLocked}
                         />
                       )}

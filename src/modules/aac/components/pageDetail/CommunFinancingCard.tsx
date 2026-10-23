@@ -17,7 +17,7 @@ import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import { useCommunFundingContext } from "@/modules/aac/hooks/useCommunFundingContext";
 import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useShowSection } from "@/modules/aac/hooks/useCommunSectionNav";
-import { canManageObjectiveActions } from "@/modules/aac/lib/objectiveHelpers";
+import { canManageObjectiveActions, uniqueActionRows } from "@/modules/aac/lib/objectiveHelpers";
 import { aggregateCofinancers } from "@/modules/aac/lib/cofinancers";
 import { CommunReactionStats } from "./CommunReactionStats.tsx";
 
@@ -93,7 +93,7 @@ export function CommunFinancingCard({
         // eslint-disable-next-line react-hooks/exhaustive-deps -- ne rejoue que sur l'arrivée de la session ou d'une intention
     }, [postLoginIntent, me?.isConnected]);
 
-    const { context: fundingContext } = useCommunFundingContext(answerQuery);
+    const { context: fundingContext, formId: fundingFormId } = useCommunFundingContext(answerQuery);
     const { hostEntity: fundingHost } = useCommunFundingHost(fundingContext);
 
     // L'étape RÉSOLUE par la page (`config.roles.depenseStepKey`), jamais
@@ -116,7 +116,7 @@ export function CommunFinancingCard({
     // Stats d'actions — seulement pertinent une fois la proposition promue en
     // projet (cf. `canManageObjectiveActions`, même règle que CommunActionsSection).
     const isProjectPhase = canManageObjectiveActions(funding?.projectId);
-    const allActions = items.flatMap((item) => item?.actions ?? []);
+    const allActions = uniqueActionRows(items).map(({ action }) => action);
     const doneActionsCount = allActions.filter((action) => action?.status === "done").length;
     const totalActionsCount = allActions.length;
     const actionsPerc = totalActionsCount > 0 ? Math.round((doneActionsCount / totalActionsCount) * 100) : 0;
@@ -154,6 +154,7 @@ export function CommunFinancingCard({
                 hideResourceSelect: true,
                 hostEntity: fundingHost,
                 resource: funding ?? undefined,
+                envelopeForm: fundingFormId ? { id: fundingFormId, answerId } : null,
             }}
         >
             {trigger}

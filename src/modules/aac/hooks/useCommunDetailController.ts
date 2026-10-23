@@ -184,7 +184,7 @@ export function useCommunDetailController(): CommunDetailVM {
     const formId = directory.formId ?? originFormId;
 
     // Appel d'origine : son nom (« Déposé sur … ») et le contexte qui détient l'enveloppe.
-    const { context: fundingContext, originFormName } = useCommunFundingContext(answerQuery.data);
+    const { context: fundingContext, originFormName, formId: fundingFormId } = useCommunFundingContext(answerQuery.data);
 
     const formQuery = useQuery({
         // Idem : `access.restrictedFields` dépend du lecteur ; clé partagée avec le loader.
@@ -219,6 +219,7 @@ export function useCommunDetailController(): CommunDetailVM {
         // Repli : la réponse porte déjà son projet et ses dépenses.
         answer: answerQuery.data,
         step: config?.roles.depenseStepKey ?? undefined,
+        formId: fundingFormId,
     });
 
     // Phase inconnue tant que l'enveloppe ou la config sont en vol.
