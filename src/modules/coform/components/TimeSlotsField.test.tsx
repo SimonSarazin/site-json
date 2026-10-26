@@ -156,6 +156,26 @@ describe("TimeSlotsField — période propre d'un créneau", () => {
   });
 });
 
+describe("TimeSlotsField — avertissement de l'appelant", () => {
+  it("affiche le message sous le créneau en cause, et rien sous les autres", () => {
+    const mercredi: TimeSlotValue = { ...REAL_SLOT, day: "Wednesday" };
+    const { container, getAllByRole } = render(
+      <TimeSlotsField
+        field={makeField({})}
+        errors={{}}
+        value={[REAL_SLOT, mercredi]}
+        notices={[null, "Mercredi 08:00 – 09:00 est déjà réservé par JS SALINE"]}
+      />,
+    );
+    const alertes = getAllByRole("alert");
+    expect(alertes).toHaveLength(1);
+    expect(alertes[0].textContent).toContain("JS SALINE");
+    const carte = alertes[0].closest('[class*="bg-muted/30"]');
+    expect(carte?.contains(container.querySelectorAll('input[type="time"]')[2])).toBe(true);
+    expect(carte?.className).toContain("border-destructive");
+  });
+});
+
 const DYN_FIELD = makeField({
   type: "tpls.forms.cplx.dynamicFields",
   componentType: "dynamicFields",

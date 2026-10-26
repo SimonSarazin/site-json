@@ -33,6 +33,8 @@ interface TimeSlotsFieldProps {
   errors: FieldErrors;
   value?: unknown;
   onChange?: (value: TimeSlotValue[]) => void;
+  /** Avertissement de l'appelant sous chaque créneau, même index que `value` (`TimeSlotCheckContext`). */
+  notices?: ReadonlyArray<string | null>;
 }
 
 /**
@@ -45,8 +47,11 @@ interface TimeSlotsFieldProps {
  * Période propre d'un créneau (`periodStart`/`periodEnd`) : saisissable quand
  * l'appelant l'active (`TimeSlotPeriodsContext`), sinon affichée en lecture si
  * le créneau en porte une — et toujours conservée, comme toute clé du créneau.
+ *
+ * Avertissement de l'appelant (`notices`, ex. « déjà réservé par… ») : affiché sous le créneau en cause,
+ * comme l'erreur d'ordre. Il ne bloque rien ici — l'appelant refuse l'enregistrement s'il le faut.
  */
-export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFieldProps) {
+export function TimeSlotsField({ field, errors, value, onChange, notices }: TimeSlotsFieldProps) {
   const t = useT("modules/coform");
   const withPeriods = useContext(TimeSlotPeriodsContext);
   const config = field.timeSlotsConfig ?? {};
@@ -104,6 +109,7 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
         {slots.map((slot, index) => {
           const ordered = isSlotOrdered(slot);
           const periodOrdered = isSlotPeriodOrdered(slot);
+          const notice = notices?.[index];
           const periodLabel = withPeriods ? null : formatSlotPeriod(slot, t);
           const dayId = `${field.name}-${index}-day`;
           const startId = `${field.name}-${index}-start`;
@@ -115,7 +121,7 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
               key={index}
               className={cn(
                 "rounded-md border bg-muted/30 p-3",
-                ordered && periodOrdered ? "border-border/60" : "border-destructive",
+                ordered && periodOrdered && !notice ? "border-border/60" : "border-destructive",
               )}
             >
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
@@ -231,6 +237,11 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
               {!periodOrdered && (
                 <p role="alert" className="mt-2 text-xs font-medium text-destructive">
                   {t("coform.validation.timeSlotPeriodOrder")}
+                </p>
+              )}
+              {notice && (
+                <p role="alert" className="mt-2 text-xs font-medium text-destructive">
+                  {notice}
                 </p>
               )}
             </div>
