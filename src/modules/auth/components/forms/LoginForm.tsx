@@ -1,9 +1,11 @@
 import React, {
   useState,
   useEffect,
-  useMemo, 
+  useMemo,
+  useRef,
   type ChangeEvent,
 } from "react";
+import cocolightApiClient from "@communecter/cocolight-api-client";
 
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -40,12 +42,30 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
   const [remember, setRemember]     = useState<boolean>(false);
   const [loadingLogin, setLoading]  = useState<boolean>(false);
 
+  /*
+   * Double authentification (cocolight-backend docs/34-2FA-LOT1.md). Après un mot de passe correct
+   * sur un compte SOUMIS, le serveur ne connecte pas : il répond par un défi (401 twoFactorRequired,
+   * levé par la lib en `TwoFactorRequiredError`) et envoie un code par e-mail. On affiche alors
+   * l'étape « code » à la place du formulaire ; `verifyTwoFactor` termine la connexion exactement
+   * comme `login` (jetons posés par la lib). La règle « compte soumis » vit côté serveur : un site
+   * dont aucun compte n'est soumis ne voit jamais cette étape.
+   */
+  // `expireAtMs` / `resendAtMs` : horloge LOCALE (ms). Le serveur rend `expireAt` en epoch secondes ; un
+  // défi vivant de moins de 60 s est RÉUTILISÉ tel quel (même expireAt, pas de nouveau mail), donc le
+  // temps restant et le délai avant renvoi se déduisent d'expireAt (TTL 5 min, 60 s entre deux envois).
+  const [twoFactor, setTwoFactor]   = useState<{ challenge: string; sentTo: string; expireAtMs: number; resendAtMs: number } | null>(null);
+  const [code, setCode]             = useState<string>("");
+  const [twoFactorMsg, setTwoFactorMsg] = useState<{ text: string; tone: "error" | "info" } | null>(null);
+  const [now, setNow]               = useState<number>(() => Date.now());
+  const [verifying, setVerifying]   = useState<boolean>(false);
+  const resending                   = useRef<boolean>(false);
+
   const navigate                     = useNavigate();
   const location                     = useLocation();
   // Page visée mémorisée par la garde (usePageGuards) — repli sur l'accueil, comportement
   // historique. `returnToOrHome` refuse toute destination externe (cf. lib/authRedirect).
   const returnTo                     = returnToOrHome(location.state);
-  const { userApi, apiClient, loading, me, entity }     = useCocolight();
+  const { userApi, loading, me, entity }     = useCocolight();
   const { config }                   = useSite();
   const { loaded }                   = useLoadNamespace("modules/auth");
   const t                            = useT("modules/auth");
@@ -55,6 +75,50 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
   // Défaut NEUTRE : « SiteForge » est le nom du générateur, il ne doit jamais
   // fuiter sur un site — chaque site personnalise via config.auth.login.
   const loginSubtitle = config.auth?.login?.subtitle || { fr: "Accédez à votre compte", en: "Access your account" };
+  const twoFactorTitle = config.auth?.twoFactor?.title || { fr: "Vérification en deux étapes", en: "Two-step verification" };
+  const twoFactorHelp = config.auth?.twoFactor?.help;
+
+  // Une seule horloge pendant l'étape « code » : délai avant renvoi (60 s entre deux envois) et temps
+  // restant avant expiration du défi (5 min). Un intervalle, nettoyé au démontage et en StrictMode.
+  useEffect(() => {
+    if (!twoFactor) return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [twoFactor]);
+  const resendIn  = twoFactor ? Math.max(0, Math.ceil((twoFactor.resendAtMs - now) / 1000)) : 0;
+  const expiresIn = twoFactor ? Math.max(0, Math.floor((twoFactor.expireAtMs - now) / 1000)) : 0;
+
+  // Défi expiré côté client : on ne laisse pas saisir un code que le serveur refusera (challengeExpired).
+  useEffect(() => {
+    if (!twoFactor || expiresIn > 0) return;
+    setTwoFactor(null);
+    setCode("");
+    setTwoFactorMsg(null);
+    toast.error(t("Erreur"), { description: t("Ce code n'est plus valable, reconnectez-vous") });
+  }, [twoFactor, expiresIn, t]);
+
+  /**
+   * Ouvre l'étape « code » depuis le défi rendu par le serveur. `expireAt` (epoch s) sert à placer les
+   * deux comptes à rebours : un défi neuf expire dans 300 s et autorise un renvoi dans 60 s ; un défi
+   * RÉUTILISÉ (reconnexion < 60 s : même défi, pas de nouveau mail) expire plus tôt et se renvoie plus
+   * tôt. Hors de cette fenêtre (horloge du poste décalée), on retombe sur les valeurs d'un défi neuf.
+   */
+  const openTwoFactor = (challenge: string, sentTo: string, expireAt: number): void => {
+    const TTL = 300_000;
+    const RESEND = 60_000;
+    const nowMs = Date.now();
+    let expireAtMs = expireAt * 1000;
+    if (!(expireAtMs - nowMs > 0 && expireAtMs - nowMs <= TTL)) expireAtMs = nowMs + TTL;
+    const sentAtMs = expireAtMs - TTL;
+    setTwoFactor({ challenge, sentTo, expireAtMs, resendAtMs: sentAtMs + RESEND });
+    setCode("");
+    setTwoFactorMsg(null);
+  };
+
+  /** Refus SERVEUR (`{error}` / `{result:false}`), par opposition au serveur injoignable (réseau, breaker, file). */
+  const isServerRefusal = (err: unknown): err is { message: string; responseData?: Record<string, unknown> } =>
+    err instanceof cocolightApiClient.error.ApiResponseError;
 
   const ssoProviders: string[] = useMemo(
     () => (entity?.serverData.costum as { sso?: string[] })?.sso || [],
@@ -155,23 +219,35 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
     try {
       await userApi.login(email, password);     // ← optionnel
       if (userApi.isConnected) {
-        // Contrairement au flux SSO (useSSOAuth.ts), userApi.login() n'émet pas
-        // "userLoggedIn" — sans ça, CocolightProvider ne rafraîchit jamais
-        // me/entity après une connexion classique (header, notifications,
-        // popup d'invitation restent sur l'état "déconnecté" jusqu'au reload).
-        apiClient?.emit("userLoggedIn");
+        // Les jetons sont posés et `userLoggedIn` est émis par les postActions du contrat
+        // (AUTHENTICATE_URL), que CocolightProvider écoute : rien à émettre ici — un second `emit`
+        // faisait tourner deux fois le rafraîchissement de `me`/`entity` (vérifié : requêtes en double).
         onSuccess?.();
         if (!hideBackButton) navigate(returnTo);
       }
     } catch (err: unknown) {
+      /* Compte soumis au second facteur : on passe à l'étape « code », sans erreur. */
+      if (err instanceof cocolightApiClient.error.TwoFactorRequiredError) {
+        openTwoFactor(err.challenge, err.sentTo, err.expireAt);
+        return;
+      }
+
       /* On extrait le status si présent, sinon on retombe sur le message  */
-      const status =
-        (err as { response?: { status?: number } }).response?.status;
+      const e = err as { status?: number; message?: string; response?: { status?: number }; responseData?: { retryIn?: number } };
+      const status = e.status ?? e.response?.status;
 
       const msg =
-        status === 401 || status === 404
-          ? t("Email ou mot de passe incorrect")
-          : (err as Error).message;
+        e.message === "twoFactorMailFailed"
+          ? t("Le code n'a pas pu être envoyé par e-mail, réessayez plus tard")
+          : e.message === "twoFactorTooMany"
+            ? t("Trop de tentatives, réessayez dans {{minutes}} min", undefined, { minutes: Math.max(1, Math.ceil((e.responseData?.retryIn ?? 900) / 60)) })
+            : status === 401 || status === 404
+              ? t("Email ou mot de passe incorrect")
+              : status === 429
+                ? t("Trop de tentatives, réessayez plus tard")
+                : isServerRefusal(err)
+                  ? (err as Error).message
+                  : t("Impossible de se connecter pour le moment");
 
       toast.error(t("Erreur"), {
         description: msg,
@@ -181,11 +257,196 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
     }
   };
 
+  /* Seconde étape : le code reçu par e-mail ------------------------------- */
+  const handleVerify = async (): Promise<void> => {
+    if (!twoFactor || !userApi || verifying) return;
+    const trimmed = code.trim();
+    if (!/^[0-9]{6}$/.test(trimmed)) {
+      setTwoFactorMsg({ text: t("Code incorrect"), tone: "error" });
+      return;
+    }
+    setVerifying(true);
+    try {
+      await userApi.verifyTwoFactor(twoFactor.challenge, trimmed);
+      if (userApi.isConnected) {
+        // Même suite que `login` : TWO_FACTOR_VERIFY porte les mêmes postActions (jetons + userLoggedIn).
+        setTwoFactor(null);
+        onSuccess?.();
+        if (!hideBackButton) navigate(returnTo);
+      } else {
+        setTwoFactorMsg({ text: t("Impossible de se connecter pour le moment"), tone: "error" });
+      }
+    } catch (err: unknown) {
+      if (!isServerRefusal(err)) {
+        // Réseau coupé, breaker ouvert, requête mise en file : le défi et le code restent valables.
+        setTwoFactorMsg({ text: t("Impossible de se connecter pour le moment"), tone: "error" });
+        return;
+      }
+      if (err.message === "codeInvalid") {
+        const left = err.responseData?.attemptsLeft;
+        setTwoFactorMsg({
+          text: typeof left === "number"
+            ? t("Code incorrect, il vous reste {{count}} essai(s)", undefined, { count: left })
+            : t("Code incorrect"),
+          tone: "error",
+        });
+        return;
+      }
+      if (err.message !== "challengeExpired") {
+        // Autre refus serveur (p. ex. limiteur de requêtes) : le défi tient toujours, on l'affiche en place.
+        setTwoFactorMsg({ text: err.message, tone: "error" });
+        return;
+      }
+      // challengeExpired (inconnu, 5 min passées, déjà utilisé, 5 échecs) : on repart du mot de passe.
+      setTwoFactor(null);
+      setCode("");
+      toast.error(t("Erreur"), { description: t("Ce code n'est plus valable, reconnectez-vous") });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleResend = async (): Promise<void> => {
+    if (!twoFactor || !userApi || resendIn > 0 || verifying || resending.current) return;
+    resending.current = true; // un double clic = une seule requête
+    const setResendIn = (seconds: number) =>
+      setTwoFactor((tf) => (tf ? { ...tf, resendAtMs: Date.now() + seconds * 1000 } : tf));
+    try {
+      await userApi.resendTwoFactor(twoFactor.challenge);
+      setCode("");
+      setResendIn(60);
+      setTwoFactorMsg({ text: t("Un nouveau code vient d'être envoyé"), tone: "info" });
+    } catch (err: unknown) {
+      if (!isServerRefusal(err)) {
+        setTwoFactorMsg({ text: t("Impossible de se connecter pour le moment"), tone: "error" });
+        return;
+      }
+      switch (err.message) {
+        case "resendTooSoon": {
+          const retryIn = Math.max(1, Math.round(Number(err.responseData?.retryIn ?? 60)));
+          setResendIn(retryIn);
+          setTwoFactorMsg({ text: t("Patientez encore {{seconds}} s avant de renvoyer un code", undefined, { seconds: retryIn }), tone: "info" });
+          return;
+        }
+        case "resendLimit":
+          setTwoFactorMsg({ text: t("Plus de renvoi possible, le dernier code reçu reste valable"), tone: "info" });
+          return;
+        case "resendTooLate":
+          setTwoFactorMsg({ text: t("Trop tard pour renvoyer un code, reconnectez-vous"), tone: "info" });
+          return;
+        case "twoFactorMailFailed":
+          setTwoFactorMsg({ text: t("Le code n'a pas pu être envoyé par e-mail, réessayez plus tard"), tone: "error" });
+          return;
+        case "challengeExpired":
+          setTwoFactor(null);
+          setCode("");
+          toast.error(t("Erreur"), { description: t("Ce code n'est plus valable, reconnectez-vous") });
+          return;
+        default:
+          setTwoFactorMsg({ text: err.message, tone: "error" });
+      }
+    } finally {
+      resending.current = false;
+    }
+  };
+
+  const handleBack = (): void => {
+    setTwoFactor(null);
+    setCode("");
+    setTwoFactorMsg(null);
+    setPassword("");
+  };
+
   /* --------------------------------------------------------------------- */
   if (!loaded) {
     return (
       <div className="flex items-center justify-center py-10 text-muted-foreground">
         Loading…
+      </div>
+    );
+  }
+
+  if (twoFactor) {
+    return (
+      <div className="w-full space-y-6 p-4 rounded-lg bg-card" data-testid="two-factor-step">
+        <div className="text-center">
+          <h2 className="text-3xl text-foreground font-bold mb-2">
+            {t(twoFactorTitle)}
+          </h2>
+          <p className="text-muted-foreground">
+            {twoFactorHelp
+              ? t(twoFactorHelp)
+              : t("Un code à 6 chiffres a été envoyé à {{sentTo}}. Saisissez-le pour terminer votre connexion.", undefined, { sentTo: twoFactor.sentTo })}
+          </p>
+          {twoFactorHelp && twoFactor.sentTo && (
+            <p className="text-sm text-muted-foreground">{twoFactor.sentTo}</p>
+          )}
+          <p className="text-xs text-muted-foreground" data-testid="two-factor-validity">
+            {t("Code valable encore {{minutes}} min", undefined, { minutes: Math.max(1, Math.ceil(expiresIn / 60)) })}
+          </p>
+        </div>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleVerify();
+          }}
+        >
+          <Input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]*"
+            autoFocus
+            aria-label={t("Code de vérification")}
+            aria-invalid={twoFactorMsg?.tone === "error" ? true : undefined}
+            aria-describedby={twoFactorMsg ? "two-factor-message" : undefined}
+            placeholder={t("Code de vérification")}
+            value={code}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              // Pas de `maxLength` : il tronquerait un collage AVANT le retrait des espaces (« 123 456 »).
+              setCode(e.target.value.replace(/\D/g, "").slice(0, 6));
+              if (twoFactorMsg?.tone === "error") setTwoFactorMsg(null);
+            }}
+            className="h-12 text-center text-2xl tracking-[0.5em]"
+          />
+
+          {twoFactorMsg && (
+            <p
+              id="two-factor-message"
+              role={twoFactorMsg.tone === "error" ? "alert" : "status"}
+              className={twoFactorMsg.tone === "error" ? "text-sm text-destructive" : "text-sm text-muted-foreground"}
+            >
+              {twoFactorMsg.text}
+            </p>
+          )}
+
+          <Button className="w-full" type="submit" disabled={verifying || code.length !== 6} variant="default" size="lg">
+            {verifying ? t("Vérification...") : t("Valider le code")}
+          </Button>
+
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={resendIn > 0 || verifying}
+              onClick={() => void handleResend()}
+              className="text-sm text-primary hover:text-primary/80"
+            >
+              {resendIn > 0
+                ? t("Renvoyer le code ({{seconds}} s)", undefined, { seconds: resendIn })
+                : t("Renvoyer le code")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleBack}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t("Retour")}
+            </Button>
+          </div>
+        </form>
       </div>
     );
   }
