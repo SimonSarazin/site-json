@@ -326,6 +326,118 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item, preview }) => {
 
   if (!name) return null;
 
+  // Équipements réservés dans la colonne de GAUCHE, la large (`bookedResources.placement: "column"`, demande
+  // de Peterson du 26/10 pour ESS974 : réservations à gauche, localisation à droite) — personnes,
+  // informations et documents passent alors sous la localisation. Sinon, pleine largeur sous les deux
+  // colonnes (comportement historique, SSBE et les autres annuaires).
+  const bookedInColumn = showBooked && bookedConf?.placement === "column";
+  const bookedSection = showBooked ? (
+    <Suspense fallback={null}>
+      <PreviewBookedResources
+        orgaId={org!.id as string}
+        orgaName={name}
+        conf={reservationsConf!}
+        booked={bookedConf!}
+      />
+    </Suspense>
+  ) : null;
+
+  const peopleAndInfo = (
+    <>
+      {(repFullName || repEmail) && (
+        <>
+          <InfoSectionTitle icon={IdCard}>
+            {samePerson ? t("PreviewStructure.repAndPic") : t("PreviewStructure.representative")}
+          </InfoSectionTitle>
+          <PersonCard
+            roleLabel={t("PreviewStructure.representative")}
+            roleIcon={Award}
+            title={repTitle}
+            fullName={repFullName}
+            email={repEmail}
+            phone={repPhone}
+          />
+        </>
+      )}
+
+      {!samePerson && (picFullName || picEmail) && (
+        <PersonCard
+          roleLabel={t("PreviewStructure.personInCharge")}
+          roleIcon={Briefcase}
+          title={picTitle}
+          fullName={picFullName}
+          email={picEmail}
+          phone={picPhone}
+          alt
+        />
+      )}
+
+      {/* Informations + Documents : réservés aux gestionnaires, comme le bloc `$ssbeCanManage` de la
+          fiche legacy ssbe/organizations/preview.php (qui y range aussi Modifier/Supprimer et les créneaux). */}
+      {canEditProfile && (
+        <>
+          <Separator className="my-1" />
+
+          <InfoSectionTitle icon={Building2}>{t("PreviewStructure.information")}</InfoSectionTitle>
+          <div className="grid grid-cols-2 gap-2">
+            {slug && <InfoItem icon={Tag} label={t("PreviewStructure.identifier")} value={slug} />}
+            {typeLabel && <InfoItem icon={FolderOpen} label={t("PreviewStructure.category")} value={typeLabel} />}
+            {memberOfCount > 0 && (
+              <InfoItem
+                icon={Network}
+                label={t("PreviewStructure.memberOf")}
+                value={t("PreviewStructure.memberOfCount", undefined, { count: memberOfCount })}
+              />
+            )}
+            {created && (
+              <InfoItem
+                icon={Calendar}
+                label={t("PreviewStructure.createdOn")}
+                value={new Date(typeof created === "number" ? created * 1000 : created).toLocaleDateString()}
+              />
+            )}
+          </div>
+        </>
+      )}
+
+      {canEditProfile && hasAnyDoc && (
+        <>
+          <Separator className="my-1" />
+          <InfoSectionTitle icon={FileText}>{t("PreviewStructure.documents")}</InfoSectionTitle>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {docSlots.map((slot) => (
+              <div key={slot.label} className="rounded-lg border border-border bg-card p-3">
+                <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                  <FileText className="size-3.5 text-primary" />
+                  {slot.label}
+                </p>
+                {slot.files.length > 0 ? (
+                  <ul className="flex flex-col gap-1">
+                    {slot.files.map((f) => (
+                      <li key={f.docId}>
+                        <a
+                          href={f.docPath}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                        >
+                          <Download className="size-3.5 shrink-0" />
+                          <span className="truncate">{f.name ?? f.docPath}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm italic text-muted-foreground">{t("PreviewStructure.notProvided")}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </>
+  );
+
   return (
     <div className="flex max-h-[90vh] flex-col">
       {/* Hero — bandeau dégradé (var(--card-header-gradient), même convention que
@@ -480,8 +592,11 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item, preview }) => {
           </div>
         )}
 
-        {/* Contenu */}
+        {/* Contenu — en `placement: "column"`, les réservations d'abord (à gauche, et au-dessus sur
+            téléphone : l'ordre du DOM est l'ordre de lecture), la localisation ensuite. */}
         <div className="grid grid-cols-1 gap-8 px-6 py-6 md:grid-cols-5 md:gap-10 md:px-10 md:py-8">
+          {bookedInColumn && <div className="flex min-w-0 flex-col gap-4 md:col-span-3">{bookedSection}</div>}
+
           {/* Colonne adresse */}
           <div className="flex flex-col gap-4 md:col-span-2">
             <InfoSectionTitle icon={MapPin}>{t("PreviewStructure.location")}</InfoSectionTitle>
@@ -502,115 +617,19 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item, preview }) => {
                 </span>
               )}
             </address>
+
+            {bookedInColumn && peopleAndInfo}
           </div>
 
-          {/* Colonne personnes + infos */}
-          <div className="flex flex-col gap-4 md:col-span-3">
-            {(repFullName || repEmail) && (
-              <>
-                <InfoSectionTitle icon={IdCard}>
-                  {samePerson ? t("PreviewStructure.repAndPic") : t("PreviewStructure.representative")}
-                </InfoSectionTitle>
-                <PersonCard
-                  roleLabel={t("PreviewStructure.representative")}
-                  roleIcon={Award}
-                  title={repTitle}
-                  fullName={repFullName}
-                  email={repEmail}
-                  phone={repPhone}
-                />
-              </>
-            )}
-
-            {!samePerson && (picFullName || picEmail) && (
-              <PersonCard
-                roleLabel={t("PreviewStructure.personInCharge")}
-                roleIcon={Briefcase}
-                title={picTitle}
-                fullName={picFullName}
-                email={picEmail}
-                phone={picPhone}
-                alt
-              />
-            )}
-
-            {/* Informations + Documents : réservés aux gestionnaires, comme le bloc `$ssbeCanManage` de la
-                fiche legacy ssbe/organizations/preview.php (qui y range aussi Modifier/Supprimer et les créneaux). */}
-            {canEditProfile && (
-              <>
-                <Separator className="my-1" />
-
-                <InfoSectionTitle icon={Building2}>{t("PreviewStructure.information")}</InfoSectionTitle>
-                <div className="grid grid-cols-2 gap-2">
-                  {slug && <InfoItem icon={Tag} label={t("PreviewStructure.identifier")} value={slug} />}
-                  {typeLabel && <InfoItem icon={FolderOpen} label={t("PreviewStructure.category")} value={typeLabel} />}
-                  {memberOfCount > 0 && (
-                    <InfoItem
-                      icon={Network}
-                      label={t("PreviewStructure.memberOf")}
-                      value={t("PreviewStructure.memberOfCount", undefined, { count: memberOfCount })}
-                    />
-                  )}
-                  {created && (
-                    <InfoItem
-                      icon={Calendar}
-                      label={t("PreviewStructure.createdOn")}
-                      value={new Date(typeof created === "number" ? created * 1000 : created).toLocaleDateString()}
-                    />
-                  )}
-                </div>
-              </>
-            )}
-
-            {canEditProfile && hasAnyDoc && (
-              <>
-                <Separator className="my-1" />
-                <InfoSectionTitle icon={FileText}>{t("PreviewStructure.documents")}</InfoSectionTitle>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {docSlots.map((slot) => (
-                    <div key={slot.label} className="rounded-lg border border-border bg-card p-3">
-                      <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-                        <FileText className="size-3.5 text-primary" />
-                        {slot.label}
-                      </p>
-                      {slot.files.length > 0 ? (
-                        <ul className="flex flex-col gap-1">
-                          {slot.files.map((f) => (
-                            <li key={f.docId}>
-                              <a
-                                href={f.docPath}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-                              >
-                                <Download className="size-3.5 shrink-0" />
-                                <span className="truncate">{f.name ?? f.docPath}</span>
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm italic text-muted-foreground">{t("PreviewStructure.notProvided")}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+          {/* Colonne de droite : personnes + infos (en `placement: "column"`, elles sont sous l'adresse). */}
+          {!bookedInColumn && <div className="flex min-w-0 flex-col gap-4 md:col-span-3">{peopleAndInfo}</div>}
         </div>
 
         {/* Équipements réservés — pleine largeur sous les deux colonnes : une
             liste de créneaux ne tient pas dans une colonne d'infos. */}
-        {showBooked && (
+        {showBooked && !bookedInColumn && (
           <div className="px-6 pb-6 md:px-10 md:pb-8">
-            <Suspense fallback={null}>
-              <PreviewBookedResources
-                orgaId={org!.id as string}
-                conf={reservationsConf!}
-                booked={bookedConf!}
-              />
-            </Suspense>
+            {bookedSection}
           </div>
         )}
       </div>

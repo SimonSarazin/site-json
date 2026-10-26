@@ -10,13 +10,19 @@ import {
   dayKeyOf,
   describeSlot,
   formatSlotDays,
+  hourMinutes,
   isIsoDay,
+  joinTime,
   localIsoDay,
+  minuteOptions,
   resolveSlotRange,
   shortDayLabel,
+  SLOT_HOURS,
+  SLOT_QUARTERS,
   slotFromParam,
   slotIssue,
   slotToParam,
+  splitTime,
   withSlotEntry,
   type SlotWindow,
 } from "./slotFilter";
@@ -82,6 +88,37 @@ describe("slotFilter — jours et dates", () => {
   it("localIsoDay lit la date LOCALE, pas la date UTC", () => {
     expect(localIsoDay(new Date(2026, 9, 5, 1, 30))).toBe("2026-10-05");
     expect(localIsoDay(new Date(2026, 0, 31, 23, 59))).toBe("2026-01-31");
+  });
+});
+
+describe("slotFilter — heures au quart d'heure", () => {
+  it("SLOT_HOURS propose les 24 heures, SLOT_QUARTERS les quarts d'heure", () => {
+    expect(SLOT_HOURS).toHaveLength(24);
+    expect([SLOT_HOURS[0], SLOT_HOURS[23]]).toEqual(["00", "23"]);
+    expect(SLOT_QUARTERS).toEqual(["00", "15", "30", "45"]);
+  });
+
+  it("splitTime / joinTime : aller-retour, minute 00 par défaut, pas de borne sans heure", () => {
+    expect(splitTime("07:45")).toEqual({ hour: "07", minute: "45" });
+    expect(splitTime(undefined)).toEqual({ hour: "", minute: "" });
+    expect(splitTime("25:00")).toEqual({ hour: "", minute: "" });
+    expect(joinTime("07", "45")).toBe("07:45");
+    expect(joinTime("18", "")).toBe("18:00");
+    expect(joinTime("", "30")).toBeUndefined();
+  });
+
+  it("hourMinutes lit un champ heure, null s'il est vide ou invalide", () => {
+    expect(hourMinutes("07:35")).toBe(455);
+    expect(hourMinutes("")).toBeNull();
+    expect(hourMinutes("24:00")).toBeNull();
+    expect(hourMinutes(undefined)).toBeNull();
+  });
+
+  it("minuteOptions garde la minute d'un ancien lien sans la réécrire", () => {
+    expect(minuteOptions()).toEqual(["00", "15", "30", "45"]);
+    expect(minuteOptions("30")).toEqual(["00", "15", "30", "45"]);
+    expect(minuteOptions("10")).toEqual(["00", "10", "15", "30", "45"]);
+    expect(minuteOptions("xx")).toEqual(["00", "15", "30", "45"]);
   });
 });
 

@@ -357,11 +357,14 @@ export const ReservationsConfSchema = z.object({
    * Gestion des PÉRIODES sur la fiche équipement (OPT-IN). La section réservations gagne un filtre
    * « du … au … » : ne restent que les créneaux dont la période — la leur, sinon celle de leur
    * réservation (`slotPeriod`) — recouvre l'intervalle ; sans date, les créneaux en cours ou à venir.
-   * Avec `booking`, la prise de réservation suit la période choisie : une case n'est occupée que par
-   * un créneau affiché, Date début / Date fin sont pré-remplies, chaque créneau du formulaire peut
-   * recevoir sa période, et l'enregistrement est refusé sans période ou en cas de chevauchement
-   * (`lib/reservationBooking.ts`). Exige `fields.periodStart` et `fields.periodEnd`. Absent = section et
-   * prise de réservation historiques (toute réservation, terminée comprise, occupe sa case).
+   * Chaque usager affiche ses périodes, fiche repliée. Avec `booking`, la prise de réservation suit la
+   * période choisie : une case n'est occupée que par un créneau affiché, Date début / Date fin sont
+   * pré-remplies, et l'enregistrement est refusé sans période ou en cas de chevauchement
+   * (`lib/reservationBooking.ts`). Une réservation vaut pour UNE période : une autre période est une
+   * autre réservation, comme à l'import (« une réservation par période », 23/10) — le formulaire ne
+   * propose pas de période par créneau. Sur la fiche d'une ORGANISATION (`bookedResources`), même
+   * filtre, même défaut. Exige `fields.periodStart` et `fields.periodEnd`. Absent = section et prise de
+   * réservation historiques (toute réservation, terminée comprise, occupe sa case).
    */
   periods: z.boolean().optional(),
   /**
@@ -385,6 +388,10 @@ export const ReservationsConfSchema = z.object({
     slotMinutes: z.number().int().min(5).max(240).optional(),
     /** Réserver réservé aux admins de l'entité du site. Défaut code : true. */
     adminOnly: z.boolean().optional(),
+    /** Bouton « modifier l'horaire » sur chaque créneau (fiche équipement, et fiche organisation avec
+     *  `bookedResources`) : seules les heures changent — ni le jour, ni la période. Toujours réservé aux
+     *  admins de l'entité du site, quel que soit `adminOnly`. Défaut code : false. */
+    editHours: z.boolean().optional(),
   })
     // Les deux bornes étaient valides SÉPARÉMENT (0-23 et 1-24) mais jamais l'une par rapport à
     // l'autre : `startHour: 22, endHour: 8` passait la validation et donnait une grille réduite à
@@ -473,6 +480,12 @@ export const BookedResourcesConfSchema = z.object({
   /** Volume horaire (OPT-IN) : total de l'organisation sur les équipements listés, et celui de
    *  chaque équipement — même calcul que `reservations.hours`. Absent = section inchangée. */
   hours: z.boolean().optional(),
+  /** Place de la section dans la fiche : `full` (défaut) en pleine largeur SOUS la localisation et les
+   *  personnes ; `column` dans la colonne de GAUCHE, la large, la localisation à droite — personnes,
+   *  informations et documents passant alors sous la localisation ; sur téléphone, la section vient en premier.
+   *  En colonne, une organisation sans réservation affichée garde la section, avec un message, plutôt qu'une
+   *  colonne vide. */
+  placement: z.enum(["full", "column"]).optional(),
 });
 export type BookedResourcesConf = z.infer<typeof BookedResourcesConfSchema>;
 
@@ -482,7 +495,8 @@ export type BookedResourcesConf = z.infer<typeof BookedResourcesConfSchema>;
  * site scolaire, les clubs qui ont un créneau dans un établissement. Aucun filtre de la recherche
  * ne sait relier réservation, équipement et organisation : la liste est calculée côté client ET au
  * prefetch SSR (même clé), puis envoyée en `_id: {$in}`. Elle suit seule les nouveaux créneaux,
- * les nouvelles organisations et les équipements nouvellement rattachés au site.
+ * les nouvelles organisations et les équipements nouvellement rattachés au site. Avec
+ * `includeCostumOrganizations`, les organisations rattachées au costum du site s'y ajoutent.
  */
 export const ReservationUsersConfSchema = z
   .object({
@@ -493,6 +507,10 @@ export const ReservationUsersConfSchema = z
     poiFilters: z.record(z.string(), z.unknown()),
     /** Cf. `installationDashboard.sourceKey`. Absent → costum du site. */
     sourceKey: z.array(z.string()).optional(),
+    /** Ajoute au périmètre les organisations RATTACHÉES au costum du site (`source.keys` ou
+     *  `reference.costum`, recherche scopée par le SDK) — ex. une association ajoutée depuis l'annuaire,
+     *  présente avant son premier créneau. Absent = usagères seules. */
+    includeCostumOrganizations: z.boolean().optional(),
   })
   // Seul le finder `userOrga` relie une réservation à une organisation PAR IDENTIFIANT : sans lui,
   // le périmètre serait toujours vide. C'est à `config:validate` de l'attraper, pas au rendu.

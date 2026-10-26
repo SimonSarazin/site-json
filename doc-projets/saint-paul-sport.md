@@ -13,7 +13,7 @@
 > [Module Agenda](../doc/29-module-agenda.md).
 > Mémoire : `[[project-cocolight-siteforge]]` (le projet y est suivi — pas de fiche dédiée).
 
-Dernière mise à jour : **2026-10-23** (gestion des périodes des créneaux : filtre « du … au … » et prise de réservation par période, comme sur ESS974).
+Dernière mise à jour : **2026-10-26** (ajustements des créneaux d'ESS974 repris : créneau occupé signalé en direct à l'ajout et à la modification d'horaire, bouton d'ajout par club sur la fiche équipement, survol lisible) ; le 23/10, créneaux du lot 8 d'ESS974 et gestion des périodes.
 
 ---
 
@@ -166,6 +166,66 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 4. Déploiement : inchangé (`SITE_CONFIG_PATH` en prod, cf. checklist du site parent).
 
 ## 9. Impacts des modifications
+
+### 26/10/2026 — ajustements des créneaux d'ESS974, repris ici (non committé)
+
+Code partagé, aucune config modifiée. Peterson a décidé le 26/10 que Saint-Paul reçoit, comme ESS974, le
+contrôle en direct (cf. le §9 de [equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md)) :
+- **ajout de créneaux** : dès que les dates et l'horaire sont saisis, le formulaire signale sous le créneau
+  s'il est déjà occupé sur la période, avec l'association et ses dates. Cela vaut pour la case libre de la
+  grille, le nouveau bouton « Ajouter un créneau » de chaque club sur la fiche équipement et l'ajout depuis la
+  fiche association. L'enregistrement reste refusé si le créneau est pris ;
+- **modification d'horaire** : même avertissement sous les heures, pendant la saisie ;
+- **survol des cartes de créneaux** en gris clair : sur l'orange de l'accent de Saint-Paul, le texte gris de
+  la carte se lisait mal.
+
+Non repris : la fiche association garde sa mise en page en pleine largeur (pas de `placement: "column"`),
+et Saint-Paul n'a pas d'indicateurs d'heures.
+
+**Validation** (base locale, Chrome sans fenêtre) : sur le Gymnase de vue belle, un ajout pour BADMINTON
+DE LA SALINE le mercredi 18 h – 19 h du 02/11 au 18/12 affiche « Mercredi 18:00 – 19:00 est déjà réservé
+par JS SALINE (Du 17 août 2026 au 13 août 2027). » sous le créneau. Rien n'a été enregistré.
+
+L'exemple `data-observatory` de l'assistant, tiré de `/observatoire`, est resynchronisé le 26/10 avec l'accord de
+Peterson. Seule la ligne `editHours` change, et le contrôle de fraîcheur du préflight repasse au vert.
+
+### 23/10/2026 — lot 8 d'ESS974 : créneaux, repris ici (non committé)
+
+À la demande de Peterson (« tout comme ESS974 » pour les créneaux), Saint-Paul reçoit les améliorations des
+créneaux du lot 8 d'ESS974 (cf. le §9 de [equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md)).
+
+Configuration :
+- `editHours: true` sur les 4 blocs `booking` des fiches équipement (Équipements, Observatoire, Data,
+  palette) ;
+- `periods: true` et `booking: {adminOnly, editHours}` sur le bloc `reservations` de l'annuaire.
+
+Effets :
+- **grille des créneaux** : une plage continue ne fait plus qu'une carte, sans être répétée sur chaque
+  rangée d'une heure. Les créneaux jointifs d'un même club sont fusionnés et chaque carte porte sa période
+  (code partagé, sans option) ;
+- **périodes sous chaque club**, fiche repliée (`periods`, déjà posé) ;
+- **crayon « modifier l'horaire »** sur chaque créneau, pour les admins : heures seulement, chevauchements
+  refusés ;
+- **fiche association** : filtre « du … au … », par défaut les réservations en cours ou à venir, et bouton
+  « Ajouter un créneau » sur chaque équipement (admins). Elle garde sa mise en page en pleine largeur, car
+  beaucoup d'associations de l'annuaire n'ont aucune réservation ;
+- **formulaire de réservation** : plus de période par créneau ni de mention « Étape 1 ». Le formulaire est
+  partagé avec ESS974 : la règle « Association usagère renseignée → Type usager et Président masqués »
+  vaut ici aussi, une fois posée en production (§13).
+
+Non repris, faute d'option sur Saint-Paul : le filtre « Sport pratiqué », les indicateurs d'heures. Peterson
+peut les demander.
+
+**Validation** (base locale, Chrome sans fenêtre, « Gymnase de vue belle » et BADMINTON DE LA SALINE) :
+- 9 cellules fusionnées ;
+- périodes sous les 3 clubs ;
+- 13 crayons après dépliage ;
+- fiche association avec filtre, bouton d'ajout et crayons ;
+- aucune erreur de page ;
+- `config:validate` ✅ (12 pages, 21 sections).
+
+L'exemple `data-observatory` de l'assistant, tiré de `/observatoire`, dérive de `editHours` : sa
+resynchronisation attend l'accord de Peterson.
 
 ### 23/10/2026 — gestion des périodes des créneaux (non committé)
 
@@ -371,6 +431,7 @@ Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
 | 13 | Fiche équipement et filtres multi-valeurs | ✅ | Libellés alignés sur la donnée, fiche nationale + SIRET/UAI, filtres par jeton, salles de réunion corrigées — vérifié au navigateur le 15/10 (§9) |
 | 11 | Réservation d'un créneau depuis la fiche | ✅ | `oneAnswerPerPers` passé à `false` le 07/09 → **deux réservations créées de bout en bout** sur un même équipement (mardi 18 h, jeudi 10 h) par le même compte, stockées à la forme historique (`finder<step>` + tableau de créneaux), grille passée de 98 à 96 cases libres et créneaux pris rendus non réservables |
 | 14 | Gestion des périodes des créneaux | ✅ | Filtre « du … au … », cases libres sur la période choisie, période propre à chaque créneau, chevauchements refusés — vérifié au navigateur le 23/10 (§9). En production : `oneAnswerPerPers` encore à `true` (§13) |
+| 15 | Créneaux du lot 8 d'ESS974 | ✅ | Cartes fusionnées, périodes sous chaque club, modification d'horaire, ajout de créneaux et filtre de période sur la fiche association, formulaire sans « Étape 1 » ni période par créneau — vérifié au navigateur le 23/10 (§9). Le 26/10 : créneau occupé signalé en direct à l'ajout et à la modification, bouton d'ajout par club — vérifié au navigateur (§9). En production : règle d'affichage conditionnel du formulaire partagé (§13) |
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
@@ -471,6 +532,7 @@ Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
 | Harmoniser la carte de `/agenda` (`card.type:"profile"` → `"event"`, voire timeline) | hors scope noté, décision Peterson |
 | Dossier `public/images/saintpaulSport1` non déclaré (préflight `site-assets`) | Peterson |
 | **`oneAnswerPerPers` → `false`** sur le formulaire de créneaux (bloquant pour la réservation, cf. §12) — encore à `true` dans le dump de production du 20/10 ; fait en local le 23/10 | Peterson (back-office CoForm) |
+| Règle d'affichage conditionnel du formulaire de créneaux (partagé avec ESS974) : « Association usagère » renseignée → masquer « Type usager » et « Président » — posée en local le 23/10 | Peterson (back-office CoForm) |
 | Rendre les champs du formulaire de créneaux **obligatoires** (équipement, créneau, dates, usager, activité) — aucun ne l'est aujourd'hui | Peterson (back-office CoForm) |
 | Rattacher les 14 équipements réservés au périmètre `saintpaulSport1` (migration de propriété) ou élargir le périmètre de `/equipements-sportifs` | Peterson |
 | Champ `finder` vers `organizations` sur le formulaire de créneaux, pour lier une réservation à une organisation | Peterson (back-office CoForm) |

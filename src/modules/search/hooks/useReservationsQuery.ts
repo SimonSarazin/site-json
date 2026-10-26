@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryClient } from "@tanstack/react-query";
 import type { Answer, Organization, PaginatorPage, Project } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
@@ -7,6 +7,8 @@ import type { ReservationsConf } from "../schema";
 
 const DEFAULT_MAX_ANSWERS = 200;
 const PAGE_SIZE = 100;
+/** Fraîcheur des réservations d'une ressource en cache — la fiche, et l'avertissement en direct d'une saisie. */
+export const RESERVATIONS_STALE_TIME = 5 * 60 * 1000;
 
 /** Porteur du `coformAnswersSearch` scopé costum : l'entité du site, ou celle d'`initApi` au SSR. */
 export type ReservationAnswersHost = Pick<Organization | Project, "coformAnswersSearch">;
@@ -55,6 +57,47 @@ export async function fetchReservationAnswers(
     .filter((r): r is Reservation => r !== null);
 }
 
+/** Réservations d'UNE ressource : celles dont le finder pointe `resourceId`. Fetcher de ce hook, et de
+ *  `resourcesReservations` — les contrôles d'un ajout de créneaux ou d'une modification d'horaire. */
+export function fetchResourceReservations(
+  entity: ReservationAnswersHost,
+  conf: ReservationsConf,
+  resourceId: string,
+): Promise<Reservation[]> {
+  const finderPath = `answers.${conf.step}.finder${conf.step}${conf.fields.finder}.${resourceId}`;
+  return fetchReservationAnswers(entity, conf, { [finderPath]: { $exists: true } }, conf.maxAnswers ?? DEFAULT_MAX_ANSWERS);
+}
+
+/**
+ * Réservations de PLUSIEURS ressources — les équipements d'une saisie —, par le cache de `useReservationsQuery`
+ * (même clé, donc les fiches en profitent) : RELUES (`fresh`) pour un contrôle d'enregistrement, prises en cache
+ * pour un avertissement en direct. Réseau indisponible : l'instantané en cache plutôt qu'un échec — le contrôle
+ * redevient ce qu'il était, faute de mieux (même parti que la garde de fraîcheur de `PreviewReservations`).
+ */
+export async function resourcesReservations(
+  queryClient: QueryClient,
+  entity: ReservationAnswersHost,
+  conf: ReservationsConf,
+  resourceIds: readonly string[],
+  fresh: boolean,
+): Promise<Reservation[]> {
+  const listes = await Promise.all(
+    resourceIds.map(async (resourceId) => {
+      const queryKey = SEARCH_QUERY_KEYS.RESERVATIONS(conf.form, resourceId);
+      try {
+        return await queryClient.fetchQuery<Reservation[]>({
+          queryKey,
+          queryFn: () => fetchResourceReservations(entity, conf, resourceId),
+          staleTime: fresh ? 0 : RESERVATIONS_STALE_TIME,
+        });
+      } catch {
+        return queryClient.getQueryData<Reservation[]>(queryKey) ?? [];
+      }
+    }),
+  );
+  return listes.flat();
+}
+
 /**
  * Réservations d'une ressource : answers du form `conf.form` dont le finder
  * pointe la ressource (cf. `fetchReservationAnswers`).
@@ -74,17 +117,10 @@ export function useReservationsQuery({
   return useQuery<Reservation[]>({
     queryKey: SEARCH_QUERY_KEYS.RESERVATIONS(conf?.form ?? "", resourceId),
     enabled: Boolean(entity && conf && resourceId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: RESERVATIONS_STALE_TIME,
     queryFn: async () => {
       if (!entity || !conf) return [];
-      const finderPath =
-        `answers.${conf.step}.finder${conf.step}${conf.fields.finder}.${resourceId}`;
-      return fetchReservationAnswers(
-        entity,
-        conf,
-        { [finderPath]: { $exists: true } },
-        conf.maxAnswers ?? DEFAULT_MAX_ANSWERS,
-      );
+      return fetchResourceReservations(entity, conf, resourceId);
     },
   });
 }

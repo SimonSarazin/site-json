@@ -38,6 +38,19 @@ orthographes (`surface valueMap:{"Plus de 200m2":"Plus de 200m²","Entre 60m² e
 200m²":"Entre 60 et 200m²"}`). Sur un `list`, les variantes d'un même item
 dédoublonnent vers la canonique.
 
+**Reprendre la liste d'un filtre de la recherche** (`valueMapFrom: { filter: "<id>" }`) :
+la `valueMap` est tirée des OPTIONS d'un filtre déroulant du site
+(`searchHeader.dropdownFilters[].id`, cherché sur toutes les pages par
+`getDropdownFilterOwner`) — chaque valeur qu'interroge une option (`values`, sinon
+`value`) → le libellé de l'option ; une `valueMap` déclarée prime, valeur par valeur.
+Une seule liste sert ainsi la page de recherche et l'observatoire : sur ESS974,
+`commune {paths:["address.postalCode"], valueMapFrom:{filter:"poi-postalCode"}}` donne
+les 23 communes du filtre Équipements (codes postaux regroupés) au lieu des 28 lieux-dits
+d'`address.addressLocality`, au filtre, au KPI `distinct`, au graphique et à la
+recherche. Résolu par `useResolvedDimensions` (`withFilterValueMaps`, pur, testé) dans
+`DataObservatorySection` et `ObservatoryPanel` ; filtre introuvable → dimension
+inchangée, code absent de la liste → la valeur brute.
+
 **Regrouper sur une clé propre, libellé dérivé** (`keyPaths`, kind `value`) :
 quand le libellé affiché (`paths`, ex. `address.level4Name`) est du texte libre
 SALE — variantes de casse/accents pour un même item (`NORD`/`Nord`,
@@ -174,9 +187,12 @@ automatique : celui-ci colore par RANG dans la liste triée, si bien qu'une
 valeur change de couleur dès que les comptes bougent.
 
 **KPI `reservationHours`** — heures réservées sur les équipements AFFICHÉS,
-par semaine (`period: "weekly"`, défaut) ou cumulées sur la période de chaque
-créneau — la sienne, sinon celle de sa réservation (`"cumulative"`) —, créneaux
-en cours ou à venir seulement (la règle du filtre « Créneau disponible »). Il ne lit aucune dimension : la section
+par semaine (`period: "weekly"`, défaut : les créneaux actifs au jour de référence,
+aujourd'hui ou à défaut le prochain jour réservé — `weeklyReferenceDay`) ou cumulées
+sur la période de chaque créneau — la sienne, sinon celle de sa réservation
+(`"cumulative"`) —, créneaux en cours ou à venir seulement (la règle du filtre
+« Créneau disponible »). Pendant le chargement des réservations, la carte montre un
+sablier (`KpiCards.reservationHoursLoading` → `KpiCard.loading`), pas « — ». Il ne lit aucune dimension : la section
 charge les réservations du formulaire de SA fiche (`rowAction.preview.reservations`,
 requis — sinon la carte reste à « — », avec un avertissement en dev), seulement
 si un tel KPI est déclaré, par la requête du filtre créneau (cache partagé). Les

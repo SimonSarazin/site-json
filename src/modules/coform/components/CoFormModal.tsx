@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { SmartCoForm } from "./SmartCoForm";
+import type { TimeSlotCheck } from "../contexts/TimeSlotCheckContext";
 import type { AllStepsData } from "../types";
 
 export interface CoFormModalProps {
@@ -110,6 +111,11 @@ export interface CoFormModalProps {
   beforeSubmit?: (allData: AllStepsData) => Promise<string | null> | string | null;
   /** Saisie d'une période sur chaque créneau des champs `timeSlots` (cf. `TimeSlotPeriodsContext`). */
   slotPeriods?: boolean;
+  /** Avertissement en direct sous les créneaux des champs `timeSlots` (cf. `TimeSlotCheckContext`). */
+  slotCheck?: TimeSlotCheck;
+  /** Masque l'en-tête d'étape d'un formulaire à une étape (« Étape 1 ») : le titre du modal suffit
+   *  (cf. `SmartCoForm`). */
+  hideStepHeaders?: boolean;
 }
 
 /**
@@ -141,6 +147,8 @@ export function CoFormModal({
   slotPeriods,
   hideBanner = false,
   headerActions,
+  slotCheck,
+  hideStepHeaders,
 }: CoFormModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -267,6 +275,8 @@ export function CoFormModal({
               beforeSubmit={beforeSubmit}
               slotPeriods={slotPeriods}
               hideBanner={hideBanner}
+              slotCheck={slotCheck}
+              hideStepHeaders={hideStepHeaders}
             />
           </div>
         </DialogContent>

@@ -220,11 +220,30 @@
         "period": "Du {{start}} au {{end}}",
         "periodFrom": "À partir du {{start}}",
         "periodUntil": "Jusqu'au {{end}}",
+        "periodShort": "{{start}} → {{end}}",
+        "kpiWeekly": "Heures / semaine",
+        "kpiCumulative": "Heures cumulées",
+        "kpiLoading": "Calcul des heures…",
+        "editHours": {
+            "title": "Modifier l'horaire",
+            "aria": "Modifier l'horaire du créneau {{day}} {{start}} – {{end}}",
+            "start": "Début",
+            "end": "Fin",
+            "hint": "Seul l'horaire change : le jour et la période restent ceux du créneau.",
+            "save": "Enregistrer",
+            "saving": "Enregistrement…",
+            "cancel": "Annuler",
+            "saved": "Horaire modifié.",
+            "error": "L'horaire n'a pas été modifié."
+        },
         "hourColumn": "Horaire",
         "gridCaption": "Créneaux de réservation, par jour et par heure",
         "free": "Créneau libre",
         "bookAria": "Réserver le {{day}} de {{start}} à {{end}}",
         "bookTitle": "Réserver un créneau",
+        "addSlot": "Ajouter un créneau",
+        "addSlotAria": "Ajouter un créneau pour {{name}}",
+        "addSlotTitle": "Ajouter un créneau pour {{name}}",
         "conflict": "Ce créneau est déjà réservé par {{user}}.",
         "referenceNotice": "Grille de référence : une case libre signifie qu'aucune réservation n'est enregistrée — pas que l'équipement est ouvert.",
         "orgaSheet": "Fiche",
@@ -240,17 +259,24 @@
             "slotPeriod": "La période du créneau {{slot}} doit aller dans le bon sens et rester dans celle de la réservation.",
             "overlap": "Deux créneaux du formulaire se chevauchent : {{slot}}.",
             "taken": "{{slot}} est déjà réservé par {{user}} ({{period}}).",
-            "noPeriod": "sans limite de dates"
+            "noPeriod": "sans limite de dates",
+            "hours": "L'heure de fin doit suivre l'heure de début.",
+            "stale": "Ce créneau a été modifié entre-temps : rouvrez la fiche pour voir son horaire actuel.",
+            "sibling": "{{slot}} chevaucherait un autre créneau de cette réservation."
         }
     },
     "PreviewBookedResources": {
         "title": "Équipements réservés",
         "error": "Impossible de charger les équipements réservés.",
+        "empty": "Aucun équipement réservé.",
         "unknownResource": "Équipement non renseigné",
         "slotCount_one": "{{count}} créneau",
         "slotCount_other": "{{count}} créneaux",
         "sheet": "Fiche",
-        "sheetAria": "Ouvrir la fiche de {{name}}"
+        "sheetAria": "Ouvrir la fiche de {{name}}",
+        "addSlot": "Ajouter un créneau",
+        "addSlotAria": "Ajouter un créneau sur {{name}}",
+        "addTitle": "Ajouter un créneau — {{name}}"
     },
     "ReservationHours": {
         "summary": "{{weekly}} h/sem · {{cumulative}} h cumulées",
@@ -259,6 +285,8 @@
     "SlotFilter": {
         "from": "De",
         "to": "À",
+        "hourOf": "{{label}} : heure",
+        "minuteOf": "{{label}} : minutes",
         "days": "Jours",
         "everyDay": "Tous les jours",
         "period": "Période (facultatif)",

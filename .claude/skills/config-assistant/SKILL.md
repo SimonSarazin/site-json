@@ -326,11 +326,22 @@ affichent le volume horaire (par semaine + cumulé, créneaux en cours ou à ven
 n'occupe que sa période, filtre « du … au … » dans la section et, avec `booking`,
 prise de réservation par période (dates pré-remplies, chevauchement refusé à
 l'enregistrement) — le formulaire doit accepter plusieurs réponses par personne ;
+`booking.editHours` (opt-in) : crayon « modifier l'horaire » sur chaque créneau
+(heures seulement, admins) ; posés sur le bloc `reservations` de l'ANNUAIRE,
+`booking` + `periods` donnent à la fiche organisation l'ajout de créneaux par
+équipement et le filtre de période ; `bookedResources.placement: "column"` range
+les équipements réservés à gauche, la localisation à droite ;
 côté observatoire, KPI `{kind:"reservationHours", period:"weekly"|"cumulative"}` —
-`data-observatory` seule, exige `rowAction.preview.reservations`. **Annuaire des usagers** : `searchProStatic.reservationUsers`
-`{reservations, poiFilters, sourceKey?}` restreint une liste d'organisations à celles
+`data-observatory` seule, exige `rowAction.preview.reservations`. Une dimension peut
+reprendre la liste d'un filtre de la recherche, `valueMapFrom: {filter: "<id>"}`
+(ex. `commune` sur `address.postalCode` + le filtre des communes de la page
+Équipements) : une seule liste, plutôt qu'une seconde écrite en dur. **Annuaire des usagers** : `searchProStatic.reservationUsers`
+`{reservations, poiFilters, sourceKey?, includeCostumOrganizations?}` restreint une liste d'organisations à celles
 qui ont au moins un créneau sur un équipement du site — périmètre calculé (client +
-SSR), qui suit seul les nouveaux créneaux ; `fields.userOrga` requis. **Filtre de
+SSR), qui suit seul les nouveaux créneaux ; `fields.userOrga` requis. `includeCostumOrganizations: true`
+y ajoute les organisations rattachées au costum du site : patron « ajouter une association »
+(`addButton.modal` + `costumForms` au `costumSlug` du site, étiquette du finder en stamp, `profileAdd: false`
+pour réserver l'ajout aux admins, liste filtrée sur l'étiquette) dans `doc/07`. **Filtre de
 disponibilité** : `searchHeader.slotFilter` `{id, label, reservations, amplitude?}`
 retire de la liste les ressources réservées sur une plage horaire, des jours de la
 semaine (aucun = les 7, libre chacun d'eux) et une période facultative (début absent →

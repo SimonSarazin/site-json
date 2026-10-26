@@ -15,7 +15,9 @@ import {
   type InstallationDashboardConf,
   type ReservationsConf,
 } from "@/modules/search/schema";
-import { KpiCard } from "../KpiCards";
+import { weeklyReservations } from "@/modules/search/lib/reservationHours";
+import { localIsoDay } from "@/modules/search/lib/slotFilter";
+import { KpiCard } from "../KpiCard";
 import { TOKEN_TINT_CLASSES } from "../../dimensions";
 import {
   activityDistribution,
@@ -105,17 +107,21 @@ export default function InstallationDashboardModal({
     }
   };
 
+  // Une SEMAINE type : les seuls créneaux actifs le jour de référence (`weeklyReservations`). Toutes les
+  // réservations ensemble additionnaient les saisons passées et, depuis l'import par période, chaque
+  // trimestre à venir — un taux d'occupation de semaine ne se calcule que sur une semaine.
+  const semaine = useMemo(() => weeklyReservations(answers ?? [], localIsoDay(new Date())), [answers]);
   const usage = useMemo(
-    () => computeEquipmentUsage(answers ?? [], poiIds),
-    [answers, poiIds],
+    () => computeEquipmentUsage(semaine, poiIds),
+    [semaine, poiIds],
   );
   const totalOccupied = useMemo(
     () => [...usage.values()].reduce((sum, u) => sum + u.occupiedMinutes, 0),
     [usage],
   );
   const activities = useMemo(
-    () => activityDistribution(answers ?? [], metric, t("installation.unknownActivity")),
-    [answers, metric, t],
+    () => activityDistribution(semaine, metric, t("installation.unknownActivity")),
+    [semaine, metric, t],
   );
 
   // Taux global : occupation totale rapportée à l'amplitude × nb équipements.

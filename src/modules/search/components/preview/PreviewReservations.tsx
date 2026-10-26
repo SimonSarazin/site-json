@@ -1,10 +1,9 @@
-import { Suspense, lazy, useCallback, useId, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
+import { lazy } from "vite-preload";
 import { useQueryClient } from "@tanstack/react-query";
-import { Building2, CalendarClock, Plus } from "lucide-react";
+import { Building2, CalendarClock, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Accordion,
   AccordionContent,
@@ -18,37 +17,36 @@ import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
-import { cn } from "@/lib/utils";
 import { useAuthModal } from "@/modules/auth";
-import type { AllStepsData } from "@/modules/coform/types";
+import { formatHours } from "@/modules/observatoire/installation";
+import { KpiCard } from "@/modules/observatoire/components/KpiCard";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { SEARCH_QUERY_KEYS } from "../../constants/queryKeys";
-import { useReservationsQuery } from "../../hooks/useReservationsQuery";
+import { useBookingChecks } from "../../hooks/useBookingChecks";
+import { usePeriodFilter } from "../../hooks/usePeriodFilter";
+import { resourcesReservations, useReservationsQuery } from "../../hooks/useReservationsQuery";
+import { useUpdateSlotHours } from "../../hooks/useUpdateSlotHours";
 import { DAY_KEYS, type DayKey } from "../../lib/schedules";
 import {
   buildBookingGrid,
   buildWeeklyGrid,
+  distinctPeriods,
   groupReservationsByUser,
+  mergeBookingRows,
   ownSlotPeriod,
-  parseReservationAnswer,
   reservationColor,
   reservationConflicts,
   reservationsInPeriod,
   type BookingCell,
-  type Reservation,
   type WeeklySlotBlock,
 } from "../../lib/reservations";
-import {
-  bookingIssue,
-  bookingIssueMessage,
-  resolvePeriodFilter,
-  type PeriodRange,
-} from "../../lib/reservationBooking";
+import type { PeriodRange } from "../../lib/reservationBooking";
 import { buildReservationPrefill } from "../../lib/reservationPrefill";
-import { formatReservationPeriod } from "../../lib/reservationPeriod";
-import { formatReservationHours, sumReservationHours } from "../../lib/reservationHours";
+import { formatPeriodShort, formatReservationPeriod, slotHoursContext } from "../../lib/reservationPeriod";
+import { formatReservationHours, sumReservationHours, weeklyReferenceDay } from "../../lib/reservationHours";
 import { localIsoDay } from "../../lib/slotFilter";
 import { DEFAULT_PREVIEW_PARAM, type ReservationsConf } from "../../schema";
+import { PeriodFilter } from "./PeriodFilter";
+import { SlotHoursDialog } from "./SlotHoursDialog";
 
 // Modale CoForm en lazy : le chunk coform ne doit être tiré qu'à la première
 // demande de réservation, jamais à l'affichage de la fiche.
@@ -68,22 +66,30 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 /**
  * Bloc de créneau de la grille hebdo. Détail via Popover au CLIC (fonctionne
  * aussi au tactile, contrairement au tooltip hover-only). La couleur d'usager
- * n'est qu'une barre latérale : l'identité reste portée par le texte.
+ * n'est qu'une barre latérale : l'identité reste portée par le texte. La période
+ * du créneau s'y lit d'emblée, en dates courtes : depuis l'import « une
+ * réservation par période », un même créneau peut figurer une fois par
+ * trimestre dans la même case. `fill` étire la carte sur toute sa cellule — la
+ * plage fusionnée d'un créneau qui couvre plusieurs rangées. Survol en `bg-muted`,
+ * pas en `bg-accent` : l'accent est une couleur de marque (jaune sur ESS974, orange
+ * sur Saint-Paul) sur laquelle le texte gris de la carte ne se lisait plus.
  */
-function SlotBlock({ block, t }: { block: WeeklySlotBlock; t: Translate }) {
+function SlotBlock({ block, t, fill = false }: { block: WeeklySlotBlock; t: Translate; fill?: boolean }) {
   const userLabel = block.user || t("PreviewReservations.unknownUser");
+  const periode = formatPeriodShort(block, t);
   return (
     <Popover>
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="w-full rounded-md border border-border border-l-4 bg-card px-2 py-1.5 text-left text-xs shadow-sm transition-colors hover:bg-accent"
+          className={`flex w-full flex-col justify-start rounded-md border border-border border-l-4 bg-card px-2 py-1.5 text-left text-xs shadow-sm transition-colors hover:bg-muted ${fill ? "h-full" : ""}`}
           style={{ borderLeftColor: reservationColor(block.colorIndex) }}
         >
           <span className="block font-semibold text-foreground">
             {block.start} – {block.end}
           </span>
           <span className="block truncate text-muted-foreground">{userLabel}</span>
+          {periode && <span className="block text-[11px] leading-tight text-muted-foreground">{periode}</span>}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 space-y-1.5 text-sm">
@@ -98,6 +104,16 @@ function SlotBlock({ block, t }: { block: WeeklySlotBlock; t: Translate }) {
           <DetailRow label={t("PreviewReservations.periodLabel")} value={formatReservationPeriod(block, t)} />
         )}
         <DetailRow label={t(`days.${block.dayKey}`)} value={`${block.start} – ${block.end}`} />
+        {/* Créneaux jointifs fusionnés dans ce bloc : chacun garde sa ligne. */}
+        {block.parts && (
+          <ul className="space-y-0.5 border-t border-border/60 pt-1.5 text-xs text-muted-foreground">
+            {block.parts.map((p) => (
+              <li key={p.key}>
+                {p.start} – {p.end}
+              </li>
+            ))}
+          </ul>
+        )}
       </PopoverContent>
     </Popover>
   );
@@ -131,81 +147,6 @@ function FreeCell({
 }
 
 /**
- * Filtre « du … au … » de la section (`conf.periods`). Dates vides : les créneaux en cours ou à venir
- * (`resolvePeriodFilter`) — l'aide le dit, et une fin avant le début est signalée à sa place.
- */
-function PeriodFilter({
-  from,
-  to,
-  today,
-  invalid,
-  onFrom,
-  onTo,
-  onReset,
-  t,
-}: {
-  from: string;
-  to: string;
-  today: string;
-  invalid: boolean;
-  onFrom: (value: string) => void;
-  onTo: (value: string) => void;
-  onReset: () => void;
-  t: Translate;
-}) {
-  const id = useId();
-  return (
-    <fieldset className="mt-4 rounded-lg border border-border/60 bg-background/60 p-3">
-      <legend className="px-1 text-xs font-semibold text-muted-foreground">
-        {t("PreviewReservations.filterLabel")}
-      </legend>
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <Label htmlFor={`${id}-from`} className="text-xs text-muted-foreground">
-            {t("PreviewReservations.filterFrom")}
-          </Label>
-          <Input
-            id={`${id}-from`}
-            type="date"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => onFrom(e.target.value)}
-            className="h-8 w-36 border border-input"
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor={`${id}-to`} className="text-xs text-muted-foreground">
-            {t("PreviewReservations.filterTo")}
-          </Label>
-          {/* `min` : sans début, la période part d'aujourd'hui — une fin antérieure serait incohérente. */}
-          <Input
-            id={`${id}-to`}
-            type="date"
-            value={to}
-            min={from || today}
-            onChange={(e) => onTo(e.target.value)}
-            aria-invalid={invalid || undefined}
-            className={cn("h-8 w-36 border border-input", invalid && "border-destructive")}
-          />
-        </div>
-        {(from || to) && (
-          <Button type="button" variant="ghost" size="sm" className="h-8" onClick={onReset}>
-            {t("PreviewReservations.filterReset")}
-          </Button>
-        )}
-      </div>
-      {invalid ? (
-        <p role="alert" className="mt-2 text-xs font-medium text-destructive">
-          {t("PreviewReservations.filterInvalid")}
-        </p>
-      ) : (
-        !from && !to && <p className="mt-2 text-xs text-muted-foreground">{t("PreviewReservations.filterHint")}</p>
-      )}
-    </fieldset>
-  );
-}
-
-/**
  * Section « Réservations » du preview `poi-amenities` : usagers en accordion
  * (qui sert aussi de légende couleur) + grille hebdomadaire Lun→Dim (≥ md) ou
  * liste groupée par jour (mobile). Montée uniquement si le site configure
@@ -231,18 +172,7 @@ export default function PreviewReservations({
 
   /* ── Période de la section (opt-in `conf.periods`) ───────────────────────── */
   const periods = Boolean(conf.periods);
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const resolved = useMemo(
-    () => (periods ? resolvePeriodFilter(from, to, today) : null),
-    [periods, from, to, today],
-  );
-  // Saisie incohérente (fin avant début) : signalée, et la section garde son défaut — en cours ou à
-  // venir — plutôt que de tout montrer, saison passée comprise.
-  const range = useMemo<PeriodRange | null>(
-    () => (periods ? resolved ?? { periodStart: today } : null),
-    [periods, resolved, today],
-  );
+  const { range, filter: periodFilter } = usePeriodFilter(periods, today);
   // Sans `periods`, toutes les réservations (comportement historique). Avec, les seuls créneaux de la
   // période : c'est d'eux que dépendent la liste, la grille, les cases libres et les heures.
   const shown = useMemo(
@@ -256,15 +186,24 @@ export default function PreviewReservations({
 
   // Volume horaire (opt-in `conf.hours`) : celui de l'équipement, puis celui de chaque usager, dans
   // l'ordre de `groups`. Seuls les créneaux en cours ou à venir comptent (`reservationHours.ts`) ; avec
-  // une période choisie, ceux qu'elle affiche — comptés depuis son début.
+  // une période choisie, ceux qu'elle affiche — comptés depuis son début. L'hebdomadaire se lit au jour
+  // de RÉFÉRENCE, calculé une fois sur tout l'affiché : la somme des usagers reste le total.
   const hours = useMemo(() => {
     if (!conf.hours) return null;
     const since = range?.periodStart ?? today;
+    const reference = weeklyReferenceDay(shown, since);
     return {
-      total: sumReservationHours(shown, since),
-      byGroup: groups.map((g) => sumReservationHours(g.reservations, since)),
+      total: sumReservationHours(shown, since, undefined, reference),
+      byGroup: groups.map((g) => sumReservationHours(g.reservations, since, undefined, reference)),
     };
   }, [conf.hours, shown, groups, range, today]);
+
+  // Périodes de chaque usager (avec `periods`), lisibles fiche repliée : depuis l'import « une
+  // réservation par période », un club occupe l'équipement par trimestres ou par cycles.
+  const periodsByGroup = useMemo(
+    () => (periods ? groups.map((g) => distinctPeriods(g.reservations)) : null),
+    [periods, groups],
+  );
 
   // Lien « fiche » du club usager (opt-in `conf.orgaLink`) — cf. le rendu de la
   // rangée usager plus bas : n'apparaît que sur un groupe porteur d'identifiant.
@@ -276,13 +215,12 @@ export default function PreviewReservations({
   const { openLogin } = useAuthModal();
   const permissions = useProfilPermissions(entity || null);
   const queryClient = useQueryClient();
-  // Case cliquée, et la période choisie AU MOMENT du clic : c'est elle que le contrôle a validée, c'est
-  // donc elle que le formulaire reprend.
-  const [slot, setSlot] = useState<{
-    day: DayKey;
-    startMinutes: number;
-    endMinutes: number;
+  // Ajout en cours : la case cliquée, avec la période choisie AU MOMENT du clic (c'est elle que le contrôle a
+  // validée, c'est donc elle que le formulaire reprend) — ou le club d'une rangée, imposé au formulaire.
+  const [adding, setAdding] = useState<{
+    slot?: { day: DayKey; startMinutes: number; endMinutes: number };
     period?: PeriodRange;
+    orga?: { id: string; name?: string };
   } | null>(null);
   const [conflict, setConflict] = useState<string | null>(null);
 
@@ -290,8 +228,20 @@ export default function PreviewReservations({
   // contrôle serveur ne vérifie aujourd'hui QUI réserve POUR QUI.
   const canBook = Boolean(booking) && (booking?.adminOnly === false || permissions.isAdmin);
 
+  /* ── Modification d'horaire (opt-in `conf.booking.editHours`) ──────────── */
+  // Toujours réservée aux admins, `adminOnly` ou non : elle touche la réservation d'un autre.
+  const canEditHours = Boolean(booking?.editHours) && permissions.isAdmin;
+  const {
+    editing,
+    open: editHours,
+    close: closeHours,
+    submit: submitHours,
+    checkLive: checkHoursLive,
+    saving: savingHours,
+  } = useUpdateSlotHours(conf);
+
   const rows = useMemo(
-    () => (booking ? buildBookingGrid(grid, booking) : []),
+    () => (booking ? mergeBookingRows(buildBookingGrid(grid, booking)) : []),
     [booking, grid],
   );
 
@@ -303,19 +253,12 @@ export default function PreviewReservations({
   // pouvaient réserver le même créneau sans le moindre avertissement. On refetche donc les
   // réservations avant d'ouvrir le formulaire, et de nouveau avant d'enregistrer (`beforeSubmit`).
   // NB : cela RÉDUIT la fenêtre de course, sans la fermer — seul un contrôle serveur le ferait,
-  // et il n'existe pas aujourd'hui côté backend.
-  const freshReservations = useCallback(async () => {
-    try {
-      return await queryClient.fetchQuery<Reservation[]>({
-        queryKey: SEARCH_QUERY_KEYS.RESERVATIONS(conf.form, resourceId),
-        staleTime: 0,
-      });
-    } catch {
-      // Réseau indisponible : on retombe sur l'instantané chargé plutôt que de bloquer la
-      // réservation — le contrôle redevient ce qu'il était, faute de mieux.
-      return data ?? [];
-    }
-  }, [conf.form, data, queryClient, resourceId]);
+  // et il n'existe pas aujourd'hui côté backend. Réseau indisponible : l'instantané en cache
+  // (`resourcesReservations`) plutôt que de bloquer la réservation.
+  const freshReservations = useCallback(
+    () => (entity ? resourcesReservations(queryClient, entity, conf, [resourceId], true) : Promise.resolve(data ?? [])),
+    [conf, data, entity, queryClient, resourceId],
+  );
 
   const handleBook = useCallback(
     async (cell: BookingCell) => {
@@ -340,10 +283,8 @@ export default function PreviewReservations({
         return;
       }
       setConflict(null);
-      setSlot({
-        day: cell.dayKey,
-        startMinutes: cell.startMinutes,
-        endMinutes: cell.endMinutes,
+      setAdding({
+        slot: { day: cell.dayKey, startMinutes: cell.startMinutes, endMinutes: cell.endMinutes },
         period: range ?? undefined,
       });
     },
@@ -351,30 +292,15 @@ export default function PreviewReservations({
   );
 
   const prefill = useMemo(
-    () => (slot ? buildReservationPrefill(conf, { resourceId, resourceName, slot, period: slot.period }) : null),
-    [conf, resourceId, resourceName, slot],
+    () => (adding ? buildReservationPrefill(conf, { resourceId, resourceName, ...adding }) : null),
+    [adding, conf, resourceId, resourceName],
   );
 
-  // Contrôle d'ENREGISTREMENT (`periods`), rejoué sur ce que le formulaire envoie vraiment — heures
-  // modifiées, créneaux ajoutés, périodes saisies — contre les réservations RELUES de l'équipement.
-  // Une étape absente des données (formulaire différent de la config) n'a rien à contrôler.
-  const beforeSubmit = useCallback(
-    async (allData: AllStepsData) => {
-      const submitted = parseReservationAnswer({ answers: allData }, conf);
-      if (!submitted) return null;
-      const issue = bookingIssue(submitted, await freshReservations());
-      return issue ? bookingIssueMessage(issue, t) : null;
-    },
-    [conf, freshReservations, t],
-  );
-
-  // `useCoFormFinalMutation` n'invalide que les caches coform : la liste des
-  // réservations de CETTE ressource doit être rafraîchie explicitement.
-  const handleSaved = useCallback(() => {
-    queryClient.invalidateQueries({
-      queryKey: SEARCH_QUERY_KEYS.RESERVATIONS(conf.form, resourceId),
-    });
-  }, [conf.form, queryClient, resourceId]);
+  // Contrôles de la saisie (`periods`), communs à tous les formulaires d'ajout : avertissement EN DIRECT sous
+  // chaque créneau, puis refus d'ENREGISTRER rejoué sur ce que le formulaire envoie vraiment — heures modifiées,
+  // créneaux ajoutés — contre les réservations RELUES de l'équipement ; après l'enregistrement, les fiches et le
+  // filtre créneau se relisent (`afterSave`).
+  const { beforeSubmit, slotCheck, afterSave } = useBookingChecks(conf);
 
   /* Grille à l'échelle horaire — remplace la grille en blocs empilés quand la
      prise de réservation est activée. Rendue MÊME sans réservation : c'est là
@@ -383,6 +309,10 @@ export default function PreviewReservations({
      Elle ne remplace donc PLUS le repli mobile (liste groupée par jour), qui reste rendu
      en dessous de ce point de rupture — sans quoi un visiteur de téléphone n'avait plus
      qu'un tableau de 736 px à faire défiler latéralement dans le dialogue de fiche. */
+  /* Cellules fusionnées verticalement (`mergeBookingRows`) : un créneau qui couvre plusieurs rangées
+     n'est plus répété dans chacune, il occupe UNE cellule `rowSpan`, sa carte étirée sur toute la
+     plage (`h-px` sur la cellule : ce qui permet à `h-full` de se résoudre dans un tableau). Une
+     rangée absorbée (`covered`) ne rend pas de cellule ; les autres jours gardent les leurs. */
   const bookingGrid = booking ? (
     <div className="mt-6 hidden md:block">
       <div className="overflow-x-auto">
@@ -410,21 +340,27 @@ export default function PreviewReservations({
                 <th scope="row" className="whitespace-nowrap pr-2 text-left font-normal text-muted-foreground">
                   {row.label}
                 </th>
-                {row.cells.map((cell) => (
-                  <td key={cell.key} className="align-top">
-                    {cell.blocks.length > 0 ? (
-                      <div className="space-y-1">
+                {row.cells.map((cell) =>
+                  cell.kind === "covered" ? null : cell.kind === "busy" ? (
+                    <td key={cell.key} rowSpan={cell.rowSpan} className="h-px align-top">
+                      <div className="flex h-full flex-col gap-1">
                         {cell.blocks.map((block) => (
-                          <SlotBlock key={block.key} block={block} t={t} />
+                          <div key={block.key} className="min-h-0 flex-1">
+                            <SlotBlock block={block} t={t} fill />
+                          </div>
                         ))}
                       </div>
-                    ) : canBook ? (
-                      <FreeCell cell={cell} t={t} onBook={handleBook} />
-                    ) : (
-                      <div className="h-full min-h-8 rounded-md border border-dashed border-border/40" />
-                    )}
-                  </td>
-                ))}
+                    </td>
+                  ) : (
+                    <td key={cell.cell.key} className="align-top">
+                      {canBook ? (
+                        <FreeCell cell={cell.cell} t={t} onBook={handleBook} />
+                      ) : (
+                        <div className="h-full min-h-8 rounded-md border border-dashed border-border/40" />
+                      )}
+                    </td>
+                  ),
+                )}
               </tr>
             ))}
           </tbody>
@@ -448,24 +384,33 @@ export default function PreviewReservations({
         <h2 className="text-base font-semibold">{t("PreviewReservations.title")}</h2>
         {groups.length > 0 && <Badge variant="secondary">{groups.length}</Badge>}
       </div>
-      {hours && groups.length > 0 && (
-        <p className="mt-1 text-sm text-muted-foreground">{formatReservationHours(hours.total, t, true)}</p>
+      {/* Volume horaire en INDICATEURS (demande de Peterson du 23/10 : « bien visible », agrandis le 26/10),
+          sablier pendant le chargement des réservations. */}
+      {hours && (isLoading || groups.length > 0) && (
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:max-w-xl">
+          <KpiCard
+            icon="clock"
+            label={t("PreviewReservations.kpiWeekly")}
+            value={formatHours(hours.total.weeklyMinutes)}
+            accentClasses="bg-chart-2/15 text-chart-2"
+            loading={isLoading}
+            loadingLabel={t("PreviewReservations.kpiLoading")}
+            size="lg"
+          />
+          <KpiCard
+            icon="calendar-clock"
+            label={t("PreviewReservations.kpiCumulative")}
+            value={formatHours(hours.total.cumulativeMinutes)}
+            accentClasses="bg-chart-4/15 text-chart-4"
+            loading={isLoading}
+            loadingLabel={t("PreviewReservations.kpiLoading")}
+            size="lg"
+          />
+        </div>
       )}
 
       {periods && (
-        <PeriodFilter
-          from={from}
-          to={to}
-          today={today}
-          invalid={resolved === null}
-          onFrom={setFrom}
-          onTo={setTo}
-          onReset={() => {
-            setFrom("");
-            setTo("");
-          }}
-          t={t}
-        />
+        <PeriodFilter {...periodFilter} t={t} />
       )}
 
       {isLoading ? (
@@ -544,14 +489,17 @@ export default function PreviewReservations({
                       </Link>
                     </Button>
                   )}
-                  {/* Volume horaire du club, sur SA ligne sous la rangée, aligné sur le nom (pastille
-                      + écart = 1.125rem) : rangé à droite avec le nombre de créneaux, il écrasait le
-                      nom et passait sous le bouton « Fiche » en mobile. `-mt-5` le rapproche du nom
-                      à travers le `py-4` du déclencheur. */}
-                  {hours && (
-                    <p className="col-span-2 -mt-5 pb-4 pl-[1.125rem] text-xs text-muted-foreground">
-                      {formatReservationHours(hours.byGroup[gi], t)}
-                    </p>
+                  {/* Volume horaire puis périodes du club, sur LEURS lignes sous la rangée, alignés sur
+                      le nom (pastille + écart = 1.125rem) : rangés à droite avec le nombre de créneaux,
+                      ils écrasaient le nom et passaient sous le bouton « Fiche » en mobile. `-mt-5`
+                      les rapproche du nom à travers le `py-4` du déclencheur. */}
+                  {(hours || (periodsByGroup && periodsByGroup[gi].length > 0)) && (
+                    <div className="col-span-2 -mt-5 space-y-0.5 pb-4 pl-[1.125rem] text-xs text-muted-foreground">
+                      {hours && <p>{formatReservationHours(hours.byGroup[gi], t)}</p>}
+                      {periodsByGroup && periodsByGroup[gi].length > 0 && (
+                        <p>{periodsByGroup[gi].map((p) => formatReservationPeriod(p, t)).join(" · ")}</p>
+                      )}
+                    </div>
                   )}
                 </div>
                 <AccordionContent>
@@ -576,18 +524,58 @@ export default function PreviewReservations({
                             // diffère de celle de la réservation, affichée juste au-dessus.
                             const own = ownSlotPeriod(s, r);
                             return (
-                              <li key={i}>
-                                <span className="font-medium text-foreground">
-                                  {t(`days.${s.day}`)}
-                                </span>{" "}
-                                {s.start} – {s.end}
-                                {own && ` · ${formatReservationPeriod(own, t)}`}
+                              <li key={i} className="flex items-center gap-1">
+                                <span>
+                                  <span className="font-medium text-foreground">
+                                    {t(`days.${s.day}`)}
+                                  </span>{" "}
+                                  {s.start} – {s.end}
+                                  {own && ` · ${formatReservationPeriod(own, t)}`}
+                                </span>
+                                {/* Index brut ET identifiant de réponse : sans eux, rien à viser. */}
+                                {canEditHours && r.id && s.index !== undefined && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 shrink-0"
+                                    onClick={() => editHours(r, s)}
+                                    aria-label={t("PreviewReservations.editHours.aria", undefined, {
+                                      day: t(`days.${s.day}`),
+                                      start: s.start,
+                                      end: s.end,
+                                    })}
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" aria-hidden />
+                                  </Button>
+                                )}
                               </li>
                             );
                           })}
                         </ul>
                       </div>
                     ))}
+                    {/* Ajout d'un créneau à CE club sur CET équipement, comme depuis la fiche du club : les
+                        deux finders verrouillés. Réservé aux groupes rattachés PAR IDENTIFIANT — un nom saisi
+                        à la main ne désigne aucune organisation à pré-remplir. */}
+                    {canBook && g.userId && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 gap-1.5 px-2 text-xs"
+                        onClick={() => {
+                          if (!me) openLogin();
+                          else if (g.userId) setAdding({ orga: { id: g.userId, name: g.user } });
+                        }}
+                        aria-label={t("PreviewReservations.addSlotAria", undefined, {
+                          name: g.user || t("PreviewReservations.unknownUser"),
+                        })}
+                      >
+                        <Plus className="h-3 w-3" aria-hidden />
+                        {t("PreviewReservations.addSlot")}
+                      </Button>
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -646,20 +634,45 @@ export default function PreviewReservations({
               boulodrome B — et « Reprendre » écraserait le finder PRÉ-REMPLI ET VERROUILLÉ, posant la
               réservation sur le mauvais équipement sans que rien ne le signale. Même idiome que
               `PlaceFormView`. */}
+          {/* `hideStepHeaders` : un formulaire d'une seule étape n'a que faire de « Étape 1 ». Pas de
+              période par créneau (`slotPeriods`) : depuis l'import par période (23/10), une réservation
+              vaut pour UNE période — Date début / Date fin —, une autre période est une autre réservation. */}
           <CoFormModal
             formId={conf.form}
             open
-            onOpenChange={(next) => { if (!next) { setSlot(null); setConflict(null); } }}
-            title={t("PreviewReservations.bookTitle")}
+            onOpenChange={(next) => { if (!next) { setAdding(null); setConflict(null); } }}
+            title={
+              adding?.orga
+                ? t("PreviewReservations.addSlotTitle", undefined, {
+                  name: adding.orga.name || t("PreviewReservations.unknownUser"),
+                })
+                : t("PreviewReservations.bookTitle")
+            }
             defaultValues={prefill.defaultValues}
             lockedFields={prefill.lockedFields}
             elementId={resourceId}
             elementType="poi"
-            onAfterSubmit={handleSaved}
+            onAfterSubmit={afterSave}
             beforeSubmit={periods ? beforeSubmit : undefined}
-            slotPeriods={periods}
+            slotCheck={periods ? slotCheck : undefined}
+            hideStepHeaders
           />
         </Suspense>
+      )}
+
+      {editing && (
+        <SlotHoursDialog
+          key={`${editing.reservation.id}-${editing.slot.index}`}
+          open
+          onOpenChange={(next) => { if (!next) closeHours(); }}
+          context={slotHoursContext(editing.reservation, editing.slot, t)}
+          start={editing.slot.start}
+          end={editing.slot.end}
+          saving={savingHours}
+          onSubmit={submitHours}
+          onCheck={checkHoursLive}
+          t={t}
+        />
       )}
     </section>
   );

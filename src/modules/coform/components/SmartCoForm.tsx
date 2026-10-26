@@ -7,6 +7,7 @@ import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
 import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
 import { TimeSlotPeriodsContext } from "../contexts/TimeSlotPeriodsContext";
+import { TimeSlotCheckContext, type TimeSlotCheck } from "../contexts/TimeSlotCheckContext";
 import { parseCoFormFields, omitHiddenSteps, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, collectCommonTableInputKeys } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
@@ -138,6 +139,13 @@ interface SmartCoFormProps {
    * s'affiche en `<h1>` au milieu de la page hôte. Toujours vrai en standalone.
    */
   hideBanner?: boolean;
+  /** Avertissement EN DIRECT sous les créneaux des champs `timeSlots` (« ce créneau est déjà pris… »), jugé par
+   *  l'appelant sur la saisie de l'étape — cf. `TimeSlotCheckContext`. Défaut : aucun. */
+  slotCheck?: TimeSlotCheck;
+  /** Masque l'en-tête d'étape (titre « Étape 1 », description) du formulaire à UNE étape — choix de
+   *  l'appelant quand son propre titre suffit (fenêtre de réservation). Sans effet sur le parcours en
+   *  plusieurs étapes, dont la navigation a besoin de ses titres. Défaut : non. */
+  hideStepHeaders?: boolean;
 }
 
 interface LoadingStateProps {
@@ -246,6 +254,8 @@ export function SmartCoForm({
   slotPeriods = false,
   submitButtonText,
   hideBanner = false,
+  slotCheck,
+  hideStepHeaders = false,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -371,12 +381,15 @@ export function SmartCoForm({
   //   en ouvre (réponse enregistrée, question ouverte, site complet), sans jamais
   //   changer la forme de l'arbre : le formulaire ne remonte pas quand une réponse
   //   reçoit son identifiant ;
-  // - la saisie de période des créneaux (`slotPeriods`) : comme les catalogues, une
-  //   donnée de l'APPELANT que seuls certains champs consomment.
+  // - la saisie de période des créneaux (`slotPeriods`) et leur contrôle en direct
+  //   (`slotCheck`) : comme les catalogues, des données de l'APPELANT que seuls
+  //   certains champs consomment.
   const withFormContext = (node: ReactNode) => (
     <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
       <FormQuestionDiscussions answerId={answerId} form={formData} steps={subFormsFields}>
-        <TimeSlotPeriodsContext.Provider value={slotPeriods}>{node}</TimeSlotPeriodsContext.Provider>
+        <TimeSlotPeriodsContext.Provider value={slotPeriods}>
+          <TimeSlotCheckContext.Provider value={slotCheck ?? null}>{node}</TimeSlotCheckContext.Provider>
+        </TimeSlotPeriodsContext.Provider>
       </FormQuestionDiscussions>
     </CommonTableCatalogsLoader>
   );
@@ -601,7 +614,7 @@ export function SmartCoForm({
       defaultValues={stepDefaults}
       answerId={answerId}
       hideBanner={hideBanner || isStandalone}
-      hideStepHeaders={isInputStandalone}
+      hideStepHeaders={hideStepHeaders || isInputStandalone}
       hideSubmitButton={isInputStandalone}
       autoSubmitOnBlur={isInputStandalone}
       onDirtyChange={onDirtyChange}

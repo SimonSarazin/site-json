@@ -1,5 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { fetchReservationAnswers, type ReservationAnswersHost } from "./useReservationsQuery";
+import { QueryClient } from "@tanstack/react-query";
+import {
+  fetchReservationAnswers,
+  fetchResourceReservations,
+  resourcesReservations,
+  type ReservationAnswersHost,
+} from "./useReservationsQuery";
+import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
 import type { ReservationsConf } from "../schema";
 
 const STEP = "etape";
@@ -60,5 +67,53 @@ describe("fetchReservationAnswers — fetcher partagé des réservations", () =>
     const search = vi.fn().mockResolvedValue(pages([answer("a1", "poi1")], [answer("a2", "poi2")]));
     const r = await fetchReservationAnswers(host(search), conf, {}, 1);
     expect(r).toHaveLength(1);
+  });
+});
+
+describe("fetchResourceReservations — réservations d'UNE ressource", () => {
+  it("ne lit que les réponses dont le finder pointe la ressource", async () => {
+    const search = vi.fn().mockResolvedValue(pages([answer("a1", "poi1", "orga1")]));
+    const r = await fetchResourceReservations(host(search), conf, "poi1");
+    expect(search.mock.calls[0][0]).toMatchObject({
+      filters: { form: "form1", "answers.etape.finderetapeF.poi1": { $exists: true } },
+    });
+    expect(r.map((x) => x.id)).toEqual(["a1"]);
+  });
+});
+
+describe("resourcesReservations — contrôles d'un ajout ou d'une modification d'horaire", () => {
+  const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const cle = (poi: string) => SEARCH_QUERY_KEYS.RESERVATIONS(conf.form, poi);
+
+  it("avertissement en direct (`fresh` faux) : le cache de la fiche suffit, aucun appel", async () => {
+    const qc = client();
+    qc.setQueryData(cle("poi1"), [{ id: "en-cache" }]);
+    const search = vi.fn();
+    expect(await resourcesReservations(qc, host(search), conf, ["poi1"], false)).toEqual([{ id: "en-cache" }]);
+    expect(search).not.toHaveBeenCalled();
+  });
+
+  it("contrôle d'enregistrement (`fresh`) : relu au serveur, et le cache de la fiche suit", async () => {
+    const qc = client();
+    qc.setQueryData(cle("poi1"), [{ id: "perime" }]);
+    const search = vi.fn().mockResolvedValue(pages([answer("a1", "poi1")]));
+    const r = await resourcesReservations(qc, host(search), conf, ["poi1"], true);
+    expect(r.map((x) => x.id)).toEqual(["a1"]);
+    expect(qc.getQueryData<{ id: string }[]>(cle("poi1"))?.map((x) => x.id)).toEqual(["a1"]);
+  });
+
+  it("plusieurs équipements : leurs réservations réunies", async () => {
+    const search = vi.fn()
+      .mockResolvedValueOnce(pages([answer("a1", "poi1")]))
+      .mockResolvedValueOnce(pages([answer("a2", "poi2")]));
+    const r = await resourcesReservations(client(), host(search), conf, ["poi1", "poi2"], true);
+    expect(r.map((x) => x.id).sort()).toEqual(["a1", "a2"]);
+  });
+
+  it("réseau indisponible : l'instantané en cache plutôt qu'un échec — rien pour un équipement sans cache", async () => {
+    const qc = client();
+    qc.setQueryData(cle("poi1"), [{ id: "en-cache" }]);
+    const search = vi.fn().mockRejectedValue(new Error("hors ligne"));
+    expect(await resourcesReservations(qc, host(search), conf, ["poi1", "poi2"], true)).toEqual([{ id: "en-cache" }]);
   });
 });

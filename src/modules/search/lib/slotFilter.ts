@@ -87,10 +87,37 @@ export function isIsoDay(value: unknown): value is string {
   return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
 }
 
-/** `HH:MM` → minutes depuis minuit, `null` si absent ou invalide. */
-function hourMinutes(value: string | undefined): number | null {
+/** `HH:MM` → minutes depuis minuit, `null` si absent ou invalide. Exporté pour la fenêtre de modification
+ *  d'horaire, qui lit des champs `<input type="time">`. */
+export function hourMinutes(value: string | undefined): number | null {
   const m = value ? HOUR.exec(value) : null;
   return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+}
+
+/** Heures proposées par le filtre : 00 à 23. */
+export const SLOT_HOURS: readonly string[] = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0"));
+
+/** Minutes proposées par le filtre : le quart d'heure (demande de Peterson du 23/10). */
+export const SLOT_QUARTERS: readonly string[] = ["00", "15", "30", "45"];
+
+/** `HH:MM` → heure et minute ; deux chaînes vides si la valeur est absente ou invalide. */
+export function splitTime(value: string | undefined): { hour: string; minute: string } {
+  const m = value ? HOUR.exec(value) : null;
+  return m ? { hour: m[1], minute: m[2] } : { hour: "", minute: "" };
+}
+
+/** Heure et minute → `HH:MM` ; une heure sans minute prend `00`, et sans heure il n'y a pas de borne. */
+export function joinTime(hour: string, minute: string): string | undefined {
+  if (!/^([01]\d|2[0-3])$/.test(hour)) return undefined;
+  return `${hour}:${/^[0-5]\d$/.test(minute) ? minute : "00"}`;
+}
+
+/** Minutes proposées : les quarts d'heure, plus la minute en cours si elle n'en est pas un — celle d'un
+ *  lien partagé avant cette règle (17h10), qu'on affiche telle quelle plutôt que de la réécrire en douce. */
+export function minuteOptions(current?: string): string[] {
+  return current && /^[0-5]\d$/.test(current) && !SLOT_QUARTERS.includes(current)
+    ? [...SLOT_QUARTERS, current].sort()
+    : [...SLOT_QUARTERS];
 }
 
 /** Jour de la semaine d'un jour ISO, en clé `DAY_KEYS` (celle des créneaux de réservation). */
