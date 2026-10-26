@@ -62,7 +62,7 @@ import { usePageFiltersOptional } from "./contexts/pageFilters";
 import { useInstallationFilterUrlSync } from "./hooks/useInstallationFilter";
 import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
 import { scopeFiltersToIds } from "./lib/reservationUsers";
-import { useReservationUsersQuery } from "./hooks/useReservationUsersQuery";
+import { useAddCostumOrganization, useReservationUsersQuery } from "./hooks/useReservationUsersQuery";
 import { buildViewAllHref } from "./lib/viewAllHref";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
@@ -460,6 +460,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // (même référence), aucune requête de plus, comportement inchangé.
   const reservationUsersConf = props.reservationUsers;
   const reservationUsers = useReservationUsersQuery(reservationUsersConf);
+  // Une organisation créée par le bouton « Ajouter » rejoint le périmètre sans attendre sa relecture.
+  const addCostumOrganization = useAddCostumOrganization(reservationUsersConf);
   const perimetreManquant = Boolean(reservationUsersConf) && !reservationUsers.data;
   const perimetreEnErreur = perimetreManquant && reservationUsers.isError;
   const scoped = useMemo(
@@ -1220,6 +1222,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           onOpenChange={setIsModalOpen}
           parent={entity}
           formConfig={addButton?.formConfig}
+          // Seulement quand le périmètre inclut les organisations rattachées : ailleurs, `onCreated`
+          // couperait la redirection vers la fiche créée sans rien apporter.
+          onCreated={reservationUsersConf?.includeCostumOrganizations ? addCostumOrganization : undefined}
         />
       )}
 

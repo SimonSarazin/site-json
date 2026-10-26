@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { fetchResourceIdsInPerimeter, type PoiSearchHost } from "./useResourcesInPerimeterQuery";
+import { fetchResourceIdsInPerimeter, searchCostumIds, type PoiSearchHost } from "./useResourcesInPerimeterQuery";
 
 const page = (ids: string[], next?: Record<string, unknown>) => ({
   results: ids.map((id) => ({ id })),
@@ -7,6 +7,17 @@ const page = (ids: string[], next?: Record<string, unknown>) => ({
   next: () => Promise.resolve(next),
 });
 const host = (mock: ReturnType<typeof vi.fn>) => ({ searchCostum: mock }) as unknown as PoiSearchHost;
+
+describe("searchCostumIds — identifiants d'une recherche scopée au costum du site", () => {
+  it("garde `fields: [\"collection\"]` sous les paramètres du demandeur, suit les pages, sans sourceKey imposé", async () => {
+    const search = vi.fn().mockResolvedValue(page(["o1"], page(["o2"])));
+    expect([...(await searchCostumIds(host(search), { searchType: ["organizations"] }))]).toEqual(["o1", "o2"]);
+    const params = search.mock.calls[0][0];
+    expect(params).toMatchObject({ name: "", indexMin: 0, fields: ["collection"], searchType: ["organizations"] });
+    // Pas de sourceKey : le SDK injecte celui du site.
+    expect(params).not.toHaveProperty("sourceKey");
+  });
+});
 
 describe("fetchResourceIdsInPerimeter — équipements d'un périmètre", () => {
   it("un seul appel `_id: {$in}` (trié, sans doublon) + les filtres du périmètre, scopé au costum du site", async () => {

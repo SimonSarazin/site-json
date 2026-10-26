@@ -1725,7 +1725,7 @@ export const SearchProStaticSectionSchema = z.object({
 - **Defaults differents** : `useFilter: false`, `showActiveFiltersTypes: false`, `showActiveFiltersTags: false`
 - **Placeholder optionnel** : contrairement a `searchPro` ou il est obligatoire
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
-- **`reservationUsers`** (`ReservationUsersConfSchema`) : périmètre CALCULÉ — organisations usagères d'au moins une réservation sur un équipement du site (`reservations` + `poiFilters` + `sourceKey?`), préchargé au SSR. Cf. `doc/07-module-search.md`, « Annuaire des organisations usagères »
+- **`reservationUsers`** (`ReservationUsersConfSchema`) : périmètre CALCULÉ — organisations usagères d'au moins une réservation sur un équipement du site (`reservations` + `poiFilters` + `sourceKey?`), plus, avec `includeCostumOrganizations?`, les organisations rattachées au costum du site ; préchargé au SSR. Cf. `doc/07-module-search.md`, « Annuaire des organisations usagères »
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
 - **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.
 - **Alignement de l'en-tête** : titre et boutons sont alignés sur les bords de la grille de résultats (ni `container` ni marge latérale, `mb-3`) — pas de réglage. Avant 09/2026, l'en-tête était rentré dans un `container` avec `px-*` : il ne commençait pas au même bord que les cartes.

@@ -40,6 +40,10 @@ describe("reservationUsersQueryKey — clé partagée hook + prefetch SSR", () =
   it("un autre périmètre d'équipements → une autre clé", () => {
     expect(reservationUsersQueryKey({ ...conf, poiFilters: { type: "autre" } })).not.toEqual(reservationUsersQueryKey(conf));
   });
+
+  it("les organisations rattachées au costum élargissent le périmètre → une autre clé", () => {
+    expect(reservationUsersQueryKey({ ...conf, includeCostumOrganizations: true })).not.toEqual(reservationUsersQueryKey(conf));
+  });
 });
 
 describe("fetchReservationUsers — organisations usagères des équipements du site", () => {
@@ -60,6 +64,24 @@ describe("fetchReservationUsers — organisations usagères des équipements du 
       filters: { type: "recoveryCenter", _id: { $in: ["gymnase-lycee", "salle-municipale"] } },
     });
     expect(r).toEqual({ orgIds: ["club-b"], resourceIds: ["gymnase-lycee"] });
+  });
+
+  it("avec includeCostumOrganizations : les organisations rattachées au costum s'ajoutent, sans doublon", async () => {
+    const entity = {
+      coformAnswersSearch: vi.fn().mockResolvedValue(page([answer("gymnase-lycee", "club-b")])),
+      // Rattachées au costum : une association ajoutée depuis l'annuaire, sans créneau, et un club déjà usager.
+      searchCostum: vi.fn(async ({ searchType }: { searchType: string[] }) =>
+        searchType[0] === "organizations" ? page([{ id: "asso-nouvelle" }, { id: "club-b" }]) : page([{ id: "gymnase-lycee" }]),
+      ),
+    };
+    const r = await fetchReservationUsers(host(entity), { ...conf, includeCostumOrganizations: true });
+
+    expect(r).toEqual({ orgIds: ["asso-nouvelle", "club-b"], resourceIds: ["gymnase-lycee"] });
+    // Ni filtre ni sourceKey : c'est le SDK qui scope la recherche au costum du site.
+    const orgas = entity.searchCostum.mock.calls.map(([p]) => p).find((p) => p.searchType[0] === "organizations");
+    expect(orgas).toBeDefined();
+    expect(orgas).not.toHaveProperty("filters");
+    expect(orgas).not.toHaveProperty("sourceKey");
   });
 
   it("aucune réservation → aucun appel de recherche d'équipements, périmètre vide", async () => {

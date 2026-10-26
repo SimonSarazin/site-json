@@ -32,6 +32,15 @@ export function reservationUserIds(
 }
 
 /**
+ * Périmètre avec `includeCostumOrganizations` : les usagères ET les organisations rattachées au costum
+ * du site (ex. une association ajoutée depuis l'annuaire, avant son premier créneau) — triées, sans
+ * doublon (clé de cache stable) : une organisation à la fois usagère et rattachée ne compte qu'une fois.
+ */
+export function withCostumOrganizations(userIds: readonly string[], costumIds: readonly string[]): string[] {
+  return [...new Set([...userIds, ...costumIds])].sort();
+}
+
+/**
  * Filtres de la liste restreints au périmètre calculé. Un `_id.$in` déjà posé (facette « par
  * réponses », qui part en `_id`) est INTERSECTÉ, pas écrasé : `mergeMongoFilters` ferait gagner l'un
  * des deux `$in` en silence. `none` = aucun élément possible → ni requête, ni `$in` vide envoyé.

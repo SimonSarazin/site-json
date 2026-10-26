@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { Organization, PaginatorPage, Project } from "@communecter/cocolight-api-client";
+import type { GlobalAutocompleteCostumData, Organization, PaginatorPage, Project } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
 
@@ -17,28 +17,22 @@ export interface PoiPerimeter {
 }
 
 /**
- * Parmi `ids`, les équipements du périmètre : `_id: {$in}` + `poiFilters`, scopé au costum du site
- * (sourceKey injecté par le SDK) sauf `sourceKey` explicite. Résultat trié. `ids` vide → AUCUN
- * appel : le backend ignore un `$in` vide et renverrait tout le périmètre.
+ * Identifiants de TOUS les résultats d'une recherche `searchCostum`, pages suivies — scopée au costum
+ * du site (sourceKey injecté par le SDK) sauf `sourceKey` explicite. Partagé par les périmètres :
+ * équipements (ci-dessous) et organisations rattachées au costum (`useReservationUsersQuery`).
  */
-export async function fetchResourceIdsInPerimeter(
+export async function searchCostumIds(
   entity: PoiSearchHost,
-  ids: readonly string[],
-  perimeter: PoiPerimeter,
-): Promise<string[]> {
-  const sorted = [...new Set(ids)].sort();
-  if (sorted.length === 0) return [];
-
+  params: Partial<GlobalAutocompleteCostumData>,
+): Promise<Set<string>> {
   let page: PaginatorPage<unknown> = await entity.searchCostum({
     name: "",
     indexMin: 0,
-    indexStep: Math.min(sorted.length, PAGE_SIZE),
-    searchType: ["poi"],
-    filters: { ...perimeter.poiFilters, _id: { $in: sorted } },
+    indexStep: PAGE_SIZE,
     // ⚠️ "collection" OBLIGATOIRE : sans lui, _linkEntities élimine
     // silencieusement tous les résultats (piège SDK vérifié).
     fields: ["collection"],
-    ...(perimeter.sourceKey ? { sourceKey: perimeter.sourceKey } : {}),
+    ...params,
   });
 
   const found = new Set<string>();
@@ -53,6 +47,28 @@ export async function fetchResourceIdsInPerimeter(
     page = await page.next();
     collect(page);
   }
+  return found;
+}
+
+/**
+ * Parmi `ids`, les équipements du périmètre : `_id: {$in}` + `poiFilters`, scopé au costum du site
+ * (sourceKey injecté par le SDK) sauf `sourceKey` explicite. Résultat trié. `ids` vide → AUCUN
+ * appel : le backend ignore un `$in` vide et renverrait tout le périmètre.
+ */
+export async function fetchResourceIdsInPerimeter(
+  entity: PoiSearchHost,
+  ids: readonly string[],
+  perimeter: PoiPerimeter,
+): Promise<string[]> {
+  const sorted = [...new Set(ids)].sort();
+  if (sorted.length === 0) return [];
+
+  const found = await searchCostumIds(entity, {
+    indexStep: Math.min(sorted.length, PAGE_SIZE),
+    searchType: ["poi"],
+    filters: { ...perimeter.poiFilters, _id: { $in: sorted } },
+    ...(perimeter.sourceKey ? { sourceKey: perimeter.sourceKey } : {}),
+  });
   return sorted.filter((id) => found.has(id));
 }
 

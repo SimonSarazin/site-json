@@ -24,7 +24,21 @@
       }
     }
   },
-  "editModals": {},
+  "finderAddNew": {
+    "organizations": "add-organization"
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-ess974-association",
+          "native": "edit-ess974-association",
+          "horsPerimetre": "edit-profile"
+        }
+      ]
+    }
+  },
   "adminResources": {},
   "pages": {
     "/equipements-sportifs/searchProStatic": {
@@ -100,6 +114,15 @@
         "defaultTypes": [
           "organizations"
         ],
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "usagerEquipementSportif"
+              ]
+            }
+          }
+        },
         "defaultSortBy": {
           "name": 1
         },
@@ -255,6 +278,25 @@
         }
       }
     }
+  },
+  "contributions": {
+    "/annuaire/searchProStatic": {
+      "ajout": {
+        "modal": "add-ess974-association",
+        "adminOnly": true
+      }
+    }
+  },
+  "stamps": {
+    "ess974-association": [
+      {
+        "field": "tags",
+        "value": "usagerEquipementSportif",
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      }
+    ]
   },
   "referencement": {},
   "membership": {

@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { keepInPerimeter, reservationUserIds, reservedResourceIds, scopeFiltersToIds } from "./reservationUsers";
+import {
+  keepInPerimeter,
+  reservationUserIds,
+  reservedResourceIds,
+  scopeFiltersToIds,
+  withCostumOrganizations,
+} from "./reservationUsers";
 
 // Forme réelle (base locale, 16/10/2026) : une réservation pointe un équipement et, depuis la
 // reprise, l'organisation usagère par identifiant ; 2 réponses scolaires n'ont que le texte.
@@ -37,6 +43,21 @@ describe("reservationUserIds — usagers d'au moins un équipement du périmètr
 
   it("aucun équipement du périmètre réservé → aucune organisation", () => {
     expect(reservationUserIds([resa(["salle-municipale"], "club-a")], scolaires)).toEqual([]);
+  });
+});
+
+describe("withCostumOrganizations — usagères et organisations rattachées au costum", () => {
+  it("ajoute les organisations rattachées, triées, sans doublon", () => {
+    expect(withCostumOrganizations(["club-b", "club-c"], ["asso-nouvelle", "club-b"]))
+      .toEqual(["asso-nouvelle", "club-b", "club-c"]);
+  });
+
+  it("sans organisation rattachée, le périmètre reste celui des usagères", () => {
+    expect(withCostumOrganizations(["club-b"], [])).toEqual(["club-b"]);
+  });
+
+  it("une association ajoutée, encore sans créneau, suffit à ouvrir le périmètre", () => {
+    expect(withCostumOrganizations([], ["asso-nouvelle"])).toEqual(["asso-nouvelle"]);
   });
 });
 
