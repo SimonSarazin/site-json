@@ -12,13 +12,26 @@ import { MERGED_EDIT_DESCRIPTORS } from "../profilMerged";
 import { seedEntity, buildPayload, type EntityLike } from "@/modules/formEngine/engine/entityForm";
 import type { EntityModalConfig, EntityModalCtx } from "../EntityFormModal";
 import type { EntityKind } from "../../hooks/useEntityMutation";
+import type { SiteConfig } from "@/types/site-schema";
+import { withExtraCitizenFields, writeExtraCitizenFields } from "./editProfileExtraCitizenFields";
 
 const typeOf = (ctx: EntityModalCtx): string =>
   (typeof ctx.entity?.getEntityType === "function" ? ctx.entity.getEntityType() : "citoyens");
 
+// Liste vide pour tout site qui ne déclare pas le flag (AUCUN par défaut) — opt-in pur config, jamais de slug en dur.
+const extraCitizenFields = (ctx: EntityModalCtx): readonly string[] =>
+  typeOf(ctx) === "citoyens" ? ((ctx.costum as SiteConfig["costum"])?.citizenProfileFields ?? []) : [];
+
 export const editProfileConfig: EntityModalConfig = {
   // UN SEUL descripteur fusionné (rendu + read/write) par type — cf. profilMerged / mergeRenderPipeline.
-  descriptor: (ctx) => MERGED_EDIT_DESCRIPTORS[typeOf(ctx)],
+  // `withExtraCitizenFields` : SEULE la vue (widget/options des champs activés par
+  // `config.costum.citizenProfileFields`, déjà présents cachés dans le pipeline générique) change —
+  // read/write sont IDENTIQUES partout, inutile de conditionner buildDefaults/buildSpec ci-dessous.
+  descriptor: (ctx) => {
+    const d = MERGED_EDIT_DESCRIPTORS[typeOf(ctx)];
+    const fields = extraCitizenFields(ctx);
+    return fields.length ? withExtraCitizenFields(d, fields) : d;
+  },
   title: { add: "ProfileEdit.title", edit: "ProfileEdit.title" },
   submitLabel: { add: "ProfileEdit.save", edit: "ProfileEdit.save" },
   texts: (t) => ({ next: "", previous: "", cancel: t("ProfileEdit.cancel") }),
@@ -50,6 +63,12 @@ export const editProfileConfig: EntityModalConfig = {
     };
   },
 
-  // Slug changé → recharger sur la nouvelle URL (effet hors moteur, parité ancien modal).
-  afterSubmit: ({ entity }, values) => reloadOnSlugChange((entity as EntityTypes | null)?.slug, values.slug),
+  // Slug changé → recharger sur la nouvelle URL (effet hors moteur, parité ancien modal). Champs
+  // opt-in (`config.costum.citizenProfileFields`) : écrits séparément, hors du schéma SDK — cf.
+  // editProfileExtraCitizenFields.ts.
+  afterSubmit: (ctx, values) => {
+    reloadOnSlugChange((ctx.entity as EntityTypes | null)?.slug, values.slug);
+    const fields = extraCitizenFields(ctx);
+    if (fields.length) void writeExtraCitizenFields(ctx.entity, values, fields);
+  },
 };

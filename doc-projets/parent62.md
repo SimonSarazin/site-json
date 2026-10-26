@@ -15,11 +15,23 @@
 > Mémoire : `[[project-parent62]]`
 > (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
 
-Dernière mise à jour : **2026-10-23** — 4 correctifs de relecture MR (dont 3 bloquants), moteur,
-tout le parc : doublon de bouton « Carte »/« Voir en liste » en vue carte (20 sections dans 9
-configs) et vignette `articleTeaser` changée en dur sans l'annoncer (`imageFit` rendu opt-in),
-détail §9centies ; carte acteurs disparue sur mobile (`fillParent` sans voisin de rangée sous `sm` —
-plancher `min-h-[20rem]`, détail §9nonagies) ; focus à l'ouverture d'un détail en `dialog` parti
+Dernière mise à jour : **2026-10-26** — entrée « Chat » du menu avatar (moteur, tout le parc, ACTIVE
+PAR DÉFAUT) ouvrant un modal Rocket.Chat, et libellé nav parent62 (« Contenus » → « Actualités et
+Ressources ») qui a fait déborder la barre à 1280px — corrigé par une nouvelle option de design
+`header.navFontSize` (moteur, opt-in) plutôt qu'en reformulant les libellés ; 4 échecs e2e rencontrés
+en cours de revue, tous confirmés PRÉEXISTANTS (`git stash` sur la config d'origine) — détail
+§9tredecenties. Même jour, plus tôt : employeur et territoire éditables depuis le
+profil, les DEUX champs (`structureRegister` ET `territoires`) réservés à parent62 via un nouveau
+mécanisme de champ conditionnel **par config** (`costum.citizenProfileFields`, corrigé le 26/10 d'un
+slug en dur vers ce flag sur feedback utilisateur), affichés sur la carte de `/equipe` ; deux
+correctifs backend préalables posés par l'utilisateur PLUS une 3e porte de validation côté SDK
+découverte en navigateur (`[DraftProxy]`), corrigée par `readOnly` + écriture séparée
+(`entity.updateField`) — détail §9duodecenties, vérification navigateur réelle non faite (pas de
+session authentifiée disponible). Précédemment, le 23/10 : 4 correctifs de relecture MR (dont
+3 bloquants), moteur, tout le parc : doublon de bouton « Carte »/« Voir en liste » en vue carte (20
+sections dans 9 configs) et vignette `articleTeaser` changée en dur sans l'annoncer (`imageFit` rendu
+opt-in), détail §9centies ; carte acteurs disparue sur mobile (`fillParent` sans voisin de rangée sous
+`sm` — plancher `min-h-[20rem]`, détail §9nonagies) ; focus à l'ouverture d'un détail en `dialog` parti
 nulle part (`onOpenAutoFocus`/`preventDefault` désarme le repli de focus de Radix — corrigé,
 couverture de test rouverte, détail §9octogies). Précédemment : **2026-10-22** — section « Les communes du territoire » reprend la couleur
 pleine du bandeau hero (`--page-accent`, déjà réglé par territoire), « Les actions sur le
@@ -5046,6 +5058,132 @@ Deux derniers constats de la même relecture :
 | `npx vitest run src/helpers/toText.test.ts src/modules/profil src/modules/search src/modules/blog` | ✅ 1836 tests, 179 fichiers, tous verts |
 | `config:validate` / `audit:config` | ✅ RAS |
 | `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
+
+## 9duodecenties. Employeur et territoire éditables depuis le profil
+
+Demande client : pouvoir renseigner, depuis son propre profil, son employeur et son territoire, et les
+voir sur la carte de chaque coordinateur·rice de `/equipe`. Correctif backend PRÉALABLE posé par
+l'utilisateur (confirmé en lisant `Person.php`/`Element.php`) : `structureRegister` et `territoires`
+acceptés par `Element::updateBlock()` (bloc `info`), `territoires` ajouté en plus à
+`Person::$dataBinding` — détail complet dans
+`Document de spécification — Champs « employeur » et « territoire » éditables sur un profil citoyen
+existant (backend communecter).md` (racine du monorepo).
+
+**Les deux champs (`structureRegister` et `territoires`) sont RÉSERVÉS à parent62** — décision
+corrigée en cours de lot : `structureRegister` avait d'abord été posé générique (visible sur tous les
+sites), puis retiré du descripteur partagé sur demande explicite, au même titre que `territoires`.
+Aucun mécanisme n'existait pour qu'un champ du formulaire d'édition CITOYEN (contrairement à
+l'affichage de fiche, qui en a un via `ProfileSectionRenderer`) soit visible seulement sur un site —
+construit ici, RÉUTILISABLE pour tout futur champ du même genre :
+- `userProfileSchema` (`schemaForm.ts`) : les deux champs `z.string().optional()` — zod ne distingue
+  pas par site, c'est la vue (widget) qui porte la restriction, pas le schéma.
+- `PROFIL_DESCRIPTORS.citoyens.fields` (`editProfilePayload.ts`) : descripteur read/write GÉNÉRIQUE
+  pour les deux, posé une fois pour toutes, mais **`readOnly: true`** (cf. 3e porte ci-dessous) — exclu
+  du payload `element/save`, toujours seedé/affiché/éditable dans le form.
+- `editCitoyenDescriptor` (`editProfile.descriptor.ts`) : NE déclare NI l'un ni l'autre (exprès) → via
+  `mergeRenderPipeline`, les deux champs PIPELINE sans pendant de rendu atterrissent `widget:"hidden"`
+  dans le descripteur fusionné, jamais rendus ni soumis par défaut.
+- **Nouveau fichier `editProfileExtraCitizenFields.ts`** : `withExtraCitizenFields(descriptor,
+  fieldNames)` pose `widget:"select"` + les 9 options (`src/data/territoires62.ts`) sur `territoires`,
+  `widget:"text"` sur `structureRegister`, et insère les champs DEMANDÉS dans l'onglet « Contact » —
+  SANS toucher read/write (inchangés, donc `buildDefaults`/`buildSpec` n'ont pas besoin d'être
+  conditionnés, seule la VUE change). Gère aussi le cas où un seul champ est demandé ou n'existe pas
+  dans le pipeline.
+- **`editProfileConfig.descriptor`** (`editProfile.tsx`) : applique cette fonction avec la liste lue sur
+  `config.costum.citizenProfileFields` (`site-schema.ts`, bloc `costum`) — **PAS un slug en dur**
+  (corrigé le 26/10/2026, feedback utilisateur : « ne pas mettre de condition en dur style
+  `slug=="parent62"`, jouer avec un paramètre de config »). `config.prod.parent62.json` déclare
+  `costum.citizenProfileFields: ["territoires", "structureRegister"]` ; tout autre site, n'ayant pas
+  cette clé, reçoit le descripteur et le comportement inchangés, byte pour byte.
+- `CardTeamMember.tsx` : `structureRegister` affiché dans le bloc contacts (icône `Building2`), lu
+  directement sur `donnees: sd` de `vueMembre()` — inchangé par ce revirement (l'affichage ne dépend
+  pas de qui peut éditer).
+
+**Une TROISIÈME porte de validation, découverte APRÈS les deux correctifs backend (navigateur,
+23/10/2026)** : le SDK (`cocolight-api-client`) valide aussi côté CLIENT, indépendamment du backend.
+Chaque clé assignée au payload `element/save` passe par un `DraftProxy` (`BaseEntity.ts`) qui la
+vérifie contre un schéma JSON bundlé (`UPDATE_BLOCK_INFO`) — rejet immédiat (avant tout appel réseau)
+pour un champ absent de ce schéma :
+```
+Uncaught (in promise) ApiValidationError: [DraftProxy] Le champ "structureRegister" n'est pas autorisé.
+```
+Le mécanisme costum/`typeObj` qui élargit normalement ce schéma pour les fiches (organisations/POI/
+projets/événements) **ne couvre pas `citoyens`** — `SCOPE_COLLECTIONS` (`runtime.ts:68`) =
+`["poi", "organizations", "projects", "events"]`, confirmé par lecture directe du SDK (registre bundlé
+ET cache live) : aucune déclaration backend n'aurait pu combler ce trou, une spec `typeObj` dans ce sens
+aurait été inutile — vérifié AVANT d'en écrire une. Correctif retenu, 100 % site-json : les deux champs
+sont `readOnly: true` dans le pipeline (exclus du payload schéma-validé) et écrits SÉPARÉMENT, après le
+save principal, via `entity.updateField(path, value)` — méthode publique de `BaseEntity`, confirmée par
+lecture complète : ne passe PAS par le `DraftProxy`, seulement par l'autorisation backend (même garde
+que `updateBlock`). Un hook `afterSubmit` dédié (`writeExtraCitizenFields`, non bloquant, échec
+individuel juste averti en console) fait cette écriture, car un stamp `channel:"pathValue"` classique
+ne peut PAS lire une valeur déjà exclue du payload construit. Détail complet :
+`reference_profil_champ_conditionnel_par_costum.md` (mémoire Claude).
+
+- 14 tests dédiés (`editProfileExtraCitizenFields.test.ts`) : 7 sur `withExtraCitizenFields`
+  (options/widget, read/readOnly inchangés, insertion dans le bon groupe, liste vide → inchangé, un
+  seul champ activé, garde-fou champ absent du pipeline) + 7 sur `writeExtraCitizenFields` (écriture des
+  champs listés avec trim, liste restreinte n'écrit que ces champs-là, valeur vide → effacement, champ
+  absent ignoré, entité sans `updateField`, échec isolé non bloquant).
+
+**Config** : `"structureRegister"` ajouté aux `fields` des 12 sections `member` qui projetaient déjà
+`territoires` (remplacement textuel identique, pas de `json.dump`) — `territoires` y figurait déjà.
+`costum.citizenProfileFields: ["territoires", "structureRegister"]` ajouté (bloc `costum`, vide
+jusque-là) pour le gate par config du formulaire d'édition (26/10/2026).
+
+**Régression attendue et corrigée** : `seedProfileFormValues.test.ts` vérifiait l'objet COMPLET en
+égalité stricte (10 champs) — mis à jour à 12 champs, valeurs `structureRegister`/`territoires`
+ajoutées à la fixture et à l'attendu.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur |
+| `npx vitest run src/modules/profil` | ✅ 969 tests, 94 fichiers, tous verts, 1 skip |
+| `config:validate` / `audit:config` | ✅ RAS sur `config.prod.parent62.json` |
+| `tests/preflight/` (suite complète) | ✅ sauf 2 échecs préexistants, sans rapport (bundle `dist/client` périmé, aucun fichier de ce lot) |
+| `test:integration` (`SITE_CONFIG_PATH=config.prod.parent62.json`) | ✅ 1069 tests, 57 fichiers (26/10) |
+| `config:validate` des 19 configs du parc (brique partagée `editProfile*`/`site-schema.ts` touchée) | ✅ les 19 valident (26/10) |
+| Vérification navigateur en conditions réelles (login + édition profil, réseau local) | ⏳ **non faite** — confirmé seulement par lecture directe du SDK (`updateField` ne touche pas le `DraftProxy`) + tests unitaires des fonctions ; pas de session authentifiée disponible pour un aller-retour réel contre le backend local |
+
+## 9tredecenties. Entrée « Chat » du menu avatar (moteur, tout le parc) + libellés nav
+
+**Chat** : nouvelle entrée « Chat » du menu avatar (`AuthMenu`), juste sous « Administration »,
+réservée aux admins du costum, **ACTIVE PAR DÉFAUT sur tout le parc** (demande explicite de
+l'utilisateur, pas une décision prise seul — contraire à la convention habituelle opt-in/défaut
+false). Ouvre un **modal avec iframe** (comme sur communecter, pas un nouvel onglet) vers
+`getRocketChatUrl()` (`VITE_ROCKETCHAT_URL`, défaut `https://chat.communecter.org` — une instance
+Rocket.Chat SÉPARÉE de communecter : une première version pointait vers `<serverUrl>/co2/rocketchat`,
+qui rouvrait communecter — 404 puis mauvais contenu, corrigés en navigateur par l'utilisateur).
+Fichiers : `src/modules/admin/lib/{adminEntry.ts,platformRocketChatUrl.ts}`,
+`src/modules/auth/components/{AuthMenu.tsx,RocketChatDialog.tsx}` (lazy `vite-preload` + `Suspense`,
+admins seulement), `src/modules/auth/schema.ts`, `src/lib/constant/common.ts`, `src/types/
+site-schema.ts`. Gate par **code** (générique moteur), pas par config — le flag `auth.menu.rocketChat`
+ne sert qu'à DÉSACTIVER sur un site qui ne le voudrait pas (`false` explicite).
+
+**Libellé nav** : « Contenus » → « Actualités et Ressources » (demande explicite). A fait déborder la
+barre à 1280px de ~220px (zéro marge dès l'origine, cf. `reference_header_stacked_budget_1280.md`).
+Premier correctif (raccourcir ce libellé ET « Le Réseau parentalité ») **rejeté par l'utilisateur** :
+« ne change pas de libellé, diminue plutôt la taille de fontsize ». Les deux libellés restent
+EXACTEMENT comme demandés ; correctif retenu = **nouvelle option `header.navFontSize`**
+(`"sm"|"md"|"lg"`, défaut `"lg"` historique — `src/types/site-schema.ts`,
+`src/components/layout/header/HeaderStacked.tsx`), posée à `"sm"` pour parent62 (texte de nav réduit
+d'~25%, seul palier qui passe les deux gates de largeur) ; mesuré itérativement par script Playwright
+puis confirmé par l'e2e réel. Opt-in, aucun autre site du parc n'a cette clé.
+
+**4 échecs e2e rencontrés pendant cette passe, TOUS confirmés préexistants** (reproduits à l'identique
+sur la config d'ORIGINE, avant tout changement de ce lot, via `git stash`) :
+- centrage du menu sous le logo à 1440px (écart 70px sur la config d'origine) ;
+- teinte des communes sur `/territoire/boulonnais` ;
+- `/territoire/arrageois` (coordination inattendue) et `/equipe` (semis local absent) — dépendent du
+  "semis local" documenté §9septvicies.6, volatil par nature.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (JSON, fichiers du lot) | ✅ 0 erreur |
+| `npx vitest run src/modules/admin src/modules/auth` | ✅ 268 tests |
+| `tests/preflight/` (suite complète) | ✅ sauf 2 échecs préexistants (bundle périmé) — `prop-descriptions`/`runtime-env` cassés puis corrigés dans cette même passe (description >220 car., `VITE_ROCKETCHAT_URL` non injecté par `prod-server.js`/`dev-server.js`) |
+| `e2e/parent62.spec.ts` (suite complète, chromium) | ✅ 24/29, 4 échecs confirmés préexistants (ci-dessus), 1 skip |
+| `config:validate` des 19 configs du parc | ✅ les 19 valident |
 
 ## 10. Checklist d'avancement
 

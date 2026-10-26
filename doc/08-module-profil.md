@@ -654,6 +654,46 @@ sous-types) — premier match gagne, repli `edit-profile` :
 - ⚠ un champ non PROJETÉ par `baseParams.defaultFields` vaut `undefined` dans les résultats de
   recherche → la règle ne matche jamais, en silence.
 
+### Champs du profil CITOYEN réservés à un costum (`costum.citizenProfileFields`)
+
+Le formulaire d'édition de profil CITOYEN (`editProfileConfig`, `src/modules/profil/forms/configs/
+editProfile.tsx`) est un descripteur **unique, partagé par tous les sites** — `editModals`/`when`
+(ci-dessus) ne couvre que les sous-types (POI, organisations…), pas le citoyen. Pour exposer un
+champ réservé à un seul site (ex. parent62 : `territoires`, liste fermée de 9 valeurs propres à ce
+réseau, et `structureRegister`, employeur), trois pièces, construites le 23-26/10/2026 et
+réutilisables pour un futur champ du même genre :
+
+1. **Pipeline générique, toujours posé** — `PROFIL_DESCRIPTORS.citoyens.fields`
+   (`forms/editProfilePayload.ts`) déclare le champ en lecture/écriture pour TOUS les sites, comme
+   `mobile`/`fixe`, mais `readOnly: true` **si le champ n'existe pas dans le schéma JSON bundlé du
+   SDK** (`UPDATE_BLOCK_INFO`) : un `element/save` qui le porterait lèverait `[DraftProxy] Le champ
+   "…" n'est pas autorisé` côté client, avant tout appel réseau — `readOnly` l'exclut du payload
+   validé par schéma tout en le laissant SEEDÉ/affiché/éditable dans le formulaire (aucun widget ne
+   lit `readOnly` pour désactiver l'input).
+2. **Vue, opt-in par config** — `editCitoyenDescriptor` (`editProfile.descriptor.ts`) NE déclare PAS
+   ce champ → `mergeRenderPipeline` le pose en `widget:"hidden"` dans le descripteur fusionné,
+   inoffensif pour tout site sans la clé. `src/modules/profil/forms/configs/
+   editProfileExtraCitizenFields.ts` expose `withExtraCitizenFields(descriptor, fieldNames)` (pose
+   `widget`/`enum`/`label` sur les champs demandés) et `writeExtraCitizenFields(entity, values,
+   fieldNames)` (écrit les champs `readOnly` SÉPARÉMENT après le save principal, via
+   `entity.updateField()` — canal qui ne passe PAS par le `DraftProxy`/schéma, seulement par
+   l'autorisation backend ; **pas** un stamp `channel:"pathValue"` classique, qui lirait une valeur
+   déjà absente du payload une fois `readOnly` posé). `editProfileConfig.descriptor`/`.afterSubmit`
+   appellent ces deux fonctions avec la liste lue sur **`config.costum.citizenProfileFields`**
+   (`z.array(z.enum(["territoires","structureRegister"]))`, `site-schema.ts`) — **jamais un slug
+   codé en dur** (`ctx.carrier?.slug === "..."` a été la première version, corrigée sur demande
+   explicite : un gate par site doit être une clé de config, pas une chaîne dans le moteur).
+3. **Deux correctifs backend préalables, indépendants de site-json** — `territoires`/
+   `structureRegister` doivent être acceptés par `Element::updateBlock()` (bloc `info`) ET déclarés
+   dans `Person::$dataBinding` ; voir `Document de spécification — Champs « employeur » et
+   « territoire »…md` (racine du monorepo) pour le détail PHP.
+
+⚠️ Le mécanisme costum/`typeObj` qui élargit le schéma `DraftProxy` pour les fiches (organisations/
+POI/projets/événements) **ne couvre pas `citoyens`** — `SCOPE_COLLECTIONS`
+(`cocolight-api-client/src/costum/runtime.ts`) ne liste que `["poi", "organizations", "projects",
+"events"]` : aucune déclaration `typeObj` backend ne serait jamais consultée par le SDK pour un
+citoyen, inutile d'en écrire une.
+
 ### Menus d'ajout — `addConfig` (builtins costum-aware + items custom)
 
 Sur la section `profile-header` : `addConfig` gouverne le menu « Créer ». Un builtin

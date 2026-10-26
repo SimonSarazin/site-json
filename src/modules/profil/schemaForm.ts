@@ -123,6 +123,15 @@ export const userProfileSchema = z.object({
   birthDate: dateOrEmptySchema.optional(),
   fixe: z.string().optional(),
   mobile: z.string().optional(),
+  /** Structure employeuse du citoyen (texte libre, ex. « Centre Social La Maison pour Tous, Place des
+   *  FFI, 62190 Lillers »). Champ legacy `structureRegister` (Person::$dataBinding), jusqu'ici posé
+   *  seulement par le costum nutritionMarmay — ouvert ici au formulaire générique. */
+  structureRegister: z.string().optional(),
+  /** Territoire du Réseau Parentalité 62 (texte libre côté backend ; les 9 valeurs valides sont
+   *  imposées côté widget — cf. `src/data/territoires62.ts`, champ RÉSERVÉ à parent62). Déclaré ici au
+   *  niveau générique (zod ne distingue pas par site) : sans site-widget pour le remplir, les autres
+   *  sites ne le soumettent jamais. */
+  territoires: z.string().optional(),
 
   // UPDATE_BLOCK_DESCRIPTION
   shortDescription: z.string().optional(),
