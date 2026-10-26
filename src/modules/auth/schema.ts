@@ -97,6 +97,12 @@ const AuthMenuConfigSchema = z.object({
   // (`<serverUrl>/#@<costumSlug>.view.actions`). Opt-in ; réservé aux admins du costum —
   // gate : `isKanbanEntryVisible` (modules/admin/lib/adminEntry), indépendant de `config.admin`.
   kanban: z.boolean().optional(),
+  // Entrée « Chat » : ouvre le chat de la plateforme (instance Rocket.Chat SÉPARÉE,
+  // `getRocketChatUrl()` — PAS un chemin sous `getServerUrl()`) dans un modal (iframe, comme sur
+  // communecter), réservé aux admins du costum — gate : `isRocketChatEntryVisible`
+  // (modules/admin/lib/adminEntry), indépendant de `config.admin`. Contrairement à `kanban`,
+  // ACTIF PAR DÉFAUT (absence de clé = visible) ; `false` explicite pour le désactiver sur un site.
+  rocketChat: z.boolean().optional(),
 });
 export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
 

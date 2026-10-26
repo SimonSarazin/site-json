@@ -49,6 +49,7 @@ La configuration de SiteForge se fait principalement via :
 | `SITE_CSS_PATH` | Chemin vers un fichier CSS personnalisé (build-time). Prioritaire sur le lookup `sites.json`. | — |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | Domaines distants autorisés pour l'optimisation d'images, séparés par des virgules. | `localhost,127.0.0.1` + hostname de `VITE_BASE_URL_BACKEND` |
 | `PUBLIC_BASE_URL` | Repli du domaine public de `robots.txt` et `sitemap.xml`, après `VITE_SITE_PUBLIC_URL` et `SITE_PUBLIC_URL`. Sans aucune des trois : l'hôte de la requête. | — |
+| `VITE_ROCKETCHAT_URL` | URL du chat de la plateforme (instance Rocket.Chat séparée, `getRocketChatUrl()`) — lien « Chat » du menu avatar, admins uniquement. | `https://chat.communecter.org` |
 
 > **En production**, au moins `SITE_CONFIG_JSON` **ou** `SITE_CONFIG_PATH` doit être défini — sinon le serveur arrête le démarrage avec une erreur explicite.
 
@@ -67,6 +68,7 @@ La configuration de SiteForge se fait principalement via :
 | `VITE_COSTUM_FORCE_LIVE` | `getCostumForceLive()` — défaut `false` | oui |
 | `VITE_MON_API_KEY` | `getMonApiKey()` — défaut `"default-api-key"` | **non** |
 | `VITE_MON_DOMAIN` | `getMonDomain()` — défaut `"default-domain.com"` | **non** |
+| `VITE_ROCKETCHAT_URL` | `getRocketChatUrl()` — défaut `"https://chat.communecter.org"`, même instance sur tout le parc | **non** |
 
 > **Note** : `VITE_MON_API_KEY` et `VITE_MON_DOMAIN` ne sont pas injectées — elles n'ont d'ailleurs aucun consommateur dans `src/`. Elles ne sont lisibles que depuis `import.meta.env` (build) ou `process.env` (SSR).
 
@@ -198,6 +200,20 @@ Tous les fichiers doivent être conformes au `SiteConfigSchema` défini dans `sr
 | `lg` | 48 px |
 
 > Sur `HeaderStandard`, un logo `"lg"` (48 px) suppose `header.height: "md"` ou `"lg"` (la barre `"sm"` fait 48 px).
+
+#### Taille du texte de nav du header `stacked` (`header.navFontSize`)
+
+`header.navFontSize` (enum `"sm"` | `"md"` | `"lg"`, optionnel, défaut `"lg"` = taille historique)
+réduit le texte de la nav de premier niveau du header `type: "stacked"` — ignorée par les autres
+variantes. Sert à faire rentrer une barre pleine (budget de largeur à un breakpoint donné) **sans
+raccourcir les libellés de nav** : la taille se règle en config, pas le contenu. Classes posées dans
+`src/components/layout/header/HeaderStacked.tsx` (`NAV_FONT_SIZE`) :
+
+| Valeur | Bandeau déplié | Barre collée (`stuck`) |
+| ------ | -------------- | ----------------------- |
+| `lg` (défaut) | `text-2xl` | `text-xl` |
+| `md` | `text-xl` | `text-lg` |
+| `sm` | `text-lg` | `text-base` |
 
 #### Utilitaires du header (`header.utilities`)
 

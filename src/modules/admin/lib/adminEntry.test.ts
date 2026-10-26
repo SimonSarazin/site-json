@@ -4,10 +4,12 @@ import {
   resolveAdminAccessLevel,
   isAdminEntryVisible,
   isKanbanEntryVisible,
+  isRocketChatEntryVisible,
 } from "./adminEntry";
 
 type Config = Parameters<typeof isAdminEntryVisible>[0];
 type KanbanConfig = Parameters<typeof isKanbanEntryVisible>[0];
+type RocketChatConfig = Parameters<typeof isRocketChatEntryVisible>[0];
 
 /** Config minimale — cast : enabled/access sont posés par les défauts zod à la validation. */
 function cfg(admin: Record<string, unknown> | undefined): Config {
@@ -137,5 +139,39 @@ describe("isKanbanEntryVisible — opt-in auth.menu.kanban, admins du costum, ja
     expect(isKanbanEntryVisible(kanbanCfg(true), adminPlatform, null, "s")).toBe(true);
     expect(isKanbanEntryVisible(kanbanCfg(true), lambda, carrierNotAdmin, "s")).toBe(false);
     expect(isKanbanEntryVisible(kanbanCfg(true), null, null, "s")).toBe(false);
+  });
+});
+
+/** Config rocketChat minimale — typée telle quelle (tous les champs d'AuthConfig sont optionnels). */
+function rocketChatCfg(rocketChat?: boolean): RocketChatConfig {
+  return { auth: { menu: { rocketChat } } };
+}
+
+describe("isRocketChatEntryVisible — ACTIF PAR DÉFAUT (contrairement à kanban), admins du costum", () => {
+  it("opt-in absent ou config absente → visible par défaut pour un admin", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible({}, lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible(null, lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible(undefined, lambda, carrierAdmin)).toBe(true);
+  });
+
+  it("false explicite → invisible même pour un superAdmin", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(false), superAdmin, carrierAdmin)).toBe(false);
+  });
+
+  it("indépendant du back-office : visible sans aucun bloc `admin` en config", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierAdmin)).toBe(true);
+  });
+
+  it("aucun slug de carrier requis (lien générique, pas de salon par costum)", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), superAdmin, null)).toBe(true);
+  });
+
+  it("niveau requis siteAdmin : admin du carrier et superAdmin visibles, lambda non", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), superAdmin, null)).toBe(true);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), adminPlatform, null)).toBe(true);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierNotAdmin)).toBe(false);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), null, null)).toBe(false);
   });
 });
