@@ -16,6 +16,10 @@ import {
   slotPeriod,
   reservationsInPeriod,
   ownSlotPeriod,
+  distinctPeriods,
+  mergeBookingRows,
+  rawSlotAt,
+  resourceGroupsInPeriod,
   type Reservation,
   type ReservationSlot,
   type CandidateSlot,
@@ -132,8 +136,8 @@ describe("parseReservationAnswer", () => {
     expect(r!.periodStart).toBe("2026-01-01");
     expect(r!.periodEnd).toBe("2026-08-13");
     expect(r!.slots).toEqual([
-      { day: "thursday", start: "17:00", end: "19:00", startMinutes: 1020, endMinutes: 1140 },
-      { day: "monday", start: "17:00", end: "19:00", startMinutes: 1020, endMinutes: 1140 },
+      { day: "thursday", start: "17:00", end: "19:00", startMinutes: 1020, endMinutes: 1140, index: 0 },
+      { day: "monday", start: "17:00", end: "19:00", startMinutes: 1020, endMinutes: 1140, index: 1 },
     ]);
   });
 
@@ -160,6 +164,8 @@ describe("parseReservationAnswer", () => {
     const r = parseReservationAnswer(sd, CONF)!;
     expect(r.slots).toHaveLength(1);
     expect(r.slots[0].day).toBe("friday");
+    // Position dans le tableau BRUT, pas dans `slots` : c'est elle que vise la modification d'horaire.
+    expect(r.slots[0].index).toBe(2);
   });
 
   it("normalise un usager vide/espaces en chaîne vide", () => {
@@ -217,6 +223,15 @@ describe("parseReservationAnswer", () => {
     const sans = answerData({});
     delete sans.id;
     expect(parseReservationAnswer(sans, CONF)!.id).toBe("");
+  });
+
+  it("rawSlotAt rend le créneau BRUT d'un index, tel que stocké, ou rien", () => {
+    const brut = { ...slot("Monday", "07", "35", "15", "10"), duree: 27300 };
+    const sd = answerData({ [FIELDS.slots]: [slot("friday", "08", "00", "09", "00"), brut] });
+    expect(rawSlotAt(sd, CONF, 1)).toBe(brut);
+    expect(rawSlotAt(sd, CONF, 2)).toBeUndefined();
+    expect(rawSlotAt(answerData({ [FIELDS.slots]: "pas un tableau" }), CONF, 0)).toBeUndefined();
+    expect(rawSlotAt(undefined, CONF, 0)).toBeUndefined();
   });
 
   it("liste plusieurs ressources si le finder en pointe plusieurs", () => {
@@ -382,16 +397,73 @@ describe("buildWeeklyGrid", () => {
         user: "Alpha",
         slots: [
           { day: "monday", start: "09:00", end: "10:00", startMinutes: 540, endMinutes: 600 },
-          { day: "monday", start: "08:00", end: "09:00", startMinutes: 480, endMinutes: 540 },
+          // Non jointif avec 09:00 : deux créneaux jointifs d'un même club seraient fusionnés.
+          { day: "monday", start: "08:00", end: "08:45", startMinutes: 480, endMinutes: 525 },
         ],
       }),
     ]);
     const monday = buildWeeklyGrid(groups)[0];
     expect(monday.blocks.map((b) => `${b.start}-${b.end} ${b.user}`)).toEqual([
-      "08:00-09:00 Alpha",
+      "08:00-08:45 Alpha",
       "09:00-10:00 Alpha",
       "09:00-11:00 Zeta",
     ]);
+  });
+
+  it("fusionne les créneaux jointifs d'un même club, même activité, même période", () => {
+    const groups = groupReservationsByUser([
+      reservation({
+        id: "r1",
+        user: "Collège",
+        activity: "EPS",
+        slots: [
+          { day: "tuesday", start: "07:30", end: "09:30", startMinutes: 450, endMinutes: 570 },
+          { day: "tuesday", start: "09:30", end: "11:30", startMinutes: 570, endMinutes: 690 },
+          { day: "tuesday", start: "13:30", end: "15:30", startMinutes: 810, endMinutes: 930 },
+        ],
+      }),
+      // Un autre club intercalé ne coupe pas la chaîne du premier.
+      reservation({
+        id: "r2",
+        user: "Club",
+        activity: "EPS",
+        slots: [{ day: "tuesday", start: "08:00", end: "09:30", startMinutes: 480, endMinutes: 570 }],
+      }),
+    ]);
+    const tuesday = buildWeeklyGrid(groups)[1];
+    expect(tuesday.blocks.map((b) => `${b.start}-${b.end} ${b.user}`)).toEqual([
+      "07:30-11:30 Collège",
+      "08:00-09:30 Club",
+      "13:30-15:30 Collège",
+    ]);
+    const fusionne = tuesday.blocks[0];
+    expect(fusionne.parts?.map((p) => `${p.start}-${p.end}`)).toEqual(["07:30-09:30", "09:30-11:30"]);
+    expect(tuesday.blocks[1].parts).toBeUndefined();
+  });
+
+  it("ne fusionne pas deux créneaux jointifs d'activités ou de périodes différentes", () => {
+    const groups = groupReservationsByUser([
+      reservation({
+        id: "eps",
+        user: "Collège",
+        activity: "EPS",
+        slots: [{ day: "monday", start: "08:00", end: "09:00", startMinutes: 480, endMinutes: 540 }],
+      }),
+      reservation({
+        id: "natation",
+        user: "Collège",
+        activity: "NATATION",
+        slots: [{ day: "monday", start: "09:00", end: "10:00", startMinutes: 540, endMinutes: 600 }],
+      }),
+      reservation({
+        id: "t2",
+        user: "Collège",
+        activity: "EPS",
+        periodStart: "2026-11-09",
+        slots: [{ day: "monday", start: "09:00", end: "10:00", startMinutes: 540, endMinutes: 600 }],
+      }),
+    ]);
+    expect(buildWeeklyGrid(groups)[0].blocks).toHaveLength(3);
   });
 
   it("éclate une réservation multi-jours en un bloc par slot, colorIndex hérité", () => {
@@ -696,6 +768,46 @@ describe("buildBookingGrid", () => {
   });
 });
 
+describe("mergeBookingRows", () => {
+  const minutes = (h: string) => Number(h.slice(0, 2)) * 60 + Number(h.slice(3));
+  const creneau = (day: ReservationSlot["day"], start: string, end: string): ReservationSlot => ({
+    day, start, end, startMinutes: minutes(start), endMinutes: minutes(end),
+  });
+  const grille = (...reservations: Reservation[]) =>
+    mergeBookingRows(
+      buildBookingGrid(buildWeeklyGrid(groupReservationsByUser(reservations)), { startHour: 8, endHour: 18 }),
+    );
+  /** Case du jour `jour` (0 = lundi) sur la rangée qui commence à `heure`. */
+  const caseA = (rows: ReturnType<typeof grille>, heure: string, jour: number) =>
+    rows.find((r) => r.startMinutes === minutes(heure))!.cells[jour];
+
+  it("un créneau de 7 h 35 à 15 h 10 ne fait qu'UNE cellule, sur toutes les rangées qu'il recouvre", () => {
+    const rows = grille(reservation({ id: "lycee", user: "Lycée", slots: [creneau("monday", "07:35", "15:10")] }));
+    // La grille descend à 7 h pour ne pas masquer le créneau : rangées 7 h → 15 h, soit 9.
+    expect(caseA(rows, "07:00", 0)).toMatchObject({ kind: "busy", rowSpan: 9 });
+    for (const h of ["08:00", "12:00", "15:00"]) expect(caseA(rows, h, 0)).toEqual({ kind: "covered" });
+    expect(caseA(rows, "16:00", 0).kind).toBe("free");
+  });
+
+  it("ne touche pas aux autres jours : une case par rangée", () => {
+    const rows = grille(reservation({ id: "lycee", user: "Lycée", slots: [creneau("monday", "07:35", "15:10")] }));
+    expect(rows.every((r) => r.cells.length === 7)).toBe(true);
+    expect(rows.every((r) => r.cells[1].kind === "free")).toBe(true);
+  });
+
+  it("réunit dans une cellule les blocs qui s'enchevêtrent, et sépare ceux qui se suivent à l'heure pile", () => {
+    const rows = grille(
+      reservation({ id: "a", user: "A", slots: [creneau("tuesday", "08:00", "09:30")] }),
+      reservation({ id: "b", user: "B", slots: [creneau("tuesday", "09:30", "11:00")] }),
+      reservation({ id: "c", user: "C", slots: [creneau("tuesday", "11:00", "12:00")] }),
+    );
+    const plage = caseA(rows, "08:00", 1);
+    expect(plage).toMatchObject({ kind: "busy", rowSpan: 3 });
+    expect(plage.kind === "busy" && plage.blocks.map((b) => b.user)).toEqual(["A", "B"]);
+    expect(caseA(rows, "11:00", 1)).toMatchObject({ kind: "busy", rowSpan: 1 });
+  });
+});
+
 describe("minutesToLabel", () => {
   it("formate en 24 h zéro-paddé", () => {
     expect(minutesToLabel(0)).toBe("00:00");
@@ -799,5 +911,32 @@ describe("période propre d'un créneau", () => {
       periodStart: "2026-08-17",
       periodEnd: "2026-12-14",
     });
+  });
+
+  it("resourceGroupsInPeriod : ne garde que les créneaux de la période, recompte, écarte l'équipement vide", () => {
+    const groupes = groupReservationsByResource([
+      reservation({ id: "t1", resources: [{ id: "poi1", name: "Piscine" }], resourceIds: ["poi1"], periodStart: "2026-08-19", periodEnd: "2026-11-05", slots: [lundi(), lundi()] }),
+      reservation({ id: "t2", resources: [{ id: "poi1", name: "Piscine" }], resourceIds: ["poi1"], periodStart: "2026-11-09", periodEnd: "2027-02-18", slots: [lundi()] }),
+      reservation({ id: "passee", resources: [{ id: "poi2", name: "Gymnase" }], resourceIds: ["poi2"], periodStart: "2026-01-05", periodEnd: "2026-06-30", slots: [lundi()] }),
+    ]);
+    const enCours = resourceGroupsInPeriod(groupes, { periodStart: "2026-10-23" });
+    expect(enCours.map((g) => `${g.resourceName}:${g.slotCount}:${g.reservations.map((r) => r.id).join("+")}`)).toEqual([
+      "Piscine:3:t1+t2",
+    ]);
+    expect(resourceGroupsInPeriod(groupes, { periodStart: "2026-11-09" })[0].slotCount).toBe(1);
+  });
+
+  it("distinctPeriods : une ligne par période effective, triées, doublons et périodes vides écartés", () => {
+    const t2 = reservation({ id: "t2", periodStart: "2026-11-09", periodEnd: "2027-02-18", slots: [lundi(), lundi()] });
+    const t1 = reservation({ id: "t1", periodStart: "2026-08-19", periodEnd: "2026-11-05", slots: [lundi()] });
+    const cycle = reservation({ id: "c", ...SAISON, slots: [lundi({ periodEnd: "2026-12-14" })] });
+    const sansCreneau = reservation({ id: "v", periodStart: "2027-02-22", periodEnd: "2027-06-30" });
+    const sansDate = reservation({ id: "x", slots: [lundi()] });
+    expect(distinctPeriods([t2, t1, cycle, sansCreneau, sansDate])).toEqual([
+      { periodStart: "2026-08-17", periodEnd: "2026-12-14" },
+      { periodStart: "2026-08-19", periodEnd: "2026-11-05" },
+      { periodStart: "2026-11-09", periodEnd: "2027-02-18" },
+      { periodStart: "2027-02-22", periodEnd: "2027-06-30" },
+    ]);
   });
 });

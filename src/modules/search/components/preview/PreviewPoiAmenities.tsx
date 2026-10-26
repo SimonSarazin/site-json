@@ -613,8 +613,15 @@ export default function PreviewPoiAmenities({ item, preview, onClose }: PreviewP
                       onClose={onClose}
                     />
                   </div>
+                  {/* Chaque sport filtre la liste, comme le type et la catégorie — sur les sites dont la
+                      page porte un filtre `aps_name` (ESS974) ; ailleurs, du texte. */}
                   <div className="sm:col-span-2">
-                    <InfoRow label={t("PreviewPoiAmenities.fields.sport")} value={poi.sportPratiquer || "—"} />
+                    <ClickableFilterValue
+                      label={t("PreviewPoiAmenities.fields.sport")}
+                      value={poi.sportPratiquer}
+                      field="aps_name"
+                      onClose={onClose}
+                    />
                   </div>
                 </div>
               </section>

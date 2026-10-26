@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildReservationPrefill, toTimeSlotDay } from "./reservationPrefill";
+import { buildReservationPrefill, toTimeSlotDay, withSlotHours } from "./reservationPrefill";
 import { parseReservationAnswer } from "./reservations";
 import { DAY_KEYS } from "./schedules";
 
@@ -137,5 +137,53 @@ describe("buildReservationPrefill — période choisie (`reservations.periods`)"
       period: { periodStart: "2026-10-01", periodEnd: "2026-12-18" },
     });
     expect(Object.keys(defaultValues.step2026_0)).toEqual(["finderstep2026_0fFinder"]);
+  });
+});
+
+describe("buildReservationPrefill — organisation imposée (ajout depuis sa fiche)", () => {
+  const AVEC_ORGA = { ...CONF, fields: { ...CONF.fields, userOrga: "fOrga" } };
+
+  it("pose l'organisation dans SON finder et le verrouille avec celui de l'équipement", () => {
+    const { defaultValues, lockedFields } = buildReservationPrefill(AVEC_ORGA, {
+      resourceId: "poi1",
+      resourceName: "Gymnase",
+      orga: { id: "org1", name: "Collège Joseph Bédier" },
+    });
+    expect(defaultValues.step2026_0["finderstep2026_0fOrga"]).toEqual({
+      org1: { id: "org1", name: "Collège Joseph Bédier", type: "organizations" },
+    });
+    expect(lockedFields).toEqual(["finderstep2026_0fFinder", "finderstep2026_0fOrga"]);
+    // Aller-retour : la réservation relue est rattachée à l'organisation par identifiant.
+    const relue = parseReservationAnswer({ answers: defaultValues }, AVEC_ORGA)!;
+    expect(relue).toMatchObject({ userId: "org1", user: "Collège Joseph Bédier" });
+  });
+
+  it("sans `fields.userOrga`, l'organisation n'est pas posée", () => {
+    const { defaultValues, lockedFields } = buildReservationPrefill(CONF, {
+      resourceId: "poi1",
+      orga: { id: "org1" },
+    });
+    expect(Object.keys(defaultValues.step2026_0)).toEqual(["finderstep2026_0fFinder"]);
+    expect(lockedFields).toEqual(["finderstep2026_0fFinder"]);
+  });
+});
+
+describe("withSlotHours", () => {
+  it("change les seules heures, garde les autres clés et recalcule la durée importée", () => {
+    const brut = {
+      day: "Monday", startHour: "07", startMinute: "35", endHour: "15", endMinute: "10",
+      duree: 27300, periodStart: "2026-08-18",
+    };
+    expect(withSlotHours(brut, 8 * 60, 15 * 60 + 10)).toEqual({
+      day: "Monday", startHour: "08", startMinute: "00", endHour: "15", endMinute: "10",
+      duree: 25800, periodStart: "2026-08-18",
+    });
+  });
+
+  it("retire les clés AmPm d'un ancien format 12 h et n'invente pas de durée", () => {
+    const brut = { day: "Friday", startHour: "09", startMinute: "00", startAmPm: "AM", endHour: "05", endMinute: "00", endAmPm: "PM" };
+    expect(withSlotHours(brut, 9 * 60, 17 * 60)).toEqual({
+      day: "Friday", startHour: "09", startMinute: "00", endHour: "17", endMinute: "00",
+    });
   });
 });

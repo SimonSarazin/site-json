@@ -1984,7 +1984,8 @@
                     "startHour": 8,
                     "endHour": 22,
                     "slotMinutes": 60,
-                    "adminOnly": true
+                    "adminOnly": true,
+                    "editHours": true
                   },
                   "orgaLink": {
                     "path": "/annuaire"
@@ -2872,7 +2873,12 @@
                     "periodEnd": "mrc4259ir2xnu4vp2fq",
                     "bookingType": "mrc3zgl902y2fpfcby3y"
                   },
-                  "maxAnswers": 500
+                  "maxAnswers": 500,
+                  "periods": true,
+                  "booking": {
+                    "adminOnly": true,
+                    "editHours": true
+                  }
                 },
                 "bookedResources": {
                   "link": {
@@ -3787,7 +3793,8 @@
                     "startHour": 8,
                     "endHour": 22,
                     "slotMinutes": 60,
-                    "adminOnly": true
+                    "adminOnly": true,
+                    "editHours": true
                   },
                   "orgaLink": {
                     "path": "/annuaire"
@@ -4214,7 +4221,8 @@
                       "startHour": 8,
                       "endHour": 22,
                       "slotMinutes": 60,
-                      "adminOnly": true
+                      "adminOnly": true,
+                      "editHours": true
                     },
                     "orgaLink": {
                       "path": "/annuaire"
@@ -5112,7 +5120,8 @@
               "startHour": 8,
               "endHour": 22,
               "slotMinutes": 60,
-              "adminOnly": true
+              "adminOnly": true,
+              "editHours": true
             }
           },
           "installationDashboard": {

@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
 import type { Reservation, ReservationSlot } from "./reservations";
-import { countWeekdays, formatReservationHours, hoursOf, sumReservationHours } from "./reservationHours";
+import {
+  countWeekdays,
+  formatReservationHours,
+  hoursOf,
+  sumReservationHours,
+  weeklyReferenceDay,
+  weeklyReservations,
+} from "./reservationHours";
 
 const A = "6a0b3078f16441794857e2f0";
 const B = "6a0b3078f16441794857e2f1";
@@ -75,17 +82,19 @@ describe("sumReservationHours", () => {
   const aVenir = reservation([B], [slot("tuesday", "08:00", "09:00")], "2027-01-05", "2027-01-05");
   const finAujourdhui = reservation([B], [slot("tuesday", "10:00", "11:00")], "2026-10-13", today);
 
-  it("ne compte que les réservations en cours ou à venir", () => {
+  it("ne compte que les réservations en cours ou à venir ; l'hebdomadaire, celles actives aujourd'hui", () => {
+    // `aVenir` (janvier 2027) entre dans le cumul, pas dans la semaine en cours.
     expect(sumReservationHours([terminee, enCours, aVenir, finAujourdhui], today)).toEqual({
-      weeklyMinutes: 120 + 60 + 60,
+      weeklyMinutes: 120 + 60,
       cumulativeMinutes: 2 * 120 + 60 + 2 * 60,
     });
   });
 
   it("restreint aux équipements du lot, une fois par équipement pointé", () => {
     const deux = reservation([A, B], [slot("monday", "17:00", "18:00")], "2026-10-26", "2026-10-26");
+    // `deux` ne commence que le 26/10 : la semaine de référence (en cours) ne la compte pas.
     expect(sumReservationHours([enCours, aVenir, deux], today, new Set([A]))).toEqual({
-      weeklyMinutes: 120 + 60,
+      weeklyMinutes: 120,
       cumulativeMinutes: 2 * 120 + 60,
     });
     expect(sumReservationHours([deux], today, new Set([A, B]))).toEqual({ weeklyMinutes: 120, cumulativeMinutes: 120 });
@@ -113,6 +122,59 @@ describe("période propre d'un créneau", () => {
 
   it("sumReservationHours : le cycle terminé ne compte plus, le reste de la saison si", () => {
     expect(sumReservationHours([saison], today)).toEqual({ weeklyMinutes: 60, cumulativeMinutes: 4 * 60 });
+  });
+});
+
+describe("semaine de référence (une réservation par période)", () => {
+  // Import « option B » : le même créneau, une réservation par trimestre. Le 20/10 tombe dans le 1er.
+  const lundi = () => slot("monday", "09:30", "11:20");
+  const t1 = reservation([A], [lundi()], "2026-08-19", "2026-11-05");
+  const t2 = reservation([A], [lundi()], "2026-11-09", "2027-02-18");
+  const t3 = reservation([A], [lundi()], "2027-02-22", "2027-06-30");
+
+  it("weeklyReferenceDay : le jour même si un créneau y est actif", () => {
+    expect(weeklyReferenceDay([t1, t2, t3], today)).toBe(today);
+  });
+
+  it("weeklyReferenceDay : sinon le premier début à venir — entre deux trimestres, le suivant", () => {
+    expect(weeklyReferenceDay([t1, t2, t3], "2026-11-06")).toBe("2026-11-09");
+    expect(weeklyReferenceDay([t3, t2], "2026-11-06")).toBe("2026-11-09");
+  });
+
+  it("weeklyReferenceDay : le jour donné quand rien n'est actif ni à venir, ou qu'aucun créneau n'occupe de temps", () => {
+    expect(weeklyReferenceDay([t1], "2027-01-04")).toBe("2027-01-04");
+    expect(weeklyReferenceDay([], today)).toBe(today);
+    const degrade = reservation([A], [slot("monday", "11:00", "09:00")], "2026-08-19", "2026-11-05");
+    expect(weeklyReferenceDay([degrade, t2], today)).toBe("2026-11-09");
+  });
+
+  it("l'hebdomadaire ne compte qu'un trimestre, le cumul les compte tous", () => {
+    const { weeklyMinutes, cumulativeMinutes } = sumReservationHours([t1, t2, t3], today);
+    expect(weeklyMinutes).toBe(110);
+    expect(cumulativeMinutes).toBe(
+      110 * (countWeekdays("2026-08-19", "2026-11-05", "monday")
+        + countWeekdays("2026-11-09", "2027-02-18", "monday")
+        + countWeekdays("2027-02-22", "2027-06-30", "monday")),
+    );
+  });
+
+  it("une référence imposée vaut pour chaque ligne : le total reste la somme des lignes", () => {
+    // Club B : seulement au 2e trimestre. Référence = aujourd'hui (club A actif) → 0 h/sem pour B.
+    const b = reservation([A], [slot("tuesday", "08:00", "09:00")], "2026-11-09", "2027-02-18");
+    const reference = weeklyReferenceDay([t1, b], today);
+    expect(sumReservationHours([b], today, undefined, reference).weeklyMinutes).toBe(0);
+    // Seul, B prendrait SA prochaine semaine réservée.
+    expect(sumReservationHours([b], today).weeklyMinutes).toBe(60);
+  });
+
+  it("hoursOf : sans référence imposée, celle de la réservation seule", () => {
+    expect(hoursOf(t2, today).weeklyMinutes).toBe(110);
+    expect(hoursOf(t2, today, today).weeklyMinutes).toBe(0);
+  });
+
+  it("weeklyReservations : les seuls créneaux actifs le jour de référence", () => {
+    expect(weeklyReservations([t1, t2, t3], today)).toEqual([t1]);
+    expect(weeklyReservations([t1, t2, t3], "2026-11-06")).toEqual([t2]);
   });
 });
 
