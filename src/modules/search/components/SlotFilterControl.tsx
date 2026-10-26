@@ -13,9 +13,13 @@ import {
   amplitudeLabels,
   describeSlot,
   formatSlotDays,
+  joinTime,
   localIsoDay,
+  minuteOptions,
   shortDayLabel,
+  SLOT_HOURS,
   slotIssue,
+  splitTime,
   type SlotIssue,
   type SlotWindow,
 } from "../lib/slotFilter";
@@ -26,6 +30,69 @@ const ISSUE_MESSAGES: Record<SlotIssue, string> = {
   period: "SlotFilter.invalidPeriod",
   days: "SlotFilter.noDayInPeriod",
 };
+
+const SELECT_CLASS =
+  "h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
+
+/**
+ * Une borne horaire : heure, puis minute au quart d'heure (`SLOT_QUARTERS`, demande de Peterson du 23/10).
+ * Deux listes NATIVES plutôt que le champ heure du navigateur, qui laisse saisir n'importe quelle minute :
+ * claviers et mobiles s'en accommodent, et elles vivent dans la fenêtre du filtre sans portail. Sans
+ * heure, pas de borne — la minute attend l'heure.
+ */
+function QuarterTimeSelect({
+  id,
+  label,
+  value,
+  onChange,
+  t,
+}: {
+  id: string;
+  label: string;
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
+  t: ReturnType<typeof useT>;
+}) {
+  const { hour, minute } = splitTime(value);
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={`${id}-hour`} className="text-xs font-medium text-muted-foreground">
+        {label}
+      </Label>
+      <div className="flex items-center gap-1">
+        <select
+          id={`${id}-hour`}
+          value={hour}
+          onChange={(e) => onChange(joinTime(e.target.value, minute))}
+          aria-label={t("SlotFilter.hourOf", undefined, { label })}
+          className={SELECT_CLASS}
+        >
+          <option value="">--</option>
+          {SLOT_HOURS.map((h) => (
+            <option key={h} value={h}>
+              {h}
+            </option>
+          ))}
+        </select>
+        <span aria-hidden className="text-muted-foreground">:</span>
+        <select
+          value={minute}
+          disabled={!hour}
+          onChange={(e) => onChange(joinTime(hour, e.target.value))}
+          aria-label={t("SlotFilter.minuteOf", undefined, { label })}
+          className={SELECT_CLASS}
+        >
+          {!hour && <option value="">--</option>}
+          {minuteOptions(minute).map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
 
 export interface SlotFilterControlProps {
   /** Libellé du filtre, déjà traduit — affiché tant qu'aucun créneau n'est choisi. */
@@ -46,11 +113,11 @@ export interface SlotFilterControlProps {
 /**
  * Filtre « créneau » du bandeau : une plage horaire, des jours de la semaine et une période
  * facultative — la forme d'une réservation. Les heures viennent d'abord : c'est le critère
- * principal, jours et période le précisent. Heures et dates passent par des champs natifs (même
- * choix que le filtre de dates de la barre latérale et que les créneaux CoForm : sélecteur du
- * système, clavier, mobile), les jours par une rangée de bascules. Le créneau ne part qu'au clic sur
- * « Appliquer » — un champ heure change à chaque segment saisi, appliquer à chaque frappe lancerait
- * autant de recherches.
+ * principal, jours et période le précisent. Les heures passent par deux listes natives, heure puis
+ * minute au quart d'heure (`QuarterTimeSelect`) ; les dates par des champs natifs (même choix que le
+ * filtre de dates de la barre latérale : sélecteur du système, clavier, mobile) ; les jours par une
+ * rangée de bascules. Le créneau ne part qu'au clic sur « Appliquer » : appliquer à chaque changement
+ * lancerait autant de recherches.
  */
 export function SlotFilterControl({
   label,
@@ -79,8 +146,9 @@ export function SlotFilterControl({
   const issue = slotIssue(draft, today, amplitude);
   const empty = !draft.days?.length && !draft.start && !draft.end && !draft.periodStart && !draft.periodEnd;
 
-  const set = (key: "start" | "end" | "periodStart" | "periodEnd") => (e: ChangeEvent<HTMLInputElement>) =>
+  const set = (key: "periodStart" | "periodEnd") => (e: ChangeEvent<HTMLInputElement>) =>
     setDraft((d) => ({ ...d, [key]: e.target.value || undefined }));
+  const setTime = (key: "start" | "end") => (value: string | undefined) => setDraft((d) => ({ ...d, [key]: value }));
 
   return (
     <Popover
@@ -116,18 +184,20 @@ export function SlotFilterControl({
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 space-y-3">
         <div className="grid grid-cols-2 gap-2">
-          <div className="space-y-1.5">
-            <Label htmlFor={`${ids}-start`} className="text-xs font-medium text-muted-foreground">
-              {t("SlotFilter.from")}
-            </Label>
-            <Input id={`${ids}-start`} type="time" value={draft.start ?? ""} onChange={set("start")} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`${ids}-end`} className="text-xs font-medium text-muted-foreground">
-              {t("SlotFilter.to")}
-            </Label>
-            <Input id={`${ids}-end`} type="time" value={draft.end ?? ""} onChange={set("end")} />
-          </div>
+          <QuarterTimeSelect
+            id={`${ids}-start`}
+            label={t("SlotFilter.from")}
+            value={draft.start}
+            onChange={setTime("start")}
+            t={t}
+          />
+          <QuarterTimeSelect
+            id={`${ids}-end`}
+            label={t("SlotFilter.to")}
+            value={draft.end}
+            onChange={setTime("end")}
+            t={t}
+          />
         </div>
         <div className="space-y-1.5">
           <p id={`${ids}-days`} className="text-xs font-medium text-muted-foreground">

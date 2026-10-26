@@ -22,6 +22,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { sectionMaxWidthClass } from "@/lib/sectionMaxWidth";
 import { useObservatoryItemsQuery } from "./hooks/useObservatoryItemsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
+import { useResolvedDimensions } from "./hooks/useResolvedDimensions";
 import { buildLabelMaps } from "./dimensions";
 
 // Fiche installation ouverte par l'URL (lien partagé) — chunk tiré uniquement
@@ -61,7 +62,8 @@ export default function DataObservatorySection({
   // useLocalization) — un seul hook pour les clés i18n ET les props localisées.
   const t = useT("modules/observatoire");
 
-  const dimensions = useMemo(() => props.dimensions ?? {}, [props.dimensions]);
+  // `valueMapFrom` résolu : une dimension peut lire la liste d'un filtre de la recherche (communes…).
+  const dimensions = useResolvedDimensions(useMemo(() => props.dimensions ?? {}, [props.dimensions]));
   if (import.meta.env.DEV && Object.keys(dimensions).length === 0) {
     console.warn(
       "[observatoire] props.dimensions absent de la config — le dashboard n'a rien à afficher (déclarer les dimensions du dataset)",
@@ -145,7 +147,9 @@ export default function DataObservatorySection({
       "[observatoire] KPI reservationHours sans rowAction.preview.reservations — la valeur reste « — »",
     );
   }
-  const { data: reservations } = useSlotReservationsQuery(reservationsConf, wantsHours);
+  // `isLoading` (et non `isPending`) : une query désactivée — entité pas encore là, ou KPI absent —
+  // reste `isPending` sans jamais charger ; le sablier n'a de sens que pendant une requête en vol.
+  const { data: reservations, isLoading: reservationsLoading } = useSlotReservationsQuery(reservationsConf, wantsHours);
   const reservationHours = useMemo(() => {
     if (!reservations) return undefined;
     const ids = new Set(
@@ -200,6 +204,7 @@ export default function DataObservatorySection({
       kpis={kpis}
       labels={labels}
       reservationHours={reservationHours}
+      reservationHoursLoading={reservationsLoading}
       columns={props.kpiColumns}
       layout={props.kpiLayout}
     />

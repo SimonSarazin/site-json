@@ -72,6 +72,11 @@ export const DimensionDefSchema = z.object({
    *  "Plus de 200m2" → "Plus de 200m²", "Switzerland" → "Suisse"). S'applique
    *  aux kinds `value` et `list`. */
   valueMap: z.record(z.string(), z.string()).optional(),
+  /** `valueMap` tirée des OPTIONS d'un filtre déroulant du site (`searchHeader.dropdownFilters[].id`) :
+   *  chaque valeur qu'interroge une option (`values`, sinon `value`) → le libellé de l'option. Une seule
+   *  liste sert le filtre de la page de recherche ET la dimension (ex. les communes d'ESS974, codes
+   *  postaux regroupés). La `valueMap` déclarée prime, valeur par valeur. Filtre introuvable : sans effet. */
+  valueMapFrom: z.object({ filter: z.string() }).optional(),
   /** Libellé localisé (prioritaire sur labelKey). */
   label: LocalizedString.optional(),
   /** Clé i18n du namespace modules/observatoire (réservé au chrome interne
