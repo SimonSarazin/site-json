@@ -76,8 +76,10 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     const headerNav = page.locator("nav.sticky").first();
     await expect(headerNav).toBeVisible();
 
-    // 17/09 : « INFORESO » rejoint le premier niveau, à côté de « Contenus », puis la loupe vers la recherche,
-    // en icône seule comme sur l'ancien site (7 entrées).
+    // 17/09 : « INFORESO » rejoint le premier niveau, à côté de « Actualités et Ressources »
+    // (ex-« Contenus », renommé le 26/10 — budget de largeur à 1280px regagné via
+    // `header.navFontSize:"sm"`, PAS en raccourcissant les libellés), puis la loupe vers la
+    // recherche, en icône seule comme sur l'ancien site (7 entrées).
     expect(config.header.nav, "la nav de la config doit rester à 7 entrées").toHaveLength(7);
     const headerText = (await headerNav.textContent()) ?? "";
     for (const item of config.header.nav) {

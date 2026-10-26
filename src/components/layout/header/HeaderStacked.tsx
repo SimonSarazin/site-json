@@ -97,6 +97,14 @@ const MARQUE_BANDEAU = {
   lg: { wordmark: "xl:text-7xl xl:mb-3", sous: "xl:text-3xl", mt: "xl:mt-3", gap: "xl:gap-12", px: 340 },
 } as const;
 
+// `header.navFontSize` — taille du texte de la nav de premier niveau (opt-in, défaut "lg" = taille
+// historique). Sert à faire rentrer une barre pleine sans raccourcir les libellés.
+const NAV_FONT_SIZE = {
+  sm: { stuck: "text-base", unstuck: "text-lg" },
+  md: { stuck: "text-lg", unstuck: "text-xl" },
+  lg: { stuck: "text-xl", unstuck: "text-2xl" },
+} as const;
+
 export default function HeaderStacked({ header }: HeaderStackedProps) {
   useLoadNamespace("components/layout");
   const t = useT("components/layout");
@@ -119,6 +127,7 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
   }, []);
 
   const marque = MARQUE_BANDEAU[header.height ?? "md"];
+  const navFontSize = NAV_FONT_SIZE[header.navFontSize ?? "lg"];
   // `HeaderLogo` rend `null` sans image NI `logoIcon` — sans cette garde, sa boîte (44×44 + `gap`)
   // resterait quand même dans le flux : un trou vide avant le titre/sous-titre. Même condition que
   // `HeaderLogo` (overlay ici, cf. son appel ci-dessous), dupliquée faute d'export booléen partagé.
@@ -320,7 +329,7 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
                       title={iconOnly ? t(item.label) : undefined}
                       className={cn(
                         "font-display transition-all relative inline-flex items-center gap-1.5 whitespace-nowrap font-serif",
-                        stuck ? "text-xl" : "text-2xl",
+                        stuck ? navFontSize.stuck : navFontSize.unstuck,
                         isActive
                           ? "text-white"
                           : "text-white/90 hover:text-white"

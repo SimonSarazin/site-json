@@ -30,6 +30,7 @@
   },
   "header": {
     "type": "stacked",
+    "navFontSize": "sm",
     "path": "/",
     "logo": "/images/parent62/Logo-Aquarelle.png",
     "textColor": "var(--p62-marine)",
@@ -329,8 +330,8 @@
       },
       {
         "label": {
-          "fr": "Contenus",
-          "en": "Content"
+          "fr": "Actualités et Ressources",
+          "en": "News and Resources"
         },
         "path": "/blog",
         "children": [
@@ -1655,7 +1656,7 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
             "card": {
               "type": "team",
               "detailsMode": "link",
@@ -1685,7 +1686,7 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
             "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }, "maxColumns": 3 }
           }
         },
@@ -1714,7 +1715,7 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
             "card": {
               "type": "team",
               "detailsMode": "link",
@@ -11119,7 +11120,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Arrageois" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
@@ -11994,7 +11995,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Artois" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social La Maison pour Tous, place des FFI, 62190 Lillers",
@@ -12869,7 +12870,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Audomarois" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social Inter-Générations, rue Brueghel, Longuenesse",
@@ -13744,7 +13745,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Boulonnais" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
@@ -14619,7 +14620,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Calaisis" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte",
@@ -15494,7 +15495,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Entre Mer et Terres" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
@@ -16369,7 +16370,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Familles en sol mineur Hénin Carvin" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
@@ -17244,7 +17245,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Familles en sol mineur Lens Liévin" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social des Brebis, place de la Marne, 62670 Mazingarbe",
@@ -18119,7 +18120,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Ternois Bruaysis" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
                   "showRole": true,
                   "showManagement": false,
@@ -21624,6 +21625,22 @@
                   "showOpeningDate": true,
                   "showDates": true,
                   "showOrganizer": true
+                },
+                {
+                  "type": "profile-fields",
+                  "variant": "plain",
+                  "fields": [
+                    {
+                      "field": "territoires",
+                      "label": { "fr": "Territoire", "en": "Territory" },
+                      "icon": "map-pin"
+                    },
+                    {
+                      "field": "structureRegister",
+                      "label": { "fr": "Employeur", "en": "Employer" },
+                      "icon": "building-2"
+                    }
+                  ]
                 }
               ]
             }
@@ -22533,6 +22550,9 @@
         }
       ]
     }
+  },
+  "costum": {
+    "citizenProfileFields": ["territoires", "structureRegister"]
   },
   "costumForms": {
     "parent62-article": {
