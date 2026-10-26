@@ -403,7 +403,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.kpiLayout": "Rendu des KPI : cards (défaut code, trois grandes cartes) ou inline (ligne de chiffres tabulaires). Préférer inline pour un résumé posé en accueil, où des cartes écrasent le reste.",
     "props.kpiColumns": "Cartes KPI par ligne dès 1024 px (3 à 6). Absent = remplissage auto (cartes ≥ 150 px) : 9 KPI en pleine largeur donnent 8 + 1. Téléphone (2) et tablette (3) inchangés.",
     "props.kpis[].period": "KPI reservationHours (exige rowAction.preview.reservations) : weekly (défaut code) ou cumulative — heures sommées sur les équipements affichés, créneaux en cours ou à venir.",
-    "props.dimensions.*.valueMapFrom": "valueMap tirée des options d'un filtre déroulant du site ({filter: id}) : une seule liste pour la recherche et l'observatoire (ex. communes, codes postaux regroupés), la valueMap déclarée primant.",
+    "props.dimensions.*.valueMapFrom": "valueMap tirée des options d'un filtre déroulant ({filter: id}) : une liste pour la recherche et l'observatoire (ex. communes), la valueMap déclarée primant ; libellés sans virgule (valeurs jointes par virgule).",
     "props.drilldown": "Opt-in : un clic sur une part ou une barre applique le filtre de la dimension, si elle est filtrable.",
     "props.export": "Opt-in : bouton CSV du résultat filtré et trié (BOM Excel). `fields` = export COMPLET des données détail plutôt que des colonnes du tableau.",
     "props.layout": "Agencement : stacked (défaut code, tout empilé) ou split (KPI en bandeau, puis liste à gauche et graphes à droite, desktop ; sous 768 px tout s'empile). split exige `list`.",

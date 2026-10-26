@@ -472,8 +472,8 @@
                   {
                     "id": "saint-benoit",
                     "label": {
-                      "fr": "Saint-Benoît (97437, 97470)",
-                      "en": "Saint-Benoît (97437, 97470)"
+                      "fr": "Saint-Benoît (97437 / 97470)",
+                      "en": "Saint-Benoît (97437 / 97470)"
                     },
                     "values": [
                       "97437",
@@ -483,8 +483,8 @@
                   {
                     "id": "saint-denis",
                     "label": {
-                      "fr": "Saint-Denis (97400, 97490)",
-                      "en": "Saint-Denis (97400, 97490)"
+                      "fr": "Saint-Denis (97400 / 97490)",
+                      "en": "Saint-Denis (97400 / 97490)"
                     },
                     "values": [
                       "97400",
@@ -514,8 +514,8 @@
                   {
                     "id": "saint-louis",
                     "label": {
-                      "fr": "Saint-Louis (97421, 97450)",
-                      "en": "Saint-Louis (97421, 97450)"
+                      "fr": "Saint-Louis (97421 / 97450)",
+                      "en": "Saint-Louis (97421 / 97450)"
                     },
                     "values": [
                       "97421",
@@ -525,8 +525,8 @@
                   {
                     "id": "saint-paul",
                     "label": {
-                      "fr": "Saint-Paul (97411, 97434)",
-                      "en": "Saint-Paul (97411, 97434)"
+                      "fr": "Saint-Paul (97411 / 97434)",
+                      "en": "Saint-Paul (97411 / 97434)"
                     },
                     "values": [
                       "97411",
@@ -586,8 +586,8 @@
                   {
                     "id": "le-tampon",
                     "label": {
-                      "fr": "Le Tampon (97418, 97430)",
-                      "en": "Le Tampon (97418, 97430)"
+                      "fr": "Le Tampon (97418 / 97430)",
+                      "en": "Le Tampon (97418 / 97430)"
                     },
                     "values": [
                       "97418",

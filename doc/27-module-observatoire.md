@@ -49,7 +49,11 @@ les 23 communes du filtre Équipements (codes postaux regroupés) au lieu des 28
 d'`address.addressLocality`, au filtre, au KPI `distinct`, au graphique et à la
 recherche. Résolu par `useResolvedDimensions` (`withFilterValueMaps`, pur, testé) dans
 `DataObservatorySection` et `ObservatoryPanel` ; filtre introuvable → dimension
-inchangée, code absent de la liste → la valeur brute.
+inchangée, code absent de la liste → la valeur brute. Les libellés des options ne
+doivent pas contenir de virgule : le filtre de l'observatoire prend le libellé pour
+valeur et joint les valeurs choisies par des virgules, si bien qu'un libellé coupé ne
+correspond plus à aucune option et que la sélection se perd (« Saint-Paul (97411 /
+97434) », pas « Saint-Paul (97411, 97434) »).
 
 **Regrouper sur une clé propre, libellé dérivé** (`keyPaths`, kind `value`) :
 quand le libellé affiché (`paths`, ex. `address.level4Name`) est du texte libre

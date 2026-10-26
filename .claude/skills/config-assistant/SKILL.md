@@ -335,7 +335,8 @@ côté observatoire, KPI `{kind:"reservationHours", period:"weekly"|"cumulative"
 `data-observatory` seule, exige `rowAction.preview.reservations`. Une dimension peut
 reprendre la liste d'un filtre de la recherche, `valueMapFrom: {filter: "<id>"}`
 (ex. `commune` sur `address.postalCode` + le filtre des communes de la page
-Équipements) : une seule liste, plutôt qu'une seconde écrite en dur. **Annuaire des usagers** : `searchProStatic.reservationUsers`
+Équipements) : une seule liste, plutôt qu'une seconde écrite en dur. Libellés d'options SANS virgule : le
+filtre de l'observatoire joint ses valeurs par des virgules. **Annuaire des usagers** : `searchProStatic.reservationUsers`
 `{reservations, poiFilters, sourceKey?, includeCostumOrganizations?}` restreint une liste d'organisations à celles
 qui ont au moins un créneau sur un équipement du site — périmètre calculé (client +
 SSR), qui suit seul les nouveaux créneaux ; `fields.userOrga` requis. `includeCostumOrganizations: true`

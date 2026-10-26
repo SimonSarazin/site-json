@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-26** (fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
+Dernière mise à jour : **2026-10-26** (filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
 
 ---
 
@@ -114,7 +114,7 @@ Structure **identique au site parent**. L'observatoire reprend ses 13 dimensions
 
 | Filtre | Champ | Options | Comparaison |
 |---|---|---|---|
-| `poi-postalCode` | `address.postalCode` | **23 communes** (28 codes regroupés, 97434 compris depuis le 23/10) — liste reprise par l'observatoire (`valueMapFrom`) | exacte, `values` par commune |
+| `poi-postalCode` | `address.postalCode` | **23 communes** (28 codes regroupés, 97434 compris depuis le 23/10) — liste reprise par l'observatoire (`valueMapFrom`), donc libellés sans virgule (« Saint-Paul (97411 / 97434) », 26/10) | exacte, `values` par commune |
 | `type` — « Type d'équipement » | `equip_type_name` | **34** | exacte |
 | `categorie` — « Catégorie » | `categorie` | **2** (structurant, proximité) | exacte |
 | `sport` — « Sport pratiqué » (23/10, lot 8) | `aps_name` | **50** sports présents | **jeton** |
@@ -214,6 +214,50 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### Correction — filtre Commune de l'observatoire (2026-10-26)
+
+**Constat**, pendant les captures du guide utilisateur : dans l'observatoire, les 5 communes à deux codes postaux ne
+se sélectionnaient pas. Ce sont Le Tampon, Saint-Benoît, Saint-Denis, Saint-Louis et Saint-Paul. Le filtre restait sur
+« Tous » et les chiffres ne bougeaient pas. C'est une régression du lot 9 : ses vérifications avaient compté les
+options sans en sélectionner aucune.
+
+**Cause** : depuis `valueMapFrom` (lot 9), le filtre de l'observatoire prend le libellé de l'option pour valeur. Or il
+joint les valeurs choisies par des virgules (`MultiCheckboxField` de `search/components/filterFields.tsx`,
+`observatoire/dashboard.ts`). « Saint-Paul (97411, 97434) » était donc coupé en deux morceaux qui ne correspondaient à
+aucune option.
+
+**Ce qui change**, en config seule, comme pour « Type d'utilisateur » le 15/10 :
+- les 5 libellés de `poi-postalCode` s'écrivent sans virgule, par exemple « Saint-Paul (97411 / 97434) », en français
+  et en anglais ;
+- les identifiants (`saint-paul`…) et les codes interrogés ne changent pas : les liens existants
+  (`?poi-postalCode=saint-paul`) restent valables ;
+- la règle est écrite là où `valueMapFrom` est décrit : [doc/27](../doc/27-module-observatoire.md), skill
+  `config-assistant` et `prop-descriptions`.
+
+**À savoir** :
+- seul ESS974 déclare `valueMapFrom` ;
+- aucune autre valeur des filtres de l'observatoire ne contient de virgule. Les sports en contiennent (`aps_name`), mais
+  la dimension `list` les découpe un par un.
+
+**Validation** (base locale `prod201026`, Chrome sans fenêtre, visiteur anonyme, aucune écriture) :
+- **observatoire** :
+  - 0 option à virgule parmi les 23 communes (24 entrées avec « Tous ») ;
+  - chaque commune se sélectionne et donne le compte de la base, avec 1 commune : Saint-Benoît 37, Saint-Denis 108,
+    Saint-Louis 49, Saint-Paul 89, Le Tampon 85 ;
+  - une fois décochée, on revient à 703 ;
+  - Saint-Paul et Saint-Denis ensemble : 197 équipements, 2 communes, « 2 sélectionnés » ;
+  - Saint-Paul seule : 135 h/sem et 7 044 h cumulées ;
+- **page Équipements** : « Saint-Paul (97411 / 97434) » donne 89 équipements, URL `?poi-postalCode=saint-paul` ;
+- **page Data** : même sélection, 89 équipements ;
+- **non testé** : le clic sur une barre de graphique (sélection, drill-down), ici comme dans la vue observatoire de la
+  page Équipements.
+
+**Gates** :
+- `config:validate` ✅ ESS974 (9 pages, 14 sections) · `audit:config` ESS974 RAS ;
+- lint ✅ · typecheck ✅ (`prop-descriptions.ts`) ;
+- préflight en lecture seule : 897/902, avec les seuls 4 échecs d'environnement (§12). Un premier passage avait relevé
+  la description de `valueMapFrom` trop longue (294 caractères pour 220 au plus) ; elle est raccourcie.
 
 ### Fusion de `main` et vérification des lots 8 à 11 (2026-10-26)
 
@@ -943,7 +987,7 @@ repassent au vert.
 | 14 | Volume horaire des réservations | ✅ | Lot 6 : fiches association et équipement (par semaine et cumulé, par ligne et total), 2 KPI d'observatoire qui suivent les filtres — vérifié au navigateur le 20/10 contre un calcul indépendant en base (§9) |
 | 15 | Ajout de créneaux par période | ✅ | Lot 7 : prise de réservation par les admins, filtre « du … au … », chevauchements refusés à l'enregistrement — vérifié au navigateur le 23/10, réservation de test enregistrée en local (§9). La saisie d'une période par créneau a été retirée au lot 8. En production : décocher « une réponse par personne » (§13) |
 | 16 | Fiches et créneaux | ✅ | Lot 8 : sport cliquable, indicateurs d'heures (semaine de référence), périodes sous chaque association, cartes fusionnées, modification d'horaire, fiche association en deux colonnes avec ajout de créneaux, formulaire sans « Étape 1 » — vérifié au navigateur le 23/10 (§9). Ajustements du 26/10 : créneau occupé signalé en direct à l'ajout et à la modification, bouton d'ajout par association, réservations à gauche de la fiche association, indicateurs agrandis — vérifiés au navigateur (§9). En production : règle d'affichage conditionnel du formulaire (§13) |
-| 17 | Filtres et observatoire | ✅ | Lot 9 : minutes au quart d'heure, 23 communes dans l'observatoire (liste commune avec la page Équipements), sablier des KPI d'heures — vérifié au navigateur le 23/10 (§9) |
+| 17 | Filtres et observatoire | ✅ | Lot 9 : minutes au quart d'heure, 23 communes dans l'observatoire (liste commune avec la page Équipements), sablier des KPI d'heures — vérifié au navigateur le 23/10 (§9). Le 26/10, les 5 communes à deux codes postaux se sélectionnent de nouveau (libellés sans virgule), ce qui est vérifié au navigateur (§9) |
 | 18 | Formulaire d'édition complet d'un équipement | ❌ | Lot 10, après la demande backend (§13) |
 | 19 | Ajout et modification des associations | ✅ | Lot 11 : ajout depuis l'annuaire réservé aux admins (clé ESS974 posée par le serveur, étiquette usager, doublons signalés, apparition immédiate) ; modification par l'admin qui a ajouté l'association — vérifié au navigateur le 26/10, puis de nouveau sur le code final après la relecture de conformité (§9). Les 37 associations existantes restent non modifiables depuis le site |
 
