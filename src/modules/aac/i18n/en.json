@@ -104,6 +104,16 @@
       "title": "Edit this commun",
       "successToast": "Your changes have been saved."
     },
+    "discussion": {
+      "cta": "Discussion",
+      "messages_one": "{{count}} message",
+      "messages_other": "{{count}} messages",
+      "unread_one": "{{count}} unread",
+      "unread_other": "{{count}} unread",
+      "milestoneCta": "Discuss",
+      "milestone": "Discuss this milestone",
+      "milestoneNamed": "Discuss the milestone “{{name}}”"
+    },
     "editors": {
       "cta": "Editors",
       "ctaHint": "Edit contributors: the people who can edit this commun",
@@ -374,6 +384,16 @@
       "noProject": "Milestones and actions open as soon as a project is linked to this commons.",
       "noProjectLife": "News and agenda open as soon as a project is linked to this commons.",
       "noProjectCommunity": "Contributors appear as soon as a project is linked to this commons.",
+      "milestones": "Milestones",
+      "actions": "Actions",
+      "actionsIntro": "Each milestone's tasks, who is on them and how far they have got.",
+      "noMilestones": "No milestones yet.",
+      "filterByMilestone": "Show this milestone's actions",
+      "milestoneFilter": "Milestone: {{name}}",
+      "showAllActions": "All actions",
+      "noMilestoneActions": "No task in this milestone yet.",
+      "hideDoneActions": "Hide completed ({{count}})",
+      "allActionsDone": "All tasks are done.",
       "impact": "Impact indicators",
       "calls": {
         "title": "Calls for projects companion",

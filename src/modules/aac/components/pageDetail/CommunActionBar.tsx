@@ -60,6 +60,11 @@ export interface CommunActionBarProps {
     projectSlug?: string | null;
   };
   deletion: Omit<CommunDeleteActionOptions, "api" | "answerId">;
+  /**
+   * En tête des actions, pour tous — visiteur compris : le bouton de l'espace de discussion du
+   * commun, qui se lit sans session. Rendu tel quel : la page garde son `key`.
+   */
+  discussion?: ReactNode;
 }
 
 export function CommunActionBar({
@@ -74,6 +79,7 @@ export function CommunActionBar({
   selection: selectionOptions,
   project,
   deletion: deletionOptions,
+  discussion,
 }: CommunActionBarProps) {
   useLoadNamespace("modules/aac");
   const t = useT("modules/aac");
@@ -176,6 +182,8 @@ export function CommunActionBar({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {discussion}
+
           {canEdit && (
             <Button variant="outline" size="sm" className="gap-2" onClick={onEdit}>
               <Pencil className="size-3.5" />

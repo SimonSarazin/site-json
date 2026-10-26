@@ -5,7 +5,8 @@
       "message": "Messages",
       "network": "Réseau",
       "dashboard": "Tableau de bord",
-      "news": "Actualités"
+      "news": "Actualités",
+      "stats": "Statistiques"
     },
     "comingSoon": {
       "title": "Bientôt disponible",
@@ -16,7 +17,10 @@
     "headline": "Amplifions le bon sens",
     "subhead": "Une armée d'humains travaillant pour le bien commun. Un réseau de confiance entre pairs qui amplifie vos idées dans le monde entier.",
     "proposal": "Proposer une idée",
+    "browse": "Voir les propositions",
     "join": "Rejoindre la communauté",
+    "joinPending": "Demande envoyée",
+    "joined": "Vous êtes membre",
     "mediaPulse": "Pulsation médiatique",
     "globalAmplification": "Amplification mondiale",
     "trustedNetwork": "Réseau de confiance"
@@ -48,6 +52,9 @@
       "amplified": "Idées amplifiées",
       "comments": "Discussions générées"
     },
+    "form": {
+      "error": "Le formulaire de proposition n'a pas pu être chargé"
+    },
     "howItWork": {
       "headline": "Comment ça marche ?",
       "stepOne": "Vous soumettez votre idée.",
@@ -61,11 +68,33 @@
   },
   "AmpliCommunity": {
     "headline": "Réseau de Confiance",
-    "subhead": "Un écosystème pair-à-pair où chaque membre est validé par la communauté."
+    "subhead": "Un écosystème pair-à-pair où chaque membre est validé par la communauté.",
+    "map": {
+      "empty": "Aucun contributeur localisé sur la carte",
+      "error": "Chargement des contributeurs interrompu : la carte n'a pas pu être remplie",
+      "missing_one": "{{count}} contributeur n'est pas localisé ({{located}} sur {{total}} affichés)",
+      "missing_other": "{{count}} contributeurs ne sont pas localisés ({{located}} sur {{total}} affichés)"
+    }
   },
   "AmpliDashboard": {
     "headline": "Vision Globale",
-    "subhead": "Voir la globalité sur les données fournit par votre communauté."
+    "subhead": "Voir la globalité des données fournies par votre communauté.",
+    "kpi": {
+      "participants": "Participants",
+      "participantsHint": "Membres actifs ayant participé",
+      "comments": "Commentaires",
+      "commentsHint": "Discussions générées",
+      "likes": "Likes",
+      "likesHint": "Appréciations reçues",
+      "tags": "Tags utilisés",
+      "tagsHint": "Catégories différentes"
+    },
+    "topLiked": "Top réponses les plus aimées",
+    "topCommented": "Top réponses les plus commentées",
+    "tagsChart": "Répartition des tags",
+    "emptyRanking": "Aucune réponse à classer pour le moment",
+    "emptyTags": "Aucun tag utilisé pour le moment",
+    "untitled": "Sans titre"
   },
   "AmpliNews": {
     "headline": "Dernières actualités",
@@ -73,8 +102,61 @@
   },
   "AmpliPage": {
     "notFoundTitle": "Ampli non trouvé",
-    "notFoundDescription": "La configuration pour l'ampli \"{{slug}}\" est introuvable.",
-    "backHome": "Retour à l'accueil"
+    "notFoundDescription": "Aucun ampli « {{slug}} » n'existe sur ce site.",
+    "backHome": "Retour à l'accueil",
+    "backToList": "Voir tous les amplis",
+    "notConfiguredTitle": "Ampli en préparation",
+    "notConfiguredDescription": "« {{name}} » n'accepte pas encore de propositions : son formulaire n'est pas configuré."
+  },
+  "AmpliList": {
+    "title": "Tous les amplis",
+    "searchLabel": "Rechercher un ampli",
+    "searchPlaceholder": "Rechercher un ampli…",
+    "filterByTags": "Filtrer par tags :",
+    "clearFilters": "Effacer les filtres",
+    "noResults": "Aucun ampli ne correspond à ces filtres.",
+    "empty": "Aucun ampli n'est encore déclaré sur ce site.",
+    "proposals_one": "{{count}} proposition",
+    "proposals_other": "{{count}} propositions",
+    "moreTags": "+{{count}}",
+    "join": {
+      "title": "Accéder à un ampli",
+      "description": "Saisissez l'identifiant d'un ampli, ou choisissez-le dans la liste.",
+      "label": "Identifiant de l'ampli",
+      "placeholder": "Identifiant de l'ampli",
+      "button": "Accéder à l'ampli",
+      "notFound": "Aucun ampli « {{slug}} » sur ce site."
+    },
+    "welcome": "Nouveau venu ? Rejoignez un ampli pour proposer vos idées.",
+    "create": {
+      "open": "Créer un ampli",
+      "title": "Créer un ampli",
+      "description": "Le formulaire de dépôt est créé avec l'ampli : titre, description, adresse, mots-clés et image.",
+      "nameLabel": "Nom de l'ampli",
+      "namePlaceholder": "Idées pour la ville",
+      "nameHint": "Le nom donne l'identifiant de l'ampli, donc son adresse.",
+      "slugHint": "Identifiant : {{slug}}",
+      "invalidName": "Ce nom ne donne aucun identifiant utilisable.",
+      "duplicate": "Un ampli porte déjà l'identifiant « {{slug}} » : le créer écraserait le sien.",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "À quoi sert cet ampli ?",
+      "tagsLabel": "Mots-clés",
+      "tagsPlaceholder": "urbanisme, mobilité",
+      "tagsHint": "Séparés par des virgules.",
+      "cancel": "Annuler",
+      "submit": "Créer l'ampli",
+      "success": "Ampli « {{name}} » créé",
+      "error": "Impossible de créer l'ampli"
+    },
+    "delete": {
+      "label": "Supprimer l'ampli {{name}}",
+      "title": "Supprimer « {{name}} » ?",
+      "description": "L'ampli disparaît du site et de Co, avec ses pages et son bouton de menu. Le formulaire de dépôt et les propositions déjà déposées, eux, sont conservés.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer",
+      "success": "Ampli « {{name}} » supprimé",
+      "error": "Impossible de supprimer l'ampli"
+    }
   },
   "AmpliUserCard": {
     "noLocation": "Localisation non renseignée",
@@ -82,21 +164,32 @@
     "contributions_other": "{{count}} contributions"
   },
   "MeeteemSection": {
+    "empty": "Aucune réponse à afficher",
     "viewToggle": {
       "answers": "Annuaire",
       "map": "Carte",
       "split": "Split"
     },
     "filters": {
-      "title": "Filtres"
+      "title": "Filtres",
+      "clearUser": "Retirer le filtre auteur"
     },
     "map": {
-      "placeholderTitle": "Carte interactive",
-      "placeholderSubtitle": "(nécessite Leaflet.js)"
+      "error": "Chargement de la carte interrompu : certaines réponses sont manquantes",
+      "empty": "Aucune réponse localisée sur la carte"
     },
     "card": {
       "noDate": "N/A",
-      "noUser": "Anonyme"
+      "noUser": "Anonyme",
+      "locate": "Voir sur la carte",
+      "details": "Détail de la réponse",
+      "detailsLoading": "Chargement de la réponse…",
+      "detailsError": "Impossible de charger cette réponse.",
+      "edit": "Modifier",
+      "open": "Ouvrir le détail de {{name}}",
+      "noLocation": "Adresse non renseignée",
+      "react": "Amplifier cette réponse",
+      "unreact": "Retirer mon amplification"
     }
   },
   "a11y": {
@@ -104,5 +197,14 @@
     "toggleTag": "Basculer le filtre {{tag}}",
     "selectUser": "Voir les contributions de {{name}}",
     "loading": "Chargement de la section…"
+  },
+  "toast": {
+    "reactionError": "Impossible d'enregistrer votre réaction",
+    "error": {
+      "generic": "Une erreur est survenue"
+    }
+  },
+  "AmpliTabs": {
+    "label": "Navigation de la page Ampli"
   }
 }

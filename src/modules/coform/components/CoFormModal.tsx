@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, type ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,24 @@ export interface CoFormModalProps {
   onOpenChange: (open: boolean) => void;
   /** Titre affiché dans le header du modal (optionnel) */
   title?: string;
+  /**
+   * Style du titre. À poser avec `hideBanner` : sans bannière, c'est le titre
+   * du header qui porte la fiche, et le défaut `text-lg` est trop discret pour
+   * ce rôle.
+   */
+  titleClassName?: string;
+  /**
+   * Masque la bannière du formulaire (son nom en `<h1>` 4xl). À poser quand la
+   * modale a déjà un titre qui identifie ce qu'on regarde : sinon le nom du
+   * FORMULAIRE écrase visuellement celui de la RÉPONSE affichée.
+   */
+  hideBanner?: boolean;
+  /**
+   * Actions rendues à droite du titre (ex. « Modifier » sur une fiche en
+   * lecture seule). Elles doivent vivre DANS le Dialog : le contenu est monté
+   * dans un portail, l'appelant ne peut rien poser par-dessus.
+   */
+  headerActions?: ReactNode;
   /** Clé d'une étape à afficher en mode standalone */
   stepKey?: string;
   /** Clé d'un champ unique à afficher (requiert stepKey) */
@@ -103,6 +121,7 @@ export function CoFormModal({
   open,
   onOpenChange,
   title,
+  titleClassName,
   stepKey,
   inputKey,
   answerId,
@@ -120,6 +139,8 @@ export function CoFormModal({
   unknownFieldVariant,
   beforeSubmit,
   slotPeriods,
+  hideBanner = false,
+  headerActions,
 }: CoFormModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -209,7 +230,13 @@ export function CoFormModal({
         >
           {title && (
             <DialogHeader className="px-6 pt-6 pb-2">
-              <DialogTitle>{title}</DialogTitle>
+              {/* `pr-8` : le bouton de fermeture du Dialog est en `absolute
+                  top-4 right-4` — sans cette marge, une action de header
+                  passerait dessous. */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pr-8">
+                <DialogTitle className={titleClassName}>{title}</DialogTitle>
+                {headerActions}
+              </div>
             </DialogHeader>
           )}
           {!title && (
@@ -239,6 +266,7 @@ export function CoFormModal({
               unknownFieldVariant={unknownFieldVariant}
               beforeSubmit={beforeSubmit}
               slotPeriods={slotPeriods}
+              hideBanner={hideBanner}
             />
           </div>
         </DialogContent>

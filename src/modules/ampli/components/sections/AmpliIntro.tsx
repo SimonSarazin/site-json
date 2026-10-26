@@ -1,22 +1,12 @@
-import { AmpliConfig } from "../../schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { CardsSection } from "@/components/sections/CardsSection";
 import { CardsSectionProps } from "@/types/site-schema";
 
-interface AmpliIntroProps {
-    props: AmpliConfig["props"]["intro"];
-}
-
-export default function AmpliIntro({ props }: AmpliIntroProps) {
+export default function AmpliIntro() {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
-    const {
-        headline,
-        subhead,
-        items,
-    } = props || {};
-    const defaultCards = [
+    const cards = [
         {
             "icon": "users",
             "title": {
@@ -88,14 +78,14 @@ export default function AmpliIntro({ props }: AmpliIntroProps) {
     return (
         <>
             <div className="text-center my-4 sm:my-6 md:my-10">
-                <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-                    {headline ? t(headline) : t("AmpliIntro.headline")}
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance mb-4 sm:mb-6">
+                    {t("AmpliIntro.headline")}
                 </h2>
-                <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                    {subhead ? t(subhead) : t("AmpliIntro.subhead")}
+                <p className="text-base sm:text-lg md:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto leading-relaxed">
+                    {t("AmpliIntro.subhead")}
                 </p>
             </div>
-            <CardsSection id="intro-section-cards" props={{ items: (items ?? defaultCards) as CardsSectionProps["items"], layout: "grid", columns: 3, variant: "default", showHeader: false, showResultCount: false, showViewToggle: false }} />
+            <CardsSection id="intro-section-cards" props={{ items: cards as CardsSectionProps["items"], layout: "grid", columns: 3, variant: "default", showHeader: false, showResultCount: false, showViewToggle: false }} />
         </>
     )
 }

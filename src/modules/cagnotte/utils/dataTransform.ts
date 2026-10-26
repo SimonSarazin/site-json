@@ -166,8 +166,8 @@ export function resolveActionAuthorId(actionLike: unknown): string {
  * `status !== "todo"`). Tout ce qui n'est pas `done` — casse ignorée — vaut `todo` :
  * une action qu'on ne sait pas lire reste ouverte, jamais verrouillée par erreur.
  *
- * Point unique : l'enveloppe (`useFundingEnvelope`) ET la fiche commun
- * (`normalizeActionForEdit`) passent par ici — un statut lu différemment selon
+ * Point unique : l'enveloppe (`useFundingEnvelope`), l'adaptateur (`useCagnotteAdapter`) ET la
+ * fiche commun (`normalizeActionForEdit`) passent par ici — un statut lu différemment selon
  * l'écran donnerait des droits différents sur la même action.
  */
 export function normalizeActionStatus(value: unknown): FundingActionStatus {

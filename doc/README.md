@@ -34,6 +34,7 @@
 | Donner une autre interface à l'annuaire / la fiche AAC (variantes, maquette projets.re) | [RFC Variantes d'interface AAC](36-rfc-variantes-interface-aac.md) — usage : [Module AAC §3.4](34-module-aac.md) |
 | Module observatoire (dashboard déclaratif) | [Module Observatoire](27-module-observatoire.md) |
 | Module admin (back-office /admin config-driven) | [Module Admin](30-module-admin.md) |
+| Module comment (discussions génériques, toutes entités) | [Module Comment](38-module-comment.md) — fil, panneau « Discussions », non-lus, temps réel et parcours clavier |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |
 | Assistant de configuration | [Assistant Config](26-assistant-config.md) |
 | Système de visibilité | [Visibility System](19-visibility-system.md) |

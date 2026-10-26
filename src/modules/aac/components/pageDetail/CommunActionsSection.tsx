@@ -1,11 +1,10 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
 import type { CoFormData } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import type {
   FundingMilestone as Milestone,
   FundingAction as ProjectAction,
@@ -14,8 +13,6 @@ import type {
 } from "@/modules/cagnotte/types";
 import { formatCurrency } from "@/modules/cagnotte/utils/format";
 import { ContributorsAvatars } from "@/modules/cagnotte/components/sections/parts/badges";
-import { ActionCreateDialog } from "@/modules/cagnotte/components/sections/parts/ActionCreateDialog";
-import { ActionEditDialog, type EditingActionContext } from "@/modules/cagnotte/components/sections/parts/ActionEditDialog";
 import { MilestoneManageActions } from "@/modules/cagnotte/components/sections/MilestoneManageActions";
 import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
@@ -23,20 +20,23 @@ import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
 import { MilestoneCardsSkeleton } from "./CommunSkeletons";
 import {
   normalizeActionForEdit,
-  resolveAacActionEntityId,
   toMilestoneStatus,
   fundableItemToMilestone,
   fundableItemToMilestoneRef,
+  actionRights,
+  actionCreatedLabel,
   type MilestoneCardPermissions,
 } from "@/modules/aac/lib/objectiveHelpers";
 
-interface CommunActionsSectionProps {
+export interface CommunActionsSectionProps {
     formData: CoFormData;
     aacConfig: AacResolvedConfig | null;
     funding?: CagnotteResource | null;
     /** Le contrôleur, monté UNE fois par la page — cf. `CommunMilestoneDialogs`. */
     ctrl: CommunObjectivesController;
 }
+
+type ActionLoadingIds = CommunObjectivesController["loadingIds"];
 
 function ActionRowButton({
     label,
@@ -71,6 +71,144 @@ function ActionRowButton({
         >
             {isPending ? <Loader2 className="size-3.5 animate-spin" /> : icon}
         </Button>
+    );
+}
+
+/** Candidater, modifier, supprimer : les boutons d'une ligne d'action, selon ses droits. */
+export function ActionRowButtons({
+    action,
+    rights,
+    loadingIds,
+    onCandidate,
+    onEdit,
+    onDelete,
+}: {
+    action: ProjectAction;
+    rights: ReturnType<typeof actionRights>;
+    loadingIds: Pick<ActionLoadingIds, "candidateActionId" | "deletingActionId">;
+    onCandidate: () => void;
+    onEdit: () => void;
+    onDelete: () => void;
+}) {
+    const c = useT("modules/aac");
+    return (
+        <>
+            {rights.canCandidate ? (
+                <ActionRowButton
+                    label={String(c("detail.objectives.actionsButtons.candidate"))}
+                    icon={<UserPlus className="size-3.5" />}
+                    onClick={onCandidate}
+                    isPending={loadingIds.candidateActionId === action.id}
+                />
+            ) : null}
+            {rights.canEdit ? (
+                <ActionRowButton
+                    label={String(c("detail.objectives.actionsButtons.edit"))}
+                    icon={<Pencil className="size-3.5" />}
+                    onClick={onEdit}
+                    // Pas d'édition pendant la suppression de la ligne.
+                    disabled={loadingIds.deletingActionId === action.id}
+                />
+            ) : null}
+            {rights.canDelete ? (
+                <ActionRowButton
+                    label={String(c("detail.objectives.actionsButtons.delete"))}
+                    icon={<Trash2 className="size-3.5" />}
+                    onClick={onDelete}
+                    isPending={loadingIds.deletingActionId === action.id}
+                    tone="destructive"
+                />
+            ) : null}
+        </>
+    );
+}
+
+/** « Ajouter un palier », pour qui a le droit d'en créer. */
+export function AddMilestoneButton({ ctrl }: { ctrl: CommunObjectivesController }) {
+    const t = useT("modules/aac");
+    if (!ctrl.cagnottePerms.canCreateMilestone) return null;
+    return (
+        <div className="flex justify-end">
+            <Button size="sm" className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90" onClick={ctrl.openCreateMilestoneModal}>
+                <Plus className="h-3 w-3" /> {String(t("detail.objectives.addMilestone"))}
+            </Button>
+        </div>
+    );
+}
+
+/**
+ * Barre de gestion d'un palier, dépliée au survol ou au focus du parent `group` :
+ * modifier / clore / supprimer / restaurer, puis « Ajouter une action ».
+ */
+export function MilestoneManageBar({
+    item,
+    permissions,
+    loadingIds,
+    openEditMilestoneModal,
+    onMilestoneClose,
+    onMilestoneDelete,
+    onMilestoneRestore,
+    onActionCreate,
+    className = "mb-3",
+}: {
+    item: CagnotteFundableItem;
+    permissions: MilestoneCardPermissions & Pick<CagnottePermissions, "canRestoreMilestone">;
+    loadingIds: Pick<ActionLoadingIds, "deletingItemId" | "closingItemId" | "restoringItemId">;
+    openEditMilestoneModal: (milestone: Milestone) => void;
+    onMilestoneClose: (itemId: string, milestone: Milestone) => void;
+    onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
+    onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
+    onActionCreate: (milestoneId: string, milestoneTitle: string) => void;
+    /** Marges du contenu déplié. */
+    className?: string;
+}) {
+    const c = useT("modules/aac");
+
+    const milestoneStatus = toMilestoneStatus(item.status);
+    const canEditThisMilestone = permissions.canEditMilestone({ status: milestoneStatus });
+    const canDeleteThisMilestone = permissions.canDeleteMilestone({
+        status: milestoneStatus,
+        hasTransactions: toSafeInt(item.currentFunding) > 0,
+    });
+    // « Restaurer » a sa propre règle : un palier clos et financé reste restaurable.
+    const canRestoreThisMilestone = permissions.canRestoreMilestone({ status: milestoneStatus });
+
+    if (!canEditThisMilestone && !canDeleteThisMilestone && !canRestoreThisMilestone) return null;
+
+    return (
+        <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 focus-within:grid-rows-[1fr] focus-within:opacity-100 transition-all duration-300 ease-in-out">
+            <div className="overflow-hidden">
+                <div className={className}>
+                    <MilestoneManageActions
+                        onEdit={() => openEditMilestoneModal(fundableItemToMilestone(item))}
+                        onClose={() => onMilestoneClose(item.itemId, fundableItemToMilestoneRef(item))}
+                        onDelete={() => onMilestoneDelete(item.itemId, fundableItemToMilestoneRef(item))}
+                        isDeleting={loadingIds.deletingItemId === item.itemId}
+                        isClosing={loadingIds.closingItemId === item.itemId}
+                        closeDisabled={
+                            item.status === "close" ||
+                            !(item.actions ?? []).every((action: ProjectAction) => action.status === "done")
+                        }
+                        canEdit={canEditThisMilestone}
+                        canClose={canEditThisMilestone && permissions.canCloseMilestone({ status: milestoneStatus })}
+                        canDelete={canDeleteThisMilestone}
+                        canRestore={canRestoreThisMilestone}
+                        isClosed={item.status === "close"}
+                        onRestore={() => onMilestoneRestore(item.itemId, fundableItemToMilestoneRef(item))}
+                        isRestoring={loadingIds.restoringItemId === item.itemId}
+                    />
+                    {permissions.canCreateAction({ status: milestoneStatus }) ? (
+                        <Button
+                            size="sm"
+                            className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90 mb-2"
+                            onClick={() => onActionCreate(item.milestoneId, item.name)}
+                        >
+                            <Plus className="h-3 w-3" /> {String(c("detail.addAction"))}
+                        </Button>
+                    ) : null}
+                </div>
+            </div>
+        </div>
     );
 }
 
@@ -116,22 +254,6 @@ function ActionsMilestoneCard({
     useLoadNamespace("modules/aac");
     const c = useT("modules/aac");
 
-    const milestoneStatus = toMilestoneStatus(item.status);
-    const canEditThisMilestone = permissions.canEditMilestone({ status: milestoneStatus });
-    const canDeleteThisMilestone = permissions.canDeleteMilestone({
-        status: milestoneStatus,
-        hasTransactions: toSafeInt(item.currentFunding) > 0,
-    });
-    /**
-     * « Restaurer » a SA règle (`isAdmin && status === "close"`), distincte de l'édition
-     * (refusée sur un palier clos) et de la suppression (refusée sur un palier financé).
-     * Un palier clos ET financé n'a donc ni l'une ni l'autre : gater la barre sur ces
-     * deux seuls droits la faisait disparaître entièrement, et le palier ne pouvait
-     * plus jamais être rouvert — alors que le droit existe et que tous les autres
-     * appelants de `MilestoneManageActions` le passent en `canRestore`.
-     */
-    const canRestoreThisMilestone = permissions.canRestoreMilestone({ status: milestoneStatus });
-
     const tasksDone = (item?.actions ?? []).filter((action: ProjectAction) => action.status === "done").length;
 
     return (
@@ -172,15 +294,7 @@ function ActionsMilestoneCard({
                                 item.actions.map((rawAction: ProjectAction, i: number) => {
                                     const action = normalizeActionForEdit(rawAction);
                                     const isDone = action.status === "done";
-                                    const actionLike = {
-                                        status: action.status,
-                                        contributorIds: action.contributors.map((contributor) => contributor.id),
-                                        authorId: action.authorId,
-                                    };
-                                    const showCandidate = permissions.canCandidateAction(actionLike);
-                                    const showMarkDone = permissions.canMarkActionDone(actionLike);
-                                    const showEdit = permissions.canEditAction(actionLike);
-                                    const showDelete = permissions.canDeleteAction(actionLike);
+                                    const rights = actionRights(permissions, action);
                                     const contributors = action.contributors;
                                     return (
                                         <li
@@ -196,10 +310,10 @@ function ActionsMilestoneCard({
                                                     type="checkbox"
                                                     checked={isDone}
                                                     onChange={() => {
-                                                        if (showMarkDone) onActionDone(item.milestoneId, action);
+                                                        if (rights.canMarkDone) onActionDone(item.milestoneId, action);
                                                     }}
                                                     className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
-                                                    disabled={loadingIds.doneActionId === action.id || !showMarkDone}
+                                                    disabled={loadingIds.doneActionId === action.id || !rights.canMarkDone}
                                                 />
                                                 <span className="font-semibold text-sm text-foreground ml-1">
                                                     {action.name}
@@ -221,38 +335,19 @@ function ActionsMilestoneCard({
                                                     <ContributorsAvatars contributors={contributors || []} t={c} showLabel={false} />
                                                 )}
                                             </span>
-                                            <span className="w-[15%]">{rawAction?.created ? new Date(rawAction.created as string | number).toLocaleDateString("fr-FR") : ""}</span>
+                                            <span className="w-[15%]">{actionCreatedLabel(rawAction)}</span>
                                             <span className={isDone ? "w-[15%] text-success flex justify-center" : "w-[15%] flex justify-center"}>
                                                 {isDone ? String(c("detail.objectives.done")) : String(c("detail.objectives.inProgress"))}
                                             </span>
                                             <span className="w-[15%] flex items-center justify-end gap-0.5">
-                                                {showCandidate ? (
-                                                    <ActionRowButton
-                                                        label={String(c("detail.objectives.actionsButtons.candidate"))}
-                                                        icon={<UserPlus className="size-3.5" />}
-                                                        onClick={() => onActionCandidate(item.milestoneId, action)}
-                                                        isPending={loadingIds.candidateActionId === action.id}
-                                                    />
-                                                ) : null}
-                                                {showEdit ? (
-                                                    <ActionRowButton
-                                                        label={String(c("detail.objectives.actionsButtons.edit"))}
-                                                        icon={<Pencil className="size-3.5" />}
-                                                        onClick={() => onActionEdit(item.milestoneId, item.name, action)}
-                                                        // Ouvrir la modale d'édition d'une ligne en cours de suppression
-                                                        // n'a pas de sens : la cible peut disparaître pendant la saisie.
-                                                        disabled={loadingIds.deletingActionId === action.id}
-                                                    />
-                                                ) : null}
-                                                {showDelete ? (
-                                                    <ActionRowButton
-                                                        label={String(c("detail.objectives.actionsButtons.delete"))}
-                                                        icon={<Trash2 className="size-3.5" />}
-                                                        onClick={() => onActionDelete(item.milestoneId, action)}
-                                                        isPending={loadingIds.deletingActionId === action.id}
-                                                        tone="destructive"
-                                                    />
-                                                ) : null}
+                                                <ActionRowButtons
+                                                    action={action}
+                                                    rights={rights}
+                                                    loadingIds={loadingIds}
+                                                    onCandidate={() => onActionCandidate(item.milestoneId, action)}
+                                                    onEdit={() => onActionEdit(item.milestoneId, item.name, action)}
+                                                    onDelete={() => onActionDelete(item.milestoneId, action)}
+                                                />
                                             </span>
                                         </li>
                                     );
@@ -263,115 +358,31 @@ function ActionsMilestoneCard({
                 </div>
             )}
 
-            {canEditThisMilestone || canDeleteThisMilestone || canRestoreThisMilestone ? (
-                <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 focus-within:grid-rows-[1fr] focus-within:opacity-100 transition-all duration-300 ease-in-out">
-                    <div className="overflow-hidden">
-                        <div className="mb-3">
-                            <MilestoneManageActions
-                                onEdit={() => openEditMilestoneModal(fundableItemToMilestone(item))}
-                                onClose={() => onMilestoneClose(item.itemId, fundableItemToMilestoneRef(item))}
-                                onDelete={() => onMilestoneDelete(item.itemId, fundableItemToMilestoneRef(item))}
-                                isDeleting={loadingIds.deletingItemId === item.itemId}
-                                isClosing={loadingIds.closingItemId === item.itemId}
-                                closeDisabled={
-                                    item.status === "close" ||
-                                    !(item.actions ?? []).every((action: ProjectAction) => action.status === "done")
-                                }
-                                canEdit={canEditThisMilestone}
-                                canClose={canEditThisMilestone && permissions.canCloseMilestone({ status: milestoneStatus })}
-                                canDelete={canDeleteThisMilestone}
-                                canRestore={canRestoreThisMilestone}
-                                isClosed={item.status === "close"}
-                                onRestore={() => onMilestoneRestore(item.itemId, fundableItemToMilestoneRef(item))}
-                                isRestoring={loadingIds.restoringItemId === item.itemId}
-                            />
-                            {permissions.canCreateAction({ status: milestoneStatus }) ? (
-                                <Button
-                                    size="sm"
-                                    className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90 mb-2"
-                                    onClick={() => onActionCreate(item.milestoneId, item.name)}
-                                >
-                                    <Plus className="h-3 w-3" /> {String(c("detail.addAction"))}
-                                </Button>
-                            ) : null}
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <MilestoneManageBar
+                item={item}
+                permissions={permissions}
+                loadingIds={loadingIds}
+                openEditMilestoneModal={openEditMilestoneModal}
+                onMilestoneClose={onMilestoneClose}
+                onMilestoneDelete={onMilestoneDelete}
+                onMilestoneRestore={onMilestoneRestore}
+                onActionCreate={onActionCreate}
+            />
         </div>
     );
 }
 
 export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProps) {
     useLoadNamespace("modules/aac");
-    const t = useT("modules/aac");
 
-    /**
-     * Le contexte d'édition d'une action, dérivé de l'état STABLE du contrôleur :
-     * `selectedAction` et `selectedMilestoneId` sont posés par `handleActionEdit`, une
-     * fois par ouverture.
-     *
-     * `ActionEditDialog` mémoïse ses `defaultValues` sur l'IDENTITÉ de cet objet et
-     * fait `form.reset()` dès qu'elle change. Construit en littéral dans le JSX, il
-     * changeait à CHAQUE rendu du parent — refetch au retour du focus, `loadingIds`
-     * d'une opération concurrente, `refreshMe()` — et la saisie en cours était
-     * remplacée par les valeurs d'origine : « aucune modification » à la validation.
-     * Même règle que `cagnotte/ActionsSection` : le parent ne pousse que le contexte
-     * de l'action ciblée, et ne monte le dialogue que s'il y en a une.
-     */
-    const editingAction = useMemo<EditingActionContext | null>(() => {
-        const action = ctrl.selectedAction;
-        if (!action) return null;
-        return {
-            milestoneId: ctrl.selectedMilestoneId,
-            actionEntityId: resolveAacActionEntityId(action),
-            action: {
-                name: action.name ?? "",
-                credits: Number(action.credits ?? 0),
-                status: action.status ?? "todo",
-                tags: action.tags ?? [],
-                contributors: action.contributors ?? [],
-                date_start: action.date_start,
-                date_end: action.date_end,
-            },
-        };
-    }, [ctrl.selectedMilestoneId, ctrl.selectedAction]);
-
-    // Les actions n'existent pas côté answer-only (proposition non promue en projet) —
-    // pas de bloc à rendre tant qu'il n'y a pas de projectId.
+    // Pas d'actions tant que la proposition n'est pas promue en projet.
     if (!ctrl.canManageActions) {
         return null;
     }
 
     return (
         <div className="grid gap-4">
-            <ConfirmDialog
-                open={!!ctrl.pendingDeleteAction}
-                onOpenChange={(open) => {
-                    if (!open) ctrl.cancelDeleteAction();
-                }}
-                title={String(t("detail.objectives.deleteActionConfirm.title"))}
-                description={
-                    ctrl.pendingDeleteAction
-                        ? String(t("detail.objectives.deleteActionConfirm.description", undefined, { name: ctrl.pendingDeleteAction.action.name }))
-                        : ""
-                }
-                confirmLabel={String(t("detail.objectives.deleteActionConfirm.confirm"))}
-                cancelLabel={String(t("detail.objectives.deleteActionConfirm.cancel"))}
-                isDestructive
-                isPending={
-                    !!ctrl.pendingDeleteAction &&
-                    ctrl.loadingIds.deletingActionId === ctrl.pendingDeleteAction.action.id
-                }
-                onConfirm={ctrl.confirmDeleteAction}
-            />
-            {ctrl.cagnottePerms.canCreateMilestone ? (
-                <div className="flex justify-end">
-                    <Button size="sm" className="h-7 text-[11px] gap-1 px-2 bg-primary hover:bg-primary/90" onClick={ctrl.openCreateMilestoneModal}>
-                        <Plus className="h-3 w-3" /> {String(t("detail.objectives.addMilestone"))}
-                    </Button>
-                </div>
-            ) : null}
+            <AddMilestoneButton ctrl={ctrl} />
             {ctrl.isLoadingData && !funding?.items?.length ? <MilestoneCardsSkeleton /> : null}
             {funding?.items?.map((o: CagnotteFundableItem, i: number) => (
                 <ActionsMilestoneCard
@@ -391,30 +402,6 @@ export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProp
                     loadingIds={ctrl.loadingIds}
                 />
             ))}
-            <ActionCreateDialog
-                open={ctrl.isCreateActionOpen}
-                onOpenChange={ctrl.setIsCreateActionOpen}
-                actionCtx={ctrl.actionCtx}
-                milestoneId={ctrl.selectedMilestoneId}
-                milestoneTitle={ctrl.selectedMilestoneTitle}
-                projectEntity={ctrl.projectEntity}
-                onSuccess={async () => {
-                    await ctrl.refetchFundingEnvelope();
-                }}
-            />
-            {editingAction ? (
-                <ActionEditDialog
-                    open={ctrl.isEditActionOpen}
-                    onOpenChange={ctrl.setIsEditActionOpen}
-                    actionCtx={ctrl.actionCtx}
-                    editingAction={editingAction}
-                    milestoneTitle={ctrl.selectedMilestoneTitle}
-                    projectEntity={ctrl.projectEntity}
-                    onSuccess={async () => {
-                        await ctrl.refetchFundingEnvelope();
-                    }}
-                />
-            ) : null}
         </div>
     );
 }

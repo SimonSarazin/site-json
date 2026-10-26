@@ -84,7 +84,7 @@ describe("CocolightProvider", () => {
         client,
         userApiInstance,
         api: initialApi,
-        me: { id: "u1", username: "alice", serverData: {} },
+        me: { id: "u1", username: "alice", serverData: {}, entityBySlug: vi.fn() },
         contextType: "organizations",
         contextId: "org1",
         entity: { id: "e1", serverData: { slug: "test-slug" } },
@@ -250,6 +250,80 @@ describe("CocolightProvider", () => {
       });
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("refreshMe failed"),
+        expect.any(Error)
+      );
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe("refreshEntity", () => {
+    it("résout l'entité par son slug via me et la remplace dans le contexte", async () => {
+      const { data } = defaultInitData();
+      const refreshed = {
+        id: "e2",
+        serverData: { slug: "test-slug" },
+        getEntityType: () => "organizations",
+      };
+      data.me.entityBySlug = vi.fn().mockResolvedValue(refreshed);
+      mockInitData.mockReturnValue(data);
+
+      const wrapper = ({ children }: PropsWithChildren) => (
+        <CocolightProvider>{children}</CocolightProvider>
+      );
+      const { result } = renderHook(() => useCtx(), { wrapper });
+
+      await act(async () => {
+        await result.current.refreshEntity();
+      });
+
+      expect(data.me.entityBySlug).toHaveBeenCalledWith("test-slug");
+      // Une NOUVELLE instance : `entity.get()` mettrait `serverData` à jour en
+      // place, sans changer l'identité de l'objet — donc sans rendu.
+      expect(result.current.entity).toBe(refreshed);
+      expect(result.current.contextId).toBe("e2");
+    });
+
+    it("passe par api.entitySlug pour un visiteur anonyme", async () => {
+      const { data } = defaultInitData({ me: null });
+      const refreshed = {
+        id: "e2",
+        serverData: { slug: "test-slug" },
+        getEntityType: () => "organizations",
+      };
+      data.api.entitySlug = vi.fn().mockResolvedValue(refreshed);
+      mockInitData.mockReturnValue(data);
+
+      const wrapper = ({ children }: PropsWithChildren) => (
+        <CocolightProvider>{children}</CocolightProvider>
+      );
+      const { result } = renderHook(() => useCtx(), { wrapper });
+
+      await act(async () => {
+        await result.current.refreshEntity();
+      });
+
+      expect(data.api.entitySlug).toHaveBeenCalledWith("test-slug");
+      expect(result.current.entity).toBe(refreshed);
+    });
+
+    it("garde l'entité en place si la résolution échoue", async () => {
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const { data } = defaultInitData();
+      data.me.entityBySlug = vi.fn().mockRejectedValue(new Error("network"));
+      mockInitData.mockReturnValue(data);
+
+      const wrapper = ({ children }: PropsWithChildren) => (
+        <CocolightProvider>{children}</CocolightProvider>
+      );
+      const { result } = renderHook(() => useCtx(), { wrapper });
+
+      await act(async () => {
+        await result.current.refreshEntity();
+      });
+
+      expect(result.current.entity).toEqual(data.entity);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("refreshEntity failed"),
         expect.any(Error)
       );
       consoleSpy.mockRestore();

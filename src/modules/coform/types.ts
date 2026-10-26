@@ -172,7 +172,11 @@ export interface CoFormInputField {
   positions?: Record<string, string>;
   type: string;
   isRequired?: boolean;
-  activeComments?: boolean;
+  /**
+   * La question ouverte aux commentaires — drapeau BRUT du legacy : un booléen le plus souvent, mais
+   * aussi `"true"`, ou `[]` laissé par son éditeur. Se lit par `isTruthyFlag` (`parseCoFormFields`).
+   */
+  activeComments?: boolean | string | readonly unknown[];
   width?: string;
   /**
    * Éditeur markdown sur un textarea. ACTIF PAR DÉFAUT : seul un `false`
@@ -847,6 +851,12 @@ export interface FormFieldMapping {
    * compact. Si vide, on fallback sur le label de l'input.
    */
   evaluationKey?: string;
+  /**
+   * La question est ouverte aux commentaires (`activeComments` du legacy) : quand le formulaire montre
+   * une réponse enregistrée — en écriture comme en lecture —, un bouton à côté de son libellé ouvre sa
+   * discussion (`FormQuestionDiscussions`). Absent : fermée.
+   */
+  activeComments?: boolean;
 }
 
 // ============================================================================

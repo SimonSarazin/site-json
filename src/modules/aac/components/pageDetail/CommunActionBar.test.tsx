@@ -237,6 +237,24 @@ describe("CommunActionBar — l'état se lit, pour tous", () => {
   });
 });
 
+describe("CommunActionBar — l'emplacement `discussion`, en tête des actions", () => {
+  const discussion = <button type="button">discussion</button>;
+
+  it("le visiteur l'a, et lui seul : l'espace de discussion se lit sans session", () => {
+    const { container } = poser("visiteur", (p) => ({ ...p, discussion }));
+    const boutons = container.querySelectorAll("button");
+    expect(boutons).toHaveLength(1);
+    expect(boutons[0]).toHaveTextContent("discussion");
+  });
+
+  it("l'admin l'a AVANT « Modifier » : il ouvre la rangée des actions", () => {
+    const { container } = poser("admin", (p) => ({ ...p, discussion }));
+    const libelles = Array.from(container.querySelectorAll("[data-commun-action-bar] button"), (b) => b.textContent);
+    expect(libelles[0]).toBe("discussion");
+    expect(libelles).toContain("detail.edit.cta");
+  });
+});
+
 describe("CommunActionBar — un seul bouton plein, la décision ouverte", () => {
   it("admin, commun en attente : « Ajouter à l'annuaire » est l'unique aplat, juste avant « ⋯ »", () => {
     const { container } = poser("admin");

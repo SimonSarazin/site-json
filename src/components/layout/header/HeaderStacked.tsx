@@ -4,6 +4,7 @@ import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
 import { ChevronDown } from "lucide-react";
 import HeaderLogo from "./HeaderLogo";
+import { resolveHeaderLogo } from "./resolveHeaderLogo";
 import { ClientOnly } from "../ClientOnly";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
@@ -118,6 +119,10 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
   }, []);
 
   const marque = MARQUE_BANDEAU[header.height ?? "md"];
+  // `HeaderLogo` rend `null` sans image NI `logoIcon` — sans cette garde, sa boîte (44×44 + `gap`)
+  // resterait quand même dans le flux : un trou vide avant le titre/sous-titre. Même condition que
+  // `HeaderLogo` (overlay ici, cf. son appel ci-dessous), dupliquée faute d'export booléen partagé.
+  const hasLogo = Boolean(resolveHeaderLogo(header, { isOverlay: true }) || header.logoIcon);
 
   const navVisibility = useVisibilityList(header.nav.map((item) => item.visibility));
   const visibleNavItems = header.nav.filter((_, idx) => navVisibility[idx]);
@@ -191,16 +196,18 @@ export default function HeaderStacked({ header }: HeaderStackedProps) {
               le conteneur logo (lui-même hors flux, cf. plus haut) retombe à 0×0 dès `sm:`. Plancher au
               même gabarit que la vignette mobile, jamais atteint tant qu'un des deux textes est présent. */}
           <NavLink to={header.path || "/"} className={`flex flex-col sm:grid sm:grid-cols-[auto_1fr] items-center sm:items-stretch gap-3 sm:gap-5 ${marque.gap} text-center sm:text-left cursor-pointer group`}>
-            <div className="relative h-11 w-11 sm:h-auto sm:w-auto sm:aspect-square sm:min-h-11 sm:min-w-11 shrink-0">
-              <HeaderLogo
-                header={header}
-                isOverlay
-                iconTone="white"
-                imageClassName="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-110"
-                iconClassName="absolute inset-0 h-full w-full transition-transform group-hover:scale-110"
-                imageHeight={marque.px}
-              />
-            </div>
+            {hasLogo && (
+              <div className="relative h-11 w-11 sm:h-auto sm:w-auto sm:aspect-square sm:min-h-11 sm:min-w-11 shrink-0">
+                <HeaderLogo
+                  header={header}
+                  isOverlay
+                  iconTone="white"
+                  imageClassName="absolute inset-0 h-full w-full object-contain transition-transform group-hover:scale-110"
+                  iconClassName="absolute inset-0 h-full w-full transition-transform group-hover:scale-110"
+                  imageHeight={marque.px}
+                />
+              </div>
+            )}
             {(header.logoTitle || header.logoSubtitle) && (
               <span className="flex flex-col items-center sm:items-start leading-tight">
                 {header.logoTitle && (

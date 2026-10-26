@@ -1,17 +1,12 @@
 import { Building2, FileText, User, UserPlus } from "lucide-react";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+import { toText } from "@/helpers/toText";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useProfileSetup } from "../../../hooks/useProfileSetup";
 import type { ProfileSsbeAboutSection } from "../../../schema";
 
 interface ProfileSsbeAboutProps {
 	section: ProfileSsbeAboutSection;
-}
-
-function toText(value: unknown): string | null {
-	if (typeof value !== "string") return null;
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : null;
 }
 
 function firstNonEmpty(...values: Array<string | null | undefined>): string | null {

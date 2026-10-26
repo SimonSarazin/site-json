@@ -2,6 +2,7 @@ import React, { useState, Suspense, useMemo } from "react";
 import { CreditCard } from "lucide-react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import { useSiteEnvelopeForm } from "@/modules/cagnotte/hooks/useSiteEnvelopeForm";
 import { useOrganizationProjectsWithAnswers } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers";
 import { useCagnotteType } from "@/modules/cagnotte/hooks/useCagnotteType";
 import { useCagnotteAdapter , computePledgesFromResources } from "@/modules/cagnotte/hooks/useCagnotteAdapter";
@@ -27,18 +28,20 @@ export function PledgeHeaderButton() {
     const orgsIds = useMemo(() => userAdminOrganizations?.map((o) => o.id) || [], [userAdminOrganizations]);
     const [open, setOpen] = useState(false);
     const siteConfig = useSite();
+    const { config: cagnotteConfig } = useCagnotteType({
+        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
+    });
+    // Projets de l'organisation : l'adaptateur ne les lit qu'en mode `project`.
     const { projects: allProjects } = useOrganizationProjectsWithAnswers({
         entity: entity || null,
-        enabled: !!entity && !!me?.id,
+        enabled: !!entity && !!me?.id && cagnotteConfig.selectorType === "project",
     });
 
     const preferencesData = useReactiveProperty<Record<string, unknown>>(entity?.serverData, 'preferences');
     const projectModalId = (preferencesData?.projectModalId as string | undefined) || null;
-    
-    const { data: envelope } = useFundingEnvelope(projectModalId || undefined);
-    const { config: cagnotteConfig } = useCagnotteType({
-        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
-    });
+
+    const envelopeForm = useSiteEnvelopeForm();
+    const { data: envelope } = useFundingEnvelope(projectModalId || undefined, { form: envelopeForm });
 
     const { resources } = useCagnotteAdapter(
         envelope,

@@ -13,7 +13,8 @@ import { NewsImageGrid } from "./media/NewsImageGrid";
 import { NewsFileList } from "./media/NewsFileList";
 import { NewsVoteDisplay } from "./interactions/NewsVoteDisplay";
 import { NewsReactionPicker } from "./interactions/NewsReactionPicker";
-import { NewsComments } from "./comment/NewsComments";
+import { CommentThread } from "@/modules/comment";
+import { bumpCommentCount } from "../utils/commentCount";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -340,7 +341,16 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
       </div>
 
       {openComments && (
-        <NewsComments news={item} entity={currentEntity} />
+        <CommentThread
+          // La CIBLE du fil est l'actualité ; le CONTEXTE de la recherche de mentions reste
+          // l'entité qui l'héberge — on mentionne d'abord les gens de l'espace.
+          entity={item}
+          scopeEntity={currentEntity}
+          className="w-full rounded-b-xl bg-background pb-3"
+          // Le module générique ne connaît pas le compteur de son hôte : il annonce la
+          // variation, et l'adaptateur la reporte sur la propriété réactive observée plus haut.
+          onCountChange={delta => bumpCommentCount(item, delta)}
+        />
       )}
     </article>
   );

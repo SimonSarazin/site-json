@@ -8,6 +8,7 @@ export type { ModuleRouteFactory } from "@/lib/modules";
 
 // Pages
 export { default as AmpliPage } from "./pages/AmpliPage";
+export { default as AmpliListPage } from "./pages/AmpliListPage";
 
 // Composants
 export { AmpliRenderer } from "./AmpliRenderer";
@@ -19,13 +20,12 @@ export { AmpliProvider } from "./contexts/AmpliProvider";
 export { useAmpliContext } from "./hooks/useAmpliContext";
 export { useFetchAnswerQuery } from "./hooks/useFetchAnswerQuery";
 
-export type {
-    AmpliConfig,
-} from "./schema";
+export { useAmplis, useAmpli } from "./hooks/useAmplis";
 
-export {
-    AmpliConfigSchema,
-} from "./schema";
+export type { AmpliModel } from "./types";
+export type { AmpliPath, CostumAmpliEntry } from "./schema";
+
+export { AmpliPathSchema, CostumAmpliEntrySchema } from "./schema";
 
 // Query keys centralisés (single source of truth)
 export { AMPLI_QUERY_KEYS } from "./constants/queryKeys";

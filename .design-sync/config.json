@@ -149,7 +149,6 @@
     "CagnotteItemList": "src/modules/cagnotte/components/parts/CagnotteItemList.tsx",
     "CagnotteResourceProgressCard": "src/modules/cagnotte/components/parts/CagnotteResourceProgressCard.tsx",
     "CagnotteSuccessScreen": "src/modules/cagnotte/components/parts/CagnotteSuccessScreen.tsx",
-    "CommentInput": "src/modules/news/components/comment/CommentInput.tsx",
     "CountBadge": "src/modules/profil/components/shared/CountBadge.tsx",
     "EmptyState": "src/modules/profil/components/shared/EmptyState.tsx",
     "EntityCardDetailed": "src/modules/profil/components/shared/EntityCardDetailed.tsx",

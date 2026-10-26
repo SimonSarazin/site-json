@@ -1,14 +1,8 @@
-export interface ReportReason {
-  value: string;
-  labelKey: string;
-}
-
-export const REPORT_REASONS: ReportReason[] = [
-  { value: "spam", labelKey: "reportDialog.reasons.spam" },
-  { value: "harassment", labelKey: "reportDialog.reasons.harassment" },
-  { value: "hateSpeech", labelKey: "reportDialog.reasons.hateSpeech" },
-  { value: "violence", labelKey: "reportDialog.reasons.violence" },
-  { value: "inappropriate", labelKey: "reportDialog.reasons.inappropriate" },
-  { value: "misinformation", labelKey: "reportDialog.reasons.misinformation" },
-  { value: "other", labelKey: "reportDialog.reasons.other" },
-];
+/**
+ * Ré-export transitoire — les motifs de signalement vivent désormais dans le module `comment`,
+ * qui les partage entre le fil et le panneau « Discussions ».
+ *
+ * Les libellés (`reportDialog.reasons.*`) restent résolus dans le namespace i18n de l'appelant :
+ * le déplacement ne change rien pour `news`. Ce fichier disparaît au rebranchement (J8).
+ */
+export { REPORT_REASONS, type ReportReason } from "@/modules/comment/constants/reportReasons";

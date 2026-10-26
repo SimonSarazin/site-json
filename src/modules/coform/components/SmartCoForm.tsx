@@ -13,6 +13,7 @@ import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useCocolightOptional } from "@/hooks/useCocolight";
+import { FormQuestionDiscussions } from "./FormQuestionDiscussions";
 
 interface SmartCoFormProps {
   formId?: string;
@@ -124,6 +125,19 @@ interface SmartCoFormProps {
   /** Saisie d'une période (« du … au … ») sur chaque créneau des champs `timeSlots` — cf.
    *  `TimeSlotPeriodsContext`. Défaut : non. */
   slotPeriods?: boolean;
+  /**
+   * Libellé du bouton d'envoi (mode single-step). Défaut :
+   * `coform.navigation.submit`. Sert aux surfaces hôtes qui portent leur propre
+   * appel à l'action (ex. « Soumettre à la communauté » d'`AmpliFeatures`) —
+   * en multi-step, la navigation du wizard garde ses libellés.
+   */
+  submitButtonText?: string;
+  /**
+   * Masque la bannière du formulaire (titre + image). À poser quand le form est
+   * EMBARQUÉ dans une section qui a déjà son titre : sinon le nom du formulaire
+   * s'affiche en `<h1>` au milieu de la page hôte. Toujours vrai en standalone.
+   */
+  hideBanner?: boolean;
 }
 
 interface LoadingStateProps {
@@ -230,6 +244,8 @@ export function SmartCoForm({
   unknownFieldVariant,
   beforeSubmit,
   slotPeriods = false,
+  submitButtonText,
+  hideBanner = false,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -347,14 +363,21 @@ export function SmartCoForm({
     [subFormsFields]
   );
 
-  // Wrapper qui expose les catalogues commonTable aux fields. Le loader rend un
-  // provider vide s'il n'y a pas de commonTable → no-op pur. Il est PARTAGÉ avec
-  // les surfaces qui montent `CoFormReadOnly` sans passer par ici.
-  // Il pose aussi la saisie de période des créneaux (`slotPeriods`) : comme les
-  // catalogues, une donnée de l'APPELANT que seuls certains champs consomment.
-  const withCatalogs = (node: ReactNode) => (
+  // Ce qui entoure le formulaire, quel que soit son rendu :
+  // - les catalogues commonTable des fields — le loader rend un provider vide s'il
+  //   n'y a pas de commonTable → no-op pur ; il est PARTAGÉ avec les surfaces qui
+  //   montent `CoFormReadOnly` sans passer par ici ;
+  // - les discussions des questions ouvertes aux commentaires — l'hôte décide s'il
+  //   en ouvre (réponse enregistrée, question ouverte, site complet), sans jamais
+  //   changer la forme de l'arbre : le formulaire ne remonte pas quand une réponse
+  //   reçoit son identifiant ;
+  // - la saisie de période des créneaux (`slotPeriods`) : comme les catalogues, une
+  //   donnée de l'APPELANT que seuls certains champs consomment.
+  const withFormContext = (node: ReactNode) => (
     <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
-      <TimeSlotPeriodsContext.Provider value={slotPeriods}>{node}</TimeSlotPeriodsContext.Provider>
+      <FormQuestionDiscussions answerId={answerId} form={formData} steps={subFormsFields}>
+        <TimeSlotPeriodsContext.Provider value={slotPeriods}>{node}</TimeSlotPeriodsContext.Provider>
+      </FormQuestionDiscussions>
     </CommonTableCatalogsLoader>
   );
 
@@ -493,12 +516,12 @@ export function SmartCoForm({
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
-    return withCatalogs(
+    return withFormContext(
       <CoFormReadOnly
         formData={effectiveFormData}
         answerData={normalizedDefaults ?? {}}
         answerId={answerId}
-        hideBanner={isStandalone}
+        hideBanner={hideBanner || isStandalone}
         hideStepHeaders={isInputStandalone}
         hideMetadata
       />
@@ -512,7 +535,7 @@ export function SmartCoForm({
       : async (data: AllStepsData) => {
           await internalMutation.mutateAsync({ allData: data });
         };
-    return withCatalogs(
+    return withFormContext(
       <MultiStepCoForm
         formData={effectiveFormData}
         submitMode={submitMode}
@@ -552,6 +575,7 @@ export function SmartCoForm({
         enableDraft={enableDraft}
         existingAnswerMeta={existingAnswerMeta}
         unknownFieldVariant={unknownFieldVariant}
+        hideBanner={hideBanner}
       />
     );
   }
@@ -570,13 +594,13 @@ export function SmartCoForm({
   // Extraire les valeurs par défaut pour cette étape
   const stepDefaults = normalizedDefaults?.[subFormId];
 
-  return withCatalogs(
+  return withFormContext(
     <DynamicCoForm
       formData={effectiveFormData}
-      submitButtonText={t("coform.navigation.submit")}
+      submitButtonText={submitButtonText ?? t("coform.navigation.submit")}
       defaultValues={stepDefaults}
       answerId={answerId}
-      hideBanner={isStandalone}
+      hideBanner={hideBanner || isStandalone}
       hideStepHeaders={isInputStandalone}
       hideSubmitButton={isInputStandalone}
       autoSubmitOnBlur={isInputStandalone}

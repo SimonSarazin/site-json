@@ -119,7 +119,6 @@ export { CagnotteAmountPicker } from "@/modules/cagnotte/components/parts/Cagnot
 export { CagnotteItemList } from "@/modules/cagnotte/components/parts/CagnotteItemList";
 export { CagnotteResourceProgressCard } from "@/modules/cagnotte/components/parts/CagnotteResourceProgressCard";
 export { CagnotteSuccessScreen } from "@/modules/cagnotte/components/parts/CagnotteSuccessScreen";
-export { CommentInput } from "@/modules/news/components/comment/CommentInput";
 export { CountBadge } from "@/modules/profil/components/shared/CountBadge";
 export { EmptyState } from "@/modules/profil/components/shared/EmptyState";
 export { EntityCardDetailed } from "@/modules/profil/components/shared/EntityCardDetailed";

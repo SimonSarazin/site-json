@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
-import { useRealtimeTopics } from "@/hooks/useRealtimeTopics";
+import { useRealtimeEtat, useRealtimeResync, useRealtimeTopic } from "@/hooks/useRealtimeSubscription";
 import type { User } from "@communecter/cocolight-api-client";
 import { NOTIFICATION_QUERY_KEYS } from "../constants/queryKeys";
 
@@ -48,18 +48,13 @@ export function useUnseenBadge(me: User | null) {
     });
   }, [queryClient, userId]);
 
-  const surTopic = useCallback(
-    (topic: string) => { if (topic === TOPIC_NOTIFICATION) rafraichir(); },
-    [rafraichir],
-  );
-
-  const { etat } = useRealtimeTopics({
-    jeton: me?.isConnected ? (me.apiClient?.getToken?.() ?? null) : null,
-    actif: !!me?.isConnected,
-    surTopic,
-    // Le disjoncteur du hub s'est ouvert : il ne dit plus quoi rafraîchir, on refait le point.
-    surResync: rafraichir,
-  });
+  const connecte = !!me?.isConnected;
+  // Le bus filtre par nom de sujet et partage l'unique flux de l'onglet : plus de connexion
+  // ouverte ici — c'est `RealtimeBridge` qui la tient, pour tous les modules à la fois.
+  useRealtimeTopic(TOPIC_NOTIFICATION, rafraichir, connecte);
+  // Le disjoncteur du hub s'est ouvert : il ne dit plus quoi rafraîchir, on refait le point.
+  useRealtimeResync(rafraichir, connecte);
+  const etat = useRealtimeEtat();
 
   const query = useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.BADGE(userId, userContextId),

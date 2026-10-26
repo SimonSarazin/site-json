@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Suspense } from "react";
+import { isValidElement, type ReactElement, Suspense } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import type { CommunDetailReadyVM } from "../../../hooks/useCommunDetailController";
@@ -55,6 +55,11 @@ vi.mock("../CommunReactionStats.tsx", () => ({ CommunReactionStats: probe("react
 vi.mock("../CommunFinancingSection.tsx", () => ({ CommunFinancingSection: probe("funding-section") }));
 vi.mock("../CommunCofinancersTable.tsx", () => ({ CommunCofinancersTable: probe("cofinancers") }));
 vi.mock("../CommunActionsSection.tsx", () => ({ CommunActionsSection: probe("actions") }));
+// Paliers et actions en deux blocs : la liste des paliers tient lieu de « actions ».
+vi.mock("../CommunActionsLists.tsx", () => ({
+  CommunMilestonesList: probe("actions"),
+  CommunActionsFeed: probe("actions-feed"),
+}));
 vi.mock("../CommunContributorsSection.tsx", () => ({ CommunContributorsSection: probe("contributors") }));
 vi.mock("../CommunNewsSection.tsx", () => ({ CommunNewsSection: probe("news") }));
 vi.mock("../CommunAgendaSection.tsx", () => ({ CommunAgendaSection: probe("agenda") }));
@@ -128,7 +133,8 @@ function makeVM(overrides: Partial<CommunDetailReadyVM> = {}): CommunDetailReady
     gallery: { images: [{ src: "http://b/a.jpg", alt: "a.jpg" }] },
     demoBlocks: false,
     actions: pack("action-bar"),
-    overlays: { edit: null, milestones: {} },
+    discussion: { answerId: "a1", communTitle: "Commun", scopeEntity: null },
+    overlays: { edit: null, editDiscussions: null, milestones: {} },
     ...overrides,
   } as unknown as CommunDetailReadyVM;
 }
@@ -191,7 +197,20 @@ describe.each(AAC_DETAIL_VARIANTS.keys())("interface de fiche « %s »", (key) =
     await renderVariant(key, vm);
 
     expect(screen.getByTestId("probe-action-bar")).toBeTruthy();
-    expect(received["action-bar"]).toEqual(vm.actions);
+    // `toMatchObject` : l'interface y ajoute `discussion`, le bouton de l'espace rendu depuis `vm.discussion`.
+    expect(received["action-bar"]).toMatchObject(vm.actions);
+  });
+
+  it("l'espace de discussion est rendu en tête des actions, avec le paquet du contrôleur", async () => {
+    const vm = makeVM();
+    await renderVariant(key, vm);
+
+    // La barre est une sonde : elle ne rend pas ses enfants. On lit l'élément qu'elle a reçu.
+    const bar = received["action-bar"] as { discussion?: ReactElement<Record<string, unknown>> };
+    expect(isValidElement(bar.discussion)).toBe(true);
+    expect(bar.discussion!.props).toMatchObject(vm.discussion);
+    // `key` = le commun : d'un commun à l'autre, le bouton et sa modale repartent de zéro.
+    expect(bar.discussion!.key).toBe(vm.discussion.answerId);
   });
 
   it("financement déclaré : les trois blocs sont atteignables, avec leurs props", async () => {
@@ -227,20 +246,28 @@ describe.each(AAC_DETAIL_VARIANTS.keys())("interface de fiche « %s »", (key) =
   });
 
   it("phase projet : paliers et contributeurs atteignables", async () => {
-    await renderVariant(key, makeVM());
+    const vm = makeVM();
+    await renderVariant(key, vm);
 
     expect(reachable(byTestId("probe-actions"))).toBe(true);
     expect(reachable(byTestId("probe-contributors"))).toBe(true);
+    if (vm.objectives.phase !== "project") throw new Error("vm de test hors phase projet");
+    // Les listes reçoivent le paquet entier, plus le filtre par palier.
+    expect(received.actions).toMatchObject(vm.objectives.actions);
+    // Liste des actions à part : mêmes props que les paliers.
+    if (reachable(byTestId("probe-actions-feed"))) expect(received["actions-feed"]).toMatchObject(vm.objectives.actions);
   });
 
   it("sans projet lié, ou phase en résolution : ni paliers, ni contributeurs", async () => {
     await renderVariant(key, makeVM({ objectives: { phase: "none" } }));
     expect(nowhere(byTestId("probe-actions"))).toBe(true);
+    expect(nowhere(byTestId("probe-actions-feed"))).toBe(true);
     expect(nowhere(byTestId("probe-contributors"))).toBe(true);
     cleanup();
 
     await renderVariant(key, makeVM({ objectives: { phase: "unresolved", isProjectPhase: true } }));
     expect(nowhere(byTestId("probe-actions"))).toBe(true);
+    expect(nowhere(byTestId("probe-actions-feed"))).toBe(true);
     expect(nowhere(byTestId("probe-contributors"))).toBe(true);
   });
 

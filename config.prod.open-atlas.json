@@ -33,6 +33,9 @@
       "en": "Open Atlas"
     }
   },
+  "cagnotteModuleConfig": {
+    "defaultType": "aac"
+  },
   "header": {
     "type": "transparent-scroll",
     "path": "/",
@@ -88,10 +91,10 @@
     },
     "ctaButton": {
       "label": {
-        "fr": "Nous écrire",
-        "en": "Write to us"
+        "fr": "Se connecter",
+        "en": "Log in"
       },
-      "path": "/contact"
+      "path": "/login"
     },
     "logoClass": "h-9 sm:h-10 w-auto shrink-0 object-contain"
   },

@@ -1,8 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
+  addressZoneIds,
   defaultOpenFilterGroups,
   matchesCapacity,
+  matchesTypologies,
   matchesZones,
+  narrowResourceTypes,
   parentIdsFilter,
   parseCapacityRange,
   resourceCapacity,
@@ -81,6 +84,18 @@ describe("selectedZones / matchesZones", () => {
   });
 });
 
+describe("matchesTypologies", () => {
+  it("rien de coché : tout passe, même lieu inconnu", () => {
+    expect(matchesTypologies(undefined, [])).toBe(true);
+  });
+  it("garde un lieu portant l'une des typologies cochées, écarte les autres et les lieux inconnus", () => {
+    const tags = ["Association", "Ateliers artisanaux partagés"];
+    expect(matchesTypologies(tags, ["Tiers-lieu culturel", "Ateliers artisanaux partagés"])).toBe(true);
+    expect(matchesTypologies(tags, ["Tiers-lieu culturel"])).toBe(false);
+    expect(matchesTypologies(undefined, ["Tiers-lieu culturel"])).toBe(false);
+  });
+});
+
 describe("parentIdsFilter", () => {
   it("sans réseau : le lieu cliqué seul, ou aucun filtre", () => {
     expect(parentIdsFilter(null, "p1")).toEqual(["p1"]);
@@ -130,10 +145,38 @@ describe("defaultOpenFilterGroups", () => {
       "resourceType",
     ]);
   });
+  it("typologies : rangées après la thématique, avant la capacité", () => {
+    expect(
+      defaultOpenFilterGroups({ thematic: false, typology: true, capacity: true, region: true, priceGroupIds: [] }),
+    ).toEqual(["resourceType", "typologies"]);
+  });
   it("tiers-lieux : type + thématique (ordre d'affichage)", () => {
     expect(defaultOpenFilterGroups({ thematic: true, capacity: true, region: true, priceGroupIds: [] })).toEqual([
       "resourceType",
       "thematic",
     ]);
+  });
+});
+
+describe("addressZoneIds", () => {
+  it("toutes les zones de l'adresse, commune comprise (level5 et localityId aussi)", () => {
+    expect(
+      addressZoneIds({ level1: "FR", level3: "OCC", level4: "31", level5: "Z5", localityId: "C1", postalCode: "31120" }),
+    ).toEqual(["FR", "OCC", "31", "Z5", "C1"]);
+  });
+  it("adresse absente ou vide : aucune zone", () => {
+    expect(addressZoneIds(undefined)).toEqual([]);
+    expect(addressZoneIds({ level1: "" })).toEqual([]);
+  });
+});
+
+describe("narrowResourceTypes", () => {
+  const types = [{ id: "coworking" }, { id: "meeting-room" }, { id: "accommodation" }];
+  it("ne garde que les types demandés", () => {
+    expect(narrowResourceTypes(types, ["coworking"])).toEqual([{ id: "coworking" }]);
+  });
+  it("demande vide ou inconnue : tous les types (une URL fautive ne vide pas l'annuaire)", () => {
+    expect(narrowResourceTypes(types, [])).toEqual(types);
+    expect(narrowResourceTypes(types, ["inconnu"])).toEqual(types);
   });
 });

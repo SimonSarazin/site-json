@@ -31,7 +31,7 @@ contrôleurs ou par du contenu de démonstration.
 | `theme` · `stage` · `need_types[]` | rôle `tags` · rôle `maturity` · usages catégorisés (`usage.categories`) |
 | `budget_needed` · `budget_secured` | `totalRequested` · `totalFunded` — mais la fiche montre la **vraie** carte de financement |
 | `community_size` | `usersCount` (rôle `users`) |
-| `Milestone` · `ProjectAction` | paliers et actions (`CommunActionsSection`) |
+| `Milestone` · `ProjectAction` | paliers et actions (`CommunActionsSection` ; interface editorial : `CommunMilestonesList` + `CommunActionsFeed` ; dialogues `CommunActionDialogs`, montés par la page) |
 | `Expense` · `Funder` | besoins financiers · cofinanceurs (`CommunFinancingSection`, `CommunCofinancersTable`) |
 | `value_added`, `needs_answered`, `objectives[]` | blocs de prose `detail.sections` |
 | `slug` | `answerId` (route `/aac/commun/:answerId`, cf. `lib/communPath.ts`) |

@@ -1,5 +1,7 @@
 import { useT } from "@/hooks/useT";
 import { CommunActionBar } from "../CommunActionBar.tsx";
+import { CommunDiscussionControl } from "../CommunDiscussionControl.tsx";
+import { CommunMilestoneDiscussionButton } from "../CommunMilestoneDiscussionButton.tsx";
 import { CommunHero } from "../CommunHero.tsx";
 import { CommunFinancingCard } from "../CommunFinancingCard.tsx";
 import { CommunTocNav } from "../CommunTocNav.tsx";
@@ -22,7 +24,10 @@ export default function CommunDetailDefault({ vm }: { vm: CommunDetailReadyVM })
 
     return (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-24">
-                <CommunActionBar {...vm.actions} />
+                <CommunActionBar
+                    {...vm.actions}
+                    discussion={<CommunDiscussionControl key={vm.discussion.answerId} {...vm.discussion} />}
+                />
 
                 {/* Sans carte de financement, le héros prend toute la largeur. */}
                 <div className={funding ? "grid lg:grid-cols-12 gap-8 lg:gap-12 mb-14" : "mb-14"}>
@@ -40,11 +45,22 @@ export default function CommunDetailDefault({ vm }: { vm: CommunDetailReadyVM })
                         isLoading={toc.isLoading}
                     />
 
-                    <div className="lg:col-span-9 space-y-20">
+                    {/* `min-w-0` : un item de grille ne rétrécit pas sous son contenu le plus large. Sans
+                        lui, une seule ligne insécable (une adresse web dans un texte) élargissait toute la
+                        colonne sur écran étroit — paliers compris, dont les boutons sortaient de l'écran. */}
+                    <div className="lg:col-span-9 min-w-0 space-y-20">
 
                         {funding && (
                             <Section id="besoins-financiers" title={String(t("detail.toc.financialNeeds"))}>
-                                <CommunFinancingSection {...funding.section} />
+                                <CommunFinancingSection
+                                    {...funding.section}
+                                    // Un fil par palier, comme « Commenter » sur chaque carte de la liste des
+                                    // dépenses du legacy : il ouvre l'espace de discussion du commun sur le fil
+                                    // de la ligne.
+                                    renderMilestoneDiscussion={({ lineKey, name }) => (
+                                        <CommunMilestoneDiscussionButton answerId={vm.discussion.answerId} lineKey={lineKey} name={name} />
+                                    )}
+                                />
                             </Section>
                         )}
 

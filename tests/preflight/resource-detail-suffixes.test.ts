@@ -38,7 +38,7 @@ function* parcourir(o: unknown): Generator<Json> {
 function ecartsDetail(cfg: unknown): string[] {
   const fiche = new Map<string, Json>();
   // Liste et non dictionnaire : plusieurs sections annuaire peuvent déclarer le même formulaire
-  // (`/annuaire-ressources` et `/reservation`) — chacune est vérifiée.
+  // (`/services` et `/reservation`) — chacune est vérifiée.
   const annuaire: Array<{ section: string; formId: string; suffixes: Json }> = [];
   for (const node of parcourir(cfg)) {
     if (node.type === "profile-about-tl") {

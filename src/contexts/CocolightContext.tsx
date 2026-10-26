@@ -27,6 +27,13 @@ export interface CocolightContextType {
   setDataToProfile: Dispatch<SetStateAction<unknown>>
   /** Recharge les données de l'utilisateur connecté depuis l'API */
   refreshMe: () => Promise<void>
+  /**
+   * Recharge l'entité porteuse du site depuis l'API — et donc son `costum`,
+   * que `element/about` renvoie avec elle. À appeler après une écriture sur le
+   * costum (création/suppression d'un ampli) : l'entité est du STATE ici, pas
+   * une query, une invalidation React Query ne la rafraîchirait pas.
+   */
+  refreshEntity: () => Promise<void>
 }
 
 

@@ -22,13 +22,28 @@ export interface UseFetchAnswerQueryParams {
         prefix?: string;
         includeUserInfo?: boolean;
     };
+    /**
+     * `false` → aucun appel réseau (query désactivée). Permet de n'ouvrir le
+     * périmètre carte que quand la vue carte/split est réellement affichée —
+     * même intention que `searchType: null` côté `useSearchQuery`.
+     */
+    enabled?: boolean;
+    /**
+     * Politique de cache — même paramètre que `useSearchQuery`. Le défaut
+     * (60 s) convient à l'infinite-scroll ; une vue qui enchaîne TOUTES les
+     * pages doit poser un cache long, sinon chaque retour sur la vue re-joue la
+     * cascade complète (cf. `useAmpliAllAnswers`).
+     */
+    cache?: { staleTime?: number; gcTime?: number };
 }
 
 export function useFetchAnswerQuery({
     coformId,
     view,
     baseParams = {},
-    extractionConfig
+    extractionConfig,
+    enabled = true,
+    cache
 }: UseFetchAnswerQueryParams) {
     const { entity, helper } = useCocolight();
 
@@ -36,6 +51,9 @@ export function useFetchAnswerQuery({
         data,
         error,
         lastItemRef,
+        fetchNextPage,
+        hasNextPage,
+        isFetchNextPageError,
         isFetchingNextPage,
         isLoading,
         isPending,
@@ -104,8 +122,9 @@ export function useFetchAnswerQuery({
 
         },
         options: {
-            enabled: !!entity,
-            staleTime: 60 * 1000,
+            enabled: !!entity && enabled,
+            staleTime: cache?.staleTime ?? 60 * 1000,
+            ...(cache?.gcTime !== undefined && { gcTime: cache.gcTime }),
             initialPageParam: [],
         },
     });
@@ -161,6 +180,15 @@ export function useFetchAnswerQuery({
         data,
         error,
         lastItemRef,
+        // Pagination MANUELLE (en plus de l'infinite-scroll `lastItemRef`) :
+        // la vue carte doit enchaîner tout le périmètre sans scroll — cf.
+        // `useAmpliAllAnswers`.
+        fetchNextPage,
+        hasNextPage,
+        // `error` seul ne distingue pas un échec de page suivante d'un échec
+        // initial : sans ce flag, un consommateur qui enchaîne les pages ne peut
+        // pas savoir qu'il doit s'arrêter.
+        isFetchNextPageError,
         transformedResults,
         isFetchingNextPage,
         isLoading,

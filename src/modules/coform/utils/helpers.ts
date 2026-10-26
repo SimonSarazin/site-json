@@ -62,6 +62,36 @@ export function isStepComplete(
 }
 
 /**
+ * Une réponse porte-t-elle au moins une valeur ?
+ *
+ * Une réponse peut exister sans contenu : un dossier ouvert puis jamais rempli n'a pas de champ
+ * `answers`, ou n'y garde que des étapes vides (`{ aapStep1: {} }`) — une réponse sur quatre en
+ * base de dev, mesuré le 14/10/2026. Vide : `null`, `undefined`, une chaîne blanche, et tout
+ * tableau ou objet qui ne contient que du vide. `false` et `0` sont des valeurs : quelqu'un les a
+ * enregistrées.
+ */
+export function hasAnswerContent(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim() !== "";
+  if (Array.isArray(value)) return value.some(hasAnswerContent);
+  if (typeof value === "object") return Object.values(value).some(hasAnswerContent);
+  return true;
+}
+
+/**
+ * L'erreur dit-elle que la chose demandée n'existe pas ? C'est l'ENTITÉ du SDK qui le dit, par un
+ * `ApiError` au statut 404 — `Answer.get` pour une réponse absente, `findanswered` ne renvoyant alors
+ * aucun identifiant. Une telle erreur ne se résout pas en réessayant.
+ *
+ * Le transport lève un `ApiClientError` — même statut, autre nom — quand c'est la ROUTE qui manque :
+ * SDK non régénéré, serveur mal déployé. Ce n'est pas une chose absente, et la dire « introuvable »
+ * cacherait la panne : seul le nom `ApiError` compte.
+ */
+export function isNotFoundError(error: unknown): boolean {
+  return error instanceof Error && error.name === "ApiError" && "status" in error && error.status === 404;
+}
+
+/**
  * Fusionne les données de plusieurs étapes
  */
 export function mergeStepsData(

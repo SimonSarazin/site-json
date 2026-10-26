@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { type ApiClient } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { getBaseUrl } from "@/lib/constant/common";
+import { getSiteCostumContext } from "@/lib/siteCostum";
 
 export interface SSOAuthResult {
   success: boolean;
@@ -16,10 +17,26 @@ export interface SSOAuthResult {
  * Après le flux OAuth, Communecter envoie un `postMessage` contenant les JWT tokens.
  * Le hook les injecte dans l'`ApiClient` et émet l'événement `userLoggedIn` afin que
  * `CocolightProvider` mette à jour l'état de l'utilisateur connecté.
+ *
+ * L'URL porte aussi le costum du SITE (`costumSlug` + `costumId`/`costumType` quand l'entité porteuse
+ * est résolue) : un compte CRÉÉ par le SSO est alors estampillé `source.key` comme une inscription
+ * classique depuis ce site (sans ça il n'appartenait à aucun costum). Même trio que `register`.
+ *
+ * Quand le retour du provider n'arrive PAS dans la popup (lien de vérification d'e-mail ouvert dans
+ * un nouvel onglet), le backend renvoie ce nouvel onglet sur `/sso/callback` (SsoCallbackPage) ;
+ * cet onglet-ci l'apprend par l'événement `storage` (CocolightProvider). La popup, elle, reste sur la
+ * page du provider : l'utilisateur la ferme lui-même, et la promesse ci-dessous se résout alors en
+ * annulation silencieuse (ou n'est plus écoutée si le composant a quitté la page de login).
  */
 export function useSSOAuth() {
-  const { apiClient } = useCocolight();
+  const { apiClient, contextId, contextType } = useCocolight();
   const cleanupRef = useRef<(() => void) | null>(null);
+  // Lus via une ref pour que `openSSOPopup` garde la MÊME identité quand l'entité porteuse se résout :
+  // LoginForm l'a en dépendance de son effet d'auto-déclenchement, qui annulerait sinon un flux en cours.
+  const costumCtxRef = useRef({ contextId, contextType });
+  useEffect(() => {
+    costumCtxRef.current = { contextId, contextType };
+  }, [contextId, contextType]);
 
   // Nettoyage des listeners si le composant est démonté avant la fin du flux
   useEffect(() => {
@@ -33,7 +50,17 @@ export function useSSOAuth() {
       return new Promise((resolve) => {
         const origin      = window.location.origin;
         const backendUrl  = getBaseUrl();
-        const ssoUrl      = `${backendUrl}/co2/sso/services?authclient=${encodeURIComponent(service)}&origin=${encodeURIComponent(origin)}`;
+        const params      = new URLSearchParams({ authclient: service, origin });
+        // Même trio que `register` (getSiteCostumContext neutralise la sentinelle "default" d'un site sans slug).
+        const costumCtx   = getSiteCostumContext(costumCtxRef.current);
+        if (costumCtx) {
+          params.set("costumSlug", costumCtx.costumSlug);
+          if (costumCtx.costumId && costumCtx.costumType) {
+            params.set("costumId", costumCtx.costumId);
+            params.set("costumType", costumCtx.costumType);
+          }
+        }
+        const ssoUrl      = `${backendUrl}/co2/sso/services?${params.toString()}`;
 
         // Centrer le popup
         const w    = 600;

@@ -5,7 +5,8 @@
       "message": "Messages",
       "network": "Network",
       "dashboard": "Dashboard",
-      "news": "News"
+      "news": "News",
+      "stats": "Statistics"
     },
     "comingSoon": {
       "title": "Coming soon",
@@ -16,7 +17,10 @@
     "headline": "Let's amplify common sense",
     "subhead": "An army of humans working for the common good. A peer-to-peer trust network that amplifies your ideas to the whole world.",
     "proposal": "Propose an idea",
-    "join": "Join Now",
+    "browse": "Browse the proposals",
+    "join": "Join the community",
+    "joinPending": "Request sent",
+    "joined": "You are a member",
     "mediaPulse": "Media Pulse",
     "globalAmplification": "Global Amplification",
     "trustedNetwork": "Trusted Network"
@@ -48,6 +52,9 @@
       "amplified": "Ideas amplified",
       "comments": "Discussions generated"
     },
+    "form": {
+      "error": "The submission form could not be loaded"
+    },
     "howItWork": {
       "headline": "How does it work?",
       "stepOne": "You submit your idea.",
@@ -61,20 +68,95 @@
   },
   "AmpliCommunity": {
     "headline": "Trusted Network",
-    "subhead": "A peer-to-peer ecosystem where each member is validated by the community."
+    "subhead": "A peer-to-peer ecosystem where each member is validated by the community.",
+    "map": {
+      "empty": "No contributor is located on the map",
+      "error": "Contributor loading failed: the map could not be filled",
+      "missing_one": "{{count}} contributor has no location ({{located}} of {{total}} shown)",
+      "missing_other": "{{count}} contributors have no location ({{located}} of {{total}} shown)"
+    }
   },
   "AmpliDashboard": {
-    "headline": "Vision Globale",
-    "subhead": "Voir la globalité sur les données fournit par votre communauté."
+    "headline": "Global overview",
+    "subhead": "See the big picture from the data your community provides.",
+    "kpi": {
+      "participants": "Participants",
+      "participantsHint": "Active members who took part",
+      "comments": "Comments",
+      "commentsHint": "Discussions generated",
+      "likes": "Likes",
+      "likesHint": "Appreciations received",
+      "tags": "Tags used",
+      "tagsHint": "Distinct categories"
+    },
+    "topLiked": "Most liked answers",
+    "topCommented": "Most commented answers",
+    "tagsChart": "Tag distribution",
+    "emptyRanking": "No answer to rank yet",
+    "emptyTags": "No tag used yet",
+    "untitled": "Untitled"
   },
   "AmpliNews": {
-    "headline": "Dernières actualités",
-    "subhead": "Restez informé des développements et des succès de notre communauté."
+    "headline": "Latest news",
+    "subhead": "Stay up to date with our community developments and wins."
   },
   "AmpliPage": {
     "notFoundTitle": "Ampli not found",
-    "notFoundDescription": "The configuration for ampli \"{{slug}}\" cannot be found.",
-    "backHome": "Back to home"
+    "notFoundDescription": "No ampli \"{{slug}}\" exists on this site.",
+    "backHome": "Back to home",
+    "backToList": "See all amplis",
+    "notConfiguredTitle": "Ampli in preparation",
+    "notConfiguredDescription": "\"{{name}}\" does not accept proposals yet: its form is not configured."
+  },
+  "AmpliList": {
+    "title": "All amplis",
+    "searchLabel": "Search an ampli",
+    "searchPlaceholder": "Search an ampli…",
+    "filterByTags": "Filter by tags:",
+    "clearFilters": "Clear filters",
+    "noResults": "No ampli matches these filters.",
+    "empty": "No ampli has been declared on this site yet.",
+    "proposals_one": "{{count}} proposal",
+    "proposals_other": "{{count}} proposals",
+    "moreTags": "+{{count}}",
+    "join": {
+      "title": "Go to an ampli",
+      "description": "Enter an ampli identifier, or pick one from the list.",
+      "label": "Ampli identifier",
+      "placeholder": "Ampli identifier",
+      "button": "Go to the ampli",
+      "notFound": "No ampli \"{{slug}}\" on this site."
+    },
+    "welcome": "New here? Join an ampli to share your ideas.",
+    "create": {
+      "open": "Create an ampli",
+      "title": "Create an ampli",
+      "description": "The submission form is created along with the ampli: title, description, address, tags and image.",
+      "nameLabel": "Ampli name",
+      "namePlaceholder": "Ideas for the city",
+      "nameHint": "The name gives the ampli its identifier, hence its address.",
+      "slugHint": "Identifier: {{slug}}",
+      "invalidName": "This name does not produce a usable identifier.",
+      "duplicate": "An ampli already uses the identifier “{{slug}}”: creating this one would overwrite it.",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "What is this ampli for?",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "urban planning, mobility",
+      "tagsHint": "Separated by commas.",
+      "cancel": "Cancel",
+      "submit": "Create the ampli",
+      "success": "Ampli “{{name}}” created",
+      "error": "Could not create the ampli"
+    },
+    "delete": {
+      "label": "Delete the ampli {{name}}",
+      "title": "Delete “{{name}}”?",
+      "description": "The ampli disappears from the site and from Co, with its pages and menu button. The submission form and the proposals already sent are kept.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "success": "Ampli “{{name}}” deleted",
+      "error": "Could not delete the ampli"
+    }
   },
   "AmpliUserCard": {
     "noLocation": "Location not provided",
@@ -82,21 +164,32 @@
     "contributions_other": "{{count}} contributions"
   },
   "MeeteemSection": {
+    "empty": "No answers to show",
     "viewToggle": {
       "answers": "Directory",
       "map": "Map",
       "split": "Split"
     },
     "filters": {
-      "title": "Filters"
+      "title": "Filters",
+      "clearUser": "Clear the author filter"
     },
     "map": {
-      "placeholderTitle": "Interactive map",
-      "placeholderSubtitle": "(requires Leaflet.js)"
+      "error": "Map loading was interrupted: some answers are missing",
+      "empty": "No answer is located on the map"
     },
     "card": {
       "noDate": "N/A",
-      "noUser": "Anonymous"
+      "noUser": "Anonymous",
+      "locate": "Show on map",
+      "details": "Answer details",
+      "detailsLoading": "Loading the answer…",
+      "detailsError": "This answer could not be loaded.",
+      "edit": "Edit",
+      "open": "Open details for {{name}}",
+      "noLocation": "No address provided",
+      "react": "Amplify this answer",
+      "unreact": "Remove my amplification"
     }
   },
   "a11y": {
@@ -104,5 +197,14 @@
     "toggleTag": "Toggle filter {{tag}}",
     "selectUser": "View contributions by {{name}}",
     "loading": "Loading section…"
+  },
+  "toast": {
+    "reactionError": "Could not save your reaction",
+    "error": {
+      "generic": "Something went wrong"
+    }
+  },
+  "AmpliTabs": {
+    "label": "Ampli page navigation"
   }
 }

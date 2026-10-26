@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
+import { COMMENT_COUNTS_META } from "@/modules/comment/constants/queryKeys";
 import { NEWS_QUERY_KEYS } from "../constants/queryKeys";
 
 interface useNewsByIdQueryProps {
@@ -28,5 +29,8 @@ export const useNewsByIdQuery = ({ newsId, entity, enabled = true }: useNewsById
     },
     enabled: enabled && !!newsId && !!entity,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    // Porteuse de compteurs de messages, comme le fil (`useNewsQuery`) : la page d'une actualité
+    // et l'aperçu de recherche affichent le même « Commenter (N) » (relecture du lot, 16/10).
+    meta: { [COMMENT_COUNTS_META]: true },
   });
 };

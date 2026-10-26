@@ -10,8 +10,8 @@ import type { CagnotteFundableItem, FundingAction } from "@/modules/cagnotte/typ
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
 
 /**
- * Ce que le bloc « Suivi des actions » décide, au-delà du contrôleur qu'il reçoit :
- *  1. le contexte d'édition d'une action est STABLE d'un rendu à l'autre — le
+ * Ce que le bloc « Suivi des actions » et ses dialogues décident, au-delà du contrôleur reçu :
+ *  1. le contexte d'édition d'une action (`CommunActionDialogs`) est STABLE d'un rendu à l'autre — le
  *     dialogue (réel ici) fait `form.reset()` sur son identité, une saisie en cours
  *     ne doit pas être effacée parce que le parent s'est rerendu ;
  *  2. QUI voit la barre de gestion d'un palier, et en particulier « Restaurer »,
@@ -39,6 +39,7 @@ vi.mock("@/components/form/DatePickerInput", () => ({ DatePickerInput: () => nul
 vi.mock("@/components/form/TagsInput", () => ({ TagsInput: () => null }));
 
 const { CommunActionsSection } = await import("./CommunActionsSection");
+const { CommunActionDialogs } = await import("./CommunActionDialogs");
 
 function action(over: Partial<FundingAction> = {}): FundingAction {
   return { id: "a1", name: "Atelier", credits: 500, status: "todo", tags: [], contributors: [], ...over };
@@ -143,11 +144,17 @@ function poser(ctrl: CommunObjectivesController, items: CagnotteFundableItem[]) 
   return { ...utils, rerender: (c: CommunObjectivesController) => utils.rerender(section(c)) };
 }
 
+function poserDialogues(ctrl: CommunObjectivesController) {
+  const dialogues = (c: CommunObjectivesController) => envelopper(<CommunActionDialogs ctrl={c} />);
+  const utils = render(dialogues(ctrl));
+  return { ...utils, rerender: (c: CommunObjectivesController) => utils.rerender(dialogues(c)) };
+}
+
 beforeAll(async () => {
   await i18n.changeLanguage("fr");
 });
 
-describe("CommunActionsSection — édition d'une action", () => {
+describe("CommunActionDialogs — édition d'une action", () => {
   const champNom = () => screen.getByRole("textbox", { name: "Nom de l'action" }) as HTMLInputElement;
 
   it("la saisie en cours survit à un rerendu du parent", async () => {
@@ -158,7 +165,7 @@ describe("CommunActionsSection — édition d'une action", () => {
       selectedMilestoneTitle: "Prototype",
       selectedAction: cible,
     });
-    const { rerender } = poser(ctrl, [palier()]);
+    const { rerender } = poserDialogues(ctrl);
 
     expect(champNom().value).toBe("Atelier");
     fireEvent.change(champNom(), { target: { value: "Atelier 2" } });
@@ -174,14 +181,13 @@ describe("CommunActionsSection — édition d'une action", () => {
   });
 
   it("ouvre le dialogue sur l'action sélectionnée, palier et action nommés", () => {
-    poser(
+    poserDialogues(
       controleur({
         isEditActionOpen: true,
         selectedMilestoneId: "m1",
         selectedMilestoneTitle: "Prototype",
         selectedAction: action({ name: "Maquette", credits: 800 }),
       }),
-      [palier()],
     );
 
     expect(screen.getByRole("dialog")).toBeTruthy();

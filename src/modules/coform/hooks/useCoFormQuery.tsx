@@ -20,6 +20,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { COFORM_QUERY_KEYS } from "../constants";
+import { isNotFoundError } from "../utils/helpers";
 import type { CoFormData, CoFormAccessInfo, CoFormAnswer, SubFormData, AllStepsData } from "../types";
 
 // Re-export du hook de soumission finale (compat ascendante).
@@ -198,9 +199,12 @@ interface UseCoFormAnswerQueryOptions {
 }
 
 interface UseCoFormAnswerQueryReturn {
-  /** Données complètes de la réponse */
+  /** Données complètes de la réponse — `null` tant qu'elle n'est pas chargée, ou si elle est absente (`error`, 404). */
   answer: CoFormAnswer | null;
-  /** Données de réponses (answers) pour pré-remplissage */
+  /**
+   * Données de réponses (answers) pour pré-remplissage. `null` aussi pour une réponse qui EXISTE
+   * sans contenu — `answer` est alors non nul : ce n'est pas une absence.
+   */
   answerData: AllStepsData | null;
   isLoading: boolean;
   error: Error | null;
@@ -238,6 +242,9 @@ export function useCoFormAnswerQuery({
       const answer = await form.answer({ id: answerId });
       return answer.serverData as unknown as CoFormAnswer;
     },
+    // Une réponse absente ne reviendra pas : la réessayer trois fois tenait la page plusieurs
+    // secondes sur « Chargement » avant de dire qu'elle est introuvable.
+    retry: (failureCount, error) => !isNotFoundError(error) && failureCount < 3,
     enabled: enabled && isReady && !!answerId,
     staleTime: 2 * 60 * 1000,
   });

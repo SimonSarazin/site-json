@@ -193,6 +193,10 @@ L'endpoint `findanswered` retourne `canEdit` et `editDeniedReason` pour chaque r
 
 `CoFormAnswerPage` masque le bouton "Modifier" si `canEdit === false` et affiche un bandeau d'erreur si le mode edit est demandé sans autorisation.
 
+Une réponse qui existe sans contenu (pas de champ `answers`) n'est pas « introuvable » : en lecture, un encart le dit
+et propose « Remplir » à qui peut la modifier ; en édition, le formulaire s'ouvre vide. « Réponse introuvable » est
+réservé au 404 que lève le SDK pour une réponse absente (voir `doc/21-module-coform.md`, CoFormAnswerPage).
+
 ## i18n
 
 **Namespace** : `modules/coform`

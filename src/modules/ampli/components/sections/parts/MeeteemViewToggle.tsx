@@ -25,22 +25,26 @@ export function MeeteemViewToggle({ value, onChange }: MeeteemViewToggleProps) {
   const t = useT("modules/ampli");
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg border border-border">
+    <div className="flex items-center gap-1 p-1 rounded-lg border border-border max-w-full">
       {VIEW_BUTTONS.map(({ mode, icon: Icon, labelKey }) => {
         const active = value === mode;
+        const label = String(t(labelKey));
         return (
           <Button
             key={mode}
             variant={active ? "default" : "ghost"}
             size="sm"
             onClick={() => onChange(mode)}
+            // Le label reste dans le DOM sous `sm` (lecteurs d'écran + tests) mais
+            // n'est plus peint : 3 libellés côte à côte débordaient sur mobile.
+            aria-label={label}
             className={cn(
-              "gap-2 transition-all",
+              "gap-2 px-2 sm:px-3 transition-all",
               active && "shadow-sm",
             )}
           >
-            <Icon className="w-4 h-4" />
-            <span>{String(t(labelKey))}</span>
+            <Icon className="w-4 h-4 shrink-0" />
+            <span className="sr-only sm:not-sr-only">{label}</span>
           </Button>
         );
       })}

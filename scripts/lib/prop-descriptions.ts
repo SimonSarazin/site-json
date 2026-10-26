@@ -197,6 +197,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "utilities.auth": "Widget compte <AuthMenu> (login/avatar) — module auth.",
     "utilities.notifications": "Cloche de notifications — active le module notification (chunk lazy).",
     "utilities.piggyBank": "Cagnotte du header — module cagnotte (bloc header.piggyBank pour le contenu).",
+    "utilities.pledge": "Bouton « Mes promesses » (promesses à régler, paiements) — module cagnotte, membres connectés ; headers standard, transparent-scroll et mega-menu.",
     ctaButton: "Bouton d'appel à l'action de la barre (label + path).",
     urgenceButton: "Bouton d'urgence mis en avant (headers transparent-scroll/underline-nav).",
     announcement: "Bandeau d'annonce au-dessus de la barre (header standard) : texte, lien, variant info|success|warning|error, dismissible.",
@@ -546,7 +547,7 @@ export const BLOCK_NOTES: Record<string, string[]> = {
   ],
   header: [
     "Chaque NavItem exige au moins un de path | href | children | megaMenu (refinement).",
-    "utilities.* sont des GATES de modules : search→commandPalette, auth→AuthMenu, notifications→module notification, piggyBank→cagnotte.",
+    "utilities.* sont des GATES de modules : search→commandPalette, auth→AuthMenu, notifications→module notification, piggyBank/pledge→cagnotte.",
   ],
   theme: [
     "La config n'est jamais parsée par Zod au runtime : fournir chaque clé explicitement (les .default() ne s'appliquent pas).",
@@ -575,6 +576,7 @@ export const BLOCK_NOTES: Record<string, string[]> = {
     "Refinement non exportable (ProfileTabSchema) : chaque tab exige `sections` non vide OU `component`.",
     "resolveEditModalName lit editModal/editModals sur profiles[getEntityType()] UNIQUEMENT — jamais sur `default` ; repli final « edit-profile ».",
     "tabs[].condition.permissions est déclaré au schéma mais NON implémenté (non implémenté, cf. lib/tabVisibility.ts) — ne pas s'y fier.",
+    "Projet sans réponse liée (serverData.answer vide) : les onglets qui contiennent une section cagnotte (finance, actions, *-summary, même dans un cagnotte-layout) sont retirés d'office — aucune clé de config à poser.",
     "generateTabRoutes fusionne les tabs de TOUS les types (routes partagées par id) ; le filtrage par condition n'agit qu'à l'affichage — d'où la redirection client vers l'onglet par défaut si l'URL d'un tab filtré est visitée.",
   ],
   admin: [

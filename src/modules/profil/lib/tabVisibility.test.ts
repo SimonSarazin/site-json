@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { isTabVisible } from "./tabVisibility";
+import { isTabAvailable, isTabVisible } from "./tabVisibility";
 
 const PROPRIO = { id: "u1", slug: "judi" };
 const VISITEUR = { id: "u2", slug: "autre" };
@@ -40,5 +40,31 @@ describe("isTabVisible — `auth` et `entityTypes`", () => {
 
   it("sans condition : toujours visible", () => {
     expect(isTabVisible(undefined, { hydrated: false })).toBe(true);
+  });
+});
+
+describe("isTabAvailable — onglets cagnotte d'un projet sans réponse liée", () => {
+  const FINANCEMENTS = {
+    condition: { auth: "required" as const },
+    sections: [{ type: "cagnotte-layout", props: { leftSections: [{ type: "finance" }], rightSections: [{ type: "finance-summary" }] } }],
+  };
+  const ACTUALITES = { sections: [{ type: "news" }] };
+
+  it("projet sans réponse : onglet cagnotte retiré, dès avant l'hydratation", () => {
+    expect(isTabAvailable(FINANCEMENTS, { hydrated: false, entityType: "projects" })).toBe(false);
+    expect(isTabAvailable(FINANCEMENTS, { hydrated: true, me: PROPRIO, entityType: "projects", answerId: null })).toBe(false);
+  });
+
+  it("projet relié à une réponse : onglet proposé", () => {
+    expect(isTabAvailable(FINANCEMENTS, { hydrated: true, me: PROPRIO, entityType: "projects", answerId: "answer-1" })).toBe(true);
+  });
+
+  it("autres entités, autres onglets : rien ne change", () => {
+    expect(isTabAvailable(FINANCEMENTS, { hydrated: true, me: PROPRIO, entityType: "organizations" })).toBe(true);
+    expect(isTabAvailable(ACTUALITES, { hydrated: true, me: PROPRIO, entityType: "projects" })).toBe(true);
+  });
+
+  it("la `condition` de l'onglet reste appliquée", () => {
+    expect(isTabAvailable(FINANCEMENTS, { hydrated: true, me: null, entityType: "projects", answerId: "answer-1" })).toBe(false);
   });
 });

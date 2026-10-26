@@ -12,6 +12,7 @@ import { lazy } from "vite-preload";
 import { CocolightProvider } from "@/contexts/CocolightProvider";
 import { getBaseUrl, getCostumForceLive } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
+import { RealtimeBridge } from "@/components/layout/RealtimeBridge";
 import { SiteProvider } from "@/contexts/SiteProvider";
 import { useSite } from "@/hooks/useSite";
 import { CommandPaletteProvider } from "@/modules/commandPalette/contexts/CommandPaletteProvider";
@@ -44,6 +45,7 @@ function SiteShell() {
       <I18nBridge>
         <SiteTheme />
         <GoogleFontsLoader />
+        <RealtimeBridge />
 
         <CommandPaletteProvider>
         <AuthModalProvider>

@@ -1,0 +1,340 @@
+{
+  "thread": {
+    "empty": "No messages yet",
+    "emptyHint": "Start the conversation.",
+    "loginToComment": "Sign in to take part",
+    "loading": "Loading conversation…",
+    "loadError": "The conversation could not be loaded",
+    "staleError": "The latest messages could not be reloaded.",
+    "retry": "Try again",
+    "gone": "This conversation no longer exists",
+    "goneHint": "The item it belonged to has been deleted.",
+    "newMessages": "New messages",
+    "newMessages_other": "{{count}} new messages",
+    "newBadge": "new",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "inReplyTo": "Replying to {{author}}",
+    "deleted": "Message deleted",
+    "sending": "Sending…",
+    "sendFailed": "Not sent",
+    "replyCount_one": "{{count}} reply",
+    "replyCount_other": "{{count}} replies",
+    "lastReply": "last {{when}}"
+  },
+  "composer": {
+    "placeholder": "Write a message…",
+    "replyPlaceholder": "Reply to {{author}}…",
+    "editPlaceholder": "Edit message…",
+    "send": "Send",
+    "cancel": "Cancel",
+    "save": "Save",
+    "replyingTo": "Replying to {{author}}",
+    "stopReplying": "Stop replying",
+    "emoji": "Insert an emoji",
+    "mentionHint": "Type @ to mention someone",
+    "formattingHint": "Ctrl+Enter sends the message. Enter starts a new paragraph, Shift+Enter a new line. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, # heading, `code`, > quote, - list, 1. numbered list.",
+    "formattingHintTouch": "Enter starts a new line; the message is sent with its button. Keyboard formatting: **bold**, *italic*, ~~strikethrough~~, # heading, `code`, > quote, - list, 1. numbered list.",
+    "sendShortcut": "Ctrl+Enter",
+    "tools": "Formatting and attachments",
+    "editorFailed": "The editor could not be loaded. Try again, or reload the page.",
+    "mentionCount_one": "{{count}} person suggested",
+    "mentionCount_other": "{{count}} people suggested",
+    "marks": {
+      "bold": {
+        "label": "Bold"
+      },
+      "italic": {
+        "label": "Italic"
+      },
+      "strike": {
+        "label": "Strikethrough"
+      },
+      "heading": {
+        "label": "Heading"
+      },
+      "code": {
+        "label": "Code"
+      },
+      "link": {
+        "label": "Link"
+      },
+      "quote": {
+        "label": "Quote"
+      },
+      "list": {
+        "label": "Bulleted list"
+      },
+      "ordered": {
+        "label": "Numbered list"
+      },
+      "codeBlock": {
+        "label": "Code block"
+      }
+    },
+    "heading": {
+      "normal": "Normal text",
+      "level": "Heading {{level}}"
+    },
+    "link": {
+      "url": "Link address",
+      "apply": "Apply",
+      "remove": "Remove link"
+    },
+    "inlineImage": {
+      "label": "Insert an image in the text",
+      "import": "Upload",
+      "address": "Address",
+      "choose": "Choose an image…",
+      "formats": "JPEG or PNG, 8 MB at most.",
+      "uploading": "Uploading {{name}}…",
+      "ready": "{{name}} is ready to be inserted.",
+      "failed": "The image could not be uploaded. Try again.",
+      "url": "Image address",
+      "remoteHint": "It comes from another site: readers will show it with a click.",
+      "refused": "Enter the full address of an online image (https://…).",
+      "alt": "Description",
+      "altHint": "What the image shows, for those who cannot see it",
+      "insert": "Insert"
+    },
+    "emojiSearch": "Search emoji"
+  },
+  "images": {
+    "attach": "Attach an image",
+    "full": "Five images at most",
+    "remove": "Remove {{name}}",
+    "uploading": "Uploading {{name}}…",
+    "uploadFailed": "{{name}} could not be attached",
+    "failedHint_one": "{{name}} could not be attached. Remove it to send your message.",
+    "failedHint_other": "{{count}} images could not be attached. Remove them to send your message.",
+    "waitingHint_one": "The image is still uploading. Your message can be sent as soon as it is attached.",
+    "waitingHint_other": "{{count}} images are still uploading. Your message can be sent as soon as they are attached.",
+    "nth": "Image {{index}} of {{total}}",
+    "viewer": "Enlarged image",
+    "close": "Close image",
+    "previous": "Previous image",
+    "next": "Next image",
+    "rejected": {
+      "type": "Only JPEG and PNG files are accepted.",
+      "size": "An image must not exceed 8 MB.",
+      "count": "Five images at most per message."
+    },
+    "inline": {
+      "remoteShow": "Show the image from {{host}}"
+    }
+  },
+  "actions": {
+    "reply": "Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "report": "Report",
+    "react": "Add a reaction",
+    "copyLink": "Copy message link",
+    "linkCopied": "Link copied",
+    "more": "More actions",
+    "showVoters": "See who reacted"
+  },
+  "reactions": {
+    "add": "Add a reaction",
+    "who": "{{names}} reacted",
+    "whoOne": "{{names}} reacted",
+    "andOthers": "{{names}} and {{count}} others"
+  },
+  "voters": {
+    "title": "Who reacted",
+    "description": "The people who reacted to this message, reaction by reaction.",
+    "loading": "Loading reactions…",
+    "empty": "No reactions yet",
+    "error": "The reactions could not be loaded."
+  },
+  "reactionsTypes": {
+    "love": "Love",
+    "like": "Like",
+    "enjoy": "Happy",
+    "glad": "Glad",
+    "bothered": "Angry",
+    "sad": "Sad",
+    "scared": "Worried",
+    "support": "Support"
+  },
+  "deleteDialog": {
+    "title": "Delete this message?",
+    "description": "The message and its replies will be permanently deleted.",
+    "descriptionNoReplies": "This message will be permanently deleted.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "panel": {
+    "title": "Conversations",
+    "description": "Your contexts, their discussion threads and the messages of the selected thread.",
+    "holders": "Contexts",
+    "close": "Close conversations",
+    "expandRail": "Expand contexts",
+    "collapseRail": "Collapse contexts",
+    "threads": "Threads",
+    "messages": "Messages",
+    "noHolder": "No context has conversations",
+    "noThread": "No thread in this context",
+    "pickThread": "Pick a thread to display it",
+    "loadAll": "Load every conversation",
+    "loadAllHint": "By default, only the current context is loaded.",
+    "truncated": "Partial view — narrow the context to see everything",
+    "unreadCount_one": "{{count}} unread",
+    "unreadCount_other": "{{count}} unread",
+    "carrierUnread_one": "{{name}}, {{count}} unread",
+    "carrierUnread_other": "{{name}}, {{count}} unread",
+    "lastActivity": "Last message {{when}}",
+    "backToThreads": "Back to threads",
+    "backToHolders": "Back to contexts",
+    "startThread": "Start the conversation",
+    "openThread": "Current thread",
+    "withoutThread_one": "Without conversation ({{count}})",
+    "withoutThread_other": "Without conversation ({{count}})",
+    "noCarrier": "No context",
+    "untitled": "Untitled",
+    "pickHolder": "Pick a context",
+    "loginRequired": "Sign in to find your discussions.",
+    "mine": "I write here",
+    "threadCount_one": "{{count}} thread",
+    "threadCount_other": "{{count}} threads",
+    "messageCount_one": "{{count}} message",
+    "messageCount_other": "{{count}} messages",
+    "search": "Search a context or a conversation",
+    "searchClear": "Clear the search",
+    "searching": "Searching…",
+    "searchThreads": "Matching threads — all contexts",
+    "searchScopeHint": "The search does not cover message content.",
+    "searchPartial": "Partial view — the search does not cover everything",
+    "noHolderMatch": "No context matches “{{query}}”",
+    "noThreadMatch": "No thread matches “{{query}}”",
+    "holderCount_one": "{{count}} context",
+    "holderCount_other": "{{count}} contexts",
+    "searchSummary": "{{holders}} · {{threads}}",
+    "inSpace": "in {{name}}",
+    "error": {
+      "hidden": "Discussion not found, or access to it is restricted.",
+      "refused": "The server refused the request.",
+      "unreadable": "The server sent an unreadable response.",
+      "failed": "The discussions could not be loaded."
+    },
+    "loginToRead": "Sign in to read this discussion."
+  },
+  "space": {
+    "title": "Commun discussions",
+    "titleOf": "Discussions — {{name}}",
+    "description": "The discussion threads of this commun and the messages of the selected thread.",
+    "titleAnswer": "Answer discussions",
+    "descriptionAnswer": "The discussion threads of this answer and the messages of the selected thread.",
+    "general": "General discussion",
+    "questionUntitled": "Untitled question",
+    "expenseUntitled": "Expense line",
+    "notFound": "This discussion space could not be found.",
+    "loginIfReserved": "If it is restricted to you, sign in to read it.",
+    "kinds": {
+      "general": "General",
+      "question": "Question",
+      "expense": "Expense",
+      "other": "Discussion"
+    },
+    "audiences": {
+      "authorAll": "Public",
+      "authorAdmin": "Private",
+      "private": "Admins"
+    },
+    "groups": {
+      "questions": "Questions",
+      "expenses": "Expenses",
+      "other": "Other"
+    },
+    "create": {
+      "open": "New discussion",
+      "title": "New discussion",
+      "name": "Discussion name",
+      "namePlaceholder": "What would you like to talk about?",
+      "audience": "Who can read it",
+      "audienceHint": {
+        "authorAll": "Everyone, without signing in.",
+        "authorAdmin": "The person who submitted the commun, its referents and the administrators of the call.",
+        "private": "The administrators of the call only."
+      },
+      "submit": "Create",
+      "submitting": "Creating…",
+      "cancel": "Cancel",
+      "error": {
+        "login": "Sign in to create a discussion.",
+        "hidden": "This discussion space could not be found.",
+        "forbidden": "You cannot create this discussion.",
+        "bad-name": "Give it a name, 120 characters at most.",
+        "too-many": "This commun has reached its maximum number of discussions.",
+        "unreadable": "The server response could not be read. Check the list before trying again.",
+        "uncertain": "The server did not answer: the discussion may have been created. Check the list before trying again.",
+        "failed": "The discussion could not be created. Try again."
+      }
+    }
+  },
+  "reportDialog": {
+    "title": "Report this message",
+    "description": "Help us keep the community respectful by reporting inappropriate content.",
+    "reasonLabel": "Reason for reporting",
+    "reasonPlaceholder": "Select a reason",
+    "commentLabel": "Additional details (optional)",
+    "commentPlaceholder": "Add details about this report…",
+    "cancel": "Cancel",
+    "submit": "Send report",
+    "submitting": "Sending…",
+    "reasons": {
+      "spam": "Spam or promotional content",
+      "harassment": "Harassment or bullying",
+      "hateSpeech": "Hate speech",
+      "violence": "Violence or threats",
+      "inappropriate": "Inappropriate content",
+      "misinformation": "Misinformation",
+      "other": "Other"
+    }
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "at": "{{date}} at {{time}}",
+    "todayAt": "today at {{time}}",
+    "yesterdayAt": "yesterday at {{time}}",
+    "onDate": "on {{date}}"
+  },
+  "toast": {
+    "addSuccess": "Message sent",
+    "addError": "The message could not be sent",
+    "editSuccess": "Message updated",
+    "editError": "The message could not be updated",
+    "deleteSuccess": "Message deleted",
+    "deleteError": "The message could not be deleted",
+    "replySuccess": "Reply sent",
+    "replyError": "The reply could not be sent",
+    "reactError": "The reaction could not be saved",
+    "reportSuccess": "Report sent",
+    "reportError": "The report could not be sent",
+    "maybeSent": "The message may have been sent — the conversation was reloaded",
+    "maybeApplied": "The action may have gone through — the conversation was reloaded",
+    "draftRestored": "Your text is back in the message field.",
+    "draftKept": "Reopen the discussion where you wrote it: your text will wait for you there for a few minutes."
+  },
+  "a11y": {
+    "thread": "Conversation thread",
+    "message": "Message from {{author}}, {{when}}",
+    "reactionCount": "{{reaction}}: {{count}}",
+    "unreadSeparator": "Start of unread messages",
+    "messageActions": "Message actions",
+    "threadHint": "Use the up and down arrows to move between messages, then Tab to reach a message's actions."
+  },
+  "contextTypes": {
+    "citoyens": "Profile",
+    "organizations": "Organization",
+    "projects": "Project",
+    "events": "Event",
+    "poi": "Place",
+    "news": "News",
+    "answers": "Answer",
+    "forms": "Form",
+    "classifieds": "Classified",
+    "actions": "Action"
+  }
+}

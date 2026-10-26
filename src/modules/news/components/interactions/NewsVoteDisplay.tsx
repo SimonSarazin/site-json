@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { NewsReactionsModal } from "./NewsReactionsModal";
 import { useT } from "@/hooks/useT";
-import { voteTypes } from "../../constants/voteTypes";
+import { voteTypes } from "@/modules/comment/constants/voteTypes";
 
 interface NewsVoteDisplayProps {
   voteCount: Record<string, number>;

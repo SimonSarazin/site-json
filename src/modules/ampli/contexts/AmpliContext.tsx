@@ -1,8 +1,8 @@
 import { createContext } from "react";
-import { AmpliConfig } from "../schema";
+import type { ConfiguredAmpli } from "../types";
 
 interface AmpliContextType {
-    config: AmpliConfig;
+    ampli: ConfiguredAmpli;
 }
 
 export const AmpliContext = createContext<AmpliContextType | null>(null);
