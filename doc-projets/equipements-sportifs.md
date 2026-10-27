@@ -11,7 +11,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module CoForm](../doc/21-module-coform.md).
 > Mémoire : `[[project-equipements-sportifs]]`.
 
-Dernière mise à jour : **2026-10-23** (aucun changement de config : lecture de la période propre d'un créneau par le moteur).
+Dernière mise à jour : **2026-10-27** (review de la MR 114 : fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type annoncé) ; 23/10 : lecture de la période propre d'un créneau par le moteur.
 
 ---
 
@@ -196,6 +196,26 @@ npx tsx scripts/config-probe.ts config.prod.equipements-Sportifs.json
 ---
 
 ## 9. Impacts des modifications
+
+### 27/10/2026 — review de la MR 114 : fiche équipement et tableau de bord d'installation
+
+Suite de la review de Thomas sur la MR 114 (`ess974` → `main`). Le détail est au §9
+d'[equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md), lot B.
+
+**Ce qui change dans la config** : `"equipmentDetails": true` sur les 4 blocs `preview` poi-amenities (liste
+des équipements, observatoire, table Data, palette). La fiche garde ce qu'elle montre depuis le lot du 15/10 :
+« Type d'équipement », « Catégorie », « Type de particularité », sports cliquables, SIRET et UAI. Ce rendu est
+désormais une option : sport-santé-bien-être, qui partage le composant sans la poser, retrouve sa fiche
+historique. La fenêtre des doublons du formulaire costum garde la même fiche.
+
+**Déjà dans la branche, annoncé ici** : le tableau de bord d'installation (`installationDashboard`) calcule le taux
+d'occupation et la répartition des activités sur la SEMAINE TYPE, c'est-à-dire les créneaux actifs le jour de la
+consultation (`weeklyReservations`). Avant, il portait sur toutes les réservations. Les chiffres baissent donc dès
+qu'une réservation est passée. C'est le bon calcul : additionner les saisons passées, puis chaque trimestre
+importé, faussait un taux qui ne vaut que pour une semaine (lots 8 et 9 d'ESS974).
+
+**Validation** : `config:validate` ✅ 8 pages, 14 sections · `audit:config` RAS · test de la fiche, avec et sans
+l'option ✅.
 
 ### 23/10/2026 — aucun changement de config
 

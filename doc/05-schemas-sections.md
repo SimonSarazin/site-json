@@ -1492,6 +1492,7 @@ export const ListConfSchema = z.object({
 * **`preview.type`** : contenu du détail rendu dans le conteneur `detailsMode` (axe indépendant de `card.type`) — `default`, `poi-amenities`, `coform-answer`, `event`, `facets`, `news` (→ `PreviewNews`), `testimonial` (→ `PreviewTestimonial`), `resource` (→ `PreviewResource`). Voir [Details de `PreviewConfSchema`](#details-de-previewconfschema).
 * **`preview.width`** : largeur MAX du conteneur de détail en mode `dialog` (échelle `sm`..`5xl`|`full`, défaut code `5xl`) — sans effet en mode `drawer`.
 * **`preview.showDetailLink`** : booléen (défaut : affiché) ; `false` masque le lien « Voir en page » (permalien) — lu par `PreviewNews`.
+* **`preview.equipmentDetails`** : booléen (opt-in) ; fiche `poi-amenities` des sites d'équipements sportifs (type, catégorie, particularité et sports cliquables, SIRET/UAI) — absent : fiche historique. Voir [Details de `PreviewConfSchema`](#details-de-previewconfschema).
 * **`testimonial`** : contrat générique config-driven du design `testimonial` (card + preview). Voir [Details de `TestimonialConfSchema`](#details-de-testimonialconfschema).
 * **`resource`** : contrat générique config-driven du design `resource` (card + preview). Voir [Details de `ResourceConfSchema`](#details-de-resourceconfschema).
 * **`previewParam`** : nom du paramètre URL synchronisant l'item ouvert en preview (défaut `preview`) — utile quand plusieurs listings coexistent sur une même page.
@@ -1572,6 +1573,7 @@ export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
   fields: z.record(z.string(), z.string()).optional(),
   facets: z.array(PreviewFacetSchema).optional(),
+  equipmentDetails: z.boolean().optional(),
   showDetailLink: z.boolean().optional(),
   width: z.enum(["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "full"]).optional(),
 }).partial();
@@ -1580,6 +1582,7 @@ export const PreviewConfSchema = z.object({
 * **`type`** : `default`, `poi-amenities`, `coform-answer`, `event`, `facets`, `news` (→ `PreviewNews`), `testimonial` (→ `PreviewTestimonial`), `resource` (→ `PreviewResource`).
 * **`fields`** : mapping `rôle → suffixe de champ CoForm` (pour `type: "coform-answer"`) — surcharge la table par défaut du composant, découple les IDs de champs.
 * **`facets`** : facettes data-driven du preview générique (`type: "facets"`). Chaque facette (`PreviewFacetSchema` : `field`, `label?`, `icon?`) affiche une valeur `serverData` (dot-path supporté) et, si indexée par un dropdownFilter, devient cliquable pour filtrer le listing.
+* **`equipmentDetails`** : booléen (opt-in, testé `=== true`) — fiche `poi-amenities` des sites d'équipements sportifs : « Type d'équipement » (`equip_type_name`), « Catégorie » (`categorie`), « Type de particularité » (`inst_part_type`) et sports (`aps_name`) en valeurs cliquables, SIRET et UAI sous la fiche nationale. Absent : la fiche historique (« Catégorie » sur `equip_type_name`, sport en texte, « Partenariat ») — lu par `PreviewPoiAmenities`.
 * **`showDetailLink`** : booléen (défaut : affiché, testé `!== false`) ; `false` masque le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la modal de détail — lu par `PreviewNews`.
 * **`width`** : largeur MAX du conteneur de détail en mode `dialog` (échelle Tailwind `max-w-*` : `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `5xl`, `full` = `95vw`). **Défaut code : `5xl`** (fallback dans `DetailsModeDialog`, pas via Zod). Sans effet en mode `drawer`.
 

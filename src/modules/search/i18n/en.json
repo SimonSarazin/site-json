@@ -142,7 +142,8 @@
       "floor": "Surfacing",
       "surface": "Surface",
       "length": "Length",
-      "width": "Width"
+      "width": "Width",
+      "partnership": "Partnership"
     },
     "features": {
       "pmr": "PRM access",

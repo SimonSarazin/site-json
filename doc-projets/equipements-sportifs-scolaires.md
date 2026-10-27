@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-27** (review de la MR 114, lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
+Dernière mise à jour : **2026-10-27** (review de la MR 114, lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
 
 ---
 
@@ -214,6 +214,57 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### Review de la MR 114, lot B — sites en ligne (2026-10-27)
+
+**Contexte** : points 4, 6, 7 et 8 de la note de Thomas, selon les choix de Peterson.
+- La fiche de sport-santé-bien-être ne doit pas bouger.
+- La semaine type du tableau de bord et le réglage `periods` de Saint-Paul sont à annoncer.
+- Un club créé depuis le formulaire doit porter l'étiquette.
+
+**Ce qui change** :
+- **Fiche équipement en option, `preview.equipmentDetails`** (point 4). Sans l'option, `PreviewPoiAmenities` rend
+  la fiche de main : « Catégorie » sur `equip_type_name`, sport en texte, rangée « Partenariat », ni SIRET ni UAI.
+  - L'option est posée sur les 4 aperçus poi-amenities des 3 sites d'équipements (liste, observatoire, table Data,
+    palette) et sur la fenêtre des doublons (slot écrit en dur). Ces sites gardent leur fiche du lot 2.
+  - Sport-santé, qui ne la pose pas, retrouve exactement main, avec la traduction « Partenariat » rétablie.
+  - La colonne de droite de la fiche organisation reprend aussi la classe de main hors `placement: "column"`.
+  - Doc 05, doc 07 (dont sa table des champs, encore fausse sur `partenariat`), `prop-descriptions` et skill sont
+    à jour.
+- **Club créé depuis le formulaire de réservation** (point 8) : `coform.finderAddNew` déclare le formulaire
+  `ess974-association` pour la seule question « club usager »
+  (`finderequipementsSportifs974872026_1619_0n0a7usagerorga1k9z`). Le club créé porterait l'étiquette et le
+  rattachement à ESS974. Les autres finders d'organisations gardent le formulaire standard.
+  - Aucun effet visible aujourd'hui : le bouton « Ajouter » de cette question est désactivé en base (`addNew:
+    false`, §13).
+- **Annonces** (points 6 et 7) dans les docs d'[Équipements sportifs](equipements-sportifs.md) et de
+  [Saint-Paul](saint-paul-sport.md) : la semaine type du tableau de bord d'installation, et l'effet de `periods`
+  sur Saint-Paul (réglage non demandé, posé par cohérence).
+- **Skill** : la phrase du patron « ajouter une association » dit que `profileAdd: false` garde le formulaire
+  standard dans l'« Ajouter » des profils, et que c'est `addButton.adminOnly` qui réserve l'ajout aux admins. Cela
+  règle par avance un point de nettoyage de Thomas.
+
+**Validation** (base locale, serveur de dev sur 5174, visiteur, aucune écriture) :
+- **ESS974** : la fiche « Salle de danse » ouverte depuis la liste, puis depuis la table Data, montre « Type
+  d'équipement », « Catégorie », « Type de particularité », SIRET et UAI, sans « Partenariat » ;
+- **sport-santé-bien-être** (même serveur, relancé le temps du contrôle sur sa config) : la fiche « Boulodrome »
+  montre « Catégorie : Terrain de pétanque », le sport en texte et « Partenariat : Complexe sportif, Etablissement
+  scolaire », sans type, particularité, SIRET ni UAI. C'est la fiche de main ;
+- **résolution de la déclaration** : la question « club usager » ouvre `add-ess974-association`, tout autre finder
+  d'organisations `add-organization`.
+
+**Gates** :
+- tests : `PreviewPoiAmenities.test.tsx` (nouveau, 5 cas, avec et sans l'option) et `PreviewStructure.test.tsx`
+  (Nicolas, lancé avec l'accord de Peterson) ✅ ;
+- lint ✅ (0 erreur, 23 avertissements préexistants, aucun dans les fichiers du lot) · typecheck ✅ ;
+- `config:validate` ✅ ESS974 9/14, Équipements sportifs 8/14, Saint-Paul 12/21 · `audit:config` RAS sur les 3 ;
+  config de sport-santé inchangée ;
+- références du préflight vérifiées écart par écart :
+  - `__effective__` d'ESS974 : une seule ligne, la question « club usager », resynchronisée ;
+  - les photos d'Équipements sportifs et de Saint-Paul ne bougent pas ;
+  - l'exemple `data-observatory` du skill, extrait de Saint-Paul : seul écart `equipmentDetails`, resynchronisé
+    avec l'accord de Peterson ;
+- préflight en lecture seule : 898/903, avec les seuls 4 échecs d'environnement (§12).
 
 ### Review de la MR 114, lot A — sûreté des créneaux (2026-10-27)
 
@@ -1010,7 +1061,7 @@ repassent au vert.
 | 3 | Rendu SSR | ✅ | 9/9 pages en 200 (16/10) |
 | 4 | Périmètres de données | ✅ | **3/3 à 708 résultats** (annuaire, observatoire, data) |
 | 5 | Filtres alignés sur la donnée | ✅ | 0 valeur orpheline, 0 type réel sans option, 0 virgule |
-| 6 | Préflight | 🟡 | 897/902 (26/10, après la fusion de `main`) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 resynchronisée et inventaire des stamps complété (§9 lot 11) ; l'exemple `data-observatory` de l'assistant a été resynchronisé avec l'accord de Peterson (§9) |
+| 6 | Préflight | 🟡 | 898/903 (27/10, review de la MR 114, lot B) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
 | 7 | Aperçu navigateur | 🟡 | Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
 | 8 | Déploiement | ❌ | à faire |
 | 9 | Saisie / back-office | ❌ | **bloqué backend** (§12) |
@@ -1024,7 +1075,7 @@ repassent au vert.
 | 17 | Filtres et observatoire | ✅ | Lot 9 : minutes au quart d'heure, 23 communes dans l'observatoire (liste commune avec la page Équipements), sablier des KPI d'heures — vérifié au navigateur le 23/10 (§9). Le 26/10, les 5 communes à deux codes postaux se sélectionnent de nouveau (libellés sans virgule), ce qui est vérifié au navigateur (§9) |
 | 18 | Formulaire d'édition complet d'un équipement | ❌ | Lot 10, après la demande backend (§13) |
 | 19 | Ajout et modification des associations | ✅ | Lot 11 : ajout depuis l'annuaire réservé aux admins (clé ESS974 posée par le serveur, étiquette usager, doublons signalés, apparition immédiate) ; modification par l'admin qui a ajouté l'association — vérifié au navigateur le 26/10, puis de nouveau sur le code final après la relecture de conformité (§9). Les 37 associations existantes restent non modifiables depuis le site |
-| 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion — vérifié au navigateur (§9). Lots B (sites en ligne), C (performances) et D (nettoyage) à faire |
+| 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion. Lot B (27/10) : fiche équipement en option (`equipmentDetails`), sport-santé revenu à main, club du formulaire avec l'étiquette, annonces sur les sites en ligne. Vérifiés au navigateur (§9). Lots C (performances) et D (nettoyage) à faire |
 
 ---
 
@@ -1108,6 +1159,7 @@ revanche pertinent pour un site scolaire.
 | Doter l'entité `ESS974` de `serverData.lists` et `costum.typeObj.poi` — prérequis du formulaire d'édition complet d'un équipement (lot 10 : formulaire du parent repris en configuration, plus les champs absents : n° d'équipement et d'installation, UAI, SIRET, site web…) | backend — destinataire à trancher (Aboire ou admin Communecter) |
 | Un équipement créé depuis ESS974 doit-il porter `source.key = "equipementsSportifs974"` (visible sur les deux sites) ou `"ESS974"` seul ? | Peterson + backend |
 | Garder ou retirer le bouton « Ajouter équipement sportif » tant que le lot 2 est bloqué | Peterson |
+| Créer un club depuis le formulaire de réservation : le bouton « Ajouter » du finder « club usager » est désactivé en base (`addNew: false`). La config d'ESS974 est prête depuis le 27/10 (`coform.finderAddNew` : le club créé porterait l'étiquette). Mais ce formulaire est partagé avec Équipements sportifs et Saint-Paul, qui n'ont pas de formulaire d'association : l'activer y créerait des clubs sans l'étiquette, à traiter d'abord | Peterson |
 | Compléter les marqueurs légaux (directeur de publication, hébergeur, contact RGPD) — commun aux 3 sites équipements | Peterson |
 | Poser le DNS `equipements-sportifs-scolaires.00.re` et déployer | Peterson |
 | Vérifier les volumes réels en production | Peterson |

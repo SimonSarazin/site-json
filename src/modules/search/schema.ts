@@ -541,6 +541,14 @@ export const PreviewConfSchema = z.object({
    * Lu par `PreviewFacets`.
    */
   showDescription: z.boolean().optional(),
+  /**
+   * Fiche `poi-amenities` des sites d'ÉQUIPEMENTS SPORTIFS (opt-in) : « Type d'équipement » (`equip_type_name`),
+   * « Catégorie » (`categorie`) et « Type de particularité » (`inst_part_type`) en valeurs cliquables, sports
+   * cliquables (`aps_name`), SIRET et UAI sous la fiche nationale. Absent : la fiche historique — « Catégorie »
+   * sur `equip_type_name`, sport en texte, « Partenariat » (`inst_part_bool` / `inst_part_type`), celle de
+   * sport-santé-bien-être. Lu par `PreviewPoiAmenities` (testé `=== true`, la config n'étant pas parsée).
+   */
+  equipmentDetails: z.boolean().optional(),
   /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */

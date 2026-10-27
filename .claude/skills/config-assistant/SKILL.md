@@ -291,7 +291,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | type | rend | quand / options |
 |---|---|---|
 | `default` | détail générique | fallback |
-| `poi-amenities` | détail POI + équipements | le plus utilisé du parc (×10) |
+| `poi-amenities` | détail POI + équipements | le plus utilisé du parc (×10) ; `equipmentDetails: true` = fiche des sites d'équipements sportifs (type, catégorie, particularité et sports cliquables, SIRET/UAI), absent = fiche historique |
 | `coform-answer` | détail réponse CoForm | `preview.fields` (rôle → suffixe de champ) |
 | `event` | détail événement | réutilisé par le module agenda |
 | `facets` | détail data-driven à facettes cliquables | `preview.facets[]` — zéro code |
@@ -342,7 +342,9 @@ qui ont au moins un créneau sur un équipement du site — périmètre calculé
 SSR), qui suit seul les nouveaux créneaux ; `fields.userOrga` requis. `includeCostumOrganizations: true`
 y ajoute les organisations rattachées au costum du site : patron « ajouter une association »
 (`addButton.modal` + `costumForms` au `costumSlug` du site, étiquette du finder en stamp, `profileAdd: false`
-pour réserver l'ajout aux admins, liste filtrée sur l'étiquette) dans `doc/07`. **Filtre de
+pour que l'« Ajouter » des profils garde le formulaire standard — c'est `addButton.adminOnly`, `true` par défaut,
+qui réserve l'ajout aux admins —, `coform.finderAddNew` sur la question du finder pour qu'un club créé depuis le
+formulaire de réservation porte l'étiquette, liste filtrée sur l'étiquette) dans `doc/07`. **Filtre de
 disponibilité** : `searchHeader.slotFilter` `{id, label, reservations, amplitude?}`
 retire de la liste les ressources réservées sur une plage horaire, des jours de la
 semaine (aucun = les 7, libre chacun d'eux) et une période facultative (début absent →

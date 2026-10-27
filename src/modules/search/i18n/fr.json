@@ -142,7 +142,8 @@
             "floor": "Revêtement",
             "surface": "Surface",
             "length": "Longueur",
-            "width": "Largeur"
+            "width": "Largeur",
+            "partnership": "Partenariat"
         },
         "features": {
             "pmr": "Accès PMR",

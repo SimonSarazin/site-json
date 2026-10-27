@@ -621,8 +621,9 @@ const PreviewStructure: React.FC<PreviewProps> = ({ item, preview }) => {
             {bookedInColumn && peopleAndInfo}
           </div>
 
-          {/* Colonne de droite : personnes + infos (en `placement: "column"`, elles sont sous l'adresse). */}
-          {!bookedInColumn && <div className="flex min-w-0 flex-col gap-4 md:col-span-3">{peopleAndInfo}</div>}
+          {/* Colonne de droite : personnes + infos (en `placement: "column"`, elles sont sous l'adresse). Classe de
+              main, sans `min-w-0` : SSBE et les annuaires sans placement gardent leur rendu historique. */}
+          {!bookedInColumn && <div className="flex flex-col gap-4 md:col-span-3">{peopleAndInfo}</div>}
         </div>
 
         {/* Équipements réservés — pleine largeur sous les deux colonnes : une

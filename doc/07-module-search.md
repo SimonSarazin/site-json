@@ -1540,7 +1540,10 @@ Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du c
 | `equip_long` / `equip_larg` | `longueur` / `largeur` | Technique |
 | `equip_eclair` | `eclairage` | Technique + Accessibilité |
 | `equip_acc_libre` | `libreAccess` | Technique + Accessibilité |
-| `inst_part_bool` / `inst_part_type` | `partenariat` / `typePartenariat` | Technique |
+| `inst_part_bool` / `inst_part_type` | `partenariat` / `typeParticularite` | Technique (fiche historique) ou Général (`equipmentDetails`) |
+| `equip_numero` / `inst_siret` / `inst_uai` | `equipNumero` / `instSiret` / `instUai` | Fiche nationale (SIRET et UAI : `equipmentDetails`) |
+
+**Fiche des sites d'équipements sportifs — `preview.equipmentDetails`** (opt-in, testé `=== true`). Posé sur les aperçus d'Équipements sportifs, d'ESS974 et de Saint-Paul — liste, observatoire, table Data, palette —, et par la fenêtre des doublons (`PoiEquipementDoublonsSlot`, sans config d'aperçu). Avec l'option, la section Général montre « Type d'équipement » (`equip_type_name`), « Catégorie » (`categorie`) et « Type de particularité » (`inst_part_type`) en valeurs cliquables, et chaque sport (`aps_name`) filtre la liste ; SIRET et UAI s'affichent sous la fiche nationale quand ils sont renseignés (`isProvided` écarte « Donnée non renseignée »). Sans l'option — sport-santé-bien-être —, la fiche historique : « Catégorie » sur `equip_type_name`, sport en texte, rangée « Partenariat » en section Technique (le type si `inst_part_bool` est vrai, sinon « Non »).
 
 **`toDate()`** : même logique que `CardPoiAmenities` — gère `Date` et `string` ISO.
 
@@ -1549,7 +1552,7 @@ Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du c
 **Sections affichées** (dans l'ordre de la grille) :
 
 Colonne principale :
-1. **Informations générales** — catégorie, famille, installation, sport pratiqué
+1. **Informations générales** — catégorie, famille, installation, sport pratiqué (avec `equipmentDetails` : type d'équipement, catégorie, famille, installation, type de particularité, sports)
 2. **Gestion & usages** — propriétaire, gestionnaire, locaux, utilisateurs
 3. **Accessibilité & services** — features PMR/transport/éclairage/douches/libre accès + types ; sous-sections « Détails PMR » (6 infos) et « Détails PSHS » (6 infos)
 
@@ -1643,6 +1646,7 @@ Liste d'organisations dont le périmètre est **calculé** à partir des réserv
 - un stamp `tags` en `append`, sur `both`, garantit l'étiquette du finder de réservation (`params.finder<clé>.filter`) : sans elle, l'association ne pourrait recevoir aucun créneau ;
 - `inject.extraFields.role: "admin"` fait du créateur l'administrateur de l'association, ce qui lui ouvre le bouton « Éditer » de la fiche `structure` ; `profiles.organizations.editModals` route vers le même formulaire, borné par la provenance (`sourceKeys` / `reference.costum`, cf. préflight `edit-modal-scope`) ;
 - `duplicateCheck` cherche les organisations qui portent déjà l'étiquette (réseau entier, `notSourceKey`) : un club existant se réserve, il ne se recrée pas ;
+- depuis le formulaire de réservation, `coform.finderAddNew` déclare ce même formulaire pour la question du finder « club usager » (`finder<étape><userOrga>: "add-<id>"`, cf. `doc/21`) : si le bouton « Ajouter » du finder est activé (`addNew`), le club créé porte l'étiquette ; sans la déclaration, le formulaire standard créerait un club sans elle, absent du finder comme de l'annuaire ;
 - l'ajout reste réservé aux admins de deux façons : `profileAdd: false` garde le formulaire standard dans l'« Ajouter » des profils (sinon tout inscrit y créerait une association, rattachée au site donc listée), et la liste filtre sur l'étiquette (`baseParams.defaultFilters.$or.tags`) — une organisation créée ailleurs sur le site est rattachée elle aussi, par le costum ambiant, mais n'a pas l'étiquette.
 
 ### Facettes cliquables & navigation par filtre (`dropdownFilters`)

@@ -1802,6 +1802,7 @@
               },
               "preview": {
                 "type": "poi-amenities",
+                "equipmentDetails": true,
                 "reservations": {
                   "form": "6a4e4e4105e5972f7b4b1823",
                   "step": "equipementsSportifs974872026_1619_0",
@@ -3647,6 +3648,7 @@
               "detailsMode": "dialog",
               "preview": {
                 "type": "poi-amenities",
+                "equipmentDetails": true,
                 "reservations": {
                   "form": "6a4e4e4105e5972f7b4b1823",
                   "step": "equipementsSportifs974872026_1619_0",
@@ -4076,6 +4078,7 @@
                 "detailsMode": "dialog",
                 "preview": {
                   "type": "poi-amenities",
+                  "equipmentDetails": true,
                   "reservations": {
                     "form": "6a4e4e4105e5972f7b4b1823",
                     "step": "equipementsSportifs974872026_1619_0",
@@ -4740,6 +4743,7 @@
         "detailsMode": "dialog",
         "preview": {
           "type": "poi-amenities",
+          "equipmentDetails": true,
           "reservations": {
             "form": "6a4e4e4105e5972f7b4b1823",
             "step": "equipementsSportifs974872026_1619_0",
@@ -6276,6 +6280,11 @@
           }
         }
       }
+    }
+  },
+  "coform": {
+    "finderAddNew": {
+      "finderequipementsSportifs974872026_1619_0n0a7usagerorga1k9z": "add-ess974-association"
     }
   }
 }

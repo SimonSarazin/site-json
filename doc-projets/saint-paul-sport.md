@@ -13,7 +13,7 @@
 > [Module Agenda](../doc/29-module-agenda.md).
 > Mémoire : `[[project-cocolight-siteforge]]` (le projet y est suivi — pas de fiche dédiée).
 
-Dernière mise à jour : **2026-10-26** (ajustements des créneaux d'ESS974 repris : créneau occupé signalé en direct à l'ajout et à la modification d'horaire, bouton d'ajout par club sur la fiche équipement, survol lisible) ; le 23/10, créneaux du lot 8 d'ESS974 et gestion des périodes.
+Dernière mise à jour : **2026-10-27** (review de la MR 114 : fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type et réglage `periods` annoncés) ; 26/10 : ajustements des créneaux d'ESS974 repris : créneau occupé signalé en direct à l'ajout et à la modification d'horaire, bouton d'ajout par club sur la fiche équipement, survol lisible) ; le 23/10, créneaux du lot 8 d'ESS974 et gestion des périodes.
 
 ---
 
@@ -166,6 +166,31 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 4. Déploiement : inchangé (`SITE_CONFIG_PATH` en prod, cf. checklist du site parent).
 
 ## 9. Impacts des modifications
+
+### 27/10/2026 — review de la MR 114 : fiche, tableau de bord d'installation, périodes
+
+Suite de la review de Thomas sur la MR 114 (`ess974` → `main`). Le détail est au §9
+d'[equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md), lot B.
+
+**Ce qui change dans la config** : `"equipmentDetails": true` sur les 4 blocs `preview` poi-amenities (liste
+des équipements, observatoire, table Data, palette). La fiche garde ce qu'elle montre depuis le lot du 15/10 :
+« Type d'équipement », « Catégorie », « Type de particularité », sports cliquables, SIRET et UAI. Ce rendu est
+désormais une option : sport-santé-bien-être, qui partage le composant sans la poser, retrouve sa fiche
+historique.
+
+**Déjà dans la branche, annoncé ici** :
+- **Tableau de bord d'installation** : le taux d'occupation et la répartition des activités se calculent sur la
+  SEMAINE TYPE, c'est-à-dire les créneaux actifs le jour de la consultation (`weeklyReservations`). Avant, ils
+  portaient sur toutes les réservations. Les chiffres baissent donc dès qu'une réservation est passée. C'est le
+  bon calcul : additionner les saisons passées, puis chaque trimestre importé, faussait un taux qui ne vaut que
+  pour une semaine.
+- **`periods: true`** (entrée du 23/10), sur les fiches équipement et sur la fiche association de l'annuaire :
+  sans date saisie, seuls les créneaux en cours ou à venir s'affichent. Les réservations terminées se retrouvent
+  avec le filtre « du … au … ». Ce réglage n'a pas été demandé : il suit la logique des périodes d'ESS974, par
+  cohérence entre les deux sites.
+
+**Validation** : `config:validate` ✅ 12 pages, 21 sections · `audit:config` RAS · test de la fiche, avec et sans
+l'option ✅.
 
 ### 26/10/2026 — ajustements des créneaux d'ESS974, repris ici (non committé)
 

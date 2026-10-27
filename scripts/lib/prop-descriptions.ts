@@ -51,6 +51,7 @@ const LIST: Record<string, string> = {
   "preview.facets": "Preview générique type facets : champs serverData affichés, cliquables s'ils sont indexés par un dropdownFilter.",
   "preview.facets[].field": "Chemin serverData de la facette (dot-path supporté, ex. address.postalCode).",
   "preview.showDetailLink": "Lien « Voir en page » (permalien profil/détail) dans l'en-tête de la modale ; défaut code : affiché.",
+  "preview.equipmentDetails": "Opt-in des sites d'équipements sportifs (poi-amenities) : type, catégorie, particularité et sports cliquables, SIRET/UAI. Absent : fiche historique (Catégorie sur equip_type_name, Partenariat).",
   "preview.reservations": "Section réservations d'une fiche poi-amenities : ancrage du formulaire CoForm (form, étape, rôles→suffixes de champs). Sert aussi d'ancrage à preview.bookedResources sur une fiche structure.",
   "preview.reservations.orgaLink": "Bouton « fiche » du club usager sur sa rangée : page de l'annuaire + param d'ouverture. N'apparaît QUE sur les réservations rattachées par identifiant (finder userOrga).",
   "preview.reservations.hours": "Opt-in : volume horaire sur la fiche équipement — total et par club, par semaine et cumulé sur la période de chaque créneau en cours ou à venir.",
