@@ -38,30 +38,43 @@ async function fetchCostumOrganizationIds(entity: PoiSearchHost): Promise<string
 }
 
 /**
- * Fetcher partagé hook + prefetch SSR : TOUTES les réservations rattachées à une organisation
- * (plafond {@link SEARCH_ALL_DEFAULT_MAX_RESULTS} — un périmètre amputé en silence retirerait des
- * organisations), puis, parmi les équipements qu'elles pointent, ceux du périmètre du site — un
- * seul appel `_id: {$in}`, borné par le nombre d'équipements réservés et non par le parc. Avec
- * `includeCostumOrganizations`, les organisations rattachées au costum s'y ajoutent — recherchées en
- * même temps que les réservations, pour ne pas allonger le rendu serveur.
+ * Partie LOURDE du périmètre, la seule que le rendu serveur mémorise (`prefetchReservationUsers`) :
+ * TOUTES les réservations rattachées à une organisation (plafond {@link SEARCH_ALL_DEFAULT_MAX_RESULTS}
+ * — un périmètre amputé en silence retirerait des organisations), puis, parmi les équipements qu'elles
+ * pointent, ceux du périmètre du site — un seul appel `_id: {$in}`, borné par le nombre d'équipements
+ * réservés et non par le parc.
  */
-export async function fetchReservationUsers(
+export async function fetchReservationPerimeter(
   entity: ReservationAnswersHost & PoiSearchHost,
   conf: ReservationUsersConf,
 ): Promise<ReservationUsers> {
   const { step, fields } = conf.reservations;
-  const [reservations, costumOrgIds] = await Promise.all([
-    fetchReservationAnswers(
-      entity,
-      conf.reservations,
-      { [`answers.${step}.finder${step}${fields.userOrga}`]: { $exists: true } },
-      SEARCH_ALL_DEFAULT_MAX_RESULTS,
-    ),
+  const reservations = await fetchReservationAnswers(
+    entity,
+    conf.reservations,
+    { [`answers.${step}.finder${step}${fields.userOrga}`]: { $exists: true } },
+    SEARCH_ALL_DEFAULT_MAX_RESULTS,
+  );
+  const resourceIds = await fetchResourceIdsInPerimeter(entity, reservedResourceIds(reservations), conf);
+  return { orgIds: reservationUserIds(reservations, new Set(resourceIds)), resourceIds };
+}
+
+/**
+ * Fetcher partagé hook + prefetch SSR : la partie lourde, lue par `readPerimeter` (directement côté
+ * client, par le mémo serveur au SSR). Avec `includeCostumOrganizations`, les organisations rattachées
+ * au costum s'y ajoutent — recherchées en même temps, pour ne pas allonger le rendu serveur, et jamais
+ * mémorisées : une association tout juste ajoutée apparaît dès le rendu suivant.
+ */
+export async function fetchReservationUsers(
+  entity: ReservationAnswersHost & PoiSearchHost,
+  conf: ReservationUsersConf,
+  readPerimeter: typeof fetchReservationPerimeter = fetchReservationPerimeter,
+): Promise<ReservationUsers> {
+  const [perimeter, costumOrgIds] = await Promise.all([
+    readPerimeter(entity, conf),
     conf.includeCostumOrganizations ? fetchCostumOrganizationIds(entity) : null,
   ]);
-  const resourceIds = await fetchResourceIdsInPerimeter(entity, reservedResourceIds(reservations), conf);
-  const userIds = reservationUserIds(reservations, new Set(resourceIds));
-  return { orgIds: costumOrgIds ? withCostumOrganizations(userIds, costumOrgIds) : userIds, resourceIds };
+  return costumOrgIds ? { ...perimeter, orgIds: withCostumOrganizations(perimeter.orgIds, costumOrgIds) } : perimeter;
 }
 
 /**

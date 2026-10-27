@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { fetchReservationUsers, reservationUsersQueryKey } from "./useReservationUsersQuery";
+import { fetchReservationPerimeter, fetchReservationUsers, reservationUsersQueryKey } from "./useReservationUsersQuery";
 import type { ReservationUsersConf } from "../schema";
 import type { ReservationAnswersHost } from "./useReservationsQuery";
 import type { PoiSearchHost } from "./useResourcesInPerimeterQuery";
@@ -91,5 +91,36 @@ describe("fetchReservationUsers — organisations usagères des équipements du 
     };
     expect(await fetchReservationUsers(host(entity), conf)).toEqual({ orgIds: [], resourceIds: [] });
     expect(entity.searchCostum).not.toHaveBeenCalled();
+  });
+});
+
+describe("fetchReservationPerimeter / readPerimeter — la partie lourde, seule mémorisée au SSR", () => {
+  it("fetchReservationPerimeter lit les réservations et leurs équipements, jamais les organisations du costum", async () => {
+    const entity = {
+      coformAnswersSearch: vi.fn().mockResolvedValue(page([answer("gymnase-lycee", "club-b")])),
+      searchCostum: vi.fn().mockResolvedValue(page([{ id: "gymnase-lycee" }])),
+    };
+    const r = await fetchReservationPerimeter(host(entity), { ...conf, includeCostumOrganizations: true });
+
+    expect(r).toEqual({ orgIds: ["club-b"], resourceIds: ["gymnase-lycee"] });
+    expect(entity.searchCostum).toHaveBeenCalledTimes(1);
+    expect(entity.searchCostum.mock.calls[0][0].searchType).not.toEqual(["organizations"]);
+  });
+
+  it("fetchReservationUsers prend la partie lourde de `readPerimeter` et y ajoute les organisations du costum", async () => {
+    const entity = {
+      coformAnswersSearch: vi.fn(),
+      searchCostum: vi.fn().mockResolvedValue(page([{ id: "asso-nouvelle" }, { id: "club-b" }])),
+    };
+    const avecCostum = { ...conf, includeCostumOrganizations: true };
+    const readPerimeter = vi.fn().mockResolvedValue({ orgIds: ["club-b"], resourceIds: ["gymnase-lycee"] });
+
+    expect(await fetchReservationUsers(host(entity), avecCostum, readPerimeter)).toEqual({
+      orgIds: ["asso-nouvelle", "club-b"],
+      resourceIds: ["gymnase-lycee"],
+    });
+    expect(readPerimeter).toHaveBeenCalledWith(entity, avecCostum);
+    // Aucune réservation relue ici : c'est `readPerimeter` (le mémo, au SSR) qui les fournit.
+    expect(entity.coformAnswersSearch).not.toHaveBeenCalled();
   });
 });

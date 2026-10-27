@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import type { TimeSlotCheck } from "@/modules/coform/contexts/TimeSlotCheckContext";
@@ -21,11 +22,14 @@ import { resourcesReservations } from "./useReservationsQuery";
  *    avertissement ignoré ou non ;
  *  - `afterSave`, après l'enregistrement : `useCoFormFinalMutation` n'invalide que les caches coform, les fiches
  *    et le filtre créneau doivent se relire — par préfixe, on ne sait pas lesquelles sont en cache.
+ * Les trois sont stables : ils ne changent qu'avec la config, l'entité ou la langue — `slotCheck` est la
+ * dépendance de l'effet d'avertissement (`useTimeSlotNotices`), qui ne repart ainsi qu'à la saisie.
  */
 export function useBookingChecks(conf: ReservationsConf) {
   const { entity } = useCocolight();
   const queryClient = useQueryClient();
   const t = useT("modules/search");
+  const { i18n } = useTranslation();
 
   const beforeSubmit = useCallback(
     async (allData: AllStepsData) => {
@@ -35,7 +39,8 @@ export function useBookingChecks(conf: ReservationsConf) {
       const issue = bookingIssue(submitted, existing);
       return issue ? bookingIssueMessage(issue, t) : null;
     },
-    [conf, entity, queryClient, t],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : la langue suffit.
+    [conf, entity, queryClient, i18n.language],
   );
 
   const slotCheck = useCallback<TimeSlotCheck>(
@@ -51,7 +56,8 @@ export function useBookingChecks(conf: ReservationsConf) {
       });
       return { [`${conf.step}${conf.fields.slots}`]: messages };
     },
-    [conf, entity, queryClient, t],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : la langue suffit.
+    [conf, entity, queryClient, i18n.language],
   );
 
   const afterSave = useCallback(() => {

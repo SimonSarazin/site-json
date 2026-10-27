@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useT } from "@/hooks/useT";
@@ -40,6 +41,7 @@ export function useUpdateSlotHours(conf: ReservationsConf) {
   const { entity, api } = useCocolight();
   const queryClient = useQueryClient();
   const t = useT("modules/search");
+  const { i18n } = useTranslation();
   const [editing, setEditing] = useState<{ reservation: Reservation; slot: ReservationSlot } | null>(null);
 
   const { mutateAsync, isPending } = useMutationWithToast<void, SlotHoursEdit>({
@@ -79,7 +81,8 @@ export function useUpdateSlotHours(conf: ReservationsConf) {
       );
       return issue ? bookingIssueMessage(issue, t) : null;
     },
-    [conf, entity, queryClient, t],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : la langue suffit.
+    [conf, entity, queryClient, i18n.language],
   );
 
   // Stables : `checkLive` est une dépendance de l'effet d'avertissement de `SlotHoursDialog`.
@@ -102,7 +105,8 @@ export function useUpdateSlotHours(conf: ReservationsConf) {
         return error instanceof Error ? error.message : t("PreviewReservations.editHours.error");
       }
     },
-    [check, editing, mutateAsync, t],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : la langue suffit.
+    [check, editing, mutateAsync, i18n.language],
   );
 
   return {

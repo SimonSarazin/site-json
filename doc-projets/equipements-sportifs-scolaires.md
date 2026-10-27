@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-27** (review de la MR 114, lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
+Dernière mise à jour : **2026-10-27** (review de la MR 114, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
 
 ---
 
@@ -214,6 +214,43 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### Review de la MR 114, lot C — performances (2026-10-27)
+
+**Contexte** : points 3 et 9 de la note de Thomas. Choix de Peterson : le mémo serveur est ajouté, mais une
+association ajoutée doit s'afficher au rafraîchissement et au retour sur la page.
+
+**Ce qui change** :
+- **Mémo serveur de l'annuaire** (point 3). Le périmètre est découpé : `fetchReservationPerimeter` (toutes les
+  réservations, puis leurs équipements du site) et les organisations rattachées au costum. Au rendu serveur, seule
+  la première passe par le mémo des facettes (`facetCache`, 5 min par défaut), sous la clé de la liste sans
+  `includeCostumOrganizations`.
+  - Les organisations du costum sont relues à chaque rendu : une association ajoutée apparaît au rechargement. Au
+    retour sur la page, le cache du navigateur la contient déjà (insertion immédiate, puis relecture).
+  - Limite : un club hors costum n'entre au rendu serveur qu'au renouvellement du mémo qui suit son premier
+    créneau, 5 min au plus. Le navigateur ne passe pas par ce mémo.
+- **Contrôles et mémos stables** (point 9). `useBookingChecks`, `useUpdateSlotHours` et `useResolvedDimensions`
+  dépendent de la langue (`useTranslation().i18n.language`) au lieu de `t`, que `useT` recrée à chaque rendu
+  (idiome de `useAacDetailSections`). Les avertissements en direct ne repartent plus à chaque rendu du parent,
+  seulement à la saisie ou au changement de langue. Le refus d'enregistrer garde son contrôle sur des réservations
+  relues. `useT` n'est pas touché.
+- Doc 07 (annuaire, mémo des facettes, contrôles), en-têtes de `facetCache.ts` et du préchargement.
+
+**Validation** (base locale, serveur de dev sur 5174) :
+- **annuaire `/annuaire`, visiteur** : sans le mémo (`SSR_FACET_CACHE_TTL_MS=0`, le comportement d'avant), chaque
+  rendu prend 11,4 à 11,7 s, dont 11 s de chargement des données. Avec le mémo, 0,85 à 0,98 s une fois l'entrée
+  remplie. Les 23 organisations et 7 équipements servis sont identiques dans les deux cas ;
+- **« Modifier l'horaire », admin, sans enregistrer** : l'avertissement suit la saisie. Une fin à 6 h affiche
+  « L'heure de fin doit suivre l'heure de début. » ; une fin corrigée l'efface et le contrôle relancé signale un
+  chevauchement déjà présent en base (samedi 14 h, Salle de danse, AD2S et TWIRL CLUB OUEST 974) ;
+- le formulaire d'ajout s'ouvre depuis une case libre, avec ses champs.
+
+**Gates** :
+- tests : 5 fichiers, 25 tests ✅, dont 15 cas nouveaux (`useBookingChecks`, `useUpdateSlotHours` et
+  `useResolvedDimensions` testés pour la première fois). Contre-épreuve : sans le mémo, ou avec `t` remis en
+  dépendance, les tests du mémo et de l'identité échouent ;
+- lint ✅ (0 erreur, 23 avertissements préexistants) · typecheck ✅ ;
+- préflight en lecture seule : 898/903, avec les seuls 4 échecs d'environnement (§12).
 
 ### Review de la MR 114, lot B — sites en ligne (2026-10-27)
 
@@ -1075,7 +1112,7 @@ repassent au vert.
 | 17 | Filtres et observatoire | ✅ | Lot 9 : minutes au quart d'heure, 23 communes dans l'observatoire (liste commune avec la page Équipements), sablier des KPI d'heures — vérifié au navigateur le 23/10 (§9). Le 26/10, les 5 communes à deux codes postaux se sélectionnent de nouveau (libellés sans virgule), ce qui est vérifié au navigateur (§9) |
 | 18 | Formulaire d'édition complet d'un équipement | ❌ | Lot 10, après la demande backend (§13) |
 | 19 | Ajout et modification des associations | ✅ | Lot 11 : ajout depuis l'annuaire réservé aux admins (clé ESS974 posée par le serveur, étiquette usager, doublons signalés, apparition immédiate) ; modification par l'admin qui a ajouté l'association — vérifié au navigateur le 26/10, puis de nouveau sur le code final après la relecture de conformité (§9). Les 37 associations existantes restent non modifiables depuis le site |
-| 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion. Lot B (27/10) : fiche équipement en option (`equipmentDetails`), sport-santé revenu à main, club du formulaire avec l'étiquette, annonces sur les sites en ligne. Vérifiés au navigateur (§9). Lots C (performances) et D (nettoyage) à faire |
+| 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion. Lot B (27/10) : fiche équipement en option (`equipmentDetails`), sport-santé revenu à main, club du formulaire avec l'étiquette, annonces sur les sites en ligne. Lot C (27/10) : mémo serveur de l'annuaire (11,5 s → moins d'1 s par rendu), contrôles et mémos stables. Vérifiés au navigateur (§9). Lot D (nettoyage) à faire |
 
 ---
 
