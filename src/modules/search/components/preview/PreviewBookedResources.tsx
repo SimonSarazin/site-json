@@ -108,10 +108,12 @@ export default function PreviewBookedResources({
   const previewParam = link?.previewParam ?? DEFAULT_PREVIEW_PARAM;
 
   /* ── Ajout et modification (opt-in `conf.booking`, admins) ───────────────── */
-  const { entity } = useCocolight();
+  const { me, entity } = useCocolight();
   const permissions = useProfilPermissions(entity || null);
   const booking = conf.booking;
-  const canBook = Boolean(booking) && (booking?.adminOnly === false || permissions.isAdmin);
+  // Jamais pour un visiteur déconnecté, même avec `adminOnly: false` : le formulaire s'ouvrirait sans passer
+  // par la connexion (choix de Peterson du 27/10 : masquer le bouton plutôt qu'ouvrir la connexion).
+  const canBook = Boolean(booking) && Boolean(me) && (booking?.adminOnly === false || permissions.isAdmin);
   const canEditHours = Boolean(booking?.editHours) && permissions.isAdmin;
   const [adding, setAdding] = useState<{ resourceId: string; resourceName: string } | null>(null);
   const {

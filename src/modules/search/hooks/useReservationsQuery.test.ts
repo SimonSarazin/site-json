@@ -79,6 +79,14 @@ describe("fetchResourceReservations — réservations d'UNE ressource", () => {
     });
     expect(r.map((x) => x.id)).toEqual(["a1"]);
   });
+
+  it("lit TOUTES les réponses au-delà de 200, même avec `maxAnswers` : rien n'échappe aux contrôles", async () => {
+    const lot = (n: number) => Array.from({ length: 100 }, (_, i) => answer(`a${n}-${i}`, "poi1"));
+    const search = vi.fn().mockResolvedValue(pages(lot(1), lot(2), lot(3)));
+    const r = await fetchResourceReservations(host(search), { ...conf, maxAnswers: 50 }, "poi1");
+    expect(r).toHaveLength(300);
+    expect(search.mock.calls[0][0]).toMatchObject({ indexStep: 100 });
+  });
 });
 
 describe("resourcesReservations — contrôles d'un ajout ou d'une modification d'horaire", () => {

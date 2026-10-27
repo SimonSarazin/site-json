@@ -336,7 +336,9 @@ export const ReservationsConfSchema = z.object({
     periodEnd: z.string().optional(),
     bookingType: z.string().optional(),
   }),
-  /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
+  /** Plafond d'answers chargées (garde de pagination) par la fiche ORGANISATION (`useOrgaReservationsQuery`,
+   *  défaut 200) ; taille de page du tableau de bord d'installation (défaut 500). Les lectures par équipement —
+   *  fiche et contrôles d'enregistrement — n'en tiennent pas compte : elles lisent tout. */
   maxAnswers: z.number().int().positive().optional(),
   /**
    * Bouton « fiche » de l'ORGANISATION usagère, sur sa rangée dans la section

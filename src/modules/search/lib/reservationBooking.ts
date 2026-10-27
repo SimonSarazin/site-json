@@ -194,14 +194,18 @@ export function slotHoursIssue(
   return pris ? { kind: "taken", slot, ...pris } : null;
 }
 
-/** Le créneau BRUT relu dans la réponse est-il toujours celui affiché — même jour, mêmes heures ? Garde de
- *  l'écriture par index : si le tableau a changé depuis l'affichage, l'index viserait un autre créneau. */
+/** Le créneau BRUT relu dans la réponse est-il toujours celui affiché — même jour, mêmes heures, même période ?
+ *  Garde de l'écriture par index : si le tableau a changé depuis l'affichage, l'index viserait un autre créneau,
+ *  par exemple le cycle jumeau d'une autre période (même jour, mêmes heures). Les deux côtés sortent de
+ *  `parseSlot` : une période absente vaut `undefined` des deux côtés. */
 export function isSameSlot(raw: unknown, slot: ReservationSlot): boolean {
   const relu = parseSlot(raw, slot.index ?? -1);
   return relu !== null
     && relu.day === slot.day
     && relu.startMinutes === slot.startMinutes
-    && relu.endMinutes === slot.endMinutes;
+    && relu.endMinutes === slot.endMinutes
+    && relu.periodStart === slot.periodStart
+    && relu.periodEnd === slot.periodEnd;
 }
 
 /** Message du refus, dans les mots de la fiche : le créneau en cause et, s'il est pris, par qui et sur

@@ -262,4 +262,15 @@ describe("isSameSlot", () => {
     expect(isSameSlot({ day: "Tuesday", startHour: "07", startMinute: "35", endHour: "15", endMinute: "10" }, affiche)).toBe(false);
     expect(isSameSlot(undefined, affiche)).toBe(false);
   });
+
+  it("refuse le cycle jumeau d'une autre période, reconnaît le même créneau daté", () => {
+    // Lundi 18 h-20 h d'août à novembre, affiché ; le cycle d'hiver a pris son index entre-temps.
+    const aout = { ...slot("monday", "18:00", "20:00", { periodStart: "2026-08-19", periodEnd: "2026-11-05" }), index: 0 };
+    const brut = { day: "Monday", startHour: "18", startMinute: "00", endHour: "20", endMinute: "00" };
+    expect(isSameSlot({ ...brut, periodStart: "2026-12-01", periodEnd: "2027-03-31" }, aout)).toBe(false);
+    expect(isSameSlot({ ...brut, periodStart: "2026-08-19", periodEnd: "2026-11-05" }, aout)).toBe(true);
+    // Un créneau daté ne se confond pas avec un créneau sans période propre, ni l'inverse.
+    expect(isSameSlot(brut, aout)).toBe(false);
+    expect(isSameSlot({ ...brut, periodStart: "2026-08-19", periodEnd: "2026-11-05" }, { ...slot("monday", "18:00", "20:00"), index: 0 })).toBe(false);
+  });
 });

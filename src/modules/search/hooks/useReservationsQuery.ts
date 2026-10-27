@@ -4,8 +4,8 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
 import { parseReservationAnswer, type Reservation } from "../lib/reservations";
 import type { ReservationsConf } from "../schema";
+import { SEARCH_ALL_DEFAULT_MAX_RESULTS } from "./useSearchAllResults";
 
-const DEFAULT_MAX_ANSWERS = 200;
 const PAGE_SIZE = 100;
 /** Fraîcheur des réservations d'une ressource en cache — la fiche, et l'avertissement en direct d'une saisie. */
 export const RESERVATIONS_STALE_TIME = 5 * 60 * 1000;
@@ -58,14 +58,17 @@ export async function fetchReservationAnswers(
 }
 
 /** Réservations d'UNE ressource : celles dont le finder pointe `resourceId`. Fetcher de ce hook, et de
- *  `resourcesReservations` — les contrôles d'un ajout de créneaux ou d'une modification d'horaire. */
+ *  `resourcesReservations` — les contrôles d'un ajout de créneaux ou d'une modification d'horaire.
+ *  TOUTES, jusqu'au plafond {@link SEARCH_ALL_DEFAULT_MAX_RESULTS}, sans tenir compte de `maxAnswers` : un
+ *  contrôle sur une liste tronquée déclarerait libre un créneau occupé, et les contrôles partagent le cache de
+ *  la fiche (même clé) — un plafond par bloc y mêlerait des listes de longueurs différentes. */
 export function fetchResourceReservations(
   entity: ReservationAnswersHost,
   conf: ReservationsConf,
   resourceId: string,
 ): Promise<Reservation[]> {
   const finderPath = `answers.${conf.step}.finder${conf.step}${conf.fields.finder}.${resourceId}`;
-  return fetchReservationAnswers(entity, conf, { [finderPath]: { $exists: true } }, conf.maxAnswers ?? DEFAULT_MAX_ANSWERS);
+  return fetchReservationAnswers(entity, conf, { [finderPath]: { $exists: true } }, SEARCH_ALL_DEFAULT_MAX_RESULTS);
 }
 
 /**

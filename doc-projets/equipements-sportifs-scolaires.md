@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-26** (filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
+Dernière mise à jour : **2026-10-27** (review de la MR 114, lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
 
 ---
 
@@ -214,6 +214,40 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### Review de la MR 114, lot A — sûreté des créneaux (2026-10-27)
+
+**Contexte** : la note de Thomas sur la MR 114 (`ess974` → `main`, relue au commit `5f66f905`) n'a rien de
+bloquant. Peterson a demandé de corriger tous ses points, en 4 lots validés un par un (plan
+`plan-ess974-mr114-corrections-review-thomas.md`). Ce lot traite les points 1, 2 et 5.
+
+**Ce qui change** :
+- **« Modifier l'horaire »** : avant d'écrire, la garde vérifie aussi la PÉRIODE du créneau relu (`isSameSlot`).
+  Deux cycles jumeaux (même jour, mêmes heures, périodes différentes) ne se confondent plus si le tableau des
+  créneaux change entre l'ouverture de la fenêtre et l'enregistrement.
+- **Fiche équipement et contrôles d'enregistrement** : ils lisent toutes les réservations d'un équipement, jusqu'à
+  5 000, au lieu de 200 au plus. Ils ne tiennent plus compte de `maxAnswers`, qui ne borne plus que la fiche
+  association. Au-delà de 200 réponses, un doublon pouvait s'enregistrer sans avertissement.
+- **Fiche association** : le bouton « Ajouter un créneau » n'apparaît jamais à un visiteur déconnecté, même avec
+  `adminOnly: false`. Aucune config ne pose ce réglage aujourd'hui.
+
+**À savoir** : rien ne change à l'écran avec les données actuelles. En base locale, un équipement d'ESS974 a au
+plus 18 réservations.
+
+**Validation** (base locale `prod201026`, serveur de dev sur 5174, Chrome sans fenêtre, aucune écriture en base) :
+- **préalable** : le compte de test a été refait admin d'ESS974. Réappliquer le dump retire ce lien, et le rôle de
+  super-admin ne suffit pas, car l'ajout de créneaux lit le lien d'admin de l'entité ;
+- **fiche « Salle de danse », en admin** :
+  - 69 cases libres cliquables ;
+  - dans le détail d'AD2S, le bouton « Ajouter un créneau » et 3 crayons ;
+  - « Modifier l'horaire » affiche l'avertissement en direct (fin avant début), et la fenêtre se ferme sans
+    enregistrer ;
+- **fiche de l'association KAFLOW 974** : 1 bouton « Ajouter un créneau » en admin, 0 en visiteur déconnecté.
+
+**Gates** :
+- tests : 6 fichiers, 139 tests ✅, dont 2 cas nouveaux (cycle jumeau refusé, lecture au-delà de 200 réponses) ;
+- lint ✅ (0 erreur, 23 avertissements préexistants) · typecheck ✅ ;
+- préflight en lecture seule : 897/902, avec les seuls 4 échecs d'environnement (§12).
 
 ### Correction — filtre Commune de l'observatoire (2026-10-26)
 
@@ -990,6 +1024,7 @@ repassent au vert.
 | 17 | Filtres et observatoire | ✅ | Lot 9 : minutes au quart d'heure, 23 communes dans l'observatoire (liste commune avec la page Équipements), sablier des KPI d'heures — vérifié au navigateur le 23/10 (§9). Le 26/10, les 5 communes à deux codes postaux se sélectionnent de nouveau (libellés sans virgule), ce qui est vérifié au navigateur (§9) |
 | 18 | Formulaire d'édition complet d'un équipement | ❌ | Lot 10, après la demande backend (§13) |
 | 19 | Ajout et modification des associations | ✅ | Lot 11 : ajout depuis l'annuaire réservé aux admins (clé ESS974 posée par le serveur, étiquette usager, doublons signalés, apparition immédiate) ; modification par l'admin qui a ajouté l'association — vérifié au navigateur le 26/10, puis de nouveau sur le code final après la relecture de conformité (§9). Les 37 associations existantes restent non modifiables depuis le site |
+| 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion — vérifié au navigateur (§9). Lots B (sites en ligne), C (performances) et D (nettoyage) à faire |
 
 ---
 
