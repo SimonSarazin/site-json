@@ -1779,6 +1779,8 @@ export const SlotFilterSchema = z.object({
   /** Param d'URL (`?<id>=`) et préfixe de l'entrée `searchByFields` — distinct des `id` de
    *  `dropdownFilters`, dont le nettoyage par préfixe effacerait le créneau. */
   id: z.string(),
+  /** Libellé du bouton du filtre dans le bandeau (« Créneau disponible ») ; un créneau choisi, le bouton
+   *  affiche son résumé à la place. */
   label: LocalizedString,
   /** Formulaire des réservations dont on déduit l'occupation — même bloc que
    *  `list.preview.reservations` de la liste. */

@@ -11,7 +11,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module CoForm](../doc/21-module-coform.md).
 > Mémoire : `[[project-equipements-sportifs]]`.
 
-Dernière mise à jour : **2026-10-27** (review de la MR 114 : fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type annoncé) ; 23/10 : lecture de la période propre d'un créneau par le moteur.
+Dernière mise à jour : **2026-10-28** (review de la MR 114 : la mention « non committé » du lot du 15/10 remplacée par son commit) ; 27/10 (fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type annoncé) ; 23/10 : lecture de la période propre d'un créneau par le moteur.
 
 ---
 
@@ -231,7 +231,7 @@ La fixture `effective-config` du site a été resynchronisée le même jour : el
 `inst_siret` / `inst_uai` ajoutés aux `defaultFields` le 15/10. Préflight ✅ 889/894, avec seulement
 les 4 échecs d'environnement (cf. le §9 « Conformité » d'[ESS974](equipements-sportifs-scolaires.md)).
 
-### 15/10/2026 — lot « fiche équipement et filtres multi-valeurs » (branche `peter-dev`, non committé)
+### 15/10/2026 — lot « fiche équipement et filtres multi-valeurs » (commit `7f240d4c`)
 
 Lot commun aux trois sites équipements — fiche, moteur et justification détaillés dans le §9 de
 [saint-paul-sport.md](saint-paul-sport.md).

@@ -417,6 +417,13 @@ describe("SmartCoForm", () => {
       expect(ro.dataset.stepCount).toBe("1");
       expect(ro.dataset.hideBanner).toBe("true");
     });
+
+    it("readOnly + hideStepHeaders → CoFormReadOnly sans titres d'étape, comme la saisie", () => {
+      mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+      mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+      render(<SmartCoForm formData={makeFormData(["s1"])} readOnly hideStepHeaders />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("coform-readonly").dataset.hideStepHeaders).toBe("true");
+    });
   });
 
   describe("états spéciaux", () => {

@@ -11,6 +11,7 @@ import {
   reservationConflicts,
   slotsOverlap,
   periodsOverlap,
+  isIsoDay,
   buildBookingGrid,
   minutesToLabel,
   slotPeriod,
@@ -600,6 +601,27 @@ describe("periodsOverlap", () => {
     expect(
       periodsOverlap({ periodStart: "pas une date" }, { periodStart: "2026-09-01" }),
     ).toBe(true);
+  });
+
+  it("traite une date impossible comme une borne ouverte, comme le calcul des heures", () => {
+    // Lu « 2026-02-30 » > « 2026-01-31 », le début excluait janvier ; borne ouverte, le recouvrement est présumé.
+    expect(
+      periodsOverlap(
+        { periodStart: "2026-02-30", periodEnd: "2026-03-31" },
+        { periodStart: "2026-01-01", periodEnd: "2026-01-31" },
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("isIsoDay", () => {
+  it("n'accepte qu'un jour calendaire réel", () => {
+    expect(isIsoDay("2026-10-26")).toBe(true);
+    expect(isIsoDay("2028-02-29")).toBe(true);
+    expect(isIsoDay("2026-02-30")).toBe(false);
+    expect(isIsoDay("2026-13-01")).toBe(false);
+    expect(isIsoDay("2026-1-1")).toBe(false);
+    expect(isIsoDay(undefined)).toBe(false);
   });
 });
 

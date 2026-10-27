@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import type { useT } from "@/hooks/useT";
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 import { keyFor, splitKey } from "./dropdownFilters";
@@ -5,6 +6,9 @@ import { EXCLUDE_TYPE } from "./searchByFieldsToQuery";
 import {
   DEFAULT_END_HOUR,
   DEFAULT_START_HOUR,
+  isIsoDay,
+  JOUR_MS,
+  JOURNEE_MINUTES,
   minutesToLabel,
   reservationConflicts,
   type BookingAmplitude,
@@ -69,23 +73,10 @@ export interface SlotRange {
  *  période trop courte pour contenir l'un des jours choisis. */
 export type SlotIssue = "hours" | "period" | "days";
 
-const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 const HOUR = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const PARAM =
   /^([a-z]+(?:\.[a-z]+)*)?(?:_(?:(\d{2}h\d{2})?-(\d{2}h\d{2})?)?(?:_(\d{4}-\d{2}-\d{2})?-(\d{4}-\d{2}-\d{2})?)?)?$/;
 const OBJECT_ID = /^[0-9a-f]{24}$/i;
-const JOURNEE_MINUTES = 24 * 60;
-const JOUR_MS = 24 * 60 * 60 * 1000;
-
-/** Jour calendaire RÉEL (`2026-02-30` refusé), vérifié en UTC pour ne dépendre d'aucun fuseau. */
-export function isIsoDay(value: unknown): value is string {
-  if (typeof value !== "string") return false;
-  const m = ISO_DAY.exec(value);
-  if (!m) return false;
-  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  const date = new Date(Date.UTC(y, mo - 1, d));
-  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
-}
 
 /** `HH:MM` → minutes depuis minuit, `null` si absent ou invalide. Exporté pour la fenêtre de modification
  *  d'horaire, qui lit des champs `<input type="time">`. */
@@ -130,8 +121,7 @@ export function dayKeyOf(isoDay: string): DayKey {
 /** Date LOCALE en `AAAA-MM-JJ` : « aujourd'hui » pour qui consulte. En UTC, La Réunion (UTC+4)
  *  serait encore la veille jusqu'à 4 h du matin. */
 export function localIsoDay(now: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  return format(now, "yyyy-MM-dd");
 }
 
 /** Jours dans l'ordre de la semaine, sans doublon : une même sélection donne une seule valeur d'URL. */

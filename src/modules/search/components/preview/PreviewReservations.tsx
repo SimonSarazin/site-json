@@ -385,8 +385,9 @@ export default function PreviewReservations({
         {groups.length > 0 && <Badge variant="secondary">{groups.length}</Badge>}
       </div>
       {/* Volume horaire en INDICATEURS (demande de Peterson du 23/10 : « bien visible », agrandis le 26/10),
-          sablier pendant le chargement des réservations. */}
-      {hours && (isLoading || groups.length > 0) && (
+          sablier pendant le chargement des réservations. Masqués en erreur, comme sur la fiche organisation : un
+          rafraîchissement en échec ne doit pas laisser des chiffres périmés. */}
+      {hours && !isError && (isLoading || groups.length > 0) && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:max-w-xl">
           <KpiCard
             icon="clock"

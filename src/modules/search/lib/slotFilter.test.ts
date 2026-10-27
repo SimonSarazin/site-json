@@ -11,7 +11,6 @@ import {
   describeSlot,
   formatSlotDays,
   hourMinutes,
-  isIsoDay,
   joinTime,
   localIsoDay,
   minuteOptions,
@@ -70,15 +69,6 @@ const JOURS: Record<string, string> = {
 const t: Parameters<typeof formatSlotDays>[1] = (key) => (typeof key === "string" ? (JOURS[key] ?? key) : "");
 
 describe("slotFilter — jours et dates", () => {
-  it("isIsoDay n'accepte qu'un jour calendaire réel", () => {
-    expect(isIsoDay("2026-10-26")).toBe(true);
-    expect(isIsoDay("2028-02-29")).toBe(true);
-    expect(isIsoDay("2026-02-30")).toBe(false);
-    expect(isIsoDay("2026-13-01")).toBe(false);
-    expect(isIsoDay("2026-1-1")).toBe(false);
-    expect(isIsoDay(undefined)).toBe(false);
-  });
-
   it("dayKeyOf donne la clé de jour des créneaux (lundi en tête)", () => {
     expect(dayKeyOf("2026-10-26")).toBe("monday");
     expect(dayKeyOf("2026-10-29")).toBe("thursday");

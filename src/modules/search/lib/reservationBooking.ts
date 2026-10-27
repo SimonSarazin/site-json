@@ -1,5 +1,6 @@
 import type { useT } from "@/hooks/useT";
 import {
+  isIsoDay,
   minutesToLabel,
   parseSlot,
   periodsOverlap,
@@ -9,7 +10,6 @@ import {
   type ReservationSlot,
 } from "./reservations";
 import { formatReservationPeriod } from "./reservationPeriod";
-import { isIsoDay } from "./slotFilter";
 
 /**
  * Prise de réservation PAR PÉRIODE (opt-in `reservations.periods`), logique pure :

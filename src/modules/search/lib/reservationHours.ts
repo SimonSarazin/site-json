@@ -1,8 +1,8 @@
 import type { useT } from "@/hooks/useT";
 import { formatHours } from "@/modules/observatoire/installation";
 import { DAY_KEYS, type DayKey } from "./schedules";
-import { periodsOverlap, reservationsInPeriod, slotPeriod, type Reservation } from "./reservations";
-import { dayKeyOf, isIsoDay } from "./slotFilter";
+import { isoBound, JOUR_MS, periodsOverlap, reservationsInPeriod, slotPeriod, type Reservation } from "./reservations";
+import { dayKeyOf } from "./slotFilter";
 
 /**
  * Volume horaire des réservations : par SEMAINE (somme des durées des créneaux actifs le JOUR DE RÉFÉRENCE,
@@ -22,14 +22,6 @@ import { dayKeyOf, isIsoDay } from "./slotFilter";
 export interface ReservationHours {
   weeklyMinutes: number;
   cumulativeMinutes: number;
-}
-
-const JOUR_MS = 24 * 60 * 60 * 1000;
-
-/** Borne ISO exploitable (les 10 premiers caractères, comme `periodsOverlap`), sinon `null`. */
-function isoDay(value: string | undefined): string | null {
-  const day = value?.slice(0, 10);
-  return isIsoDay(day) ? day : null;
 }
 
 /** Nombre de `day` entre deux jours ISO, bornes INCLUSES (une période d'un jour couvre ce jour). */
@@ -61,7 +53,7 @@ export function weeklyReferenceDay(reservations: readonly Reservation[], since: 
       if (slot.endMinutes <= slot.startMinutes) continue;
       const period = slotPeriod(slot, r);
       if (periodsOverlap(jour, period)) return since;
-      const start = isoDay(period.periodStart);
+      const start = isoBound(period.periodStart);
       if (start && start > since && (prochain === null || start < prochain)) prochain = start;
     }
   }
@@ -85,8 +77,8 @@ export function hoursOf(reservation: Reservation, today?: string, referenceDay?:
     // Même règle que `computeEquipmentUsage` : une durée nulle ou inversée (donnée dégradée) ne compte pas.
     const minutes = Math.max(0, slot.endMinutes - slot.startMinutes);
     if (!semaine || periodsOverlap(semaine, period)) weeklyMinutes += minutes;
-    const start = isoDay(period.periodStart);
-    const end = isoDay(period.periodEnd);
+    const start = isoBound(period.periodStart);
+    const end = isoBound(period.periodEnd);
     if (start && end) cumulativeMinutes += minutes * countWeekdays(start, end, slot.day);
   }
   return { weeklyMinutes, cumulativeMinutes };

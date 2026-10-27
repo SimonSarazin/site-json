@@ -3566,6 +3566,7 @@
               {
                 "kind": "reservationHours",
                 "period": "weekly",
+                "unit": "h",
                 "label": {
                   "fr": "Heures réservées / semaine",
                   "en": "Booked hours / week"
@@ -3576,6 +3577,7 @@
               {
                 "kind": "reservationHours",
                 "period": "cumulative",
+                "unit": "h",
                 "label": {
                   "fr": "Heures réservées cumulées",
                   "en": "Cumulative booked hours"

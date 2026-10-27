@@ -13,7 +13,7 @@
 > [Module Agenda](../doc/29-module-agenda.md).
 > Mémoire : `[[project-cocolight-siteforge]]` (le projet y est suivi — pas de fiche dédiée).
 
-Dernière mise à jour : **2026-10-27** (review de la MR 114 : fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type et réglage `periods` annoncés) ; 26/10 : ajustements des créneaux d'ESS974 repris : créneau occupé signalé en direct à l'ajout et à la modification d'horaire, bouton d'ajout par club sur la fiche équipement, survol lisible) ; le 23/10, créneaux du lot 8 d'ESS974 et gestion des périodes.
+Dernière mise à jour : **2026-10-28** (review de la MR 114 : mentions « non committé » et branche remplacées par les commits et la branche `ess974`) ; 27/10 (fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type et réglage `periods` annoncés) ; 26/10 : ajustements des créneaux d'ESS974 repris : créneau occupé signalé en direct à l'ajout et à la modification d'horaire, bouton d'ajout par club sur la fiche équipement, survol lisible) ; le 23/10, créneaux du lot 8 d'ESS974 et gestion des périodes.
 
 ---
 
@@ -41,7 +41,7 @@ commune **ou** de la source `saintpaulSport1` (union `$or`).
 | Langues | `fr` (défaut) + `en` |
 | Backend dev | `http://communecter74-dev` |
 | SDK | `@communecter/cocolight-api-client` **1.0.170** (symlink vers le dépôt frère) |
-| Branche | `peter-dev` |
+| Branche | `ess974` (MR 114 vers `main`) |
 | Chef de projet | Peterson |
 
 ### Historique des chantiers
@@ -192,7 +192,7 @@ historique.
 **Validation** : `config:validate` ✅ 12 pages, 21 sections · `audit:config` RAS · test de la fiche, avec et sans
 l'option ✅.
 
-### 26/10/2026 — ajustements des créneaux d'ESS974, repris ici (non committé)
+### 26/10/2026 — ajustements des créneaux d'ESS974, repris ici (commit `4de0553f`)
 
 Code partagé, aucune config modifiée. Peterson a décidé le 26/10 que Saint-Paul reçoit, comme ESS974, le
 contrôle en direct (cf. le §9 de [equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md)) :
@@ -214,7 +214,7 @@ par JS SALINE (Du 17 août 2026 au 13 août 2027). » sous le créneau. Rien n'a
 L'exemple `data-observatory` de l'assistant, tiré de `/observatoire`, est resynchronisé le 26/10 avec l'accord de
 Peterson. Seule la ligne `editHours` change, et le contrôle de fraîcheur du préflight repasse au vert.
 
-### 23/10/2026 — lot 8 d'ESS974 : créneaux, repris ici (non committé)
+### 23/10/2026 — lot 8 d'ESS974 : créneaux, repris ici (commit `d66c426e`)
 
 À la demande de Peterson (« tout comme ESS974 » pour les créneaux), Saint-Paul reçoit les améliorations des
 créneaux du lot 8 d'ESS974 (cf. le §9 de [equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md)).
@@ -252,7 +252,7 @@ peut les demander.
 L'exemple `data-observatory` de l'assistant, tiré de `/observatoire`, dérive de `editHours` : sa
 resynchronisation attend l'accord de Peterson.
 
-### 23/10/2026 — gestion des périodes des créneaux (non committé)
+### 23/10/2026 — gestion des périodes des créneaux (commits `97e5699c` et `35df7f94`)
 
 À la demande de Peterson, la gestion par périodes d'ESS974 (lot 7, cf. le §9 de
 [equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md)) vaut aussi ici : `periods: true`
@@ -281,7 +281,7 @@ cf. son §9 « Conformité ». La fixture `effective-config` du site est resynch
 voulus du 15/10 (`equip_numero`, `inst_siret`, `inst_uai`). L'exemple `data-observatory` de
 l'assistant config, tiré de `/observatoire`, l'est aussi, avec `periods`.
 
-### 20/10/2026 — moteur : filtre « créneau » du bandeau (non committé)
+### 20/10/2026 — moteur : filtre « créneau » du bandeau (commit `ed279c6b`)
 
 Aucun changement de config ici. Le lot ajoute au bandeau de filtres (`searchHeader`, code partagé
 par tous les sites) un filtre de disponibilité opt-in, `slotFilter` — plage horaire, jours de la
@@ -298,7 +298,7 @@ la période (« Date début », « Date fin ») et « Ajouter un créneau » pou
 l'écran le 20/10, sans rien enregistrer. Le contrôle fait avant l'ouverture du formulaire ignore en
 revanche les dates : la grille compte toute réservation, terminée comprise, comme occupée.
 
-### 16/10/2026 — moteur : annuaire des usagers d'ESS974 (branche `peter-dev`, non committé)
+### 16/10/2026 — moteur : annuaire des usagers d'ESS974 (commit `2a2ba6f9`)
 
 Aucun changement de config ici. Le lot ajoute au moteur un périmètre calculé
 (`searchProStatic.reservationUsers`) et un filtre des équipements réservés
@@ -310,7 +310,7 @@ changement de requête. **Non-régression vérifiée au navigateur** (base `prod
 ses 4 équipements réservés (comportement historique) ; fiche « Salle de danse » du lycée Vue
 Belle : 9/9 usagers de ses 18 réservations.
 
-### 15/10/2026 — lot « fiche équipement et filtres multi-valeurs » (branche `peter-dev`, non committé)
+### 15/10/2026 — lot « fiche équipement et filtres multi-valeurs » (commits `7f240d4c` et `35df7f94`)
 
 Lot commun aux trois sites équipements (même fiche `poi-amenities`, même moteur de filtres) ; la
 part propre aux deux autres sites est dans le §9 de [equipements-sportifs.md](equipements-sportifs.md)
@@ -354,7 +354,7 @@ masqués sur « Donnée non renseignée ». `typecheck` ✅ · `lint` ✅ (0 err
 hors du lot) · `config:validate` ✅ 12 pages, 21 sections · `audit:config` RAS · tests unitaires
 ajoutés ✅ 23/23 · préflight non exécuté.
 
-### 01–02/09/2026 — lot « usagers des équipements » (branche `peter-dev`, non committé)
+### 01–02/09/2026 — lot « usagers des équipements » (commit `be16b17d` du 08/09, dans `main`)
 
 Trois fonctionnalités, livrées par lots successifs.
 
@@ -412,7 +412,7 @@ les dépendances, les 17 autres configs, `cocolight-api-client` (lecture seule).
 `config-assistant/examples/data-observatory.json` — `saintpaulSport1` étant un archétype, son bloc
 Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
 
-### 30/07/2026 — lot « page Actualités à onglets » (branche `peter-dev`, non committé)
+### 30/07/2026 — lot « page Actualités à onglets » (commit `fd55ab9d` du 11/08, dans `main`)
 
 - **Page `/actualites` intégralement réécrite** (searchHeader + tabs ; titre et SEO élargis
   « Actus & Événements ») ; ajout `showSearch` au header (aucune recherche texte ne fonctionnait).

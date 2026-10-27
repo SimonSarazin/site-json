@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-27** (review de la MR 114, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
+Dernière mise à jour : **2026-10-28** (review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
 
 ---
 
@@ -215,6 +215,37 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 
 ## 9. Impacts des modifications
 
+### Review de la MR 114, lot D — nettoyage (2026-10-28)
+
+**Contexte** : les 5 points « Nettoyage » de la note de Thomas, sans changer de résultat sur les données
+actuelles. Déjà réglés en route : la phrase du skill (lot B), le doublon `DEFAULT_MAX_ANSWERS` (lot A), les tests
+de `useBookingChecks` et `useUpdateSlotHours` (lot C).
+
+**Ce qui change** :
+- **Une seule borne ISO** : `isIsoDay` (jour calendaire réel) passe dans `reservations.ts`, et `isoBound` s'en sert
+  pour les chevauchements comme pour les heures (`reservationHours`). Une date impossible (un 30 février) est une
+  borne ouverte partout : chevauchement présumé, comme une date absente. Aucune date invalide sur 384 en base locale.
+- **Doublons** : `JOUR_MS` et `JOURNEE_MINUTES` exportés de `reservations.ts` ; `localIsoDay` passe par `format`
+  de date-fns, même date locale.
+- **Affichage** : la fiche équipement masque ses 2 indicateurs d'heures après un rafraîchissement en échec, comme
+  la fiche organisation ; les KPI en ligne de l'observatoire (`KpiCards`, `inline`) montrent un sablier pendant le
+  calcul.
+- **Formulaire** : la lecture seule de `SmartCoForm` respecte `hideStepHeaders` ; aucun appelant ne combine les deux
+  aujourd'hui.
+- **Docs et config** : exemple de la doc 07 sans virgule ; les 21 mentions « non committé » ou « peter-dev » des trois
+  docs projet remplacées par leurs commits, vérifiés dans `git log` ; 3 descriptions de props et la JSDoc de
+  `slotFilter.label` ; `"unit": "h"` sur les 2 KPI d'heures d'ESS974.
+
+**Validation** (base locale, serveur de dev sur 5174, visiteur) : `/observatoire` affiche « 135 h » et « 7 044 h ».
+
+**Gates** :
+- tests : 9 fichiers, 221 tests ✅, dont 10 cas nouveaux — date impossible, sablier (`KpiCards`), lecture seule
+  (`SmartCoForm.test.tsx`, d'aboire, Schumann Juda et cael), `slotCheck` et `hideStepHeaders`
+  (`CoFormModal.test.tsx`, d'aboire et cael), `useSlotFilter` et `usePeriodFilter` (nouveaux) ;
+- lint ✅ (0 erreur, 23 avertissements préexistants) · typecheck ✅ ;
+- `config:validate` ✅ ESS974 9/14 · `audit:config` RAS ;
+- préflight en lecture seule : 898/903, avec les seuls 4 échecs d'environnement (§12) ; références inchangées.
+
 ### Review de la MR 114, lot C — performances (2026-10-27)
 
 **Contexte** : points 3 et 9 de la note de Thomas. Choix de Peterson : le mémo serveur est ajouté, mais une
@@ -384,7 +415,7 @@ aucune option.
 ### Fusion de `main` et vérification des lots 8 à 11 (2026-10-26)
 
 **Ce qui change** : Peterson a fusionné `main` (91 commits) dans `ess974` (merge `7dac007a`), puis réappliqué le
-travail non committé des lots 8 à 11. Les conflits sont réglés en gardant les deux côtés :
+travail des lots 8 à 11, alors non committé (committé depuis : `d66c426e`, `e0afde8d`, `4de0553f`, `56d4edd5`, fichiers communs `ef67807c`). Les conflits sont réglés en gardant les deux côtés :
 - **merge** (5 fichiers) :
   - `SmartCoForm` garde `beforeSubmit` et `slotPeriods` (lot 7) avec `submitButtonText` et `hideBanner` (`main`).
     Son enveloppe `withFormContext` pose les catalogues, puis les discussions des questions (`main`), puis la
@@ -440,7 +471,7 @@ Les réservations de la base sont identiques, octet pour octet, à leur sauvegar
 
 ### Lot 11 — ajout et modification des associations (2026-10-26)
 
-**Ce qui change** (non committé, demande de Peterson du 26/10, plan `plan-ess974-lot-11-associations-ajout-modification.md`) :
+**Ce qui change** (commit `56d4edd5`, fichiers communs `ef67807c` ; demande de Peterson du 26/10, plan `plan-ess974-lot-11-associations-ajout-modification.md`) :
 - **Bouton « Ajouter une association »** dans l'en-tête de l'annuaire, réservé aux admins du site. Ce sont les
   mêmes que pour les créneaux : admins du projet ESS974 et de la DRAJES. Le formulaire a trois onglets :
   - Association : nom, logo, présentations ;
@@ -543,7 +574,7 @@ conformité, avec les mêmes résultats) :
 
 ### Ajustements du lot 8 — contrôle des créneaux en direct (2026-10-26)
 
-**Ce qui change** (non committé, demande de Peterson du 26/10, plan `plan-ess974-ajustements-creneaux-26-10.md`) :
+**Ce qui change** (commit `4de0553f`, fichiers communs `ef67807c` ; demande de Peterson du 26/10, plan `plan-ess974-ajustements-creneaux-26-10.md`) :
 - **Fiche association** : les réservations passent à gauche, dans la colonne large, et la localisation à
   droite. Sur téléphone, les réservations viennent en premier.
 - **Fiche équipement** : chaque association rattachée à une fiche porte, dans son détail, un bouton
@@ -639,7 +670,7 @@ Gates :
 
 ### Lot 9 — filtres et observatoire (2026-10-23)
 
-**Ce qui change** (non committé, plan `plan-ess974-lots-8-9-fiches-creneaux-filtres.md`) :
+**Ce qui change** (commit `e0afde8d`, fichiers communs `ef67807c` ; plan `plan-ess974-lots-8-9-fiches-creneaux-filtres.md`) :
 - **Filtre « Créneau disponible »** : chaque borne horaire se choisit en deux listes, l'heure puis la
   minute (00, 15, 30, 45 seulement). Une minute d'un lien plus ancien reste proposée telle quelle.
 - **Observatoire : les 23 communes de la page Équipements.** Plutôt qu'une seconde liste écrite en dur,
@@ -674,7 +705,7 @@ visible.
 
 ### Lot 8 — fiches et créneaux (2026-10-23)
 
-**Ce qui change** (non committé), demandes de Peterson du 23/10 et vérification face à l'import
+**Ce qui change** (commit `d66c426e`, fichiers communs `ef67807c`), demandes de Peterson du 23/10 et vérification face à l'import
 « une réservation par période » (option B, communecter-php74) :
 
 - **Fiche équipement** :
@@ -805,7 +836,7 @@ dans `prefetch/__tests__/`. Dans la même passe :
 
 ### Lot 7 — ajout de créneaux par période (2026-10-23)
 
-**Ce qui change** (non committé) : les admins ajoutent des créneaux depuis la fiche équipement, et un
+**Ce qui change** (commit `97e5699c`, fichiers communs `35df7f94`) : les admins ajoutent des créneaux depuis la fiche équipement, et un
 créneau ne bloque plus que SA période.
 
 - **Filtre « du … au … »** dans la section Réservations de la fiche : ne restent que les créneaux dont
@@ -864,7 +895,7 @@ dont 16 cas ajoutés ; tests de Juda, Cael et Thomas lancés avec l'accord de Pe
 
 ### Lot 6 — volume horaire des réservations (2026-10-20)
 
-**Ce qui change** (non committé) : le volume horaire réservé s'affiche en deux valeurs — **par
+**Ce qui change** (commit `cb978210`, fichiers communs `35df7f94`) : le volume horaire réservé s'affiche en deux valeurs — **par
 semaine** (somme des durées des créneaux hebdomadaires) et **cumulé** (chaque créneau multiplié par le
 nombre de fois où son jour tombe réellement dans la période de la réservation, bornes incluses) :
 
@@ -923,7 +954,7 @@ classes de la grille inchangées, 7 cartes sur une ligne. Tests ✅ 40/40 (`dash
 
 ### Lot 5 — filtre « Créneau disponible » (2026-10-20)
 
-**Ce qui change** (non committé) : le bandeau de `/equipements-sportifs` reçoit un filtre de
+**Ce qui change** (commit `ed279c6b`, fichiers communs `35df7f94`) : le bandeau de `/equipements-sportifs` reçoit un filtre de
 disponibilité, `slotFilter` (param `?creneau=`), à la suite des 8 dropdowns. Une réservation étant un
 créneau **hebdomadaire** valable sur une période, on y cherche comme on réserve : une **plage
 horaire** (critère principal), des **jours de la semaine** et, au besoin, une **période** — « chaque
@@ -980,7 +1011,7 @@ non vérifié. Pendant l'attente, le bouton affiche un indicateur et aucune past
 
 ### Lot 4 — page Équipements alignée sur Saint-Paul (2026-10-16)
 
-**Ce qui change** (branche `peter-dev`, non committé) : à la demande de Peterson, la section
+**Ce qui change** (config seule, fichiers communs `35df7f94`) : à la demande de Peterson, la section
 `section-equipements-cards` de `/equipements-sportifs` reprend **tels quels** trois blocs de la même
 section de Saint-Paul Sport. 100 % config, aucun fichier de `src/` touché.
 
@@ -1013,7 +1044,7 @@ l'acquittement du lot 3.
 
 ### Lot 3 — annuaire des associations usagères (2026-10-16)
 
-**Ce qui change** (branche `peter-dev`, non committé) : nouvelle page `/annuaire` (recette
+**Ce qui change** (commit `2a2ba6f9`, fichiers communs `35df7f94`) : nouvelle page `/annuaire` (recette
 `page-recherche` : bandeau de recherche + liste) et entrée de menu « Annuaire » / « Directory »
 entre « Equipements » et « Observatoire ». **Règle métier (Peterson, 16/10)** : la page liste les
 organisations usagères d'**au moins un créneau sur un équipement scolaire** — 23 aujourd'hui (base
@@ -1051,7 +1082,7 @@ routage de Thomas (`buildRoutes.test.tsx`) ✅.
 
 ### Lot 2 — fiche équipement, filtres multi-valeurs et communes (2026-10-15)
 
-**Ce qui change** : lot commun aux trois sites équipements (branche `peter-dev`, non committé) —
+**Ce qui change** : lot commun aux trois sites équipements (commit `7f240d4c`, fichiers communs `35df7f94`) —
 fiche, moteur et justification détaillés dans le §9 de [saint-paul-sport.md](saint-paul-sport.md).
 Ici, les filtres passent de 5 à 8 (tableau du §4.2) :
 
@@ -1098,7 +1129,7 @@ repassent au vert.
 | 3 | Rendu SSR | ✅ | 9/9 pages en 200 (16/10) |
 | 4 | Périmètres de données | ✅ | **3/3 à 708 résultats** (annuaire, observatoire, data) |
 | 5 | Filtres alignés sur la donnée | ✅ | 0 valeur orpheline, 0 type réel sans option, 0 virgule |
-| 6 | Préflight | 🟡 | 898/903 (27/10, review de la MR 114, lot B) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
+| 6 | Préflight | 🟡 | 898/903 (28/10, après le lot D de la review de la MR 114) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
 | 7 | Aperçu navigateur | 🟡 | Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
 | 8 | Déploiement | ❌ | à faire |
 | 9 | Saisie / back-office | ❌ | **bloqué backend** (§12) |
@@ -1112,7 +1143,7 @@ repassent au vert.
 | 17 | Filtres et observatoire | ✅ | Lot 9 : minutes au quart d'heure, 23 communes dans l'observatoire (liste commune avec la page Équipements), sablier des KPI d'heures — vérifié au navigateur le 23/10 (§9). Le 26/10, les 5 communes à deux codes postaux se sélectionnent de nouveau (libellés sans virgule), ce qui est vérifié au navigateur (§9) |
 | 18 | Formulaire d'édition complet d'un équipement | ❌ | Lot 10, après la demande backend (§13) |
 | 19 | Ajout et modification des associations | ✅ | Lot 11 : ajout depuis l'annuaire réservé aux admins (clé ESS974 posée par le serveur, étiquette usager, doublons signalés, apparition immédiate) ; modification par l'admin qui a ajouté l'association — vérifié au navigateur le 26/10, puis de nouveau sur le code final après la relecture de conformité (§9). Les 37 associations existantes restent non modifiables depuis le site |
-| 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion. Lot B (27/10) : fiche équipement en option (`equipmentDetails`), sport-santé revenu à main, club du formulaire avec l'étiquette, annonces sur les sites en ligne. Lot C (27/10) : mémo serveur de l'annuaire (11,5 s → moins d'1 s par rendu), contrôles et mémos stables. Vérifiés au navigateur (§9). Lot D (nettoyage) à faire |
+| 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion. Lot B (27/10) : fiche équipement en option (`equipmentDetails`), sport-santé revenu à main, club du formulaire avec l'étiquette, annonces sur les sites en ligne. Lot C (27/10) : mémo serveur de l'annuaire (11,5 s → moins d'1 s par rendu), contrôles et mémos stables. Lot D (28/10) : nettoyage, dont les heures affichées en « h ». Vérifiés au navigateur (§9). Restent la description de la MR et la réponse à Thomas, à publier par Peterson |
 
 ---
 

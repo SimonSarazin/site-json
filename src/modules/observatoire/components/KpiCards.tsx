@@ -1,3 +1,4 @@
+import { Spinner } from "@/components/ui/spinner";
 import { useT } from "@/hooks/useT";
 import type { DataObservatorySectionProps, DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
 import { TOKEN_TINT_CLASSES, dimensionLabel, type LabelMaps } from "../dimensions";
@@ -72,7 +73,10 @@ export function KpiCards({
       <dl className="flex flex-wrap items-baseline gap-x-8 gap-y-3">
         {entries.map((e) => (
           <div key={e.key} className="flex items-baseline gap-2">
-            <dd className="text-2xl font-bold text-foreground tabular-nums">{e.value}</dd>
+            {/* Sablier pendant le calcul, comme `KpiCard` : « — » se lirait comme une absence de données. */}
+            <dd className="text-2xl font-bold text-foreground tabular-nums">
+              {e.loading ? <Spinner className="h-6 w-6" label={t("kpiComputing")} /> : e.value}
+            </dd>
             <dt className="text-sm text-muted-foreground">{e.label}</dt>
           </div>
         ))}

@@ -23,6 +23,8 @@ const capte = vi.hoisted(() => ({
   hiddenFields: undefined as readonly string[] | undefined,
   beforeSubmit: undefined as unknown,
   slotPeriods: undefined as boolean | undefined,
+  slotCheck: undefined as unknown,
+  hideStepHeaders: undefined as boolean | undefined,
 }));
 
 vi.mock("./SmartCoForm", async () => {
@@ -34,11 +36,15 @@ vi.mock("./SmartCoForm", async () => {
       hiddenFields?: readonly string[];
       beforeSubmit?: unknown;
       slotPeriods?: boolean;
+      slotCheck?: unknown;
+      hideStepHeaders?: boolean;
     }) => {
       capte.onDirtyChange = props.onDirtyChange ?? null;
       capte.hiddenFields = props.hiddenFields;
       capte.beforeSubmit = props.beforeSubmit;
       capte.slotPeriods = props.slotPeriods;
+      capte.slotCheck = props.slotCheck;
+      capte.hideStepHeaders = props.hideStepHeaders;
       const ref = props.discardDraftRef;
       useEffect(() => {
         if (!ref) return;
@@ -130,5 +136,12 @@ describe("CoFormModal — contrôle et période des créneaux", () => {
     render(<CoFormModal formId="f1" open onOpenChange={vi.fn()} beforeSubmit={beforeSubmit} slotPeriods />);
     expect(capte.beforeSubmit).toBe(beforeSubmit);
     expect(capte.slotPeriods).toBe(true);
+  });
+
+  it("transmet `slotCheck` et `hideStepHeaders`, les deux props des fiches", () => {
+    const slotCheck = vi.fn();
+    render(<CoFormModal formId="f1" open onOpenChange={vi.fn()} slotCheck={slotCheck} hideStepHeaders />);
+    expect(capte.slotCheck).toBe(slotCheck);
+    expect(capte.hideStepHeaders).toBe(true);
   });
 });

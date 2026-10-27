@@ -535,7 +535,7 @@ export function SmartCoForm({
         answerData={normalizedDefaults ?? {}}
         answerId={answerId}
         hideBanner={hideBanner || isStandalone}
-        hideStepHeaders={isInputStandalone}
+        hideStepHeaders={hideStepHeaders || isInputStandalone}
         hideMetadata
       />
     );

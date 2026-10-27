@@ -1696,8 +1696,8 @@ Sans filtre `token` coché, la sortie de `searchByFieldsToQuery` est identique o
 #### Option à plusieurs valeurs — `values`
 
 Une option peut interroger **plusieurs** valeurs à la fois (en OU) : `"values": ["97400", "97490"]`
-prime sur `value`. Usages : regrouper des codes postaux par commune (ESS974 — « Saint-Denis (97400,
-97490) ») ; couvrir les graphies d'une même valeur — l'import du recensement écrit « Salle(s) de
+prime sur `value`. Usages : regrouper des codes postaux par commune (ESS974 — « Saint-Denis (97400 /
+97490) », sans virgule dans le libellé, cf. doc 27) ; couvrir les graphies d'une même valeur — l'import du recensement écrit « Salle(s) de
 réunion/cours », le formulaire de saisie (liste `equip_loc_type` de l'entité) « Salle(s) de réunion /
 cours ». Un jeton égal à l'une des `values` désigne l'option : la facette cliquable « 97490 » d'une
 fiche et un ancien lien `?poi-postalCode=97490` tombent sur la commune. Distinct des `variants` d'une

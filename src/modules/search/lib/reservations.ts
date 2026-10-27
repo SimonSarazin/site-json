@@ -460,17 +460,32 @@ export interface ReservationCandidate {
   periodEnd?: string;
 }
 
+const ISO_DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** Jour calendaire RÉEL (`2026-02-30` refusé), vérifié en UTC pour ne dépendre d'aucun fuseau. */
+export function isIsoDay(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const m = ISO_DAY.exec(value);
+  if (!m) return false;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
+}
+
 /**
- * Borne ISO exploitable (`YYYY-MM-DD`), ou `null` si la valeur est absente ou
- * malformée. Une borne `null` vaut « pas de limite » : le recouvrement de
- * périodes est alors présumé, donc le conflit est SIGNALÉ. On préfère un faux
- * positif (l'usager voit un avertissement sur un créneau libre) à un faux
- * négatif (deux clubs dans le même gymnase à la même heure).
+ * Borne ISO exploitable : les 10 premiers caractères (une date-heure garde son
+ * jour), s'ils forment un jour calendaire réel (`isIsoDay`) ; `null` si la
+ * valeur est absente, malformée ou impossible (`2026-02-30`). Seule notion de
+ * borne des réservations : chevauchements (`periodsOverlap`) et heures
+ * (`reservationHours`). Une borne `null` vaut « pas de limite » : le
+ * recouvrement de périodes est alors présumé, donc le conflit est SIGNALÉ. On
+ * préfère un faux positif (l'usager voit un avertissement sur un créneau
+ * libre) à un faux négatif (deux clubs dans le même gymnase à la même heure).
  */
-function isoBound(value: string | undefined): string | null {
+export function isoBound(value: string | undefined): string | null {
   if (typeof value !== "string") return null;
   const day = value.slice(0, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
+  return isIsoDay(day) ? day : null;
 }
 
 /**
@@ -649,8 +664,11 @@ export interface BookingAmplitude {
 export const DEFAULT_START_HOUR = 8;
 export const DEFAULT_END_HOUR = 22;
 const DEFAULT_SLOT_MINUTES = 60;
-/** Plafond d'une grille : une journée. Borne l'élargissement automatique des bornes. */
-const JOURNEE_MINUTES = 24 * 60;
+/** Une journée, en minutes : plafond d'une grille (borne l'élargissement automatique des bornes), et fin
+ *  d'un créneau du filtre créneau (`slotFilter.ts`) qui court jusqu'à minuit. */
+export const JOURNEE_MINUTES = 24 * 60;
+/** Un jour, en millisecondes : écart entre deux jours ISO (`slotFilter.ts`, `reservationHours.ts`). */
+export const JOUR_MS = 24 * 60 * 60 * 1000;
 
 /** Minutes depuis minuit → "HH:MM" (24 h, zéro-paddé). */
 export function minutesToLabel(minutes: number): string {
