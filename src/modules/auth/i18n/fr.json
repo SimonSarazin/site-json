@@ -117,6 +117,8 @@
   "Code valable encore {{minutes}} min": "Code valable encore {{minutes}} min",
   "Trop de tentatives, réessayez plus tard": "Trop de tentatives, réessayez plus tard",
   "Pas encore de mot de passe": "Pas encore de mot de passe",
-  "Ce compte n'a pas encore de mot de passe : définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code": "Ce compte n'a pas encore de mot de passe : définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code",
-  "Définir un mot de passe": "Définir un mot de passe"
+  "Définir un mot de passe": "Définir un mot de passe",
+  "Ce compte n'a pas encore de mot de passe. Définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code": "Ce compte n'a pas encore de mot de passe. Définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code",
+  "Ce compte n'a pas encore de mot de passe. Demandez-en un avec « Mot de passe oublié », il vous sera envoyé par e-mail, puis connectez-vous avec ce mot de passe et un code": "Ce compte n'a pas encore de mot de passe. Demandez-en un avec « Mot de passe oublié », il vous sera envoyé par e-mail, puis connectez-vous avec ce mot de passe et un code",
+  "Recevoir un mot de passe": "Recevoir un mot de passe"
 }

@@ -426,9 +426,12 @@ l'élément porteur). Un site dont aucun compte n'est soumis ne voit jamais l'é
 
 **Compte soumis sans mot de passe** (compte créé « par code e-mail » avant l'activation, cf. docs/34 §10.7) :
 le serveur répond 401 `passwordMissing`, que la lib 1.0.204 lève en `PasswordMissingError` (sous-classe
-d'`ApiResponseError`). `LoginForm` affiche alors le toast « Pas encore de mot de passe » avec l'action
-« Définir un mot de passe », qui ouvre la récupération (`onSwitchToRecover` en modale, sinon
-`/recover-password` avec l'e-mail saisi dans `location.state`). Aucune étape « code » n'est affichée.
+d'`ApiResponseError`). `LoginForm` affiche alors le toast « Pas encore de mot de passe » avec une action vers la
+récupération dont le libellé suit `config.auth.recover.mode` : « Recevoir un mot de passe » en `legacy` (défaut,
+un mot de passe est envoyé par e-mail), « Définir un mot de passe » en `node`. L'e-mail saisi est transmis :
+en modale `onSwitchToRecover(email)` → `AuthModal` → `RecoverPasswordForm initialEmail`, en page
+`navigate("/recover-password", { state: { email } })` que `RecoverPasswordForm` lit dans `location.state`.
+Le lien « Mot de passe oublié ? » transmet aussi l'e-mail déjà saisi. Aucune étape « code » n'est affichée.
 
 ### Autres champs
 

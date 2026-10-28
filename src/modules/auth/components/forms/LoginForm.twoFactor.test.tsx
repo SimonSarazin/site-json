@@ -9,7 +9,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter, Routes, Route, useLocation } from "react-router";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 
 const { TwoFactorRequiredError, ApiResponseError, PasswordMissingError } = cocolightApiClient.error;
@@ -45,6 +45,8 @@ vi.mock("sonner", () => ({ toast }));
 import LoginForm from "./LoginForm";
 
 const onSuccess = vi.fn();
+/** Page témoin : affiche l'e-mail reçu dans location.state (ce que lit RecoverPasswordForm). */
+function Temoin() { const l = useLocation(); return <span data-testid="temoin-recover">{(l.state as { email?: string } | null)?.email}</span>; }
 function monter() {
   return render(<MemoryRouter><LoginForm onSuccess={onSuccess} hideBackButton /></MemoryRouter>);
 }
@@ -91,16 +93,34 @@ describe("LoginForm — double authentification", () => {
     expect(screen.queryByTestId("two-factor-step")).toBeNull();
   });
 
-  it("PasswordMissingError (compte soumis sans mot de passe) : toast explicatif avec l'action « Définir un mot de passe », pas d'étape code", async () => {
+  it("PasswordMissingError (compte soumis sans mot de passe) : toast explicatif (mode legacy = mot de passe ENVOYÉ), action « Recevoir un mot de passe » qui, en modale, transmet l'e-mail à la récupération ; pas d'étape code", async () => {
     const user = userEvent.setup();
     login.mockRejectedValue(new PasswordMissingError({ error: "passwordMissing" }, 401));
-    monter();
+    const onSwitchToRecover = vi.fn();
+    render(<MemoryRouter><LoginForm onSuccess={onSuccess} hideBackButton onSwitchToRecover={onSwitchToRecover} /></MemoryRouter>);
     await seConnecter(user);
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Pas encore de mot de passe", expect.objectContaining({
-      description: expect.stringContaining("Mot de passe oublié"),
-      action: expect.objectContaining({ label: "Définir un mot de passe" }),
+      description: expect.stringContaining("envoyé par e-mail"),
+      action: expect.objectContaining({ label: "Recevoir un mot de passe" }),
     })));
     expect(screen.queryByTestId("two-factor-step")).toBeNull();
+    const opts = toast.error.mock.calls[0]![1] as { action: { onClick: () => void } };
+    act(() => opts.action.onClick());
+    expect(onSwitchToRecover).toHaveBeenCalledWith("jean@test.re");
+  });
+
+  it("PasswordMissingError en mode page (sans onSwitchToRecover) : l'action navigue vers /recover-password avec l'e-mail dans l'état", async () => {
+    const user = userEvent.setup();
+    login.mockRejectedValue(new PasswordMissingError({ error: "passwordMissing" }, 401));
+    render(<MemoryRouter initialEntries={["/login"]}><Routes>
+      <Route path="/login" element={<LoginForm onSuccess={onSuccess} hideBackButton />} />
+      <Route path="/recover-password" element={<Temoin />} />
+    </Routes></MemoryRouter>);
+    await seConnecter(user);
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    const opts = toast.error.mock.calls[0]![1] as { action: { onClick: () => void } };
+    act(() => opts.action.onClick());
+    await waitFor(() => expect(screen.getByTestId("temoin-recover").textContent).toBe("jean@test.re"));
   });
 
   it("TwoFactorRequiredError → étape code avec l'adresse masquée, sans toast ; le bon code connecte", async () => {

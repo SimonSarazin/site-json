@@ -30,10 +30,11 @@ type RadixCheckboxState = boolean | "indeterminate";
 interface LoginFormProps {
   onSuccess?: () => void;
   hideBackButton?: boolean;
-  // Mode modal : bascule interne au lieu de naviguer vers /register et
-  // /recover-password (qui n'existent pas forcément selon la config).
+  // Mode modal : bascule interne au lieu de naviguer vers /register et /recover-password
+  // (routes.tsx les enregistre pour tous les sites ; seule /recover/:user/:code dépend de config.auth.recover.mode).
   onSwitchToRegister?: () => void;
-  onSwitchToRecover?: () => void;
+  /** Reçoit l'e-mail saisi, pour préremplir la récupération. */
+  onSwitchToRecover?: (email?: string) => void;
 }
 
 export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchToRegister, onSwitchToRecover }: LoginFormProps = {}): React.ReactNode {
@@ -235,12 +236,17 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
       /* Compte soumis SANS mot de passe (créé « par code e-mail ») : le serveur refuse avec passwordMissing, sans
          défi ni mail. Un « identifiants incorrects » serait sans issue : on explique et on propose la récupération. */
       if (err instanceof cocolightApiClient.error.PasswordMissingError) {
+        // Le texte suit le MODE de récupération du site : legacy (défaut) = un nouveau mot de passe est ENVOYÉ par e-mail ;
+        // node = un lien permet de le DÉFINIR (cf. RecoverPasswordForm).
+        const isNodeReset = config.auth?.recover?.mode === "node";
         toast.error(t("Pas encore de mot de passe"), {
-          description: t("Ce compte n'a pas encore de mot de passe : définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code"),
+          description: isNodeReset
+            ? t("Ce compte n'a pas encore de mot de passe. Définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code")
+            : t("Ce compte n'a pas encore de mot de passe. Demandez-en un avec « Mot de passe oublié », il vous sera envoyé par e-mail, puis connectez-vous avec ce mot de passe et un code"),
           duration: 10000,
           action: {
-            label: t("Définir un mot de passe"),
-            onClick: () => (onSwitchToRecover ? onSwitchToRecover() : navigate("/recover-password", { state: { ...(location.state ?? {}), email } })),
+            label: isNodeReset ? t("Définir un mot de passe") : t("Recevoir un mot de passe"),
+            onClick: () => (onSwitchToRecover ? onSwitchToRecover(email) : navigate("/recover-password", { state: { ...(location.state ?? {}), email } })),
           },
         });
         return;
@@ -569,7 +575,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => (onSwitchToRecover ? onSwitchToRecover() : navigate("/recover-password", { state: location.state }))}
+                onClick={() => (onSwitchToRecover ? onSwitchToRecover(email || undefined) : navigate("/recover-password", { state: { ...(location.state ?? {}), ...(email ? { email } : {}) } }))}
                 className="text-sm text-primary hover:text-primary/80"
               >
                 {t("Mot de passe oublié ?")}
