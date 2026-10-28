@@ -232,6 +232,20 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
         return;
       }
 
+      /* Compte soumis SANS mot de passe (créé « par code e-mail ») : le serveur refuse avec passwordMissing, sans
+         défi ni mail. Un « identifiants incorrects » serait sans issue : on explique et on propose la récupération. */
+      if (err instanceof cocolightApiClient.error.PasswordMissingError) {
+        toast.error(t("Pas encore de mot de passe"), {
+          description: t("Ce compte n'a pas encore de mot de passe : définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code"),
+          duration: 10000,
+          action: {
+            label: t("Définir un mot de passe"),
+            onClick: () => (onSwitchToRecover ? onSwitchToRecover() : navigate("/recover-password", { state: { ...(location.state ?? {}), email } })),
+          },
+        });
+        return;
+      }
+
       /* On extrait le status si présent, sinon on retombe sur le message  */
       const e = err as { status?: number; message?: string; response?: { status?: number }; responseData?: { retryIn?: number } };
       const status = e.status ?? e.response?.status;

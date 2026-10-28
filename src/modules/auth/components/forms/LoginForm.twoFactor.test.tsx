@@ -12,7 +12,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 
-const { TwoFactorRequiredError, ApiResponseError } = cocolightApiClient.error;
+const { TwoFactorRequiredError, ApiResponseError, PasswordMissingError } = cocolightApiClient.error;
 
 // jsdom n'a pas ResizeObserver, que la Checkbox Radix du formulaire observe au montage.
 class ResizeObserverStub { observe() {} unobserve() {} disconnect() {} }
@@ -88,6 +88,18 @@ describe("LoginForm — double authentification", () => {
     monter();
     await seConnecter(user);
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Erreur", { description: "Email ou mot de passe incorrect" }));
+    expect(screen.queryByTestId("two-factor-step")).toBeNull();
+  });
+
+  it("PasswordMissingError (compte soumis sans mot de passe) : toast explicatif avec l'action « Définir un mot de passe », pas d'étape code", async () => {
+    const user = userEvent.setup();
+    login.mockRejectedValue(new PasswordMissingError({ error: "passwordMissing" }, 401));
+    monter();
+    await seConnecter(user);
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Pas encore de mot de passe", expect.objectContaining({
+      description: expect.stringContaining("Mot de passe oublié"),
+      action: expect.objectContaining({ label: "Définir un mot de passe" }),
+    })));
     expect(screen.queryByTestId("two-factor-step")).toBeNull();
   });
 

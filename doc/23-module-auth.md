@@ -424,6 +424,12 @@ porte `auth.twoFactor: "required"` — rattachement par `source.key` ou par appa
 l'élément porteur). Un site dont aucun compte n'est soumis ne voit jamais l'étape, et n'a rien
 à configurer. Le déroulé est décrit dans [`LoginForm`](#loginform).
 
+**Compte soumis sans mot de passe** (compte créé « par code e-mail » avant l'activation, cf. docs/34 §10.7) :
+le serveur répond 401 `passwordMissing`, que la lib 1.0.204 lève en `PasswordMissingError` (sous-classe
+d'`ApiResponseError`). `LoginForm` affiche alors le toast « Pas encore de mot de passe » avec l'action
+« Définir un mot de passe », qui ouvre la récupération (`onSwitchToRecover` en modale, sinon
+`/recover-password` avec l'e-mail saisi dans `location.state`). Aucune étape « code » n'est affichée.
+
 ### Autres champs
 
 - `title` / `subtitle` alimentent le titre et le sous-titre de chaque formulaire

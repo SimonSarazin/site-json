@@ -115,5 +115,8 @@
   "Retour": "Back",
   "Un code à 6 chiffres a été envoyé à {{sentTo}}. Saisissez-le pour terminer votre connexion.": "A 6-digit code has been sent to {{sentTo}}. Enter it to complete your sign-in.",
   "Code valable encore {{minutes}} min": "Code valid for {{minutes}} more min",
-  "Trop de tentatives, réessayez plus tard": "Too many attempts, try again later"
+  "Trop de tentatives, réessayez plus tard": "Too many attempts, try again later",
+  "Pas encore de mot de passe": "No password yet",
+  "Ce compte n'a pas encore de mot de passe : définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code": "This account has no password yet: set one with “Forgot password”, then sign in with your password and a code",
+  "Définir un mot de passe": "Set a password"
 }

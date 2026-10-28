@@ -115,5 +115,8 @@
   "Retour": "Retour",
   "Un code à 6 chiffres a été envoyé à {{sentTo}}. Saisissez-le pour terminer votre connexion.": "Un code à 6 chiffres a été envoyé à {{sentTo}}. Saisissez-le pour terminer votre connexion.",
   "Code valable encore {{minutes}} min": "Code valable encore {{minutes}} min",
-  "Trop de tentatives, réessayez plus tard": "Trop de tentatives, réessayez plus tard"
+  "Trop de tentatives, réessayez plus tard": "Trop de tentatives, réessayez plus tard",
+  "Pas encore de mot de passe": "Pas encore de mot de passe",
+  "Ce compte n'a pas encore de mot de passe : définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code": "Ce compte n'a pas encore de mot de passe : définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code",
+  "Définir un mot de passe": "Définir un mot de passe"
 }
