@@ -302,7 +302,7 @@
   "resourceDirectory.mapUnplaced": "{{count}} service is not on the map: its place has no location.",
   "resourceDirectory.mapUnplaced_other": "{{count}} services are not on the map: their place has no location.",
   "resourceDirectory.loadError": "Resources could not be loaded.",
-  "resourceDirectory.parentsError": "Place addresses could not be read: the location filter cannot be applied.",
+  "resourceDirectory.parentsError": "The host places could not be read: filters on the place (location, type, search) cannot be applied.",
   "resourceDirectory.retry": "Try again",
   "resourceDirectory.viewMode": "View",
   "resourceDirectory.viewList": "List",

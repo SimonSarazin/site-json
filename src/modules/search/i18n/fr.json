@@ -302,7 +302,7 @@
     "resourceDirectory.mapUnplaced": "{{count}} service n'apparaît pas sur la carte : son lieu n'est pas géolocalisé.",
     "resourceDirectory.mapUnplaced_other": "{{count}} services n'apparaissent pas sur la carte : leur lieu n'est pas géolocalisé.",
     "resourceDirectory.loadError": "Les ressources n'ont pas pu être chargées.",
-    "resourceDirectory.parentsError": "Les adresses des lieux n'ont pas pu être lues : le filtre géographique ne peut pas s'appliquer.",
+    "resourceDirectory.parentsError": "Les lieux porteurs n'ont pas pu être lus : les filtres sur le lieu (zone, typologie, recherche) ne peuvent pas s'appliquer.",
     "resourceDirectory.retry": "Réessayer",
     "resourceDirectory.viewMode": "Affichage",
     "resourceDirectory.viewList": "Liste",

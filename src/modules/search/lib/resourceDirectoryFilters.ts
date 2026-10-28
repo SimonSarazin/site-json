@@ -9,6 +9,10 @@ import type { ServicePricingStat } from "../helpers/servicePricingAnswers";
  * (`indexStep` borné), le filtre navigateur voit donc l'ensemble.
  */
 
+/** Aide du champ de recherche : elle porte sur le lieu (nom, ville, code postal), pas sur un nom seul.
+ *  `{ fr, en }` comme les autres libellés de facettes ci-dessous : `FiltersSection.searchPlaceholder` est un `LocalizedString`. */
+export const RESOURCE_SEARCH_PLACEHOLDER = { fr: "Lieu, ville, code postal…", en: "Place, city, ZIP code…" };
+
 /** Tranches de capacité (personnes ou postes) : `"min-max"`, côté vide = sans plafond. */
 export const CAPACITY_FILTER_RANGES = [
   { id: "1-10", label: { fr: "1 à 10", en: "1 to 10" } },
@@ -127,6 +131,16 @@ export function parentIdsFilter(thematicIds: readonly string[] | null, activePar
 export function matchesTypologies(parentTags: readonly string[] | undefined, selected: readonly string[]): boolean {
   if (selected.length === 0) return true;
   return (parentTags ?? []).some((tag) => selected.includes(tag));
+}
+
+/**
+ * Une facette active se juge-t-elle sur le LIEU PORTEUR (zone, typologie, recherche texte — ville, code
+ * postal, nom du lieu) ? Tant que les lieux porteurs ne sont pas lus, ou s'ils n'ont pas pu l'être, ces
+ * facettes écartent tout : la liste vide dirait un « Aucun résultat » faux — l'appelant montre alors le
+ * chargement ou l'erreur.
+ */
+export function judgesOnParentPlace(active: { zones: readonly string[]; typologies: readonly string[]; query: string }): boolean {
+  return active.zones.length > 0 || active.typologies.length > 0 || active.query.trim() !== "";
 }
 
 /**

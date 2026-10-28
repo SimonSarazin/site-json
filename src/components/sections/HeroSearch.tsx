@@ -253,8 +253,11 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
       case "Enter":
         e.preventDefault();
         if (serviceMode) {
+          // Aucune ligne choisie (index -1 après chaque frappe, cf. `handleSearchChange`) : Entrée lance
+          // la recherche, comme le bouton « Rechercher » — et n'ouvre pas d'office le 1er service.
           const service = services.suggestions[highlightedIndex];
           if (service) navigate(service.href);
+          else triggerSearch();
         } else if (suggestions[highlightedIndex]) {
           handleSelectSuggestion(suggestions[highlightedIndex]);
         }
@@ -296,7 +299,9 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setDismissed(false);
-    setHighlightedIndex(0);
+    // Mode services : aucune ligne présélectionnée — Entrée lance la recherche tant que la sélection
+    // n'a pas été déplacée (flèches, survol). Mode fiches : 1re suggestion, comme avant.
+    setHighlightedIndex(serviceMode ? -1 : 0);
     // Champ vidé → on réinitialise la recherche de la liste (sinon elle reste
     // filtrée sur l'ancien texte tant qu'on ne reclique pas « Rechercher »).
     if (value === "" && pageFilters?.searchQuery) {

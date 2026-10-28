@@ -559,7 +559,6 @@
                 "href": "/lieux"
               }
             ],
-            "scrollTarget": "section-lieux",
             "searchHref": "/lieux",
             "placeholder": {
               "fr": "Ville, département, code postal ...",

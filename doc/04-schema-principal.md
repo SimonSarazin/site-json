@@ -86,7 +86,7 @@ export const SiteConfig = z.object({
 | **features**     | `FeatureFlag[]`         | Non      | Feature flags / tests A-B                                          |
 | **theme**        | `ThemeConfig`           | Non      | Theme et design system                                             |
 | **performance**  | `PerformanceConfig`     | Non      | Configuration de performance                                       |
-| **redirects**    | `array`                 | Non      | Regles de redirection                                              |
+| **redirects**    | `array`                 | Non      | Regles de redirection — déclarées au schéma, NON appliquées (aucun serveur ne les lit) |
 | **customDomains**| `string[]`              | Non      | Domaines supplementaires                                           |
 | **maintenance**  | `object`                | Non      | Mode maintenance                                                   |
 | **auth**         | `object`                | Non      | Configuration de l'authentification                                |
@@ -871,7 +871,9 @@ maintenance: z.object({
 }).optional(),
 ```
 
-* **redirects** (`{ from, to, permanent }[]`) : regles de redirection.
+* **redirects** (`{ from, to, permanent }[]`) : regles de redirection. ⚠️ Déclarées au schéma
+  seulement : ni `dev-server.js`, ni `prod-server.js`, ni `buildRoutes` ne les lisent — une règle
+  écrite dans une config n'a aucun effet.
 * **customDomains** (`string[]`) : domaines supplementaires.
 * **maintenance** : mode maintenance avec message et IPs autorisees.
 
