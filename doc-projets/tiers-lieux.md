@@ -217,6 +217,20 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 28/10bis — fiche événement : onglet « Participants », onglet « Lieu » et « Autres événements » retirés
+
+**Fait** : `profiles.events.tabs` gagne un onglet `participants`, entre « Organisateur » et « Galerie » :
+liste des participants (`profile-members`, rôles et gestion) et colonne d'infos (dates, adresse,
+organisateur). Config seule, même gabarit que l'onglet « Contributeurs » des projets.
+
+Retirés : l'onglet « Lieu » (carte de l'événement ; l'adresse reste dans la colonne Informations de
+« À propos ») et, dans l'onglet « Organisateur », le bloc « Autres événements » (`profile-related`,
+`relationType: "events"`) : sur un événement, il liste les événements liés à l'événement lui-même, que ni
+le moteur ni le SDK ne fournissent — il affichait toujours « Aucun événement lié ».
+
+**Vérifié** : `config:validate` ; au navigateur (backend local), `/profil/<événement>/participants`
+s'ouvre sur ordinateur et sur mobile, sans erreur.
+
 ### 28/10 — `/services` : nettoyage après relecture (pluriel, mémoïsation, adresse de la popup)
 
 **Fait** :
