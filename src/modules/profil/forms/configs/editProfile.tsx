@@ -65,10 +65,16 @@ export const editProfileConfig: EntityModalConfig = {
 
   // Slug changé → recharger sur la nouvelle URL (effet hors moteur, parité ancien modal). Champs
   // opt-in (`config.costum.citizenProfileFields`) : écrits séparément, hors du schéma SDK — cf.
-  // editProfileExtraCitizenFields.ts.
+  // editProfileExtraCitizenFields.ts. Le reload doit attendre cette écriture : sinon
+  // window.location.reload() coupe la requête updateField en vol si slug ET un champ opt-in
+  // changent dans la même sauvegarde. La promesse est RETOURNÉE (pas `void`) : `EntityFormModal.commit`
+  // l'attend pour rejouer l'invalidation après l'écriture et, si elle rejette, afficher un toast
+  // d'erreur dédié — un échec d'écriture ne doit pas rester muet derrière le toast de succès déjà
+  // affiché pour la sauvegarde principale.
   afterSubmit: (ctx, values) => {
-    reloadOnSlugChange((ctx.entity as EntityTypes | null)?.slug, values.slug);
+    const reload = () => reloadOnSlugChange((ctx.entity as EntityTypes | null)?.slug, values.slug);
     const fields = extraCitizenFields(ctx);
-    if (fields.length) void writeExtraCitizenFields(ctx.entity, values, fields);
+    if (!fields.length) { reload(); return; }
+    return writeExtraCitizenFields(ctx.entity, values, fields).finally(reload);
   },
 };

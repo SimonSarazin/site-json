@@ -12,6 +12,7 @@ import { useMemo, type ReactNode } from "react";
 import type { FieldValues } from "react-hook-form";
 import type { z } from "zod";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -44,8 +45,14 @@ export interface EntityModalConfig {
   descriptor: FormDescriptor | ((ctx: EntityModalCtx) => FormDescriptor);
   /** widgetProps runtime par champ (ex. filtre du finder `parent` event). Fusionnés au fieldProps image. */
   buildFieldProps?: (ctx: EntityModalCtx) => Record<string, Record<string, unknown>> | undefined;
-  /** effet de bord après submit réussi (ex. reload au changement de slug en édition profil). */
-  afterSubmit?: (ctx: EntityModalCtx, values: FieldValues) => void;
+  /**
+   * Effet de bord après submit réussi (ex. reload au changement de slug en édition profil, écriture
+   * de champs hors schéma SDK). Awaité par `commit()` AVANT de fermer la modale — s'il rejette, un
+   * toast d'erreur générique est affiché et les `invalidateQueries` de la mutation sont rejoués (un
+   * afterSubmit qui écrit après le save est invisible à l'invalidation déjà faite par le succès de
+   * la mutation).
+   */
+  afterSubmit?: (ctx: EntityModalCtx, values: FieldValues) => void | Promise<void>;
   // ── chrome ── libellés = clé i18n string OU LocalizedString inline {fr,en} (résolus par `tr`/useT au rendu).
   title: { add: I18n; edit: I18n };
   description?: { add?: I18n; edit?: I18n };
@@ -103,6 +110,7 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
   const tr = (k: I18n) => t(k); // résout clé i18n OU LocalizedString inline (useT route selon le type)
   const { me, entity: carrier } = useCocolight();
   const { config: siteConfig } = useSite();
+  const queryClient = useQueryClient();
   const isEdit = mode === "edit" && Boolean(entity);
   const effMode: "add" | "edit" = isEdit ? "edit" : "add";
 
@@ -160,7 +168,18 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
 
   const commit = async (cleaned: FieldValues) => {
     const { entity: created } = await mutation.mutateAsync(cleaned as Record<string, unknown>);
-    config.afterSubmit?.(ctx, cleaned);
+    try {
+      await config.afterSubmit?.(ctx, cleaned);
+      // L'invalidation du succès de la mutation a déjà tourné AVANT cet afterSubmit (il s'exécute
+      // après que mutateAsync se soit résolu, lui-même résolu après onSuccess) : si afterSubmit
+      // écrit d'autres champs (ex. territoires/structureRegister hors schéma SDK), elle ne les voit
+      // pas. On la rejoue sur les mêmes clés.
+      mutationSpec.invalidateQueries?.forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
+    } catch (err) {
+      toast.error(tr("toast.profile.extraFieldsError"), {
+        description: err instanceof Error ? err.message : String(err),
+      });
+    }
     onOpenChange(false);
     if (effMode === "add" && created) onCreated?.(created);
   };

@@ -12,20 +12,17 @@
 > [Module Search](../doc/07-module-search.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Système de visibilité](../doc/19-visibility-system.md) · [Module Agenda](../doc/29-module-agenda.md) ·
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
-> Mémoire : `[[project-parent62]]`
-> (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
+> Slug : `parents62` avec **s** est abandonné (cf. §1).
 
 Dernière mise à jour : **2026-10-26** — entrée « Chat » du menu avatar (moteur, tout le parc, ACTIVE
-PAR DÉFAUT) ouvrant un modal Rocket.Chat, et libellé nav parent62 (« Contenus » → « Actualités et
-Ressources ») qui a fait déborder la barre à 1280px — corrigé par une nouvelle option de design
-`header.navFontSize` (moteur, opt-in) plutôt qu'en reformulant les libellés ; 4 échecs e2e rencontrés
-en cours de revue, tous confirmés PRÉEXISTANTS (`git stash` sur la config d'origine) — détail
-§9tredecenties. Même jour, plus tôt : employeur et territoire éditables depuis le
-profil, les DEUX champs (`structureRegister` ET `territoires`) réservés à parent62 via un nouveau
-mécanisme de champ conditionnel **par config** (`costum.citizenProfileFields`, corrigé le 26/10 d'un
-slug en dur vers ce flag sur feedback utilisateur), affichés sur la carte de `/equipe` ; deux
-correctifs backend préalables posés par l'utilisateur PLUS une 3e porte de validation côté SDK
-découverte en navigateur (`[DraftProxy]`), corrigée par `readOnly` + écriture séparée
+PAR DÉFAUT), lien nouvel onglet vers l'instance Rocket.Chat séparée de la plateforme, et libellé nav
+parent62 (« Contenus » → « Actualités et Ressources ») qui a fait déborder la barre à 1280px — corrigé
+par une nouvelle option de design `header.navFontSize` (moteur, opt-in) plutôt qu'en reformulant les
+libellés ; 4 échecs e2e préexistants, sans rapport avec ce lot — détail §9tredecenties. Même jour, plus
+tôt : employeur et territoire éditables depuis le profil, les DEUX champs (`structureRegister` ET
+`territoires`) réservés à parent62 via un nouveau mécanisme de champ conditionnel **par config**
+(`costum.citizenProfileFields`), affichés sur la carte de `/equipe` ; deux correctifs backend préalables
+PLUS une 3e porte de validation côté SDK (`[DraftProxy]`), corrigée par `readOnly` + écriture séparée
 (`entity.updateField`) — détail §9duodecenties, vérification navigateur réelle non faite (pas de
 session authentifiée disponible). Précédemment, le 23/10 : 4 correctifs de relecture MR (dont
 3 bloquants), moteur, tout le parc : doublon de bouton « Carte »/« Voir en liste » en vue carte (20
@@ -162,9 +159,8 @@ décision produit actée avec l'utilisateur). Revue de code passée (`/code-revi
 réels trouvés et corrigés (virgule littérale cassant le round-trip URL ; retour arrière navigateur
 ne vidant pas un filtre appliqué — décision d'hydratation extraite en fonction pure testée,
 `resolveFilterHydration`) ; 3 points identifiés et documentés sans code (impact site entier sur les
-facettes hors nav, highlighting actif mobile, Ctrl+K). Détail complet : §9decies. Document de spec
-séparé (racine du monorepo) : `Document de spécification — Menu dynamique costum.lists dans le
-header.md`. Gates : typecheck/lint propres, `config:validate` **46 pages/160 sections**,
+facettes hors nav, highlighting actif mobile, Ctrl+K). Détail complet : §9decies.
+Gates : typecheck/lint propres, `config:validate` **46 pages/160 sections**,
 `audit:config` RAS, `test:unit` **2909/2909** ✅ (+17 tests). `test:e2e` non rejoué (pas de
 `.env.test` dans cet environnement) — à faire avant fusion `main`. Non commité à ce stade.
 Précédemment (même jour) : **2026-08-25** (section admin générique « Listes » — édition de
@@ -930,15 +926,12 @@ reste **à confirmer**, comme les autres lignes « 0 donnée » de ce document (
 1. **Matching récurrent par jour de semaine (mode CALENDRIER)** : `searchEventsCostum` (avec
    `startDateUTC`/`endDateUTC`) ne comparait que le jour de semaine de `startDateUTC` **lui-même** à
    `openingHours`, sans balayer toute la plage demandée — un événement récurrent n'apparaissait que
-   les jours où « aujourd'hui » tombait pile sur son jour configuré. Documenté dans `Document de
-   spécification — Agenda événements récurrents invisibles (AgendaAction.php).md` (racine du
-   monorepo, 14/08). **Corrigé** (vérifié : 418 occurrences hebdomadaires correctement dépliées sur
-   une fenêtre de 12 mois après le fix).
+   les jours où « aujourd'hui » tombait pile sur son jour configuré (14/08). **Corrigé** (vérifié :
+   418 occurrences hebdomadaires correctement dépliées sur une fenêtre de 12 mois après le fix).
 2. **Mode LISTE excluant les récurrents** : `searchEventsCostum` sans dates (flux paginé) ne
-   renvoyait que les événements ponctuels. Évolution proposée puis **implémentée** : le mode LISTE
-   inclut désormais les récurrents, une ligne chacun (leur prochaine occurrence,
-   `startDateSort`/`startDateSortFormat`). Documenté dans `Document de spécification — Pagination
-   des événements récurrents dans l'agenda (AgendaAction.php).md` (racine du monorepo, 19/08).
+   renvoyait que les événements ponctuels. Évolution proposée puis **implémentée** (19/08) : le mode
+   LISTE inclut désormais les récurrents, une ligne chacun (leur prochaine occurrence,
+   `startDateSort`/`startDateSortFormat`).
 3. **« Prochaine occurrence » sautant le créneau du jour en cours** : la première version de
    l'évolution ci-dessus calculait toujours le prochain **futur** début, jamais « aujourd'hui, déjà
    commencé » — un récurrent activement dans son créneau ne remontait jamais daté du jour même, donc
@@ -1177,10 +1170,7 @@ valider avant de considérer ces trois opérations fiables sur les listes réell
 > à l'entrée « Thèmes » du header de parent62 — seul site du parc à l'utiliser à ce jour. Fait suite
 > au constat (`useDynamicFilterOptions`/`optionsKey` déjà câblés sur 22 blocs de filtres via
 > `costum.lists.themes`, §9septies) que le menu de nav, lui, restait une copie figée à 8 entrées,
-> découplée de la vraie liste (18 valeurs). Document de spec dédié (racine du monorepo) :
-> `Document de spécification — Menu dynamique costum.lists dans le header.md` (historique complet
-> du chantier, y compris les itérations intermédiaires — ce paragraphe ne documente que l'état
-> final retenu).
+> découplée de la vraie liste (18 valeurs). Ce paragraphe documente l'état final retenu.
 
 ### 9decies.1 Ce qui a changé côté moteur (générique, tout site)
 
@@ -4226,9 +4216,8 @@ seule source de vérité pour les boutons et leurs bornes (`goToPage`). Vérifi�
 
 ## 9quinquadragies. SDK 1.0.196 : rôles de membre modifiables, export PDF de l'agenda via le SDK
 
-**Contexte** : le SDK publié le jour même (`@communecter/cocolight-api-client@1.0.196`) livre exactement
-ce que décrivaient `Document de spécification — Rôles de membre sur les liens` et `Document de
-spécification — Endpoint SDK PDF imprimable agenda` : `User.setRoles(roles)` (endpoint `LINK_SET_ROLES`,
+**Contexte** : le SDK publié le jour même (`@communecter/cocolight-api-client@1.0.196`) livre
+`User.setRoles(roles)` (endpoint `LINK_SET_ROLES`,
 remplacement intégral), `sendRequestToJoinParent({ admin, roles })`, et `endpointApi.agendaGetPdf(data)`
 (réponse binaire `arraybuffer`, gérée nativement par `ApiClient.callEndpoint`). Mise à jour :
 `cocolight-api-client` (dépôt local, fast-forward sur `origin/master`) puis `site-json` (`package.json`/lock,
@@ -4256,13 +4245,12 @@ supplémentaire, le backend n'exposant toujours pas d'endpoint de suggestions au
 reste possible.
 
 **⚠️ Limite connue, non corrigée (hors périmètre SDK/site-json)** : `Costumize::connectElement`
-(backend PHP, `Document de spécification — Rôles attribués au mauvais membre`) écrit encore le rôle sur
-le lien de l'ADMIN qui invite, pas sur celui de l'invité, pour toute invitation **CRÉANT** un lien neuf
-(chemin `CONNECT`) sur un costum routé par `Costumize` — le cas de parent62. Ce bug est **indépendant**
-du lot ci-dessus : **« Gérer les rôles »** passe par `removerole`/`Link::removeRole`, jamais par
-`Costumize::connectElement` — non affecté. Seul « poser un rôle à l'invitation » (onglets « users » et
-« emails ») en hérite. Non re-testé en conditions réelles (pas de session admin dans cette session) :
-à vérifier au premier usage réel.
+(backend PHP) écrit encore le rôle sur le lien de l'ADMIN qui invite, pas sur celui de l'invité, pour
+toute invitation **CRÉANT** un lien neuf (chemin `CONNECT`) sur un costum routé par `Costumize` — le cas
+de parent62. Ce bug est **indépendant** du lot ci-dessus : **« Gérer les rôles »** passe par
+`removerole`/`Link::removeRole`, jamais par `Costumize::connectElement` — non affecté. Seul « poser un
+rôle à l'invitation » (onglets « users » et « emails ») en hérite. Non re-testé en conditions réelles
+(pas de session admin disponible) : à vérifier au premier usage réel.
 
 **Export PDF de l'agenda** — nouvelle prop opt-in `agenda.showPdfExport` (défaut `false`), hook
 `useAgendaPdfExport` (`endpointApi.agendaGetPdf`, scope le costum PORTEUR entier via
@@ -4270,8 +4258,7 @@ du lot ci-dessus : **« Gérer les rôles »** passe par `removerole`/`Link::rem
 `Blob` + `<a download>` transitoire (aucun pattern de blob-download réutilisable trouvé — `downloadCsv.ts`
 est CSV-only, non généralisé pour un seul 2ᵉ usage). **Non activé sur `/agenda`** : la prop reste à son
 défaut `false`, conformément à la convention moteur (nouveauté = option, jamais un nouveau défaut pour
-un site en marche) — vérifié en direct dans cette session avec l'option forcée à `true`, qui a ensuite
-été retirée du config.
+un site en marche).
 
 ### 9quinquadragies.1 Vérifications
 
@@ -4280,9 +4267,9 @@ un site en marche) — vérifié en direct dans cette session avec l'option forc
 | `validate-config` | ✅ 51 pages · 182 sections |
 | `typecheck` · `lint` (fichiers touchés) | ✅ 0 erreur |
 | `test:unit` | ✅ suite complète (5528/5531, 2 échecs non liés à ce lot — snapshot archétype `agenda` resynchronisé, budget `bundle-size` pré-existant) ; `rolesExistantsDeLEntite` testé (9 cas, `memberRoles.test.ts`) — les mutations elles-mêmes restent sans test (React Query + mock SDK absents de ce module), le PDF n'a pas de test automatisé non plus |
-| Export PDF | ✅ **vérifié en direct, vrai navigateur (Playwright/Chromium), contre le backend réel** : clic → requête `AGENDA_GET_PDF` → fichier `agenda-parent62.pdf` de 150 519 octets, magic header `%PDF-` confirmé. Le blocage CORS documenté dans la spec est bien levé |
+| Export PDF | ✅ **vérifié en direct, vrai navigateur (Playwright/Chromium), contre le backend réel** : clic → requête `AGENDA_GET_PDF` → fichier `agenda-parent62.pdf` de 150 519 octets, magic header `%PDF-` confirmé. Le blocage CORS est bien levé |
 | Mobile 390 px / sombre (`/agenda`) | ✅ bouton PDF en icône seule, aucun débordement horizontal, lisible en sombre |
-| Gestion des rôles | 🟡 **non vérifiée en conditions réelles** — aucune session admin disponible dans cette session ; typecheck/lint seuls |
+| Gestion des rôles | 🟡 **non vérifiée en conditions réelles** — aucune session admin disponible ; typecheck/lint seuls |
 
 ## 9sexquadragies. Footer : « Appels à projets »/« Offres d'emploi » retirés
 
@@ -4509,8 +4496,8 @@ l'utilisait déjà.
 - `doc/08-module-profil.md` : table des sections de profil ne listait pas `profile-parent62-about`
   et le compteur était resté à 21 au lieu de 22. Ajoutés.
 - `TYPE_LABELS` (doublon de l'enum du formulaire) signalé en relecture : déjà absent du code, retiré
-  dans un lot antérieur de cette session (sélecteur « Type de structure » supprimé avec le reste de
-  la carte, §9septquadragies.3) — rien à faire.
+  dans un lot antérieur (sélecteur « Type de structure » supprimé avec le reste de la carte,
+  §9septquadragies.3) — rien à faire.
 
 | Gate | Résultat |
 |---|---|
@@ -4693,8 +4680,8 @@ lots côté production.
 |---|---|
 | `config:validate` / `audit:config` | ✅ RAS |
 | `tests/preflight/effective-config.test.ts` | ✅ (fixture `__effective__/parent62.json` régénérée : 1 ligne, `"territoires"` dans `defaultFields`) |
-| `tests/preflight/` (suite complète) | ✅ sauf `bundle-size.test.ts` / `lazy-entry-facades.test.ts`, confirmés PRÉEXISTANTS et sans rapport (bundle `dist/` non reconstruit cette session, vérifié par `git stash`) |
-| `npm run typecheck` | 7 erreurs PRÉEXISTANTES dans `src/modules/auth/` (`mode`/`fields` absents du type `register()` du SDK), confirmées sans rapport avec ce lot ni avec aucun fichier modifié cette session (`git stash` + `typecheck` propre reproduit les mêmes 7 erreurs) — à traiter séparément |
+| `tests/preflight/` (suite complète) | ✅ sauf `bundle-size.test.ts` / `lazy-entry-facades.test.ts`, confirmés PRÉEXISTANTS et sans rapport (bundle `dist/` non reconstruit) |
+| `npm run typecheck` | 7 erreurs PRÉEXISTANTES dans `src/modules/auth/` (`mode`/`fields` absents du type `register()` du SDK), confirmées sans rapport avec ce lot ni avec aucun fichier modifié ici — à traiter séparément |
 
 ## 9sexagies. Acteurs du territoire à côté de l'agenda (9 pages `/territoire/*`)
 
@@ -5062,17 +5049,17 @@ Deux derniers constats de la même relecture :
 ## 9duodecenties. Employeur et territoire éditables depuis le profil
 
 Demande client : pouvoir renseigner, depuis son propre profil, son employeur et son territoire, et les
-voir sur la carte de chaque coordinateur·rice de `/equipe`. Correctif backend PRÉALABLE posé par
-l'utilisateur (confirmé en lisant `Person.php`/`Element.php`) : `structureRegister` et `territoires`
-acceptés par `Element::updateBlock()` (bloc `info`), `territoires` ajouté en plus à
-`Person::$dataBinding` — détail complet dans
-`Document de spécification — Champs « employeur » et « territoire » éditables sur un profil citoyen
-existant (backend communecter).md` (racine du monorepo).
+voir sur la carte de chaque coordinateur·rice de `/equipe`. Correctif backend PRÉALABLE
+(`Person.php`/`Element.php`) : le formulaire de profil générique
+passe par `POST /co2/element/updateblock/` → `Element::updateBlock()` (bloc `info`), qui n'accepte
+qu'une séquence codée en dur de champs (`if(isset($params["<champ>"])) … updateField(...)`, un par
+champ, sur le modèle des lignes `fixe`/`mobile` voisines) — ni `structureRegister` ni `territoires` n'y
+figuraient, donc silencieusement ignorés même soumis. Deux lignes ajoutées à ce dispatch pour les deux
+champs ; `territoires` en plus ajouté à `Person::$dataBinding` (liste blanche validée par
+`updateField()`, où `structureRegister` était déjà présent via le costum `nutritionMarmay`).
 
-**Les deux champs (`structureRegister` et `territoires`) sont RÉSERVÉS à parent62** — décision
-corrigée en cours de lot : `structureRegister` avait d'abord été posé générique (visible sur tous les
-sites), puis retiré du descripteur partagé sur demande explicite, au même titre que `territoires`.
-Aucun mécanisme n'existait pour qu'un champ du formulaire d'édition CITOYEN (contrairement à
+**Les deux champs (`structureRegister` et `territoires`) sont RÉSERVÉS à parent62**, retirés du
+descripteur partagé. Aucun mécanisme n'existait pour qu'un champ du formulaire d'édition CITOYEN (contrairement à
 l'affichage de fiche, qui en a un via `ProfileSectionRenderer`) soit visible seulement sur un site —
 construit ici, RÉUTILISABLE pour tout futur champ du même genre :
 - `userProfileSchema` (`schemaForm.ts`) : les deux champs `z.string().optional()` — zod ne distingue
@@ -5090,9 +5077,8 @@ construit ici, RÉUTILISABLE pour tout futur champ du même genre :
   conditionnés, seule la VUE change). Gère aussi le cas où un seul champ est demandé ou n'existe pas
   dans le pipeline.
 - **`editProfileConfig.descriptor`** (`editProfile.tsx`) : applique cette fonction avec la liste lue sur
-  `config.costum.citizenProfileFields` (`site-schema.ts`, bloc `costum`) — **PAS un slug en dur**
-  (corrigé le 26/10/2026, feedback utilisateur : « ne pas mettre de condition en dur style
-  `slug=="parent62"`, jouer avec un paramètre de config »). `config.prod.parent62.json` déclare
+  `config.costum.citizenProfileFields` (`site-schema.ts`, bloc `costum`) — **PAS un slug en dur**,
+  gate par paramètre de config, comme toute option par site. `config.prod.parent62.json` déclare
   `costum.citizenProfileFields: ["territoires", "structureRegister"]` ; tout autre site, n'ayant pas
   cette clé, reçoit le descripteur et le comportement inchangés, byte pour byte.
 - `CardTeamMember.tsx` : `structureRegister` affiché dans le bloc contacts (icône `Building2`), lu
@@ -5115,10 +5101,17 @@ aurait été inutile — vérifié AVANT d'en écrire une. Correctif retenu, 100
 sont `readOnly: true` dans le pipeline (exclus du payload schéma-validé) et écrits SÉPARÉMENT, après le
 save principal, via `entity.updateField(path, value)` — méthode publique de `BaseEntity`, confirmée par
 lecture complète : ne passe PAS par le `DraftProxy`, seulement par l'autorisation backend (même garde
-que `updateBlock`). Un hook `afterSubmit` dédié (`writeExtraCitizenFields`, non bloquant, échec
-individuel juste averti en console) fait cette écriture, car un stamp `channel:"pathValue"` classique
-ne peut PAS lire une valeur déjà exclue du payload construit. Détail complet :
-`reference_profil_champ_conditionnel_par_costum.md` (mémoire Claude).
+que `updateBlock`). Un hook `afterSubmit` dédié (`writeExtraCitizenFields`) fait cette écriture, car un
+stamp `channel:"pathValue"` classique ne peut PAS lire une valeur déjà exclue du payload construit.
+
+**Corrigé le 27/10/2026 (relecture) : le toast de succès et l'invalidation du cache partaient AVANT
+cette écriture, et un échec restait muet.** `EntityFormModal.commit()` appelait `afterSubmit` APRÈS
+`mutateAsync`, dont le `onSuccess` avait déjà posé le toast « Profil mis à jour » et invalidé le cache
+— un échec d'écriture de `territoires`/`structureRegister` (ex. backend pas encore corrigé) restait
+avalé dans un simple `console.warn`, pendant que l'utilisateur lisait un succès. `commit()` attend
+maintenant la promesse d'`afterSubmit`, réinvalide le cache une fois l'écriture terminée, et affiche un
+`toast.error` dédié si elle échoue ; `writeExtraCitizenFields` tente toujours chaque champ (best-effort)
+mais rejette si au moins un a échoué, au lieu de ne faire qu'avertir.
 
 - 14 tests dédiés (`editProfileExtraCitizenFields.test.ts`) : 7 sur `withExtraCitizenFields`
   (options/widget, read/readOnly inchangés, insertion dans le bon groupe, liste vide → inchangé, un
@@ -5148,23 +5141,22 @@ ajoutées à la fixture et à l'attendu.
 ## 9tredecenties. Entrée « Chat » du menu avatar (moteur, tout le parc) + libellés nav
 
 **Chat** : nouvelle entrée « Chat » du menu avatar (`AuthMenu`), juste sous « Administration »,
-réservée aux admins du costum, **ACTIVE PAR DÉFAUT sur tout le parc** (demande explicite de
-l'utilisateur, pas une décision prise seul — contraire à la convention habituelle opt-in/défaut
-false). Ouvre un **modal avec iframe** (comme sur communecter, pas un nouvel onglet) vers
-`getRocketChatUrl()` (`VITE_ROCKETCHAT_URL`, défaut `https://chat.communecter.org` — une instance
-Rocket.Chat SÉPARÉE de communecter : une première version pointait vers `<serverUrl>/co2/rocketchat`,
-qui rouvrait communecter — 404 puis mauvais contenu, corrigés en navigateur par l'utilisateur).
-Fichiers : `src/modules/admin/lib/{adminEntry.ts,platformRocketChatUrl.ts}`,
-`src/modules/auth/components/{AuthMenu.tsx,RocketChatDialog.tsx}` (lazy `vite-preload` + `Suspense`,
-admins seulement), `src/modules/auth/schema.ts`, `src/lib/constant/common.ts`, `src/types/
-site-schema.ts`. Gate par **code** (générique moteur), pas par config — le flag `auth.menu.rocketChat`
-ne sert qu'à DÉSACTIVER sur un site qui ne le voudrait pas (`false` explicite).
+réservée aux admins du costum, **ACTIVE PAR DÉFAUT sur tout le parc** — décision pour le réseau
+entier, contraire à la convention habituelle opt-in/défaut false. Lien **nouvel onglet** (même
+pattern que Kanban) vers `getRocketChatUrl()` (`VITE_ROCKETCHAT_URL`, défaut
+`https://chat.communecter.org` — une instance Rocket.Chat SÉPARÉE de communecter :
+`<serverUrl>/co2/rocketchat` rouvre communecter, pas le chat). Lien externe, PAS un modal/iframe :
+le chat (WebSocket temps réel, verrous de session) ne fonctionne pas correctement isolé dans une
+iframe (pas de `layout=embedded`, pas d'échange de jeton de connexion). Fichiers :
+`src/modules/admin/lib/{adminEntry.ts,platformRocketChatUrl.ts}`,
+`src/modules/auth/components/AuthMenu.tsx`, `src/modules/auth/schema.ts`, `src/lib/constant/common.ts`,
+`src/types/site-schema.ts`. Gate par **code** (générique moteur), pas par config — le flag
+`auth.menu.rocketChat` ne sert qu'à DÉSACTIVER sur un site qui ne le voudrait pas (`false` explicite).
 
-**Libellé nav** : « Contenus » → « Actualités et Ressources » (demande explicite). A fait déborder la
-barre à 1280px de ~220px (zéro marge dès l'origine, cf. `reference_header_stacked_budget_1280.md`).
-Premier correctif (raccourcir ce libellé ET « Le Réseau parentalité ») **rejeté par l'utilisateur** :
-« ne change pas de libellé, diminue plutôt la taille de fontsize ». Les deux libellés restent
-EXACTEMENT comme demandés ; correctif retenu = **nouvelle option `header.navFontSize`**
+**Libellé nav** : « Contenus » → « Actualités et Ressources ». A fait déborder la barre à 1280px de
+~220px (zéro marge dès l'origine). Premier correctif (raccourcir ce libellé ET « Le Réseau
+parentalité ») **écarté** : les deux libellés restent EXACTEMENT comme voulus ; correctif retenu =
+**nouvelle option `header.navFontSize`**
 (`"sm"|"md"|"lg"`, défaut `"lg"` historique — `src/types/site-schema.ts`,
 `src/components/layout/header/HeaderStacked.tsx`), posée à `"sm"` pour parent62 (texte de nav réduit
 d'~25%, seul palier qui passe les deux gates de largeur) ; mesuré itérativement par script Playwright

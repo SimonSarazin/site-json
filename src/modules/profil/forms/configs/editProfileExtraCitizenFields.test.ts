@@ -116,13 +116,15 @@ describe("writeExtraCitizenFields", () => {
     await expect(writeExtraCitizenFields({}, { territoires: "Arrageois" }, ["territoires"])).resolves.toBeUndefined();
   });
 
-  it("un échec isolé est avalé (non bloquant) — l'autre champ est quand même écrit", async () => {
+  it("tente chaque champ même si l'un échoue (best-effort), puis rejette (échec agrégé remonté)", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const updateField = vi.fn()
       .mockRejectedValueOnce(new Error("boom"))
       .mockResolvedValueOnce(undefined);
-    await writeExtraCitizenFields({ updateField }, { territoires: "Arrageois", structureRegister: "Centre Social" }, ["territoires", "structureRegister"]);
-    expect(updateField).toHaveBeenCalledTimes(2);
+    await expect(
+      writeExtraCitizenFields({ updateField }, { territoires: "Arrageois", structureRegister: "Centre Social" }, ["territoires", "structureRegister"]),
+    ).rejects.toThrow(/territoires/);
+    expect(updateField).toHaveBeenCalledTimes(2); // l'échec du 1er n'empêche pas la tentative du 2e
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });

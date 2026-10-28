@@ -806,7 +806,8 @@
       "imageUploadSuccess": "Profile picture uploaded successfully",
       "imageUploadError": "Unable to upload profile picture",
       "bannerUploadSuccess": "Banner uploaded successfully",
-      "bannerUploadError": "Unable to upload banner"
+      "bannerUploadError": "Unable to upload banner",
+      "extraFieldsError": "Some fields could not be saved — try again from your profile"
     },
     "friends": {
       "requestSent": "Friend request sent successfully",

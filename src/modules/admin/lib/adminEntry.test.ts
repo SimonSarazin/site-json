@@ -159,8 +159,12 @@ describe("isRocketChatEntryVisible — ACTIF PAR DÉFAUT (contrairement à kanba
     expect(isRocketChatEntryVisible(rocketChatCfg(false), superAdmin, carrierAdmin)).toBe(false);
   });
 
-  it("indépendant du back-office : visible sans aucun bloc `admin` en config", () => {
-    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierAdmin)).toBe(true);
+  it("indépendant du back-office : visible même si admin.enabled est explicitement false", () => {
+    // `isRocketChatEntryVisible` type son paramètre `Pick<SiteConfig, "auth">` : un bloc `admin` ne
+    // passerait pas la vérif TS. On le force ici (cast) pour prouver au RUNTIME que l'implémentation
+    // ne lit bien QUE `auth.menu.rocketChat`, pas une lecture qu'un simple typage suffirait à garantir.
+    const cfg = { ...rocketChatCfg(undefined), admin: { enabled: false } } as unknown as RocketChatConfig;
+    expect(isRocketChatEntryVisible(cfg, lambda, carrierAdmin)).toBe(true);
   });
 
   it("aucun slug de carrier requis (lien générique, pas de salon par costum)", () => {

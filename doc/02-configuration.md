@@ -68,7 +68,7 @@ La configuration de SiteForge se fait principalement via :
 | `VITE_COSTUM_FORCE_LIVE` | `getCostumForceLive()` — défaut `false` | oui |
 | `VITE_MON_API_KEY` | `getMonApiKey()` — défaut `"default-api-key"` | **non** |
 | `VITE_MON_DOMAIN` | `getMonDomain()` — défaut `"default-domain.com"` | **non** |
-| `VITE_ROCKETCHAT_URL` | `getRocketChatUrl()` — défaut `"https://chat.communecter.org"`, même instance sur tout le parc | **non** |
+| `VITE_ROCKETCHAT_URL` | `getRocketChatUrl()` — défaut `"https://chat.communecter.org"`, même instance sur tout le parc | oui |
 
 > **Note** : `VITE_MON_API_KEY` et `VITE_MON_DOMAIN` ne sont pas injectées — elles n'ont d'ailleurs aucun consommateur dans `src/`. Elles ne sont lisibles que depuis `import.meta.env` (build) ou `process.env` (SSR).
 

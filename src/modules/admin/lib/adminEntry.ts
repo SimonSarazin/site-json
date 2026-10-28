@@ -59,7 +59,7 @@ export function isKanbanEntryVisible(
 }
 
 /**
- * L'entrée « Chat Rocket » du menu avatar (lien externe générique vers le chat de la plateforme)
+ * L'entrée « Chat » du menu avatar (lien externe, nouvel onglet, vers le chat de la plateforme)
  * doit-elle être visible ? ACTIF PAR DÉFAUT — contrairement à `kanban`, `config.auth.menu.rocketChat`
  * n'a besoin d'AUCUNE clé pour être visible ; seul un `false` explicite le désactive sur un site.
  * INDÉPENDANT de `admin.enabled`/`access.min` (le back-office peut rester désactivé), réservé aux

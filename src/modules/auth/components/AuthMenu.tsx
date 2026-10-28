@@ -1,5 +1,3 @@
-import { Suspense, useState } from "react";
-import { lazy } from "vite-preload";
 import { useNavigate } from "react-router";
 import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban, MessageCircle } from "lucide-react";
 import {
@@ -23,9 +21,6 @@ import { platformRocketChatUrl } from "@/modules/admin/lib/platformRocketChatUrl
 import { useAuthActions } from "../hooks/useAuthActions";
 import { CurrentUserAvatar } from "./CurrentUserAvatar";
 import { LoginButton } from "./LoginButton";
-
-// Admins seulement, modal rarement ouvert : lazy (vite-preload), jamais chargé pour un visiteur.
-const RocketChatDialog = lazy(() => import("./RocketChatDialog"));
 
 interface AuthMenuProps {
   /** Densité (avatar + nom). Surchargée par `config.auth.menu.density` si présent. */
@@ -98,17 +93,25 @@ export function AuthMenu({
     isConnected && isRocketChatEntryVisible(config, me, entity)
       ? platformRocketChatUrl(getRocketChatUrl())
       : null;
-  // Ouvert en MODAL (iframe), comme sur communecter — pas un nouvel onglet (contrairement au
-  // Kanban, qui reste une vue plateforme à part entière).
-  const [rocketChatOpen, setRocketChatOpen] = useState(false);
-  // Ancre kanban UNIQUE, habillée en asChild par les deux layouts (stack mobile / dropdown
-  // desktop) : toute évolution (rel, aria, tracking) reste mono-source. Le span sr-only annonce
-  // la sortie vers la plateforme — l'icône est aria-hidden et, dans le dropdown, Radix pose
-  // role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux lecteurs d'écran.
+  // Ancres kanban/chat UNIQUES, habillées en asChild par les deux layouts (stack mobile /
+  // dropdown desktop) : toute évolution (rel, aria, tracking) reste mono-source. Le span
+  // sr-only annonce la sortie vers la plateforme — l'icône est aria-hidden et, dans le
+  // dropdown, Radix pose role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux
+  // lecteurs d'écran. Nouvel onglet, PAS un modal/iframe : le chat (comme le Kanban) a ses
+  // propres événements temps réel (WebSocket) et verrous de session que l'isolation d'une
+  // iframe casse — mesuré en usage réel, 27/10/2026.
   const kanbanLink = kanbanUrl ? (
     <a href={kanbanUrl} target="_blank" rel="noopener noreferrer">
       <SquareKanban className="mr-2 h-4 w-4" />
       {t("Kanban")}
+      <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
+      <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
+    </a>
+  ) : null;
+  const rocketChatLink = rocketChatUrl ? (
+    <a href={rocketChatUrl} target="_blank" rel="noopener noreferrer">
+      <MessageCircle className="mr-2 h-4 w-4" />
+      {t("Chat")}
       <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
       <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
     </a>
@@ -149,8 +152,7 @@ export function AuthMenu({
   // ----- Connecté : layout "stack" (mobile) ---------------------------------
   if (layout === "stack") {
     return (
-      <>
-        <ClientOnly fallback={<div className={cn("h-10", className)} />}>
+      <ClientOnly fallback={<div className={cn("h-10", className)} />}>
         {() =>
           isConnected ? (
             <div className={cn("space-y-1 border-t pt-2", className)}>
@@ -178,17 +180,9 @@ export function AuthMenu({
                   {t("Administration")}
                 </Button>
               )}
-              {rocketChatUrl && (
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    onAction?.();
-                    setRocketChatOpen(true);
-                  }}
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  {t("Chat")}
+              {rocketChatLink && (
+                <Button asChild variant="ghost" className="w-full justify-start" onClick={onAction}>
+                  {rocketChatLink}
                 </Button>
               )}
               {kanbanLink && (
@@ -213,18 +207,11 @@ export function AuthMenu({
           )
         }
       </ClientOnly>
-      {rocketChatUrl && (
-        <Suspense fallback={null}>
-          <RocketChatDialog url={rocketChatUrl} open={rocketChatOpen} onOpenChange={setRocketChatOpen} />
-        </Suspense>
-      )}
-    </>
     );
   }
 
   // ----- Connecté : layout "menu" (desktop) ---------------------------------
   return (
-    <>
     <ClientOnly
       fallback={
         <Button variant="ghost" size="sm" disabled className={className}>
@@ -282,11 +269,8 @@ export function AuthMenu({
                   {t("Administration")}
                 </DropdownMenuItem>
               )}
-              {rocketChatUrl && (
-                <DropdownMenuItem onClick={() => setRocketChatOpen(true)}>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  {t("Chat")}
-                </DropdownMenuItem>
+              {rocketChatLink && (
+                <DropdownMenuItem asChild>{rocketChatLink}</DropdownMenuItem>
               )}
               {kanbanLink && (
                 <DropdownMenuItem asChild>{kanbanLink}</DropdownMenuItem>
@@ -302,11 +286,5 @@ export function AuthMenu({
         )
       }
     </ClientOnly>
-      {rocketChatUrl && (
-        <Suspense fallback={null}>
-          <RocketChatDialog url={rocketChatUrl} open={rocketChatOpen} onOpenChange={setRocketChatOpen} />
-        </Suspense>
-      )}
-    </>
   );
 }

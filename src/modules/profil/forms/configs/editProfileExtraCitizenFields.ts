@@ -51,9 +51,14 @@ const CITIZEN_FIELD_VIEWS: Record<string, (field: FieldDescriptor) => FieldDescr
  * navigateur, 23/10/2026). `updateField()` (→ `UPDATE_PATH_VALUE` côté backend) n'est PAS validé par ce
  * schéma — seulement par l'autorisation (cf. spec backend) — c'est le SEUL canal qui fonctionne pour un
  * champ hors schéma. PAS un stamp `channel:"pathValue"` classique : celui-ci lit la valeur sur le
- * payload déjà construit, qui ne porte plus ces champs une fois `readOnly` posé. Non bloquant (même
- * discipline que les stamps pathValue existants) : un échec isolé est averti en console, jamais
- * remonté à l'utilisateur — la sauvegarde principale a déjà réussi.
+ * payload déjà construit, qui ne porte plus ces champs une fois `readOnly` posé.
+ *
+ * Best-effort PAR CHAMP (un échec n'empêche pas de tenter les autres), mais le résultat AGRÉGÉ est
+ * REMONTÉ (rejet) si au moins un champ a échoué : contrairement aux stamps pathValue (enrichissement
+ * best-effort d'un champ que l'utilisateur n'a pas saisi lui-même), ces champs sont des valeurs que
+ * l'utilisateur vient d'éditer dans CE formulaire — un échec muet lui ferait lire un succès pour une
+ * écriture qui n'a pas eu lieu. `editProfile.tsx` propage ce rejet à `EntityFormModal.commit`, qui
+ * affiche un toast d'erreur dédié.
  */
 export async function writeExtraCitizenFields(
   entity: { updateField?: (path: string, value: unknown) => Promise<unknown> } | null | undefined,
@@ -61,6 +66,7 @@ export async function writeExtraCitizenFields(
   fieldNames: readonly string[],
 ): Promise<void> {
   if (!entity?.updateField) return;
+  const failed: string[] = [];
   for (const field of fieldNames) {
     if (!(field in CITIZEN_FIELD_VIEWS)) continue;
     const value = values[field];
@@ -69,9 +75,11 @@ export async function writeExtraCitizenFields(
     try {
       await entity.updateField(field, trimmed === "" ? null : trimmed);
     } catch (err) {
-      console.warn(`[editProfileExtraCitizenFields] échec écriture « ${field} » (non bloquant)`, err);
+      console.warn(`[editProfileExtraCitizenFields] échec écriture « ${field} »`, err);
+      failed.push(field);
     }
   }
+  if (failed.length) throw new Error(`Échec d'écriture : ${failed.join(", ")}`);
 }
 
 export function withExtraCitizenFields(base: FormDescriptor, fieldNames: readonly string[]): FormDescriptor {

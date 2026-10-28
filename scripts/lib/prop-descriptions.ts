@@ -498,6 +498,12 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "tabs[].icon": "Icône de l'onglet : nom lucide kebab-case (ex. database).",
   },
 
+  costum: {
+    mainTag: "Tag observatoire principal du costum porteur (dimension `data-observatory`), pas un slug.",
+    compagnon: "Tag observatoire secondaire, au même usage que mainTag.",
+    citizenProfileFields: "Opt-in PAR SITE (`territoires`/`structureRegister`) : expose dans l'édition de profil CITOYEN des champs cachés par défaut du pipeline générique. Aucun site n'en a par défaut.",
+  },
+
   auth: {
     variant: "Discriminant du registry de variants de design (formulaires login/register/recover + modal) résolu par resolveAuthVariant ; absent ou inconnu → set default (seul variant existant aujourd'hui).",
     menu: "Présentation du widget de compte <AuthMenu> des headers — bascule TOUS les headers d'un coup (prioritaire sur les props du header) ; tone/layout/loginVariant restent des props de design du header.",
@@ -506,7 +512,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "menu.showDropdownHeader": "Ajoute un en-tête nom + email en tête du dropdown du compte ; surcharge le choix du header (activé d'office sur mega-menu et transparent-scroll, masqué ailleurs).",
     "menu.loginLabel": "Libellé du bouton de connexion (déconnecté) — ⚠ précédence INVERSE : la prop du header (souvent header.ctaButton.label) gagne sur la config ; défaut i18n « Se connecter ».",
     "menu.kanban": "Opt-in : entrée « Kanban » du menu avatar — nouvel onglet vers la vue actions de la plateforme ; admins du costum seulement (gate isKanbanEntryVisible), indépendante de config.admin, aucune entrée sans slug résolu.",
-    "menu.rocketChat": "Entrée « Chat » du menu avatar, ACTIVE PAR DÉFAUT (false explicite pour désactiver) — ouvre le chat de la plateforme (Rocket.Chat) dans un modal ; admins du costum seulement, indépendante de config.admin.",
+    "menu.rocketChat": "Entrée « Chat » du menu avatar, ACTIVE PAR DÉFAUT (false explicite pour désactiver) — lien nouvel onglet vers le chat de la plateforme (Rocket.Chat) ; admins du costum seulement, indépendante de config.admin.",
     hideHeader: "Masque le SiteHeader sur les pages auth (/login, /register, /recover-password) — mode page uniquement, sans effet sur le modal global ; défaut code : affiché.",
     hideFooter: "Masque le SiteFooter sur les pages auth — même logique que hideHeader (mode page seulement) ; défaut code : affiché.",
     login: "Textes de l'écran de connexion (titre/sous-titre) — utilisés par le formulaire en mode page /login ET dans le modal global (même composant lazy).",

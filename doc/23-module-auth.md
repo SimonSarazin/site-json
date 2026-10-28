@@ -381,7 +381,7 @@ restent utilisées comme défaut si le bloc `menu` est absent.
 | `showDropdownHeader` | `boolean` | Afficher un en-tête nom + email dans le dropdown |
 | `loginLabel` | `LocalizedString` | Libellé du bouton « Se connecter » — surchargé par la prop `loginLabel` du header |
 | `kanban` | `boolean` | Opt-in : entrée « Kanban » (nouvel onglet vers la vue actions de la plateforme), réservée aux admins du costum — gate `isKanbanEntryVisible` (modules/admin), détails dans [doc/30-module-admin.md](30-module-admin.md) |
-| `rocketChat` | `boolean` | Entrée « Chat » (modal avec iframe, instance Rocket.Chat séparée — `getRocketChatUrl()`/`VITE_ROCKETCHAT_URL`, défaut `chat.communecter.org`), réservée aux admins du costum, **ACTIVE PAR DÉFAUT** sur tout le parc — `false` explicite pour la désactiver sur un site ; gate `isRocketChatEntryVisible` (modules/admin) |
+| `rocketChat` | `boolean` | Entrée « Chat » (lien nouvel onglet, comme Kanban, vers l'instance Rocket.Chat séparée — `getRocketChatUrl()`/`VITE_ROCKETCHAT_URL`, défaut `chat.communecter.org`), réservée aux admins du costum, **ACTIVE PAR DÉFAUT** sur tout le parc — `false` explicite pour la désactiver sur un site ; gate `isRocketChatEntryVisible` (modules/admin). Pas de modal/iframe : le chat a ses propres événements temps réel et verrous de session, incompatibles avec l'isolation d'une iframe. |
 
 Le `tone` (défaut / onColor) et le `loginVariant` (ghost / solid / outline)
 restent couplés au design du header (props du composant), pas à `config.auth.menu`.

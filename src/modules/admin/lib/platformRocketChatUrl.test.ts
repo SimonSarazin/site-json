@@ -16,4 +16,13 @@ describe("platformRocketChatUrl — URL du chat (instance Rocket.Chat séparée)
       "https://chat.communecter.org",
     );
   });
+
+  it("retombe sur le défaut si l'env n'est pas une URL valide (faute de frappe du déployeur)", () => {
+    expect(platformRocketChatUrl("pas-une-url")).toBe("https://chat.communecter.org");
+    expect(platformRocketChatUrl("")).toBe("https://chat.communecter.org");
+  });
+
+  it("retombe sur le défaut pour un schéma non http(s) (ex. javascript:)", () => {
+    expect(platformRocketChatUrl("javascript:alert(1)")).toBe("https://chat.communecter.org");
+  });
 });
