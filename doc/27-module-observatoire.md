@@ -176,7 +176,7 @@ ouvre le détail du module search (le comportement de la liste
 
 Formes — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`, `top`,
 `sum`, `avg` (+ `unit`), `reservationHours` (+ `period`, `unit`) ·
-graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups` ·
+graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups` ; sur les quatre premiers, `value` (`{kind: "sum"|"avg", dimension}`) fait porter à chaque part ou barre la somme ou la moyenne d'une dimension numérique au lieu d'un nombre d'items (`aggregateBy`) ·
 colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs en
 **jetons de thème** uniquement (`chart-1..5`, `primary`, `accent`, `muted`)
 — jamais d'hex : le dashboard suit le thème light/dark du site. Icônes KPI :
@@ -205,6 +205,8 @@ filtres, recherche et sélection. Calcul dans `search/lib/reservationHours.ts`
 (cf. `doc/07-module-search.md`, « Volume horaire »). Deux KPI (hebdo + cumul)
 s'ajoutent aux autres cartes : au-delà de 8 cartes, la grille automatique passe à
 la ligne — `kpiColumns` fixe alors le nombre de cartes par ligne.
+
+**Mesure d'usage — champs `__usage.*`** (opt-in : `rowAction.preview.reservations.usage`). La section charge les réservations de sa fiche (même requête que les KPI d'heures) et le type des fiches usagères, calcule l'usage de chaque équipement (`usage.ts` : `computePoiUsage`, règles dans `doc/07-module-search.md`, « Mesure d'usage ») et pose sur chaque item, AVANT libellés, filtres et widgets, les champs `__usage.status` (libellé traduit), `open`, `openCount` (1 ou 0), `occupiedHours`, `schoolHours`, `clubHours`, `unknownHours`, `freeHours`, `rate` (en %) et, avec `usage.bands`, `rateBand` et `clubHoursBand` (« 0 % », « 0–25 % »…, libellés qui commencent par leur borne basse : les options de filtre, triées par ordre alphabétique, suivent l'ordre des valeurs avec des seuils comme 0/25/50/75 ou 0/5/15, pas avec 5 puis 10). Les dimensions de la config les lisent comme n'importe quel chemin : filtres, KPI (`sum` de `openCount` pour un nombre indépendant de la langue, `percentTrue` de `open` pour le ratio, `sum`/`avg` des heures et du taux), graphes et export fonctionnent sans nouveau kind. La mesure n'est posée qu'avec les réservations ET les types des fiches : pendant le calcul, les KPI de ces dimensions montrent le sablier (`KpiCards.loadingDimensions`) ; si l'une des deux lectures échoue, la mesure n'est pas posée et ces KPI disent « — » (`KpiCards.unavailableDimensions`). Une valeur comparée à la valeur AFFICHÉE — `valueSplit.value`, clés de `colors` — est traduite quand la dimension l'est (`valueMapFrom` à libellés `{fr, en}`, `__usage.status`) : un `valueSplit` vise une dimension brute (sans `valueMapFrom`, valeur de base), et les `colors` déclarent les libellés des deux langues.
 
 ## Split view : la liste à gauche, les graphes à droite
 
@@ -280,6 +282,8 @@ graphes doivent la commander) et ses colonnes s'y serreraient. Le bouton CSV
 reste le sien : celui de la liste n'apparaît qu'avec `export.fields`, et
 déclarer `fields` changerait AUSSI le CSV de la table (export des données
 détail au lieu de ses colonnes).
+
+Une colonne d'export peut, comme une dimension, tirer sa `valueMap` d'un filtre du site (`valueMapFrom`) — la commune de rattachement, le type d'établissement. `export.kpis: true` ajoute un bouton « Chiffres clés » à côté de l'export de la liste : un CSV des KPI du résultat filtré, libellé et valeur tels qu'affichés (`kpiLabel`, `buildKpiCsv`). Le bouton n'apparaît qu'une fois la mesure d'usage et les heures réservées calculées, et jamais sur une mesure en échec : l'export écrirait 0 % ou « — » à la place des valeurs attendues. L'export de la liste et de la table attend lui aussi la fin du calcul de la mesure d'usage, sans quoi ses colonnes `__usage.*` sortiraient vides.
 
 **`maxWidth`** aligne le tableau de bord sur les autres sections de la page.
 Le défaut `8xl` (1440 px) convient à une page dédiée ; sur une page qui mêle

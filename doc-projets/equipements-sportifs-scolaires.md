@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-28** (review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
+Dernière mise à jour : **2026-10-30** (revue avant commit des lots CDC-1 à CDC-5, 11 corrections : KPI des structurants juste en anglais, couleurs du statut dans les deux langues, exports après le calcul, mesure d'usage « — » en cas d'échec, filtre de statut indépendant de l'ordre des filtres, doublons retirés, docs et Méthodologie précisées — §9 ; 28/10 : CDC de la DRAJES : lots CDC-1 à CDC-5 livrés et vérifiés au navigateur après l'import de Petite-Île, non commités — §9 ; CDC de la DRAJES v1.0 reporté : chantier et synthèse au §1, lots CDC-1 à CDC-5 en checklist §10, questions au §13, plan en attente du go ; review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, à exécuter en production (§13).
 
 ---
 
@@ -51,6 +51,44 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 | 06/08 | Peterson | Création de l'entrée `sites.json` et du fichier de config (vide) |
 | 06/08 | Claude | Sondage du périmètre, lot 1 (config complète en consultation), demande backend |
 | 06/08 | Claude | Lot « design » : refonte de la page d'accueil et du footer sur la maquette `campus-sports-kit`, nouvelle palette (§4.4) |
+| 28/10 | Claude | CDC de la DRAJES (v1.0) analysé avec les 16 commentaires de Tibor ; plan des tâches réalisables (`plan-ess974-cdc-drajes-taches-realisables.md`), arbitrages tranchés par Peterson le 28/10 |
+
+### Cahier des charges de la DRAJES (v1.0, octobre 2026)
+
+Document de travail « Cahier_des_charges_OESS 974_RV_ASD », transmis par Romain et analysé le 28/10 : DRAJES
+commanditaire et financeur, Open Atlas prestataire, 16 commentaires de Tibor (15-16/10). Le sommaire est à refaire ;
+le corps va de §1 à §13.
+
+| § | Exigence | Où on en est (28/10) |
+|---|---|---|
+| §3 | Nom « Ouverture des équipements sportifs scolaires 974 », propriétaire DRAJES ; hébergement et durée « ??? » | nom en place ; mentions légales à passer au nom de la DRAJES (CDC-1) |
+| §4 | Équipements **structurants** des écoles, collèges et lycées ; Data ES référentiel de départ | 127 structurants = catégorie `structurant` de Data ES ; le site en montre 708 (703 après la mise à jour Data ES) |
+| §5 | 14 indicateurs nationaux : recensés, ouverts, ratio, utilisables, conventions, volumes occupé et disponible, freins, demandes non satisfaites, heures demandées, disciplines, type de pratique, publics, évolution N-1 / N | recensés, volume occupé, disciplines en place ; ouverts, ratio, disponible : CDC-2 ; le reste attend la DRAJES ou le questionnaire |
+| §6 | Filtres : commune, type d'établissement (public / privé), type d'équipement et disciplines, statut d'ouverture (ouvert, convention, période, modalités d'accès), utilisation | commune, type, sport, créneau disponible en place ; établissement, statut, utilisation : CDC-1 à CDC-3 ; convention, période, modalités : en attente |
+| §7 | Collecte multi-sources ; questionnaire des référents communaux (échelle de saturation « à valider ») ; clubs non satisfaits | plannings remis au format d'import (Saint-Paul en production) ; questionnaire : CDC-4 |
+| §8 | Taux d'utilisation par club et scolaire, occupation totale par équipement | taux par équipement dans le tableau de bord d'installation ; séparation école / clubs : CDC-2 et CDC-3 |
+| §9 | Créneaux structurés (lieu, organisation, activité, créneau) ; synchronisation avec Planitech « à terme » | en place (lots 7 et 8) ; synchronisation plus tard |
+| §10 | Présentation commune des plannings ; comparaison entre communes ; occupé, libre et taux | grille commune en place ; fiche et comparaison : CDC-2 et CDC-3 |
+| §11 | Accès sans installation, accès par référent communal, traçabilité des dépôts, évolutivité, ergonomie | accès web et guide du 26/10 ; traçabilité : questionnaire (CDC-4) et historique des horaires (CDC-3) ; comptes des référents : en attente |
+| §12 | 8 livrables : référentiel, collecte, fiche de diagnostic, cartographie, tableau de bord, historisation, exports, méthodologie | checklist §10, lignes 21 à 25 |
+| §13 | Pilote en octobre (Étang-Salé, Le Tampon, Petite-Île, Saint-Leu, Saint-Paul, Saint-Pierre), COPIL fin novembre, généralisation en décembre | plannings reçus des pilotes : Petite-Île et Saint-Paul ; hors pilote : Saint-André, Saint-Joseph, La Plaine-des-Palmistes |
+
+**Règle métier tirée du CDC (§1)** : l'ouverture se mesure « hors activités de l'EPS et de l'AS sportive ». L'EPS et
+l'association sportive de l'établissement relèvent de l'usage scolaire.
+
+**Choix de Peterson du 28/10**, provisoires là où le CDC ne tranche pas (la DRAJES peut les faire changer) :
+- statut d'ouverture en 3 valeurs : ouvert (au moins un créneau de club en cours ou à venir), non ouvert (des
+  créneaux, mais aucun de club : scolaires, ou d'usager non précisé), sans planning ;
+- école ou club : colonne « Type usager » du créneau importé, sinon type de la fiche de l'usager
+  (`GovernmentOrganization` = école) ;
+- plage de référence de 8 h à 22 h, 7 jours sur 7 ; taux et heures libres sur tous les équipements retenus par les
+  filtres ;
+- fiche : résumé et cases « Libre » visibles de tous ; type d'établissement par listes d'UAI en config (annuaire de
+  l'Éducation nationale) ; statut aussi sur la carte ; questionnaire en CoForm ; mentions légales au nom de la
+  DRAJES ; page Méthodologie ; historique des changements d'horaire (correctif citizenToolKit).
+
+Plan : `.claude/plans/plan-ess974-cdc-drajes-taches-realisables.md`. Un suivi en langage courant, partagé avec
+Tibor et Romain, est tenu hors dépôt.
 
 ---
 
@@ -92,7 +130,7 @@ le scoping vient du contexte costum de l'entité résolue par `VITE_SLUG` au boo
 
 ## 4. Ce que la config met en œuvre
 
-### 4.1 Les 9 pages
+### 4.1 Les 11 pages
 
 | Page | Sections | Rôle |
 |---|---|---|
@@ -101,13 +139,16 @@ le scoping vient du contexte costum de l'entité résolue par `VITE_SLUG` au boo
 | `/annuaire` | 2 | `searchHeader` + `searchProStatic` — les associations usagères des équipements scolaires (périmètre calculé, §9 lot 3) ; les admins y ajoutent une association et modifient celles qu'ils ont ajoutées (§9 lot 11) |
 | `/observatoire` | 2 | `searchHeader` + `data-observatory` — le tableau de bord, avec les heures réservées (§9 lot 6) |
 | `/data` | 2 | `searchHeader` + `data-observatory` — la table brute |
+| `/questionnaire` | 1 | `html` — présente le questionnaire des communes et ouvre son CoForm (§9, CDC) |
+| `/methodologie` | 1 | `html` — sources, périmètre, définitions et calculs des chiffres (§9, CDC) |
 | `/rejoindre` | 1 | `registerForm` |
 | `/mentions-legales` · `/confidentialite` · `/accessibilite` | 1 chacune | socle légal |
 
 Structure **identique au site parent**. L'observatoire reprend ses 13 dimensions, 7 KPI,
-5 graphes et sa table à 9 colonnes ; `/observatoire` y ajoute 2 KPI d'heures réservées (lot 6).
+5 graphes et sa table à 9 colonnes ; `/observatoire` y ajoute 2 KPI d'heures réservées (lot 6), puis la
+catégorie, le type d'établissement et la mesure d'usage des créneaux (CDC, 28/10) : 15 KPI, 12 graphes.
 
-### 4.2 Les 9 filtres, dimensionnés sur la donnée réelle
+### 4.2 Les 11 filtres, dimensionnés sur la donnée réelle
 
 > Mis à jour le 15/10/2026 (lot 2 — fiche équipement, filtres multi-valeurs et communes, cf. §9) ; filtre « Sport pratiqué » ajouté le 23/10 (lot 8).
 > L'état d'origine (06/08) comptait 5 filtres.
@@ -117,6 +158,8 @@ Structure **identique au site parent**. L'observatoire reprend ses 13 dimensions
 | `poi-postalCode` | `address.postalCode` | **23 communes** (28 codes regroupés, 97434 compris depuis le 23/10) — liste reprise par l'observatoire (`valueMapFrom`), donc libellés sans virgule (« Saint-Paul (97411 / 97434) », 26/10) | exacte, `values` par commune |
 | `type` — « Type d'équipement » | `equip_type_name` | **34** | exacte |
 | `categorie` — « Catégorie » | `categorie` | **2** (structurant, proximité) | exacte |
+| `etablissement` — « Type d'établissement » (28/10, CDC-1) | `inst_uai` | **5** listes d'UAI : école 148, collège 65, lycée 38, supérieur 3, CREPS 1 — annuaire de l'Éducation nationale, 5 codes classés à la main | exacte, `values` |
+| `secteur` — « Public / privé » (28/10, CDC-1) | `inst_uai` | **2** listes d'UAI : public 243, privé 11 | exacte, `values` |
 | `sport` — « Sport pratiqué » (23/10, lot 8) | `aps_name` | **50** sports présents | **jeton** |
 | `particularite` — « Type de particularité » | `inst_part_type` | **5** (valeurs présentes) | **jeton** |
 | `poi-amenities` | 5 booléens | **5** | inchangé |
@@ -134,9 +177,11 @@ document (la donnée écrit `"Salle(s) de réunion/cours"`, sans espaces). Corri
 parent et Saint-Paul sont corrigés le 15/10 en interrogeant les deux graphies (`values`), celle du
 formulaire de saisie comprise — sans objet ici tant que la saisie reste bloquée (§12).
 
-À ces 9 dropdowns s'ajoute, depuis le 20/10, le filtre **« Créneau disponible »** (`slotFilter`,
+À ces 11 dropdowns s'ajoutent, depuis le 20/10, le filtre **« Créneau disponible »** (`slotFilter`,
 param `?creneau=`) : une plage horaire, des jours de la semaine et une période facultative, il retire
-les équipements réservés sur ce créneau hebdomadaire — §9, lot 5.
+les équipements réservés sur ce créneau hebdomadaire — §9, lot 5 ; et depuis le 28/10 le filtre
+**« Statut d'ouverture »** (`usageFilter`, param `?statut=`) : ouvert, non ouvert ou sans planning, d'après
+la mesure d'usage des créneaux — §9, CDC.
 
 ### 4.3 Accès rapides
 
@@ -214,6 +259,95 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### CDC de la DRAJES — lots CDC-1 à CDC-5 (2026-10-28)
+
+**Contexte** : les tâches du cahier des charges v1.0 de la DRAJES réalisables tout de suite (plan
+`.claude/plans/plan-ess974-cdc-drajes-taches-realisables.md`, arbitrages de Peterson du 28/10), implémentées
+d'affilée puis vérifiées en une fois. Les 3 statuts d'ouverture sont **provisoires** tant que la DRAJES n'a pas
+défini « ouvert » (§13).
+
+**Ce qui change** :
+- **CDC-1 — périmètre et établissements** (config) : filtres « Type d'établissement » et « Public / privé » sur
+  la page Équipements et dans l'observatoire (listes d'UAI en config, §4.2) ; filtre « Catégorie », KPI
+  « Équipements structurants » et 2 camemberts dans l'observatoire ; export enrichi (type d'établissement, public /
+  privé, UAI, commune de rattachement par `valueMapFrom`) ; les 3 pages légales au nom de la DRAJES, coordonnées
+  « [à compléter] ».
+- **CDC-2 — usage des créneaux dans l'observatoire** : mesure opt-in `reservations.usage`
+  (`modules/observatoire/usage.ts`). École ou club : le « Type usager » importé (`fields.userType`, l'AS comptée
+  scolaire), sinon le type de la fiche usagère (`useUsagerTypesQuery`). Statut ouvert / non ouvert / sans
+  planning ; heures scolaires, clubs et libres, taux sur la plage 8 h-22 h, 7 j/7 (98 h/sem) — un équipement sans
+  planning compte 98 h libres. Les champs `__usage.*` alimentent 3 filtres (statut, tranches de taux et d'heures
+  clubs), 5 KPI, 2 camemberts et 3 barres par commune (`value` : somme ou moyenne, `aggregateBy`). Bouton
+  « Chiffres clés » (`export.kpis`), affiché une fois les calculs terminés.
+- **CDC-3 — fiche, cartes et carte** : sur la fiche équipement, résumé d'occupation, part de la plage par
+  usager, cases « Libre » visibles de tous et bouton « Historique » des réponses pour les gestionnaires
+  (`AnswerActivityDialog`) ; commune de rattachement sous l'adresse des cartes (`card.communeFrom`) ; filtre
+  « Statut d'ouverture » du bandeau (`usageFilter`), qui restreint liste et carte par `_id` (`INCLUDE_TYPE`). Côté
+  serveur, `UpdatePathValuedAction` (citizenToolKit, `master`) inscrit chaque modification de réponse dans
+  `answerChanges`, comme l'enregistrement d'un formulaire.
+- **CDC-4 — questionnaire des communes** : page `/questionnaire` (entrée de menu) qui ouvre le CoForm du
+  questionnaire, 10 questions. Le CoForm existe en base LOCALE (`6ae219cc66167fa175d15414`), créé par script sur le
+  modèle du formulaire des créneaux (mêmes clés) : à recréer en production par le constructeur de formulaires de
+  Communecter, puis reporter son identifiant dans la config. Il s'ouvre par la route `/coform/:formId` (`CoFormPage` :
+  connexion, page de remerciement), comme sur tiers-lieux et sport-santé ; la section `coform` n'a ni garde d'accès ni
+  page de remerciement.
+- **CDC-5 — méthodologie** : page `/methodologie` (sources, périmètre, définitions, calculs, limites), lien en
+  pied de page et bouton « Comment sont calculés ces chiffres ? » de l'observatoire ; docs moteur 05, 07 et 27.
+
+**Sites touchés** : ESS974 ; Saint-Paul Sport, seulement le bouton « Historique » des gestionnaires sur la fiche
+équipement (modification d'horaire active, pas de bloc `usage`). Côté Communecter, toute modification d'une réponse
+par `co2/element/updatepathvalue` est désormais tracée, sur tous les sites.
+
+**Revue avant commit (29-30/10)** : tout le non-poussé relu selon le processus de Thomas (gates, `/code-review`
+high, chaque candidat contre-vérifié dans le code), 11 corrections validées par Peterson :
+- en anglais, le KPI « Équipements structurants » comparait le libellé traduit (« Major facility ») à
+  « Structurant » et tombait à 0 : il lit la dimension brute `categorieCode` (valeur de base `structurant`). Les
+  couleurs du camembert « Statut d'ouverture » déclarent les libellés des deux langues ;
+- l'export de la liste et de la table attend la fin du calcul de la mesure d'usage : ses colonnes `__usage.*`
+  sortaient vides ;
+- mesure d'usage en échec (réservations ou types des fiches illisibles, `useUsagerTypesQuery.failed`) : elle n'est
+  pas posée, ses KPI disent « — » au lieu d'un sablier sans fin (`KpiCards.unavailableDimensions`) et « Chiffres
+  clés » reste masqué ; le filtre « Statut d'ouverture » ne publie rien et propose un nouvel essai ; le résumé de la
+  fiche attend les types des fiches et ne s'affiche pas sans eux ;
+- `INCLUDE_TYPE` : les restrictions s'appliquent après toutes les entrées — une entrée posée après le filtre de
+  statut ne l'élargit plus ;
+- doublons retirés : une seule boucle de pagination, `searchCostumEach` (`searchCostumIds`, `fetchUsagerTypes`) ;
+  `formatUsageShare` passe par `utilizationRate` ;
+- doc 05 (ligne `usageFilter` du bloc de code du schéma), doc 07 (états d'échec, ordre des entrées), doc 27
+  (`value` des graphes, ordre des tranches, valeurs traduites), commentaire de `bandLabel` ; page Méthodologie :
+  « non ouvert » = des créneaux, mais aucun de club (scolaires, ou d'usager non précisé).
+
+**Validation** (base locale après l'import de Petite-Île — 204 réponses, dont les 12 nouvelles typées et liées ;
+serveur de dev sur 5174) :
+- `/observatoire` : 708 équipements, 129 structurants, 9 ouverts aux clubs, 116,3 h clubs / semaine, taux moyen
+  0,2 % ; filtres Commune (Petite-Île : 9 équipements, 2 ouverts), Catégorie (129) et Statut (9) ; « Chiffres clés »
+  et CSV (708 lignes, nouvelles colonnes) ;
+- fiche du gymnase du collège Joseph Suacot : « Occupé 18 h/sem (école 17 h · clubs 1 h) · libre 80 h/sem · taux
+  d'occupation 18 % », parts 3 / 14 / 1 %, 73 cases « Libre », pas de bouton « Historique » pour un visiteur ;
+- page Équipements : commune sous l'adresse ; Petite-Île 2 ouverts, 0 non ouvert, 7 sans planning, 9 ouverts sur
+  l'île — les comptes de l'observatoire ;
+- connecté : questionnaire envoyé, réponse d'essai enregistrée (10 champs, auteur) ; le dépôt de fichier échoue en
+  local, la route `coform/uploadanswerfile` manquant aussi au module `survey` local (`aabacec5`, 24/03) ; horaire d'un
+  créneau modifié puis rétabli (12:00 → 12:15 → 12:00) : 2 entrées
+  `answerChanges` (« update », étape des créneaux, auteur). La fenêtre « Historique » s'ouvre, traduite, mais sa
+  lecture échoue en local : le module `survey` local a 74 commits de retard et n'a pas la route
+  `coform/getanswerhistory` (`afaab35a`, 07/05) ;
+- Saint-Paul, site témoin : fiche « Salle de danse » et observatoire inchangés ;
+- après la revue (30/10, même base) : « Équipements structurants » 129 / 579 en français ET en anglais ; camembert
+  du statut aux mêmes couleurs dans les deux langues (`--chart-2`, gris) ; « Exporter CSV » et « Chiffres clés »
+  présents une fois le calcul fini ; fiche du gymnase de Suacot inchangée ; `?statut=open` pose la pastille
+  « Statut : Ouvert » ; page Méthodologie à jour en français et en anglais ; Saint-Paul, site témoin :
+  `config:render` 12 pages, 21/21 sections (annuaire préchargé au rendu serveur par `searchCostumIds`).
+
+**Gates** (30/10, après la revue) :
+- tests : 25 fichiers, 364 tests ✅ (`vitest.config.unit.ts`, comme la gate de `mr:review`) — cas ajoutés aux
+  tests existants des 10 fichiers modifiés qui en ont un, 4 tests nouveaux (`usage`, `usageFilter`, `useUsageFilter`,
+  `useUsagerTypesQuery`), et les tests qui importent les modules touchés ;
+- lint ✅ (0 erreur ; 23 avertissements, aucun dans les fichiers du lot) · typecheck ✅ · `php -l` ✅ ;
+- `config:validate` ✅ ESS974 11/16 · `audit:config` ✅ 0 constat · `config:render` ✅ 11 pages, 16/16 sections ;
+- préflight en lecture seule : 898/903 — les 4 échecs d'environnement et le plafond de `prop-descriptions`
+  (71 Ko, §12).
 
 ### Review de la MR 114, lot D — nettoyage (2026-10-28)
 
@@ -1124,13 +1258,13 @@ repassent au vert.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Config valide (Zod) | ✅ | 9 pages, 14 sections (16/10) |
+| 1 | Config valide (Zod) | ✅ | 11 pages, 16 sections (28/10) |
 | 2 | Audit qualité | ✅ | **RAS** — 0 constat (i18n, liens, assets, thème, prérequis) |
 | 3 | Rendu SSR | ✅ | 9/9 pages en 200 (16/10) |
 | 4 | Périmètres de données | ✅ | **3/3 à 708 résultats** (annuaire, observatoire, data) |
 | 5 | Filtres alignés sur la donnée | ✅ | 0 valeur orpheline, 0 type réel sans option, 0 virgule |
-| 6 | Préflight | 🟡 | 898/903 (28/10, après le lot D de la review de la MR 114) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
-| 7 | Aperçu navigateur | 🟡 | Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
+| 6 | Préflight | 🟡 | 898/903 (28/10, après les lots CDC) : les 4 échecs d'environnement et le plafond de `prop-descriptions`, laissé à Thomas (§12). Avant : 898/903 (28/10, après le lot D de la review de la MR 114) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
+| 7 | Aperçu navigateur | 🟡 | 28/10 : observatoire, Équipements, fiche, questionnaire, méthodologie et pages légales après l'import de Petite-Île, Saint-Paul en témoin (§9 CDC). Avant : Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
 | 8 | Déploiement | ❌ | à faire |
 | 9 | Saisie / back-office | ❌ | **bloqué backend** (§12) |
 | 10 | Fiche équipement, filtres multi-valeurs, communes | ✅ | Lot 2, vérifié au navigateur le 15/10 (§9) |
@@ -1144,6 +1278,11 @@ repassent au vert.
 | 18 | Formulaire d'édition complet d'un équipement | ❌ | Lot 10, après la demande backend (§13) |
 | 19 | Ajout et modification des associations | ✅ | Lot 11 : ajout depuis l'annuaire réservé aux admins (clé ESS974 posée par le serveur, étiquette usager, doublons signalés, apparition immédiate) ; modification par l'admin qui a ajouté l'association — vérifié au navigateur le 26/10, puis de nouveau sur le code final après la relecture de conformité (§9). Les 37 associations existantes restent non modifiables depuis le site |
 | 20 | Corrections de la review de la MR 114 | 🟡 | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion. Lot B (27/10) : fiche équipement en option (`equipmentDetails`), sport-santé revenu à main, club du formulaire avec l'étiquette, annonces sur les sites en ligne. Lot C (27/10) : mémo serveur de l'annuaire (11,5 s → moins d'1 s par rendu), contrôles et mémos stables. Lot D (28/10) : nettoyage, dont les heures affichées en « h ». Vérifiés au navigateur (§9). Restent la description de la MR et la réponse à Thomas, à publier par Peterson |
+| 21 | CDC DRAJES, lot CDC-1 : structurants (KPI, filtre « Catégorie » de l'observatoire), type d'établissement et public / privé (listes d'UAI en config), mentions légales au nom de la DRAJES | ✅ | Vérifié au navigateur le 28/10 : 129 structurants, filtres type d'établissement et public / privé, export enrichi, pages légales au nom de la DRAJES (§9) |
+| 22 | CDC DRAJES, lot CDC-2 : usage des créneaux dans l'observatoire (statut d'ouverture, école / clubs, heures libres, tranches, comparaison des communes, exports) | ✅ | Vérifié au navigateur le 28/10 : statut, heures et taux par équipement, 3 filtres, 5 KPI, 5 graphes, « Chiffres clés » (§9). Statuts provisoires (§13) |
+| 23 | CDC DRAJES, lot CDC-3 : fiche équipement (résumé, cases « Libre », historique des horaires), commune sur les résultats, statut sur la carte, correctif citizenToolKit | ✅ | Vérifié au navigateur le 28/10 : résumé et cases « Libre », commune sur les cartes, statut sur la liste et la carte ; trace des modifications d'horaire écrite en base, son affichage attend le module `survey` à jour en local (§9) |
+| 24 | CDC DRAJES, lot CDC-4 : questionnaire des communes (CoForm) | ✅ | Page et CoForm vérifiés en local le 28/10 : réponse d'essai enregistrée, dépôt de fichier à revérifier avec le module `survey` à jour (§9) ; CoForm à recréer en production par le constructeur de formulaires, identifiant à reporter dans la config |
+| 25 | CDC DRAJES, lot CDC-5 : page Méthodologie et documentation | ✅ | Page vérifiée au navigateur le 28/10, docs moteur 05, 07 et 27 (§9) |
 
 ---
 
@@ -1206,6 +1345,20 @@ Au 23/10 :
 `site-assets` (dossier désormais déclaré dans `sites.json`) et `skill-integrity`, rouges au 16/10,
 passent.
 
+### Plafond du dump `prop-descriptions` dépassé (28/10, CDC)
+
+Le garde-fou `tests/preflight/prop-descriptions.test.ts` d'aboire plafonne chaque dump à 70 000 caractères :
+`section:searchProStatic` atteint 71 Ko avec le bloc `usage` (66 358 au 16/10). Le plafond n'est pas relevé : la
+décision revient à Thomas, prévenu dans la description de la MR.
+
+### Valeurs traduites dans l'observatoire (29/10, revue avant commit)
+
+Les filtres de l'observatoire gardent dans l'URL la valeur AFFICHÉE, traduite pour les dimensions à `valueMapFrom`
+(catégorie, type d'établissement, public / privé) et pour les champs `__usage.*` (statut, tranches) : un lien filtré
+ouvert dans l'autre langue ne retient rien. Limite du moteur, déjà vraie avant les lots CDC, non traitée. Les
+comparaisons écrites en config suivent la règle de la doc 27 : KPI « Équipements structurants » sur la dimension
+brute `categorieCode`, couleurs du statut déclarées dans les deux langues.
+
 ### Données sondées sur l'instance de **dev**
 
 Les 708 POI et toutes les agrégations viennent de `communecter74-dev`. Les volumes en production
@@ -1213,9 +1366,9 @@ sont **à confirmer**.
 
 ### Marqueurs légaux
 
-Les 3 pages légales conservent l'éditeur et les coordonnées du site parent (Région Réunion,
-Saint-Denis) et ses placeholders `[à compléter]` — mêmes trous que sur le parent et Saint-Paul
-Sport. Le partenaire du footer (académie de La Réunion — Jeunesse, Engagement et Sports) est en
+Depuis le 28/10 (CDC-1), les 3 pages légales nomment la DRAJES de La Réunion comme éditeur ; adresse,
+téléphone, directeur de la publication et contact RGPD restent `[à compléter]`, en attente de la DRAJES
+(§13). Le partenaire du footer (académie de La Réunion — Jeunesse, Engagement et Sports) est en
 revanche pertinent pour un site scolaire.
 
 ---
@@ -1236,6 +1389,28 @@ revanche pertinent pour un site scolaire.
 | Associations ajoutées depuis l'annuaire (lot 11) : garder l'édition ouverte, défaut du SDK, ou la fermer en déclarant `preferences.isOpenEdition: false` dans le formulaire (configuration seule) ? Ouverte, tout utilisateur connecté peut les modifier par l'API ; le site ne montre « Éditer » qu'aux admins | Peterson |
 | Formulaire de communecter.org (PHP) : conserver la période d'un créneau modifié. Depuis le lot 8, le site ne saisit plus de période par créneau et l'import n'en écrit pas (une réservation par période) : seules d'éventuelles données anciennes sont concernées | Peterson (autre session) |
 | Mise à jour depuis dataES, préparée le 21/10 côté communecter-php74 (`/co2/migration/majess974dataes`, plan `maj-ess974-dataes.md`) : en production, importer d'abord les 19 nouveaux équipements, puis lancer l'action, qui pose et retire elle-même la clé `ESS974` (ne plus lancer `addsourcekeyess974`). Le périmètre passera de 708 à 703 équipements : les 694 de dataES + 9 équipements de collèges sans numéro, gardés ; 26 fiches absentes de dataES quittent le site scolaire (aucune réservation). La part « Donnée non renseignée » quittera les graphiques | Peterson |
+
+### Questions du CDC de la DRAJES (28/10)
+
+| Question | Responsable |
+|---|---|
+| Critère d'« ouverture » : les 3 valeurs retenues (ouvert, non ouvert, sans planning) conviennent-elles ? (Tibor, C1 et C8) | DRAJES |
+| Équipement « potentiellement utilisable » : définition (Tibor : « disponible ? ») | DRAJES |
+| Conventions : définition, types (bipartite, tripartite, autre) et source (Tibor, C3 et C9) | DRAJES |
+| Période d'ouverture (année scolaire, vacances) : collecte et affichage (Tibor, C10) | DRAJES, Tibor |
+| Modalités d'accès : lesquelles, et qui les fournit (Tibor, C11) | DRAJES, communes |
+| Demandes non satisfaites et listes d'attente des communes (Tibor, C6) | communes |
+| Plannings des communes pilotes : rien pour Le Tampon, Saint-Pierre et Saint-Leu ; L'Étang-Salé n'a aucun équipement parmi les 127 | communes, par Romain |
+| Correspondances des plannings : questions E1, E2, U1 à U5 (78 créneaux en attente à Saint-Joseph, La Plaine-des-Palmistes et Saint-André, plus 8 aux Aigrettes) | Tibor, Romain |
+| Périmètre : 703 équipements ou les 127 structurants ; garder les 11 équipements du supérieur et du CREPS ? | DRAJES |
+| « Sans créer un référentiel parallèle » (§4) : impossible sans API Data ES (Tibor, C0) ; reformulation proposée : « copie tenue à jour par import » | Tibor, DRAJES |
+| Accès par référent communal, accès de la DRAJES et des partenaires (§11), liste des référents | DRAJES |
+| Hébergement, durée, open source, type de données (§3) | Open Atlas (Tibor), DRAJES |
+| Mentions légales au nom de la DRAJES : adresse, téléphone, directeur de la publication, contact RGPD | DRAJES |
+| Réponses au questionnaire de juillet et documents 2025 (§13) | Romain |
+| Échelle de saturation du questionnaire (§7.1, « à valider ») | DRAJES |
+| Plage de référence de 8 h à 22 h, 7 jours sur 7, retenue le 28/10 : à confirmer | DRAJES |
+| Foyer socio-éducatif d'un collège, « Association » dans le planning : compté comme club, il rend « ouverts » les 2 équipements du collège Joseph Suacot (Petite-Île), à 1 h/sem chacun. Le compter comme scolaire ? | DRAJES |
 
 ## Observatoire en split view (2026-09-10)
 
