@@ -72,6 +72,8 @@ interface ObservatoryListProps {
    *  n'apparaît qu'avec `fields` : sans colonnes de table à reprendre, c'est la
    *  seule déclaration qui dit quoi exporter. */
   exportCsv?: { filename?: string; fields?: DimensionDef[] } | null;
+  /** Export des chiffres clés (`export.kpis`) : présent = bouton « Chiffres clés » à côté de l'export. */
+  onExportKpis?: () => void;
   labels?: LabelMaps;
   /** Libellé sélectionné (clic sur une ligne) — filtre porté par le parent. */
   selection: string;
@@ -94,6 +96,7 @@ export function ObservatoryList({
   list,
   rowAction,
   exportCsv,
+  onExportKpis,
   labels,
   selection,
   onSelect,
@@ -195,6 +198,17 @@ export function ObservatoryList({
                 className="h-7 gap-1.5 px-2 text-xs"
               >
                 <Download className="h-3 w-3" /> {t("table.exportCsv")}
+              </Button>
+            ) : null}
+            {onExportKpis ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onExportKpis}
+                className="h-7 gap-1.5 px-2 text-xs"
+              >
+                <Download className="h-3 w-3" /> {t("table.exportKpis")}
               </Button>
             ) : null}
           </div>

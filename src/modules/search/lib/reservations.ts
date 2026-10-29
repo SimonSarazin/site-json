@@ -57,6 +57,9 @@ export interface Reservation {
   userId?: string;
   activity?: string;
   bookingType?: string;
+  /** Type d'usager posé par l'import des plannings (« Etablissement scolaire | Association »…), quand
+   *  `fields.userType` est configuré — lu par la mesure d'usage (`observatoire/usage.ts`). */
+  userType?: string;
   /** ISO "2026-01-01" — formatage locale laissé au composant. */
   periodStart?: string;
   periodEnd?: string;
@@ -235,6 +238,7 @@ export function parseReservationAnswer(
     userId: orgaEntry ? orgaEntry[0] : undefined,
     activity: str(get(conf.fields.activity)),
     bookingType: str(get(conf.fields.bookingType)),
+    userType: str(get(conf.fields.userType)),
     periodStart: str(get(conf.fields.periodStart)),
     periodEnd: str(get(conf.fields.periodEnd)),
     slots,

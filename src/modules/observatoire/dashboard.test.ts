@@ -9,11 +9,13 @@ import type { ChartDef, DimensionsConfig, ObservatoryItem } from "./schema";
 import { DataObservatorySectionSchema, ObservatoryPanelConfSchema } from "./schema";
 import { dimensionLabel } from "./dimensions";
 import {
+  aggregateBy,
   applyFilters,
   applySelection,
   applyTextSearch,
   buildCsv,
   buildEntitiesCsv,
+  buildKpiCsv,
   buildRow,
   chartRows,
   chartTitle,
@@ -21,6 +23,7 @@ import {
   compare,
   computeKpiValue,
   itemsFor,
+  kpiLabel,
 } from "./dashboard";
 import { buildObservatoryBaseParams, toItems } from "./hooks/useObservatoryItemsQuery";
 import { observatoryPrefetchParams } from "./prefetch";
@@ -453,5 +456,55 @@ describe("ObservatoryPanelConfSchema (tableau de bord embarqué)", () => {
     const badKind = structuredClone(valid);
     (badKind.charts[0] as { kind: string }).kind = "radar";
     expect(ObservatoryPanelConfSchema.safeParse(badKind).success).toBe(false);
+  });
+});
+
+/* ── Valeur des barres, chiffres clés (CDC ESS974) ───────────────────────── */
+
+describe("aggregateBy / itemsFor avec `value` — somme ou moyenne par valeur de dimension", () => {
+  const dims: DimensionsConfig = {
+    commune: { paths: ["commune"] },
+    heures: { paths: ["__usage.clubHours"], kind: "number" },
+  };
+  const data: ObservatoryItem[] = [
+    { commune: "Saint-Paul", __usage: { clubHours: 4 } },
+    { commune: "Saint-Paul", __usage: { clubHours: 2.5 } },
+    { commune: "Le Port", __usage: { clubHours: 10 } },
+    { commune: "Le Port" },
+    { __usage: { clubHours: 7 } },
+  ];
+
+  it("somme par groupe, triée décroissante ; un item sans groupe est ignoré", () => {
+    expect(aggregateBy(data, dims.commune, dims.heures, "sum")).toEqual([
+      { name: "Le Port", value: 10 },
+      { name: "Saint-Paul", value: 6.5 },
+    ]);
+  });
+
+  it("moyenne sur les seuls items qui ont une valeur numérique", () => {
+    expect(aggregateBy(data, dims.commune, dims.heures, "avg")).toEqual([
+      { name: "Le Port", value: 10 },
+      { name: "Saint-Paul", value: 3.3 },
+    ]);
+  });
+
+  it("itemsFor passe par aggregateBy quand le graphe déclare `value` ; dimension de valeur absente → vide", () => {
+    const def: ChartDef = { kind: "bars", dimension: "commune", value: { kind: "sum", dimension: "heures" } };
+    expect(itemsFor(def, data, dims)).toEqual(aggregateBy(data, dims.commune, dims.heures, "sum"));
+    expect(itemsFor({ ...def, value: { kind: "sum", dimension: "absente" } }, data, dims)).toEqual([]);
+  });
+});
+
+describe("kpiLabel / buildKpiCsv — export des chiffres clés", () => {
+  const t = (k: string | Record<string, string>) => (typeof k === "string" ? k : k.fr);
+
+  it("libellé : label > labelKey > libellé de la dimension", () => {
+    expect(kpiLabel({ kind: "count", label: { fr: "Équipements" } }, DIMS, t)).toBe("Équipements");
+    expect(kpiLabel({ kind: "count", labelKey: "kpi.cle" }, DIMS, t)).toBe("kpi.cle");
+  });
+
+  it("une ligne par KPI, séparateur « ; », champs entre guillemets (csvEscape)", () => {
+    expect(buildKpiCsv([{ label: "Équipements", value: "127" }, { label: 'Heures "clubs"', value: "12,5 h" }], ["Indicateur", "Valeur"]))
+      .toBe('"Indicateur";"Valeur"\n"Équipements";"127"\n"Heures ""clubs""";"12,5 h"');
   });
 });
