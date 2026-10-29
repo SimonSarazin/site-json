@@ -13,6 +13,7 @@ import {
   splitKey,
   getAllDropdownFilters,
   getDropdownFilterOwner,
+  optionLabelOf,
   findFilterByField,
   type DropdownFilterConfig,
 } from "./dropdownFilters";
@@ -274,5 +275,36 @@ describe("dropdownOptionEntry — entrée searchByFields d'une option cochée", 
       value: ["Piscine"],
     });
     expect(dropdownOptionEntry({ match: "exact" }, "f", opt("o", "v"))).toEqual({ field: "f", value: ["v"] });
+  });
+});
+
+describe("optionLabelOf — libellé de l'option qui interroge une valeur", () => {
+  const config = configWithPages([
+    {
+      path: "/equipements",
+      dropdownFilters: [
+        {
+          id: "poi-postalCode",
+          label: "Commune",
+          field: "address.postalCode",
+          options: [
+            { id: "saint-paul", label: { fr: "Saint-Paul (97411 / 97434)", en: "Saint-Paul (97411 / 97434)" }, values: ["97411", "97434"] },
+            { id: "le-port", label: "Le Port (97420)", value: "97420" },
+          ],
+        } as unknown as DropdownFilterConfig,
+      ],
+    },
+  ]);
+  const label = (l: unknown) => (typeof l === "string" ? l : (l as { fr: string }).fr);
+
+  it("trouve l'option par `values` ou par `value`", () => {
+    expect(optionLabelOf(config, "poi-postalCode", "97434", label)).toBe("Saint-Paul (97411 / 97434)");
+    expect(optionLabelOf(config, "poi-postalCode", "97420", label)).toBe("Le Port (97420)");
+  });
+
+  it("valeur absente ou inconnue, filtre inconnu → undefined", () => {
+    expect(optionLabelOf(config, "poi-postalCode", undefined, label)).toBeUndefined();
+    expect(optionLabelOf(config, "poi-postalCode", "75001", label)).toBeUndefined();
+    expect(optionLabelOf(config, "absent", "97420", label)).toBeUndefined();
   });
 });

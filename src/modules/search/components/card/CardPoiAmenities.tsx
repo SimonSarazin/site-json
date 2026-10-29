@@ -10,7 +10,7 @@ import {
 	DoorOpen,
 	ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
@@ -23,6 +23,8 @@ import { Separator } from "@/components/ui/separator";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { cn } from "@/lib/utils";
 import { useInstallationFilter } from "../../hooks/useInstallationFilter";
+import { SiteContext } from "@/contexts/SiteContext";
+import { optionLabelOf } from "../../lib/dropdownFilters";
 import { toValidDate } from "@/helpers/formatDate";
 import { isTrue } from "../../lib/poiAmenities";
 import { SearchCardProps } from "../../schema";
@@ -67,6 +69,8 @@ function getPoiImage(seed: string) {
 export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
+	// Contexte optionnel (idiome de `useSearchQuery`) : la carte se rend aussi hors `SiteProvider` — sans commune.
+	const siteConfig = useContext(SiteContext)?.config;
 	const instFilter = useInstallationFilter(card?.installationFilter);
 	// Densité (`card.compact`) : MÊMES informations, moins de hauteur — vignette,
 	// interlignes et puces réduits. Pensé pour une colonne étroite (liste
@@ -113,6 +117,10 @@ export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: S
 	const cityLine = [serverData.address?.postalCode, serverData.address?.addressLocality]
 		.filter(Boolean)
 		.join(" ");
+	// Commune de RATTACHEMENT (`card.communeFrom`) : l'adresse ne donne que le lieu-dit (Bois-de-Nèfles…).
+	const commune = card?.communeFrom && siteConfig
+		? optionLabelOf(siteConfig, card.communeFrom.filter, serverData.address?.postalCode, (l) => t(l))
+		: undefined;
 
 	// Sous-titre de la ligne REPLIÉE : même composition que les
 	// `subtitleDimensions` de la liste observatoire (valeurs vides ignorées,
@@ -272,6 +280,9 @@ export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: S
 					<div className="min-w-0 flex-1 space-y-0.5 text-xs">
 						{streetAddress && <p className="font-medium text-foreground">{streetAddress}</p>}
 						{cityLine && <p className="text-muted-foreground">{cityLine}</p>}
+						{commune && (
+							<p className="text-muted-foreground">{t("CardPoiAmenities.commune", undefined, { commune })}</p>
+						)}
 					</div>
 				</div>
 

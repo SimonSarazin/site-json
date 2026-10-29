@@ -303,19 +303,23 @@ function sameValues(value: SearchByFieldValue["value"], busy: readonly string[])
 /**
  * État avec l'entrée du filtre remplacée, ou retirée quand `param` est `null`. Rend `prev` LUI-MÊME
  * quand rien ne change : le rafraîchissement des réservations recalcule l'exclusion sans relancer la
- * liste si les occupés sont les mêmes.
+ * liste si les occupés sont les mêmes. `type` : exclusion des occupés (défaut) ou, pour le filtre de
+ * statut (`usageFilter.ts`), restriction `INCLUDE_TYPE` — même entrée calculée sur `_id`.
  */
 export function withSlotEntry(
   prev: Record<string, SearchByFieldValue>,
   id: string,
   param: string | null,
   busy: string[],
+  type: string = EXCLUDE_TYPE,
 ): Record<string, SearchByFieldValue> {
   const key = param ? keyFor(id, param) : null;
   const own = Object.keys(prev).filter((k) => splitKey(k)?.filterId === id);
   if (!key && own.length === 0) return prev;
-  if (key && own.length === 1 && own[0] === key && sameValues(prev[key].value, busy)) return prev;
+  if (key && own.length === 1 && own[0] === key && prev[key].type === type && sameValues(prev[key].value, busy)) {
+    return prev;
+  }
   const next = Object.fromEntries(Object.entries(prev).filter(([k]) => splitKey(k)?.filterId !== id));
-  if (key) next[key] = { field: "_id", type: EXCLUDE_TYPE, value: busy };
+  if (key) next[key] = { field: "_id", type, value: busy };
   return next;
 }
