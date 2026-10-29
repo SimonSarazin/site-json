@@ -6,6 +6,9 @@ import {
   fromTimeString,
   isSlotComplete,
   isSlotOrdered,
+  isSlotPeriodOrdered,
+  formatSlotDay,
+  formatSlotPeriod,
   normalizeSlot,
   toTimeString,
 } from "./timeSlots";
@@ -92,5 +95,41 @@ describe("référentiel jours", () => {
 
   it("dayI18nKey produit la clé i18n minuscule", () => {
     expect(dayI18nKey("Monday")).toBe("monday");
+  });
+});
+
+describe("période propre d'un créneau", () => {
+  // Traduction factice : la clé et ses paramètres.
+  const t = ((key: string, _fallback?: string, params?: Record<string, unknown>) =>
+    params ? `${key} ${JSON.stringify(params)}` : key) as Parameters<typeof formatSlotPeriod>[1];
+
+  it("isSlotPeriodOrdered : seule une période complète à l'envers est désordonnée", () => {
+    expect(isSlotPeriodOrdered(REAL_SLOT)).toBe(true);
+    expect(isSlotPeriodOrdered({ ...REAL_SLOT, periodStart: "2026-08-24" })).toBe(true);
+    expect(isSlotPeriodOrdered({ ...REAL_SLOT, periodStart: "2026-08-24", periodEnd: "2026-08-24" })).toBe(true);
+    expect(isSlotPeriodOrdered({ ...REAL_SLOT, periodStart: "2026-12-14", periodEnd: "2026-08-24" })).toBe(false);
+  });
+
+  it("formatSlotDay : date courte de la locale, sans recul d'un jour ; valeur brute sinon", () => {
+    expect(formatSlotDay("2026-08-19", "fr-FR")).toBe("19/08/2026");
+    expect(formatSlotDay("pas une date", "fr-FR")).toBe("pas une date");
+  });
+
+  it("formatSlotPeriod : deux bornes, une seule, ou rien à dire", () => {
+    expect(formatSlotPeriod({ ...REAL_SLOT, periodStart: "2026-08-19", periodEnd: "2026-10-10" }, t, "fr-FR")).toBe(
+      'coform.timeSlots.period {"start":"19/08/2026","end":"10/10/2026"}',
+    );
+    expect(formatSlotPeriod({ ...REAL_SLOT, periodStart: "2026-08-19" }, t, "fr-FR")).toBe(
+      'coform.timeSlots.periodFrom {"start":"19/08/2026"}',
+    );
+    expect(formatSlotPeriod({ ...REAL_SLOT, periodEnd: "2026-10-10" }, t, "fr-FR")).toBe(
+      'coform.timeSlots.periodUntil {"end":"10/10/2026"}',
+    );
+    expect(formatSlotPeriod(REAL_SLOT, t, "fr-FR")).toBeNull();
+  });
+
+  it("normalizeSlot conserve la période à l'édition", () => {
+    const date = { ...REAL_SLOT, periodStart: "2026-08-24", periodEnd: "2026-12-14" };
+    expect(normalizeSlot(date)).toMatchObject({ periodStart: "2026-08-24", periodEnd: "2026-12-14" });
   });
 });

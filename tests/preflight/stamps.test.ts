@@ -95,6 +95,12 @@ describe("préflight mutation.stamps", () => {
   it("les stamps du parc sont bien là où on les attend (sentinelle d'inventaire)", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
+      // ESS974 : le form « Ajouter une association » pose l'étiquette `usagerEquipementSportif`
+      // (append, on:both) — c'est le filtre du finder « club usager » du formulaire de réservation
+      // (`params.finder<clé>.filter`) : sans elle, l'association ajoutée ne pourrait recevoir aucun
+      // créneau. Pas de champ `tags` visible dans ce form (rien à réconcilier au retrait), comme
+      // parent62-partenaire ci-dessous.
+      "equipements-Sportifs-Scolaire/ess974-association:1",
       // CAE : le form « Créer votre CAE » pose le marqueur `CAE` dans `tags` (append, on:add) et
       // refusionne à l'édition la saisie du mode de gestion (append $from tags, on:edit) — c'est le
       // discriminant `identity {tags:"CAE"}` du sous-type `organizationsTls`.

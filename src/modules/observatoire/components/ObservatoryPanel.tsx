@@ -10,6 +10,7 @@ import type { ObservatoryPanelConf } from "../dashboardSchema";
 import { buildLabelMaps, dimensionLabel, dimensionValue } from "../dimensions";
 import { applyFilters, applySelection } from "../dashboard";
 import { toItems } from "../hooks/useObservatoryItemsQuery";
+import { useResolvedDimensions } from "../hooks/useResolvedDimensions";
 import { KpiCards } from "./KpiCards";
 import { ObservatoryCharts } from "./Charts";
 
@@ -68,7 +69,8 @@ export default function ObservatoryPanel({
   const t = useT("modules/observatoire");
 
   const { items, entities } = useMemo(() => toItems(results), [results]);
-  const dimensions = conf.dimensions;
+  // `valueMapFrom` résolu, comme sur la page observatoire : même liste, mêmes libellés.
+  const dimensions = useResolvedDimensions(conf.dimensions);
   // Libellés canoniques des dimensions à `keyPaths`, dérivés du jeu COMPLET :
   // ils doivent rester stables quel que soit le raffinement en cours.
   const labels = useMemo(() => buildLabelMaps(items, dimensions), [items, dimensions]);

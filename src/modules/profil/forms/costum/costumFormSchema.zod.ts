@@ -66,6 +66,14 @@ export const CostumFormSchemaZod = z.object({
    * pré-sélection du sélecteur de référencement — jamais à ÉCRIRE ces champs.
    */
   identity: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * `false` → l'« Ajouter » des profils garde le formulaire STANDARD de la collection
+   * (`siteCostumAddModal`) : ce form ne s'ouvre que là où la config le désigne (`addButton.modal`,
+   * `addConfig.custom`…). Ex. ESS974 : « Ajouter une association » réservé au bouton admin de
+   * l'annuaire, sans que tout inscrit y crée une association depuis son profil. Absent = le form
+   * remplace le standard (comportement historique).
+   */
+  profileAdd: z.boolean().optional(),
   deriveDefaults: z.boolean().optional(),
   layout: z.object({ kind: z.string() }).passthrough(),
   serializeGroups: z.record(z.string(), SerializeGroupZod).optional(),

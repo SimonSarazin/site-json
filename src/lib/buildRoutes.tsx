@@ -7,6 +7,8 @@ import type { LoaderFunctionArgs } from "react-router";
 import { discoverModules, getModuleRoutes, getModuleRoutesSync } from "./modules";
 import type { FiltersByPathOptions } from "@/modules/search/hooks/useFiltersByPath";
 import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
+import { scopeFiltersToIds } from "@/modules/search/lib/reservationUsers";
+import type { ReservationUsersConf } from "@/modules/search/schema";
 import { observatoryPrefetchParams } from "@/modules/observatoire/prefetch";
 // Registre des sections containers — partagé avec les préflights, pour qu'une section imbriquée
 // (`tabs`, `gridLayout`) soit vue à la fois par le prefetch SSR et par les gardes. Cf. le module.
@@ -106,7 +108,7 @@ async function buildRoutesAsync(
       // Chargé ICI, pas en tête de module : ce loader ne tourne que côté serveur, et le module
       // prefetch porte le mémo serveur des facettes (`facetCache`/`ssrMemo`) — statique, il partait
       // dans le bundle client pour ne jamais servir.
-      const { prefetchSearchResults, prefetchFilterSection, prefetchFiltersByPath, findFiltersSections } = await import("@/modules/search/prefetch");
+      const { prefetchSearchResults, prefetchFilterSection, prefetchFiltersByPath, findFiltersSections, prefetchReservationUsers } = await import("@/modules/search/prefetch");
 
       // Parser les paramètres URL pour SearchPro
       const url = new URL(request.url);
@@ -150,12 +152,28 @@ async function buildRoutesAsync(
                 map: (props.showMap as boolean) || false,
               };
 
+          // Périmètre CALCULÉ (`reservationUsers`) : préchargé d'abord, sous la clé du client, pour
+          // que la liste préchargée soit DÉJÀ restreinte — sinon le SSR servirait toutes les
+          // organisations, que l'hydratation remplacerait. Aucune organisation possible ou échec :
+          // pas de liste préchargée (le client n'en demande pas non plus, ou recalcule le périmètre).
+          let ssrFilters: Record<string, unknown> = {};
+          if (section.type === 'searchProStatic' && props.reservationUsers) {
+            const perimetre = await prefetchReservationUsers(
+              queryClient,
+              props.reservationUsers as ReservationUsersConf,
+            );
+            if (!perimetre) return null;
+            const scoped = scopeFiltersToIds(ssrFilters, perimetre.orgIds);
+            if (scoped.none) return null;
+            ssrFilters = scoped.filters;
+          }
+
           // Aligner le shape de baseParams avec celui produit côté client par
           // `SearchProStatic.mergedBaseParams`. Sans ça la queryKey diffère et
           // le cache RQ est manqué post-hydratation → refetch inutile.
           // Cf. `canonicalSearchProStaticBaseParams` (source unique).
           const ssrBaseParams = section.type === 'searchProStatic'
-            ? canonicalSearchProStaticBaseParams(baseParams)
+            ? canonicalSearchProStaticBaseParams(baseParams, ssrFilters)
             : baseParams;
 
           return prefetchSearchResults(queryClient, {

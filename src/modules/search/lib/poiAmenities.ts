@@ -14,3 +14,15 @@ export const isTrue = (value: unknown): boolean => {
   }
   return false;
 };
+
+/** Marqueur d'absence du recensement des équipements sportifs (« Donnée(s) non renseignée(s) »). */
+const NON_RENSEIGNE = /^donn[ée]es? non renseign[ée]es?$/i;
+
+/**
+ * Champ costum texte réellement renseigné : ni vide, ni le marqueur d'absence du recensement — que
+ * l'import écrit en toutes lettres là où un identifiant manque (781 `inst_siret`, 2 334 `inst_uai`).
+ */
+export const isProvided = (value: string | undefined): boolean => {
+  const v = value?.trim() ?? "";
+  return v !== "" && !NON_RENSEIGNE.test(v);
+};

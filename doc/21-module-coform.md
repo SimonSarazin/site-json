@@ -138,7 +138,9 @@ src/modules/coform/
 │   ├── CoFormProvider.test.tsx # Tests unitaires CoFormProvider
 │   ├── CommonTableCatalogsContext.ts   # Contexte des catalogues collaboratifs commonTable
 │   ├── CommonTableCatalogsProvider.tsx
-│   └── MilestoneLineSlotContext.ts     # Emplacement qu'un HÔTE remplit sur chaque ligne de `MilestoneListField` (vide par défaut ; lu par `useMilestoneLineSlot`) — la fiche d'un commun y pose le bouton de discussion du palier, cf. doc/38 §17.3
+│   ├── MilestoneLineSlotContext.ts     # Emplacement qu'un HÔTE remplit sur chaque ligne de `MilestoneListField` (vide par défaut ; lu par `useMilestoneLineSlot`) — la fiche d'un commun y pose le bouton de discussion du palier, cf. doc/38 §17.3
+│   ├── TimeSlotCheckContext.ts         # Contrôle en direct des créneaux (`slotCheck` de l'appelant)
+│   └── TimeSlotPeriodsContext.ts       # Saisie de période par créneau (`slotPeriods` de l'appelant)
 ├── hooks/
 │   ├── useCategorizedCheckboxOptions.ts # Arbre d'options (liste manuelle ∪ questions commonTable distantes)
 │   ├── useCoForm.tsx            # useCoForm() + useOptionalCoForm()
@@ -161,6 +163,7 @@ src/modules/coform/
 │   ├── useFinderSearchResults.ts  # Recherche d'entités via searchCostum (RQ + debounce)
 │   ├── useFinderSearchResults.test.tsx
 │   ├── useMultiEvalData.tsx     # Datasets agrégés des évaluations multiples (radar)
+│   ├── useTimeSlotNotices.ts    # Avertissements de l'appelant sous les créneaux (`slotCheck`)
 │   └── useUnsavedChangesWarning.ts # beforeunload tant que le formulaire est dirty
 ├── i18n/
 │   ├── en.json / fr.json    # Traductions
@@ -346,8 +349,35 @@ interface SmartCoFormProps {
   submitButtonText?: string;    // Libellé du bouton d'envoi (mono-étape)
   hideBanner?: boolean;         // Form EMBARQUÉ : la surface hôte porte déjà son titre
   hiddenFields?: readonly string[]; // Champs MASQUÉS par l'appelant, valeur conservée (cf. DynamicCoForm)
+  beforeSubmit?: (allData) => Promise<string | null> | string | null; // Contrôle métier avant enregistrement
+  slotPeriods?: boolean;        // Période saisissable sur chaque créneau des champs timeSlots
+  slotCheck?: TimeSlotCheck;    // Avertissement en direct sous les créneaux des champs timeSlots
+  hideStepHeaders?: boolean;    // Formulaire à UNE étape : pas d'en-tête d'étape (« Étape 1 »)
 }
 ```
+
+**En-tête d'étape — `hideStepHeaders`.** Un formulaire à une seule étape affiche le nom de cette étape en titre
+de carte (souvent « Étape 1 », sans étape suivante). L'appelant dont le titre suffit — une fenêtre de réservation
+— le masque : `DynamicCoForm` reçoit `hideStepHeaders` (déjà utilisé par le mode champ seul), la description de
+l'étape disparaît avec lui. Sans effet sur le parcours en plusieurs étapes, dont la navigation a besoin des titres,
+ni sur la lecture seule.
+
+**Contrôle de l'appelant — `beforeSubmit`.** Rejoué juste avant l'enregistrement, sur les données au format
+serveur (étapes emballées, `denormalizeAnswerData` appliqué), sur les deux chemins. Un message REFUSE : il
+s'affiche (toast), rien ne part au serveur et la saisie est gardée — le formulaire simple résout `false`
+(`DynamicCoForm` garde le brouillon), le wizard lève (`CoFormProvider.submitAllData` ne purge pas). `null`
+laisse passer. Le contrôle ne doit pas lever : c'est à lui de trancher quand il ne peut pas conclure. Premier
+consommateur : la prise de réservation par période (`search`, `reservations.periods`).
+
+**Contrôle en direct des créneaux — `slotCheck`.** L'aperçu de `beforeSubmit` pendant la saisie, pour les champs
+`timeSlots` : l'appelant reçoit la saisie de l'étape (`{ [étape]: valeurs }`, 300 ms après la dernière frappe)
+et rend, par nom de champ, un motif par créneau (`null` : rien). Le champ l'affiche SOUS le créneau en cause,
+comme son erreur d'ordre (`TimeSlotsField.notices`). Transmis par `TimeSlotCheckContext` et calculé par
+`useTimeSlotNotices`, partagé par `DynamicCoForm` et `MultiStepCoForm` : sans contrôle posé, aucun abonnement aux
+valeurs ni calcul — SSBE, Le Tampon et tout formulaire qui ne le demande pas restent inchangés. Un résultat
+dépassé par une frappe plus récente est ignoré, un contrôle en échec n'affiche rien. C'est un AVERTISSEMENT :
+ce qui doit bloquer l'enregistrement reste `beforeSubmit`. Premier consommateur : « ce créneau est déjà
+réservé par… » des fiches équipement et organisation (`search`, `useBookingChecks`).
 
 **Formulaire embarqué dans une section hôte** — `hideBanner` + `submitButtonText` vont de pair. Sans `hideBanner`, le nom du formulaire s'affiche en `<h1>` 4xl au milieu de la page qui l'accueille, en doublon de son propre titre ; `submitButtonText` laisse l'hôte porter son appel à l'action plutôt que le générique `coform.navigation.submit`. Premier usage : la colonne gauche d'`AmpliFeatures` (cf. [Module Ampli](22-module-ampli.md#amplideaform--le-formulaire-en-ligne)). En multi-étapes, seul `hideBanner` s'applique — la navigation du wizard garde ses libellés.
 
@@ -461,6 +491,10 @@ export interface CoFormModalProps {
   className?: string;
   lockedFields?: string[];
   hiddenFields?: readonly string[]; // transmis à SmartCoForm (cf. plus haut)
+  beforeSubmit?: (allData) => Promise<string | null> | string | null; // idem
+  slotPeriods?: boolean;            // idem
+  slotCheck?: TimeSlotCheck;        // idem
+  hideStepHeaders?: boolean;        // idem
 }
 ```
 
@@ -884,6 +918,19 @@ Format de sauvegarde = legacy (vérifié sur les answers réelles) : jour en ang
 heures et minutes en chaînes zéro-paddées séparées. `startAmPm`/`endAmPm` n'existent que dans les données legacy
 saisies en 12 h — ils sont **lus** puis résolus en 24 h à l'édition, jamais ré-écrits. Logique pure et testée :
 `utils/timeSlots.ts`.
+
+**Période propre d'un créneau** (`periodStart` / `periodEnd`, jours ISO) : contrat des créneaux de réservation
+datés par cycle d'une saison ; absente, le créneau vaut pour toute la période de la réponse. Comme toute clé du
+créneau (`duree`, `prix`…), elle est **conservée** à l'édition (`normalizeSlot`, schéma `looseObject`) : changer
+une heure ne la perd pas. Le champ l'affiche en lecture (« Du 19/08/2026 au 10/10/2026 », `formatSlotPeriod`),
+de même que `CoFormReadOnly` ; elle n'est SAISISSABLE (deux dates par créneau, facultatives) que si l'appelant
+l'active — `slotPeriods` de `SmartCoForm` / `CoFormModal`, transmis par `TimeSlotPeriodsContext`, parce que le
+même champ sert à des formulaires qui ne datent pas leurs créneaux (SSBE, Le Tampon). Une période à l'envers est
+signalée sous le créneau et refusée par le schéma.
+
+**Avertissement de l'appelant** (`notices`, un motif par créneau, même index que la valeur) : affiché sous le
+créneau en cause, bordure rouge, comme l'erreur d'ordre — cf. `slotCheck` plus haut. Il ne bloque rien dans le
+champ ; c'est l'appelant qui refuse l'enregistrement.
 
 ---
 
@@ -1589,7 +1636,7 @@ Convertit une URL d'image absolue en chemin relatif (`pathname + search`) pour u
 | `SimpleTableConfig` | `{ tableName, columns, rows, activeNewLine, singleAnswerByLine, editInModal }` |
 | `CategorizedCheckboxConfig` | `{ dataSourceToUse, list, sublist, formParamsSource, questionsParamsSource }` (+ `CategorizedCheckboxValue` `{list, sublist}`, `CategorizedCheckboxOption`/`Child` pour l'arbre rendu) |
 | `CommonTableConfig` | `{ showColumns, labels, usages[] }` (+ `CommonTableValue` `{scores, myCatalog}`, `CommonTableSolution`, `CommonTableMyCatalogEntry`, `CommonTableCatalog(s)`, `HappinessValue`) |
-| `TimeSlotsConfig` | `{ enableMultipleSlots?, timeFormat?, minuteStep?, defaultStartTime?, defaultEndTime? }` (+ `TimeSlotValue`) |
+| `TimeSlotsConfig` | `{ enableMultipleSlots?, timeFormat?, minuteStep?, defaultStartTime?, defaultEndTime? }` (+ `TimeSlotValue`, période propre `periodStart?` / `periodEnd?` comprise) |
 | `DynamicFieldsConfig` | `{ enableMultipleRows?, minRows?, maxRows?, fieldsConfig[], layout?, ui? }` (+ `DynamicFieldsSubField`, `DynamicFieldsRow`) |
 | `CoFormDraft` | Brouillon localStorage : `{ version:1, data, currentStepIndex, completedSteps, addedOptions, timestamp, baseUpdatedAt }` |
 | `UploaderConfig` | `{ docType, itemLimit, sizeLimit, formats?, displayMode? }` |
