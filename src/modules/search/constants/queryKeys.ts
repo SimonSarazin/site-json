@@ -108,12 +108,19 @@ export const SEARCH_QUERY_KEYS = {
    * Réservations CoForm d'une ressource (section réservations du preview
    * `poi-amenities`).
    *
-   * Producteur : `useReservationsQuery`. Données PUBLIQUES (endpoint
-   * answerslist public → pas de dimension userId). Invalidation : aucune —
-   * staleTime + refetch au remontage suffisent.
+   * Producteurs : `useReservationsQuery`, et `resourcesReservations` (contrôles
+   * d'un ajout ou d'une modification d'horaire, qui la lisent ou la relisent).
+   * Données PUBLIQUES (endpoint answerslist public → pas de dimension userId).
+   * Invalidation par `RESERVATIONS_PREFIX`, après tout ajout de créneaux
+   * (`useBookingChecks`) et toute modification d'horaire (`useUpdateSlotHours`)
+   * — sinon staleTime + refetch au remontage suffisent.
    */
   RESERVATIONS: (formId: string, resourceId: string) =>
     ["search-reservations", formId, resourceId] as const,
+  /** Toutes les réservations-par-ressource d'un formulaire — invalidées ensemble après un ajout de créneaux
+   *  (`useBookingChecks`) ou une modification d'horaire (`useUpdateSlotHours`), qui ne savent pas quelles fiches
+   *  sont en cache. */
+  RESERVATIONS_PREFIX: (formId: string) => ["search-reservations", formId] as const,
   /**
    * Réservations d'une ORGANISATION : answers dont le finder `userOrga` pointe
    * ce club (section « équipements réservés » du preview `structure`).
@@ -124,6 +131,42 @@ export const SEARCH_QUERY_KEYS = {
    */
   ORGA_RESERVATIONS: (formId: string, orgaId: string) =>
     ["search-orga-reservations", formId, orgaId] as const,
+  /** Les réservations de toutes les organisations d'un formulaire — même usage que `RESERVATIONS_PREFIX`. */
+  ORGA_RESERVATIONS_PREFIX: (formId: string) => ["search-orga-reservations", formId] as const,
+  /**
+   * Périmètre « organisations usagères » d'une liste (`searchProStatic.reservationUsers`) :
+   * organisations retenues + équipements du site réservés.
+   *
+   * Producteurs : `useReservationUsersQuery` ET le prefetch SSR (`prefetchReservationUsers`) — la
+   * MÊME clé, sinon la liste préchargée ne serait pas celle du client. Données PUBLIQUES
+   * (answerslist et recherche publics → pas de dimension userId). Invalidation : par le préfixe
+   * `search-reservation-users`, que le formulaire costum qui crée une organisation rattachée déclare
+   * dans `invalidateFn.params.searchKeys` (avec `includeCostumOrganizations`, ex. ESS974) ; sinon
+   * staleTime + refetch au remontage. Écriture directe : `useAddCostumOrganization` y insère aussitôt
+   * l'organisation créée par le bouton « Ajouter » de la section, sans attendre la relecture.
+   */
+  RESERVATION_USERS: (formId: string, perimeter: Record<string, unknown>) =>
+    ["search-reservation-users", formId, perimeter] as const,
+  /**
+   * Parmi des équipements, ceux d'un périmètre (`preview.bookedResources.poiFilters`).
+   *
+   * Producteur : `useResourcesInPerimeterQuery`. Données publiques. Identifiants TRIÉS par
+   * l'appelant : même ensemble, même clé.
+   */
+  RESOURCES_IN_PERIMETER: (ids: readonly string[], perimeter: Record<string, unknown>) =>
+    ["search-resources-in-perimeter", ids, perimeter] as const,
+  /**
+   * Réservations d'un FORMULAIRE qui pointent une ressource, d'où le filtre créneau du bandeau
+   * (`searchHeader.slotFilter`) déduit les ressources occupées.
+   *
+   * Producteur : `useSlotReservationsQuery`. Données publiques (answerslist public → pas de dimension
+   * userId). Invalidation par `RESERVATION_SLOTS_PREFIX`, comme `RESERVATIONS` — sinon staleTime + refetch
+   * au remontage suffisent.
+   */
+  RESERVATION_SLOTS: (formId: string, scope: Record<string, unknown>) =>
+    ["search-reservation-slots", formId, scope] as const,
+  /** Toutes les portées d'un formulaire (filtre créneau, KPI d'heures) — même usage que `RESERVATIONS_PREFIX`. */
+  RESERVATION_SLOTS_PREFIX: (formId: string) => ["search-reservation-slots", formId] as const,
   /**
    * Entité chargée par IDENTIFIANT pour ouvrir sa fiche depuis l'URL
    * (`list.previewFetch`), quand la liste affichée ne la porte pas.

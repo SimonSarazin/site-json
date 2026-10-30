@@ -17,6 +17,11 @@
  * entrée est la facette et les paramètres de son APPEL backend (`prefetchFacet`, `memoKey`) — pas la
  * queryKey, qui porte l'identifiant de section : deux sections qui demandent la même facette
  * partagent l'entrée. `filtersByPath` est mémorisé entrée par entrée (un appel backend chacune).
+ *
+ * Il sert aussi au périmètre « organisations usagères » d'une liste (`prefetchReservationUsers`) : seule
+ * sa partie lourde — les réservations et leurs équipements du site, identiques pour tous les visiteurs —
+ * y est mémorisée, sous la queryKey de la liste sans `includeCostumOrganizations` ; les organisations
+ * rattachées au costum restent lues à chaque rendu.
  */
 import { createSsrMemo } from "@/lib/ssrMemo";
 

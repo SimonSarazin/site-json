@@ -61,6 +61,8 @@ import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "./contexts/pageFilters";
 import { useInstallationFilterUrlSync } from "./hooks/useInstallationFilter";
 import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
+import { scopeFiltersToIds } from "./lib/reservationUsers";
+import { useAddCostumOrganization, useReservationUsersQuery } from "./hooks/useReservationUsersQuery";
 import { buildViewAllHref } from "./lib/viewAllHref";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
@@ -452,6 +454,24 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return { filters, contextLocality: locality, dynamicSourceKeys: sourceKeys, searchTarget };
   }, [searchByFields]);
 
+  // Périmètre CALCULÉ (`reservationUsers`) : organisations usagères des réservations du site,
+  // préchargé au SSR avec la même clé. Tant qu'il manque (chargement, échec), la liste n'est PAS
+  // interrogée — sans lui, elle rendrait toutes les organisations. Sans conf : mêmes `filters`
+  // (même référence), aucune requête de plus, comportement inchangé.
+  const reservationUsersConf = props.reservationUsers;
+  const reservationUsers = useReservationUsersQuery(reservationUsersConf);
+  // Une organisation créée par le bouton « Ajouter » rejoint le périmètre sans attendre sa relecture.
+  const addCostumOrganization = useAddCostumOrganization(reservationUsersConf);
+  const perimetreManquant = Boolean(reservationUsersConf) && !reservationUsers.data;
+  const perimetreEnErreur = perimetreManquant && reservationUsers.isError;
+  const scoped = useMemo(
+    () => scopeFiltersToIds(filters, reservationUsersConf ? (reservationUsers.data?.orgIds ?? null) : null),
+    [filters, reservationUsersConf, reservationUsers.data],
+  );
+  // `scoped.none` : aucune organisation possible → ni requête (un `$in` vide serait ignoré par le
+  // backend), ni squelette — la liste est vide.
+  const listeBloquee = perimetreManquant || scoped.none;
+
   // Le filtre « type d'info » (groupe `searchTargets`) REMPLACE les types par
   // défaut de la section — réactif (useMemo, plus useState) : la sélection
   // change les collections interrogées. Contenu identique → queryKey stable
@@ -467,7 +487,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   );
 
   const mergedBaseParams = useMemo<Record<string, unknown>>(() => {
-    const merged = canonicalSearchProStaticBaseParams(baseParams, filters, locality);
+    const merged = canonicalSearchProStaticBaseParams(baseParams, scoped.filters, locality);
     // Un sourceKey actif prend le dessus sur notSourceKey (qui dit l'inverse).
     if (dynamicSourceKeys.length > 0) {
       merged.sourceKey = dynamicSourceKeys;
@@ -482,7 +502,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       };
     }
     return merged;
-  }, [baseParams, filters, locality, dynamicSourceKeys, searchTarget]);
+  }, [baseParams, scoped.filters, locality, dynamicSourceKeys, searchTarget]);
 
   const csvSearchParams = useMemo(() => ({
     searchText,
@@ -499,12 +519,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   });
 
   const {
-    error,
+    error: listError,
     lastItemRef,
     isFetchingNextPage,
     isLoading: loadingMap,
-    isPending,
-    refetch,
+    isPending: listPending,
+    refetch: refetchList,
     transformedResults,
     totalCount,
   } = useSearchQuery({
@@ -517,7 +537,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     graphUsed: viewMode === "graph",
     baseParams: mergedBaseParams,
     variant: searchVariant,
+    enabled: !listeBloquee,
   });
+  // Une requête désactivée reste « pending » : sans périmètre possible (`scoped.none`) ou en échec
+  // de périmètre, pas de squelette. L'échec du périmètre s'affiche comme celui de la liste, et
+  // « Réessayer » relance le PÉRIMÈTRE — relancer la liste la ferait partir sans restriction.
+  const isPending = !scoped.none && !perimetreEnErreur && listPending;
+  const error = listError ?? (perimetreEnErreur ? reservationUsers.error : null);
+  const refetch = perimetreEnErreur ? reservationUsers.refetch : refetchList;
 
   // Vues qui ont besoin du périmètre COMPLET, et pas de la seule page courante :
   // la CARTE (tous les marqueurs) et le TABLEAU DE BORD (des chiffres calculés
@@ -533,7 +560,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // 30 min. Désactivé (searchType: null → aucun appel) dans les autres vues.
   const mapAll = useSearchAllResults({
     queryKeyPrefix: SEARCH_STATIC_MAP_PREFIX,
-    searchType: needsAllResults ? searchType : null,
+    searchType: needsAllResults && !listeBloquee ? searchType : null,
     searchText,
     searchTags,
     mapUsed: true,
@@ -751,7 +778,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     variant="outline"
                     size="sm"
                     onClick={() => exportCsv()}
-                    disabled={isExporting}
+                    // Périmètre calculé absent : l'export partirait sans restriction.
+                    disabled={isExporting || listeBloquee}
                   >
                     {isExporting ? (
                       <Loader2 className="h-4 w-4 animate-spin sm:mr-1" />
@@ -1194,6 +1222,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           onOpenChange={setIsModalOpen}
           parent={entity}
           formConfig={addButton?.formConfig}
+          // Seulement quand le périmètre inclut les organisations rattachées : ailleurs, `onCreated`
+          // couperait la redirection vers la fiche créée sans rien apporter.
+          onCreated={reservationUsersConf?.includeCostumOrganizations ? addCostumOrganization : undefined}
         />
       )}
 

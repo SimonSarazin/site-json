@@ -113,6 +113,64 @@ function normalizeValue(def: DimensionDef, v: string): string {
 }
 
 /*───────────────────────────────────────────────────────────────*/
+/* valueMapFrom — la valueMap tirée d'un filtre déroulant du site */
+/*───────────────────────────────────────────────────────────────*/
+
+/** Option d'un filtre déroulant du site, réduite à ce que lit `valueMapFrom` (le module ne dépend pas
+ *  du schéma de la recherche). */
+export interface FilterOptionLike {
+  label: string | Record<string, string>;
+  value?: string;
+  values?: string[];
+}
+
+/**
+ * `valueMap` tirée des OPTIONS d'un filtre déroulant : chaque valeur interrogée par une option (`values`,
+ * sinon `value`) → le libellé de l'option, traduit par `label`. Une valeur revendiquée par deux options
+ * garde la première, comme la résolution d'un jeton côté recherche.
+ */
+export function filterValueMap(
+  options: readonly FilterOptionLike[],
+  label: (l: FilterOptionLike["label"]) => string,
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const o of options) {
+    const texte = label(o.label);
+    for (const v of o.values ?? (o.value ? [o.value] : [])) {
+      if (!(v in map)) map[v] = texte;
+    }
+  }
+  return map;
+}
+
+/**
+ * Les dimensions avec leur `valueMapFrom` résolu en `valueMap` — la `valueMap` déclarée primant valeur par
+ * valeur. Une même liste sert ainsi le filtre d'une page de recherche et une dimension de l'observatoire :
+ * les 23 communes de la page Équipements d'ESS974 (codes postaux regroupés) au lieu des 28 lieux-dits de
+ * `address.addressLocality` (demande de Peterson du 23/10 : une source commune, pas une seconde liste écrite
+ * en dur). Filtre introuvable : la dimension est rendue telle quelle. Sans aucun `valueMapFrom`, l'objet
+ * reçu est rendu lui-même — les mémos en aval gardent leur référence.
+ */
+export function withFilterValueMaps(
+  dims: DimensionsConfig,
+  optionsOf: (filterId: string) => readonly FilterOptionLike[] | undefined,
+  label: (l: FilterOptionLike["label"]) => string,
+): DimensionsConfig {
+  let change = false;
+  const out: DimensionsConfig = {};
+  for (const [id, def] of Object.entries(dims)) {
+    const options = def.valueMapFrom ? optionsOf(def.valueMapFrom.filter) : undefined;
+    if (!options) {
+      out[id] = def;
+      continue;
+    }
+    out[id] = { ...def, valueMap: { ...filterValueMap(options, label), ...def.valueMap } };
+    change = true;
+  }
+  return change ? out : dims;
+}
+
+/*───────────────────────────────────────────────────────────────*/
 /* Regroupement sur clé canonique (keyPaths) — libellé dérivé      */
 /*───────────────────────────────────────────────────────────────*/
 /** Map clé de groupe → libellé canonique, pour UNE dimension `keyPaths`. */

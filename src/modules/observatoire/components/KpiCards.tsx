@@ -1,46 +1,21 @@
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useT } from "@/hooks/useT";
-import type { DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
+import type { DataObservatorySectionProps, DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
 import { TOKEN_TINT_CLASSES, dimensionLabel, type LabelMaps } from "../dimensions";
 import { computeKpiValue } from "../dashboard";
+import type { ReservationHours } from "@/modules/search/lib/reservationHours";
+import { KpiCard } from "./KpiCard";
 
-/** Taille de police adaptée à la longueur de la valeur. */
-function valueClass(value: string): string {
-  if (value.length <= 6) return "text-3xl whitespace-nowrap";
-  if (value.length <= 12) return "text-2xl whitespace-nowrap";
-  return "text-base leading-snug break-words";
-}
+type KpiColumns = NonNullable<DataObservatorySectionProps["kpiColumns"]>;
 
-interface KpiCardProps {
-  icon: string;
-  label: string;
-  value: string;
-  accentClasses: string;
-}
-
-// Exporté : réutilisé par la modal installation (même look de carte KPI).
-export function KpiCard({ icon, label, value, accentClasses }: KpiCardProps) {
-  return (
-    <Card className="gap-0 rounded-2xl border-border/50 py-5 hover:shadow-md transition-shadow min-w-0">
-      <CardContent className="px-5">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              {label}
-            </p>
-            <p className={`mt-2 font-bold text-foreground tabular-nums ${valueClass(value)}`}>
-              {value}
-            </p>
-          </div>
-          <div className={`rounded-xl p-2.5 ${accentClasses}`}>
-            <DynamicIcon name={icon as IconName} className="h-5 w-5" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+/** Colonnes dès 1024 px quand la config les fixe (`kpiColumns`). Classes ÉCRITES EN ENTIER : Tailwind
+ *  ne génère que celles qu'il lit dans le code ; le `Record` oblige à couvrir chaque valeur du schéma. */
+const LG_COLUMNS: Record<KpiColumns, string> = {
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-5",
+  6: "lg:grid-cols-6",
+};
 
 interface KpiCardsProps {
   data: ObservatoryItem[];
@@ -49,6 +24,13 @@ interface KpiCardsProps {
   kpis: readonly KpiDef[];
   /** Libellés canoniques (dimensions à `keyPaths`). */
   labels?: LabelMaps;
+  /** Heures réservées sur `data`, pour les KPI `reservationHours` — absentes pendant le chargement. */
+  reservationHours?: ReservationHours;
+  /** Réservations en cours de chargement : les KPI `reservationHours` montrent un sablier plutôt que
+   *  « — », qui se lisait comme une absence de données (le chargement prend plusieurs secondes). */
+  reservationHoursLoading?: boolean;
+  /** Cartes par ligne dès 1024 px (`kpiColumns`) ; absent = remplissage automatique. */
+  columns?: KpiColumns;
   /**
    * Densité de rendu. `cards` (défaut) = une carte par indicateur, pour une
    * page d'observatoire où le tableau de bord EST le sujet. `inline` = une
@@ -59,7 +41,16 @@ interface KpiCardsProps {
   layout?: "cards" | "inline";
 }
 
-export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: KpiCardsProps) {
+export function KpiCards({
+  data,
+  dimensions,
+  kpis,
+  labels,
+  reservationHours,
+  reservationHoursLoading,
+  columns,
+  layout = "cards",
+}: KpiCardsProps) {
   const t = useT("modules/observatoire");
 
   const entries = kpis.map((def, i) => ({
@@ -72,7 +63,8 @@ export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: K
         : def.dimension
           ? dimensionLabel(t, dimensions, def.dimension)
           : "",
-    value: computeKpiValue(def, data, dimensions, labels),
+    value: computeKpiValue(def, data, dimensions, labels, reservationHours),
+    loading: def.kind === "reservationHours" && Boolean(reservationHoursLoading),
     accentClasses: TOKEN_TINT_CLASSES[def.accent ?? "primary"],
   }));
 
@@ -81,7 +73,10 @@ export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: K
       <dl className="flex flex-wrap items-baseline gap-x-8 gap-y-3">
         {entries.map((e) => (
           <div key={e.key} className="flex items-baseline gap-2">
-            <dd className="text-2xl font-bold text-foreground tabular-nums">{e.value}</dd>
+            {/* Sablier pendant le calcul, comme `KpiCard` : « — » se lirait comme une absence de données. */}
+            <dd className="text-2xl font-bold text-foreground tabular-nums">
+              {e.loading ? <Spinner className="h-6 w-6" label={t("kpiComputing")} /> : e.value}
+            </dd>
             <dt className="text-sm text-muted-foreground">{e.label}</dt>
           </div>
         ))}
@@ -90,7 +85,9 @@ export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: K
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
+    <div
+      className={`grid grid-cols-2 md:grid-cols-3 gap-4 ${columns ? LG_COLUMNS[columns] : "lg:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]"}`}
+    >
       {entries.map((e) => (
         <KpiCard
           key={e.key}
@@ -98,6 +95,8 @@ export function KpiCards({ data, dimensions, kpis, labels, layout = "cards" }: K
           label={e.label}
           value={e.value}
           accentClasses={e.accentClasses}
+          loading={e.loading}
+          loadingLabel={t("kpiComputing")}
         />
       ))}
     </div>

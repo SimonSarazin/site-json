@@ -55,8 +55,10 @@ export function PoiEquipementDoublonsSlot({ scope }: { scope: PoiEquipementScope
         );
       })}
 
+      {/* Fiche des sites d'équipements sportifs (`equipmentDetails`) : ce slot des doublons d'équipement n'existe
+          que dans le formulaire costum equipements-sportifs, sans config d'aperçu pour la porter. */}
       {detailItem && (
-        <DetailsModeDialog openDetails={detailOpen} setOpenDetails={setDetailOpen} item={detailItem} preview={{ type: "poi-amenities" }} />
+        <DetailsModeDialog openDetails={detailOpen} setOpenDetails={setDetailOpen} item={detailItem} preview={{ type: "poi-amenities", equipmentDetails: true }} />
       )}
     </div>
   );

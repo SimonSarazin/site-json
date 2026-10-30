@@ -336,7 +336,9 @@ export const ReservationsConfSchema = z.object({
     periodEnd: z.string().optional(),
     bookingType: z.string().optional(),
   }),
-  /** Plafond d'answers chargées (garde de pagination). Défaut : 200. */
+  /** Plafond d'answers chargées (garde de pagination) par la fiche ORGANISATION (`useOrgaReservationsQuery`,
+   *  défaut 200) ; taille de page du tableau de bord d'installation (défaut 500). Les lectures par équipement —
+   *  fiche et contrôles d'enregistrement — n'en tiennent pas compte : elles lisent tout. */
   maxAnswers: z.number().int().positive().optional(),
   /**
    * Bouton « fiche » de l'ORGANISATION usagère, sur sa rangée dans la section
@@ -347,6 +349,26 @@ export const ReservationsConfSchema = z.object({
    * pas de bouton : jamais de lien mort.
    */
   orgaLink: EntitySheetLinkSchema.optional(),
+  /**
+   * Volume horaire sur la fiche équipement (OPT-IN) : total de l'équipement sous le titre, et
+   * celui de chaque usager sur sa rangée — par semaine et cumulé sur la période des créneaux
+   * EN COURS OU À VENIR (`lib/reservationHours.ts`). Absent = fiche inchangée.
+   */
+  hours: z.boolean().optional(),
+  /**
+   * Gestion des PÉRIODES sur la fiche équipement (OPT-IN). La section réservations gagne un filtre
+   * « du … au … » : ne restent que les créneaux dont la période — la leur, sinon celle de leur
+   * réservation (`slotPeriod`) — recouvre l'intervalle ; sans date, les créneaux en cours ou à venir.
+   * Chaque usager affiche ses périodes, fiche repliée. Avec `booking`, la prise de réservation suit la
+   * période choisie : une case n'est occupée que par un créneau affiché, Date début / Date fin sont
+   * pré-remplies, et l'enregistrement est refusé sans période ou en cas de chevauchement
+   * (`lib/reservationBooking.ts`). Une réservation vaut pour UNE période : une autre période est une
+   * autre réservation, comme à l'import (« une réservation par période », 23/10) — le formulaire ne
+   * propose pas de période par créneau. Sur la fiche d'une ORGANISATION (`bookedResources`), même
+   * filtre, même défaut. Exige `fields.periodStart` et `fields.periodEnd`. Absent = section et prise de
+   * réservation historiques (toute réservation, terminée comprise, occupe sa case).
+   */
+  periods: z.boolean().optional(),
   /**
    * Prise de réservation depuis la fiche (OPT-IN). Absent = comportement
    * historique : grille hebdo en blocs empilés, lecture seule. Présent = grille
@@ -368,6 +390,10 @@ export const ReservationsConfSchema = z.object({
     slotMinutes: z.number().int().min(5).max(240).optional(),
     /** Réserver réservé aux admins de l'entité du site. Défaut code : true. */
     adminOnly: z.boolean().optional(),
+    /** Bouton « modifier l'horaire » sur chaque créneau (fiche équipement, et fiche organisation avec
+     *  `bookedResources`) : seules les heures changent — ni le jour, ni la période. Toujours réservé aux
+     *  admins de l'entité du site, quel que soit `adminOnly`. Défaut code : false. */
+    editHours: z.boolean().optional(),
   })
     // Les deux bornes étaient valides SÉPARÉMENT (0-23 et 1-24) mais jamais l'une par rapport à
     // l'autre : `startHour: 22, endHour: 8` passait la validation et donnait une grille réduite à
@@ -377,7 +403,13 @@ export const ReservationsConfSchema = z.object({
       { message: "booking.startHour doit être strictement inférieur à booking.endHour", path: ["startHour"] },
     )
     .optional(),
-});
+})
+  // Sans les deux champs de dates, une réservation n'a pas de période : le filtre ne pourrait que tout
+  // garder et le contrôle d'enregistrement tout refuser. À `config:validate` de le dire, pas au rendu.
+  .refine((c) => !c.periods || Boolean(c.fields.periodStart && c.fields.periodEnd), {
+    message: "reservations.periods exige fields.periodStart et fields.periodEnd",
+    path: ["periods"],
+  });
 export type ReservationsConf = z.infer<typeof ReservationsConfSchema>;
 
 /**
@@ -437,8 +469,58 @@ export const BookedResourcesConfSchema = z.object({
   link: EntitySheetLinkSchema.optional(),
   /** Titre de la section. Défaut : libellé i18n du module search. */
   label: LocalizedString.optional(),
+  /**
+   * Ne garder que les équipements de CE périmètre (ex. `{ "type": "recoveryCenter" }`, scopé au
+   * costum du site) : une organisation réserve aussi AILLEURS — sur un site scolaire, ses salles
+   * municipales n'ont rien à faire dans sa fiche, et leur bouton « fiche » n'ouvrirait rien.
+   * Même sémantique que `installationDashboard.poiFilters`. Absent = toutes ses réservations.
+   */
+  poiFilters: z.record(z.string(), z.unknown()).optional(),
+  /** Costum des équipements quand ils vivent sous un AUTRE costum que le site (cf.
+   *  `installationDashboard.sourceKey`). Absent → costum du site. Sans effet sans `poiFilters`. */
+  sourceKey: z.array(z.string()).optional(),
+  /** Volume horaire (OPT-IN) : total de l'organisation sur les équipements listés, et celui de
+   *  chaque équipement — même calcul que `reservations.hours`. Absent = section inchangée. */
+  hours: z.boolean().optional(),
+  /** Place de la section dans la fiche : `full` (défaut) en pleine largeur SOUS la localisation et les
+   *  personnes ; `column` dans la colonne de GAUCHE, la large, la localisation à droite — personnes,
+   *  informations et documents passant alors sous la localisation ; sur téléphone, la section vient en premier.
+   *  En colonne, une organisation sans réservation affichée garde la section, avec un message, plutôt qu'une
+   *  colonne vide. */
+  placement: z.enum(["full", "column"]).optional(),
 });
 export type BookedResourcesConf = z.infer<typeof BookedResourcesConfSchema>;
+
+/**
+ * Périmètre CALCULÉ d'une liste d'organisations (`searchProStatic.reservationUsers`) : les
+ * usagères d'au moins une réservation portant sur un équipement du périmètre du site — ex. sur un
+ * site scolaire, les clubs qui ont un créneau dans un établissement. Aucun filtre de la recherche
+ * ne sait relier réservation, équipement et organisation : la liste est calculée côté client ET au
+ * prefetch SSR (même clé), puis envoyée en `_id: {$in}`. Elle suit seule les nouveaux créneaux,
+ * les nouvelles organisations et les équipements nouvellement rattachés au site. Avec
+ * `includeCostumOrganizations`, les organisations rattachées au costum du site s'y ajoutent.
+ */
+export const ReservationUsersConfSchema = z
+  .object({
+    /** Ancrage du formulaire des réservations — le même bloc que `preview.reservations`. */
+    reservations: ReservationsConfSchema,
+    /** Équipements qui comptent (ex. `{ "type": "recoveryCenter" }`), scopés au costum du site —
+     *  même sémantique que `installationDashboard.poiFilters`. */
+    poiFilters: z.record(z.string(), z.unknown()),
+    /** Cf. `installationDashboard.sourceKey`. Absent → costum du site. */
+    sourceKey: z.array(z.string()).optional(),
+    /** Ajoute au périmètre les organisations RATTACHÉES au costum du site (`source.keys` ou
+     *  `reference.costum`, recherche scopée par le SDK) — ex. une association ajoutée depuis l'annuaire,
+     *  présente avant son premier créneau. Absent = usagères seules. */
+    includeCostumOrganizations: z.boolean().optional(),
+  })
+  // Seul le finder `userOrga` relie une réservation à une organisation PAR IDENTIFIANT : sans lui,
+  // le périmètre serait toujours vide. C'est à `config:validate` de l'attraper, pas au rendu.
+  .refine((c) => Boolean(c.reservations.fields.userOrga), {
+    message: "reservationUsers.reservations.fields.userOrga est requis (finder de l'organisation usagère)",
+    path: ["reservations", "fields", "userOrga"],
+  });
+export type ReservationUsersConf = z.infer<typeof ReservationUsersConfSchema>;
 
 export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource", "resource-directory", "structure"]).default("default"),
@@ -459,6 +541,14 @@ export const PreviewConfSchema = z.object({
    * Lu par `PreviewFacets`.
    */
   showDescription: z.boolean().optional(),
+  /**
+   * Fiche `poi-amenities` des sites d'ÉQUIPEMENTS SPORTIFS (opt-in) : « Type d'équipement » (`equip_type_name`),
+   * « Catégorie » (`categorie`) et « Type de particularité » (`inst_part_type`) en valeurs cliquables, sports
+   * cliquables (`aps_name`), SIRET et UAI sous la fiche nationale. Absent : la fiche historique — « Catégorie »
+   * sur `equip_type_name`, sport en texte, « Partenariat » (`inst_part_bool` / `inst_part_type`), celle de
+   * sport-santé-bien-être. Lu par `PreviewPoiAmenities` (testé `=== true`, la config n'étant pas parsée).
+   */
+  equipmentDetails: z.boolean().optional(),
   /** Section « réservations » du preview `poi-amenities` (absente = masquée). */
   reservations: ReservationsConfSchema.optional(),
   /** Modal tableau de bord installation (requiert `reservations`). */
@@ -1328,6 +1418,11 @@ export const SearchProStaticSectionSchema = z.object({
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
     baseParams: SearchBaseParamsSchema.optional(),
+    /**
+     * Restreint la liste aux organisations usagères des réservations du site (cf.
+     * {@link ReservationUsersConfSchema}). Absent = périmètre de `baseParams` seul.
+     */
+    reservationUsers: ReservationUsersConfSchema.optional(),
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
@@ -1643,6 +1738,10 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
   id: z.string(),
   label: LocalizedString,
   value: z.string().optional(),
+  /** Valeurs interrogées ENSEMBLE par l'option (en OU), qui priment sur `value` — ex. une commune et
+   *  tous ses codes postaux. Un jeton égal à l'une d'elles désigne l'option (facette cliquable, ancien
+   *  lien `?filtre=97460`). Déclaré en config ; distinct des `variants` d'une source dynamique. */
+  values: z.array(z.string()).optional(),
   field: z.string().optional(),
   icon: z.string().optional(),
 });
@@ -1652,6 +1751,10 @@ const TitleWithFiltersDropdownSchema = z.object({
   label: LocalizedString,
   field: z.string().optional(),
   multiple: z.boolean().optional(),
+  /** Comparaison des valeurs cochées. `exact` (défaut CÔTÉ CODE) : égalité stricte (`$in`).
+   *  `token` : la valeur est un élément ENTIER d'une liste « a, b » stockée en chaîne — pour les champs
+   *  multi-valeurs, où `exact` ignore toute fiche qui porte plusieurs valeurs (cf. `lib/tokenMatch.ts`). */
+  match: z.enum(["exact", "token"]).optional(),
   allLabel: LocalizedString.optional(),
   options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
   optionsFrom: OptionsFromSchema.optional(),
@@ -1665,6 +1768,37 @@ const TitleWithFiltersDropdownSchema = z.object({
    *  de la page n'a pas de sens, contrairement à `public`/`territoire` qui restent des affinages. */
   hidden: z.boolean().optional(),
 });
+
+/**
+ * Filtre « créneau » du bandeau (disponibilité) : un JOUR et une PLAGE HORAIRE ; la liste ne garde que
+ * les ressources sans réservation sur ce créneau — règles et contrats dans `lib/slotFilter.ts`.
+ * Producteur du `PageFiltersContext` comme les dropdowns : il se combine en ET avec eux et partage
+ * leur URL, leurs pastilles, leur compteur et leur réinitialisation.
+ */
+export const SlotFilterSchema = z.object({
+  /** Param d'URL (`?<id>=`) et préfixe de l'entrée `searchByFields` — distinct des `id` de
+   *  `dropdownFilters`, dont le nettoyage par préfixe effacerait le créneau. */
+  id: z.string(),
+  /** Libellé du bouton du filtre dans le bandeau (« Créneau disponible ») ; un créneau choisi, le bouton
+   *  affiche son résumé à la place. */
+  label: LocalizedString,
+  /** Formulaire des réservations dont on déduit l'occupation — même bloc que
+   *  `list.preview.reservations` de la liste. */
+  reservations: ReservationsConfSchema,
+  /** Journée de référence qui complète un créneau à une seule borne : début seul → jusqu'à `endHour`,
+   *  fin seule → depuis `startHour`. Défaut code : 8 → 22. Comme `booking`, une grille de référence :
+   *  aucun horaire d'ouverture n'existe en base. */
+  amplitude: z.object({
+    startHour: z.number().int().min(0).max(23).optional(),
+    endHour: z.number().int().min(1).max(24).optional(),
+  })
+    .refine(
+      (a) => a.startHour === undefined || a.endHour === undefined || a.startHour < a.endHour,
+      { message: "slotFilter.amplitude.startHour doit être strictement inférieur à endHour", path: ["startHour"] },
+    )
+    .optional(),
+});
+export type SlotFilterConf = z.infer<typeof SlotFilterSchema>;
 
 // Props partagées entre le type canonique `searchHeader` et son alias.
 const SearchHeaderProps = z.object({
@@ -1698,6 +1832,8 @@ const SearchHeaderProps = z.object({
     })
   ).optional(),
   dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
+  /** Filtre « créneau » (disponibilité), à droite des dropdowns — cf. {@link SlotFilterSchema}. */
+  slotFilter: SlotFilterSchema.optional(),
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),

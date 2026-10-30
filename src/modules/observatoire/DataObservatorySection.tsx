@@ -6,6 +6,9 @@ import { TriangleAlert } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DEFAULT_INSTALLATION_PARAM } from "@/modules/search/schema";
+import { useSlotReservationsQuery } from "@/modules/search/hooks/useSlotReservationsQuery";
+import { sumReservationHours } from "@/modules/search/lib/reservationHours";
+import { localIsoDay } from "@/modules/search/lib/slotFilter";
 import type { DataObservatorySectionProps, FilterDef } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
@@ -19,6 +22,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { sectionMaxWidthClass } from "@/lib/sectionMaxWidth";
 import { useObservatoryItemsQuery } from "./hooks/useObservatoryItemsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
+import { useResolvedDimensions } from "./hooks/useResolvedDimensions";
 import { buildLabelMaps } from "./dimensions";
 
 // Fiche installation ouverte par l'URL (lien partagé) — chunk tiré uniquement
@@ -58,7 +62,8 @@ export default function DataObservatorySection({
   // useLocalization) — un seul hook pour les clés i18n ET les props localisées.
   const t = useT("modules/observatoire");
 
-  const dimensions = useMemo(() => props.dimensions ?? {}, [props.dimensions]);
+  // `valueMapFrom` résolu : une dimension peut lire la liste d'un filtre de la recherche (communes…).
+  const dimensions = useResolvedDimensions(useMemo(() => props.dimensions ?? {}, [props.dimensions]));
   if (import.meta.env.DEV && Object.keys(dimensions).length === 0) {
     console.warn(
       "[observatoire] props.dimensions absent de la config — le dashboard n'a rien à afficher (déclarer les dimensions du dataset)",
@@ -131,6 +136,30 @@ export default function DataObservatorySection({
       .filter((e): e is (typeof entities)[number] => e != null);
   }, [filtered, items, entities]);
 
+  // KPI `reservationHours` (opt-in) : réservations du formulaire de la fiche ouverte depuis la page
+  // (`rowAction.preview.reservations`), chargées seulement si un tel KPI est déclaré — même requête,
+  // donc même cache, que le filtre « Créneau disponible ». Sommées sur les équipements AFFICHÉS : la
+  // valeur suit les filtres.
+  const reservationsConf = rowAction?.preview?.reservations;
+  const wantsHours = kpis.some((k) => k.kind === "reservationHours");
+  if (import.meta.env.DEV && wantsHours && !reservationsConf) {
+    console.warn(
+      "[observatoire] KPI reservationHours sans rowAction.preview.reservations — la valeur reste « — »",
+    );
+  }
+  // `isLoading` (et non `isPending`) : une query désactivée — entité pas encore là, ou KPI absent —
+  // reste `isPending` sans jamais charger ; le sablier n'a de sens que pendant une requête en vol.
+  const { data: reservations, isLoading: reservationsLoading } = useSlotReservationsQuery(reservationsConf, wantsHours);
+  const reservationHours = useMemo(() => {
+    if (!reservations) return undefined;
+    const ids = new Set(
+      filteredEntities
+        .map((e) => (e as { id?: string }).id)
+        .filter((id): id is string => Boolean(id)),
+    );
+    return sumReservationHours(reservations, localIsoDay(new Date()), ids);
+  }, [reservations, filteredEntities]);
+
   // Drill-down (opt-in) : clic sur une part/barre → applique le filtre —
   // seulement pour les dimensions réellement filtrables (retirables par
   // l'utilisateur). Valeur unique : un clic = un focus.
@@ -174,6 +203,9 @@ export default function DataObservatorySection({
       dimensions={dimensions}
       kpis={kpis}
       labels={labels}
+      reservationHours={reservationHours}
+      reservationHoursLoading={reservationsLoading}
+      columns={props.kpiColumns}
       layout={props.kpiLayout}
     />
   );
