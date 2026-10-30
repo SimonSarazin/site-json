@@ -45,13 +45,14 @@ export function useCommunDeletionPlan(answerId: string | null, step?: string): U
   });
   const answer = answerId ? answerQuery.data : undefined;
 
-  const { context, isLoading: isContextLoading } = useCommunFundingContext(answer);
+  const { context, isLoading: isContextLoading, formId } = useCommunFundingContext(answer);
   const { hostEntity, isLoading: isHostLoading } = useCommunFundingHost(context);
   const isHostResolved = !!answer && !isContextLoading && !isHostLoading;
 
   const envelope = useFundingEnvelope(answerId ?? undefined, {
     hostEntity,
     enabled: !!answerId && isHostResolved,
+    form: formId ? { id: formId, answerId: answerId ?? undefined } : null,
   });
 
   const { config: cagnotteConfig } = useCagnotteType({

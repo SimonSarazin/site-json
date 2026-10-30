@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-10-07** (`/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page, cf. §9). Précédent : **2026-09-30**, `/observatoire` en **split view** : liste des lieux à gauche, graphes à droite, KPI en bandeau, table conservée sous le split — rendu navigateur à valider.
+Dernière mise à jour : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -54,6 +54,9 @@ lieux**, pas un plan de rattrapage.
 | 11/08 | Thomas + Claude | Demande SDK **livrée** : `normalizedName` sur `COSTUM_TOOL_USERS` (lib `d93c7c3`, npm `1.0.184`) + endpoints d'invitation (lib `ca7d65e`, même version). Réinstallation propre (`npm ci`), contenu du tarball vérifié, gates verts. Bump commité `c12f2e43` ; §11/§11.1 mises à jour |
 | 29/09 | Peterson + Claude | Alerte non bloquante « tiers-lieu déjà existant » dans le wizard de création, confirmation à la soumission si nom et code postal coïncident — slot générique config-driven, aucun endpoint nouveau (cf. §9) |
 | 28/09 → 30/09 | Peterson + Claude | `/observatoire` en **split view**, sur le patron des équipements sportifs, tout le contenu conservé : table gardée SOUS le split (retouche moteur d'une ligne), graphes typologie/portage en pleine largeur. Branche `observatoire-split-view` (`d81b8880`). Cf. §9 30/09 |
+| 21/10 | Anatole + Claude | Bouton « Mes promesses » (promesses à régler et paiements) dans le header : `header.utilities.pledge`, désormais rendu par `HeaderMegaMenu` (barre desktop et mobile) ; `cagnotteModuleConfig.defaultType: "aac"` pour les communs de `/aac/communs`. Commité sur `aac-dev` le 22/10 |
+| 23/10 | Claude | Suites de la revue de la MR `aac-dev` : en type `aac`, « Mes promesses » ne charge plus les projets de l'organisation et lit l'enveloppe du formulaire de l'annuaire (`aac.formId`) — commitées et poussées (§9) |
+| 23/10 | Simon (MR 111) + Thomas | Menu « Communs » (icône `puzzle`, chemin `/communs`) sorti de « Coopérer », avec « Annuaire de nos communs », « Appel à communs », « Usages » et « Comm'un Lundi » ; la page `aac-directory` passe de `/aac/communs` à **`/communs`** (le module aac garde ses routes propres `/aac` et `/aac/commun/:answerId`, rien dans le code ne dépendait de l'ancien chemin ; la page n'était pas encore en ligne, pas de redirection à poser). Le header de tiers-lieux étant un archétype du skill config-assistant, deux gardes suivent ce changement : snapshot `examples/header-mega-menu.json` régénéré (`config:example -- header-mega-menu --write`) et constat assumé « Décider ensemble » réindexé `header.nav.4.children.2.path` dans `archetypes.json`. Repris depuis le fork de Simon sur `fix/menu-communs` |
 
 ---
 
@@ -213,6 +216,48 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 21-23/10 — bouton « Mes promesses » dans le header (`aac-dev`)
+
+- `header.utilities.pledge: true` : bouton « Mes promesses » (promesses à régler, paiements) pour un
+  membre connecté, dans les barres desktop et mobile de `HeaderMegaMenu` ;
+  `cagnotteModuleConfig.defaultType: "aac"` pour les communs de `/aac/communs` (commité le 22/10).
+- Suites de la revue (23/10, commitées et poussées) :
+  - en type `aac`, le bouton ne charge plus les projets de l'organisation (un `searchCostum`, puis un
+    `api.answer` par projet, dès qu'un membre est connecté), dont l'adaptateur ne se sert pas dans ce
+    mode ;
+  - son enveloppe lit le formulaire de l'annuaire (`aac.formId` `6438366673…`), au lieu du premier
+    formulaire AAP de l'hôte ;
+  - « Soutenir » sur la fiche d'un commun (`CagnotteDialog`) ne charge plus ces projets non plus, et une
+    action renvoyée en « Done » y compte comme terminée (l'adaptateur normalise le statut).
+- **À revalider en connecté** : le montant affiché par le bouton et le contenu de « Mes promesses ».
+- **Validation** (23/10, local) : `config:validate` ✅ — 19 pages, 44 sections ; typecheck ✅ ; lint ✅
+  (0 erreur) ; suite unitaire et préflights ✅ 8 611 tests, hors `site-assets` (dossier local vide).
+  Rendu navigateur non vérifié (pas de compte de test).
+### 22/10bis — l'annuaire des ressources devient la page `/services`
+
+**Fait** : la page `/annuaire-ressources` s'appelle désormais **`/services`**, titre « Services ». Tous les
+liens de la config suivent : menu « Les services » et ses entrées par type, bandeaux de l'accueil et de
+`/reservation`, recherche du hero et ses suggestions de services. L'exemple `header-mega-menu` du skill
+config-assistant suit l'en-tête. Les ids de sections (`annuaire-ressources-tl`…) sont inchangés.
+L'ancienne adresse n'est pas redirigée : le moteur n'a pas de redirection déclarative.
+
+**Vérifié** au navigateur (backend local) : `/services` → 25 ressources, titre « Services » ;
+`/services?typologies=Autre%2520famille%2520de%2520tiers-lieux` → 8. `config:validate` ✅ — 19 pages,
+44 sections ; préflight `archetypes` ✅.
+
+### 22/10 — annuaire des ressources : « Thématique du lieu » liste les typologies
+
+**Fait** (`/services`) : le filtre « Thématique du lieu » liste les 8 **typologies** du filtre
+de `/lieux` (Ateliers artisanaux partagés, Bureaux partagés / Coworking…) au lieu des réseaux
+thématiques ; un service passe si son lieu porteur porte l'une des typologies cochées (tags du lieu).
+Même paramètre d'URL que `/lieux` (`?typologies=`). Moteur : option `typologyFilter` de
+`coform-resource-directory`, absente par défaut — autres sites inchangés ; `thematicFilter` reste
+disponible.
+
+**Vérifié** au navigateur (backend local) : 25 ressources ; `?typologies=Ateliers%2520artisanaux%2520partag%25C3%25A9s`
+→ 6 ; « Autre famille de tiers-lieux » → 8, au clic comme par l'URL. `config:validate` ✅. Tests de
+`matchesTypologies` vérifiés en échec.
 
 ### 14/10 — accueil : bandeau « Trouver un service », libellés de menu (MR 92, Simon)
 
@@ -596,6 +641,38 @@ de l'e-mail ramenait à l'accueil.
 redirection, refresh non bloquant) · intégration SSR parent62 98/98, tiers-lieux 48/49 (`<title>`,
 aussi sur `main`). Parcours réel (compte invité qui accepte) non rejoué en local.
 
+
+### 14/10bis — services : recherche depuis /reservation, recherche par lieu, carte
+
+**Fait** :
+- `/reservation` : pendant la saisie, la liste propose des **services** (nom, lieu porteur · ville) ;
+  en choisir un ouvre son détail dans l'annuaire (option `serviceSuggestions` du `hero-search`).
+- `/reservation` : « Se réunir », « Coworker », « Séjourner » filtrent la liste de services de la page
+  (`?resourceType=…`, comme les boutons de l'accueil pour les lieux), « + » ouvre l'annuaire ;
+  « Rechercher » ouvre `/annuaire-ressources` avec le texte saisi et le type choisi ; placeholder « Lieu,
+  ville, code postal ».
+- `/annuaire-ressources` : champ de recherche (nom du service, du lieu porteur, ville, code postal) et
+  vue **Carte** (un repère par lieu ; sa popup liste les services du lieu, chacun ouvre sa fiche ; sous la carte, le nombre de services dont le lieu n'est pas
+  géolocalisé) ; texte d'aide « Lieu, ville, code postal… ». Options moteur `searchFilter` et
+  `showMap` de `coform-resource-directory`, défaut false — autres sites inchangés.
+
+**Vérifié** au navigateur (backend local) : sur `/reservation`, « Coworker » → la liste passe à 5 coworkings (filtre de la requête), « Se réunir » → 5 salles ; « Lille » depuis
+`/reservation` → 14 ; « corout » sur `/reservation` → 3 services suggérés, le choix ouvre la fiche
+du service ; l'accueil suggère toujours des lieux ; « coroutine » → 3 ; « 59000 » → 8 ; carte : 15 services placés sur 25 (les 10 autres
+appartiennent à 3 lieux sans géolocalisation — La Coroutine, Coopérative Baraka, La Plume à Loup —,
+signalés sous la carte), un repère par lieu, popup du lieu dans le cadre de la carte (repère le plus haut compris), clic sur le 2e service → sa fiche. Clair, sombre, mobile. Tests de
+`lib/resourceDirectorySearch.ts` et de `MapPopupResourcePlace` vérifiés en échec.
+
+### 14/10 — accueil : « Rechercher » ouvre /lieux
+
+**Fait** : sur l'accueil, « Rechercher » (et Entrée) ouvre `/lieux` avec le texte saisi et le filtre
+de catégorie actif (« Coworker », « Se réunir »…), même champ vide — au lieu de filtrer les 5 lieux
+mis en avant. Option moteur `searchHref` du bloc `hero-search` (absente : comportement inchangé) ;
+`/reservation`, qui a le même bloc, n'est pas modifiée.
+
+**Vérifié** au navigateur : champ vide → `/lieux` ; « Coworker » + « Lille » →
+`/lieux?typologies=Bureaux partagés / Coworking&search=Lille`, recherche et filtre repris (33 lieux).
+Tests de `HeroSearch` (3).
 
 ### 12/10 — annuaire des ressources : filtres Thématique, Capacité, Géographique
 

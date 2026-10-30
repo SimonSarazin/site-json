@@ -312,7 +312,7 @@ aucune closure → JSON natif. Type/compilateur : `forms/costum/compileCostumSch
   fields: { <name>: { widget, ...overrides } },   // TERSE : seul `widget` requis (type/read/default dérivés)
   sections: [ { id, label, groups:[{columns,label?,fields:[…]}] } ],  // placement (wizard/tabs…)
   chrome: { title{add,edit}, description?, submitLabel?, navText?, … },// modale
-  scope?, defaultsBase?, slots?, image?, listsFromCarrier?,           // comportement modale
+  scope?, defaultsBase?, slots?, image?, listsFromCarrier?, profileAdd?, // comportement modale
   mutation: { entityType, payloadFn?, inject?, successKey, invalidateFn?, … }
 }
 ```
@@ -377,6 +377,11 @@ prises du contexte par `resolveModalSpec`. Le bloc entier est **strippé en édi
 - **Règle GROUPE** : un champ avec `group` (membre d'un `serializeGroup`) ne reçoit AUCUN read/write/default
   dérivé (lu/écrit PAR le groupe).
 - **`deriveDefaults:false`** : aucun `field.default` (le socle vient de `defaultsBase`, ex. tiers-lieu).
+- **`profileAdd:false`** : l'« Ajouter » des profils garde le formulaire STANDARD de la collection
+  (`siteCostumAddModal`, `components/add/addModals.ts`) ; le form ne s'ouvre que là où la config le désigne
+  (`addButton.modal`, `addConfig.custom`…). Ex. ESS974 : « Ajouter une association » réservé au bouton admin de
+  l'annuaire, sans que tout inscrit en crée une depuis son profil. La création `inherit` de l'admin
+  (`resolveCreateModal`) ne lit pas ce drapeau.
 - `icon` (top-level) → `descriptor.icon` + défaut de l'icône de modale.
 
 Il n'existe **plus** de `schema.ts`/`descriptor.ts`/`spec.ts` par costum : ils ont été supprimés parce qu'ils

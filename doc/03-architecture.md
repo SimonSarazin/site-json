@@ -965,7 +965,7 @@ ErrorBoundary (fallback générique)
 | `LocalizationContext` | `LocalizationContext.tsx` | `useLocalization()` | Locale courante, setLocale, t(LocalizedString) |
 | `PageContext` | `PageContext.tsx` | `usePage()` | Page courante (type `Page`) dans SiteRenderer |
 
-**`CocolightProvider`** — initialise l'API via `useCocolightInit()` (Suspense), écoute les events SDK `userLoggedIn` / `sessionReset` pour mettre à jour l'état. Expose `refreshMe()` pour forcer un re-fetch du user. État memoïsé pour éviter les re-renders inutiles.
+**`CocolightProvider`** — initialise l'API via `useCocolightInit()` (Suspense), écoute les events SDK `userLoggedIn` / `sessionReset` pour mettre à jour l'état, et l'événement `storage` (connexion faite dans un autre onglet — retour SSO hors popup, cf. doc/23). Expose `refreshMe()` pour forcer un re-fetch du user. État memoïsé pour éviter les re-renders inutiles.
 
 **`SiteProvider`** — écoute l'event custom `site-config-update` (émis par entry-client.tsx sur reception HMR) pour mettre à jour la config JSON sans rechargement complet.
 

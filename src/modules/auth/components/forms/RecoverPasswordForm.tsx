@@ -4,6 +4,7 @@ import React, {
   type ChangeEvent,
 } from "react";
 
+import { useLocation } from "react-router";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useSite } from "@/hooks/useSite";
@@ -19,13 +20,17 @@ import { useNavigate } from "react-router";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 
 interface RecoverPasswordFormProps {
+  /** E-mail à préremplir (modale : transmis par LoginForm via onSwitchToRecover ; page : lu dans location.state.email). */
+  initialEmail?: string;
   // Mode modal : bascule vers le login interne au lieu de naviguer vers /login.
   onSwitchToLogin?: () => void;
 }
 
-export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPasswordFormProps = {}): React.ReactNode {
+export default function RecoverPasswordForm({ onSwitchToLogin, initialEmail }: RecoverPasswordFormProps = {}): React.ReactNode {
+  const location = useLocation();
+  const stateEmail = (location.state as { email?: unknown } | null)?.email;
   /* ------------------------------------------------------------------- */
-  const [email, setEmail]           = useState<string>("");
+  const [email, setEmail]           = useState<string>(initialEmail ?? (typeof stateEmail === "string" ? stateEmail : ""));
   const [loadingRecover, setLoad]   = useState<boolean>(false);
   const [emailSent, setEmailSent]   = useState<boolean>(false);
 

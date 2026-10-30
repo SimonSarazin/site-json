@@ -78,11 +78,15 @@ export function useCommunObjectivesController({
 
   const answerEntityId = answerQuery ? getEntityId(answerQuery) : "";
 
-  const { context: fundingContext } = useCommunFundingContext(answerQuery);
+  const { context: fundingContext, formId: fundingFormId } = useCommunFundingContext(answerQuery);
   const { hostEntity: fundingHost, isLoading: isFundingHostLoading } =
     useCommunFundingHost(fundingContext);
   const { data: fundingEnvelopeData, refetch: refetchFundingEnvelope, isLoading: isEnvelopeLoading } =
-    useFundingEnvelope(answerEntityId, { hostEntity: fundingHost, enabled: !isFundingHostLoading });
+    useFundingEnvelope(answerEntityId, {
+      hostEntity: fundingHost,
+      enabled: !isFundingHostLoading && !!answerEntityId,
+      form: fundingFormId ? { id: fundingFormId, answerId: answerEntityId } : null,
+    });
 
   const resolvedProjectId = funding?.projectId || "";
   const resolvedAnswerId = funding?.answerId || answerEntityId || "";

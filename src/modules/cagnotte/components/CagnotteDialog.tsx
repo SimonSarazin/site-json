@@ -29,7 +29,7 @@ import {PledgeFundingToast} from "./parts/PledgeFundingToast.tsx";
 import {CagnotteItemList} from "./parts/CagnotteItemList.tsx";
 import {CagnotteResourceProgressCard} from "./parts/CagnotteResourceProgressCard.tsx";
 import {CagnotteContributeButton} from "./parts/CagnotteContributeButton";
-import {useFundingEnvelope} from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import {useFundingEnvelope, type FundingEnvelopeForm} from "@/modules/cagnotte/hooks/useFundingEnvelope";
 import {useResourceModalPreference} from "@/modules/cagnotte/hooks/useResourceModalPreference";
 import {useCagnottePermissions} from "@/modules/cagnotte/hooks/useCagnottePermissions";
 import {useCagnotteContextSafe} from "@/modules/cagnotte/hooks/useCagnotteContext";
@@ -85,6 +85,11 @@ interface CagnotteDialogProps {
          * sélectionnée comme les autres.
          */
         resource?: CagnotteResource;
+        /**
+         * Formulaire que l'enveloppe doit lire (`useFundingEnvelope`, option `form`). Avec
+         * `answerId`, l'enveloppe ne porte que cette ressource : à réserver à `hideResourceSelect`.
+         */
+        envelopeForm?: FundingEnvelopeForm | null;
     };
     cagnotteType?: CagnotteType;
 }
@@ -194,16 +199,21 @@ const CagnotteDialogContent = ({
 
     // Récupérer l'entité depuis le contexte
     const { entity, me } = useCocolight();
+    const siteConfig = useSite();
 
-    // Récupérer TOUS les projets pour le SELECT.
-    // Le content n'est monté qu'à l'ouverture du dialog → fetch démarre ici,
-    // pas en background sur le header.
+    const {config: cagnotteConfig} = useCagnotteType({
+        propsOverride: propsType,
+        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
+    });
+
+    // Projets de l'organisation pour le sélecteur, en mode `project` seulement (le seul que lit
+    // l'adaptateur). Monté à l'ouverture du dialog : le fetch ne part pas du header.
     const {
         projects: allProjects,
         isLoading: allProjectsLoading,
     } = useOrganizationProjectsWithAnswers({
         entity: entity || null,
-        enabled: !!entity,
+        enabled: !!entity && cagnotteConfig.selectorType === "project",
     });
 
     // Un seul useFundingEnvelope() : il retourne `projects[]` complet ET
@@ -211,14 +221,8 @@ const CagnotteDialogContent = ({
     // d'un 2e hook global — voir doc/refactor-useOrganizationProjectsWithAnswers-lazy.md §9.
     const {data: fundingEnvelope, isLoading: isEnvelopeLoading} = useFundingEnvelope(
         selectedResourceId || undefined,
-        {hostEntity: openContext?.hostEntity},
+        {hostEntity: openContext?.hostEntity, form: openContext?.envelopeForm},
     );
-    const siteConfig = useSite();
-
-    const {config: cagnotteConfig} = useCagnotteType({
-        propsOverride: propsType,
-        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
-    });
 
     //context => Pour personalisation des textes à afficher pour certain groupe d'organisation
     const context = siteConfig?.config?.cagnotteModuleConfig?.context ?? "";

@@ -17,6 +17,7 @@ import type { LogoSize } from "./logoSize";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
+import { PiggyBankHeaderButton, PledgeHeaderButton } from "./CagnotteHeaderButtons";
 import { useVisibilityList } from "@/lib/visibility";
 import { conditionsDeVisibiliteNav, filtrerNavParVisibilite } from "./navVisibility";
 
@@ -142,6 +143,9 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                     </div>
 
                     <div className="hidden xl:flex items-center space-x-4 text-sm shrink-0 ml-4">
+                        {/* Wrappers lazy (cf. CagnotteHeaderButtons) : chunk cagnotte chargé seulement si activé. */}
+                        {header.utilities?.piggyBank && <PiggyBankHeaderButton />}
+                        {header.utilities?.pledge && <PledgeHeaderButton />}
                         {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.notifications && <NotificationBell />}
 
@@ -159,6 +163,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                     </div>
 
                     <div className="xl:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
+                        {header.utilities?.pledge && <PledgeHeaderButton />}
                         {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.notifications && <NotificationBell />}
                         {header.utilities?.themeSwitch !== false && (

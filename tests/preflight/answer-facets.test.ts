@@ -110,7 +110,10 @@ describe("facettes « par réponses » (garde de cible)", () => {
           .filter(([, conf]) => conf.filterTarget !== "answers")
           .map(([id]) => `${ref}/${id}`),
       );
-    expect(mal, "facettes filtrant par _id d'élément lié sur une liste de réponses (résultat toujours vide)").toEqual([]);
+    expect(
+      mal,
+      "facettes ne ciblant pas les réponses (_id d'élément lié ou parentId) sur une liste de réponses (résultat toujours vide)",
+    ).toEqual([]);
   });
 
   it("hors liste d'`answers`, la cible historique reste le défaut (aucune migration forcée)", () => {

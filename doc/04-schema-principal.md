@@ -159,6 +159,7 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
+    pledge: z.boolean().default(false)
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -306,6 +307,7 @@ const MegaMenuColumn = z.object({
 | `cart`          | `boolean` | `false` | Affiche le panier                        |
 | `notifications` | `boolean` | `false` | Affiche la cloche de notifications       |
 | `piggyBank`     | `boolean` | `false` | Affiche le bouton tirelire (cagnotte)    |
+| `pledge`        | `boolean` | `false` | Bouton « Mes promesses » : promesses à régler et paiements (cagnotte, membres connectés) |
 
 ---
 

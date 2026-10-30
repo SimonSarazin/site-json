@@ -44,6 +44,7 @@ import { CoFormBanner } from "./CoFormBanner";
 import { StepsNav } from "./StepsNav";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useHiddenFields } from "../hooks/useHiddenFields";
+import { useTimeSlotNotices } from "../hooks/useTimeSlotNotices";
 import { ConditionalField } from "./ConditionalField";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
@@ -264,6 +265,8 @@ function MultiStepCoFormContent({
 
   const lockedSet = useMemo(() => new Set(lockedFields ?? []), [lockedFields]);
   const estMasque = useHiddenFields(hiddenFields, form.formState.errors);
+  // Avertissements de l'appelant sous les créneaux (`slotCheck`) — vide sans contrôle posé.
+  const slotNotices = useTimeSlotNotices(form.control, subFormId);
   const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -755,6 +758,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value}
                           onChange={controllerField.onChange}
+                          notices={slotNotices[field.name]}
                         />
                       )}
                     />
@@ -963,6 +967,7 @@ function MultiStepCoFormContent({
                           value={controllerField.value as DepenseEntry[]}
                           onChange={controllerField.onChange}
                           answerId={coform.answerId}
+                          formId={formId}
                           readOnly={isLocked}
                         />
                       )}

@@ -291,7 +291,7 @@ Dispatch : `src/modules/search/components/Preview.tsx` ; conteneur = `card.detai
 | type | rend | quand / options |
 |---|---|---|
 | `default` | détail générique | fallback |
-| `poi-amenities` | détail POI + équipements | le plus utilisé du parc (×10) |
+| `poi-amenities` | détail POI + équipements | le plus utilisé du parc (×10) ; `equipmentDetails: true` = fiche des sites d'équipements sportifs (type, catégorie, particularité et sports cliquables, SIRET/UAI), absent = fiche historique |
 | `coform-answer` | détail réponse CoForm | `preview.fields` (rôle → suffixe de champ) |
 | `event` | détail événement | réutilisé par le module agenda |
 | `facets` | détail data-driven à facettes cliquables | `preview.facets[]` — zéro code |
@@ -319,6 +319,39 @@ qui ne porte que le nom saisi à la main n'a pas de bouton — jamais de rapproc
 approximatif. ⚠ La page VISÉE doit déclarer `list.previewFetch`
 (`poi`\|`organizations`\|…), sinon `?preview=<id>` ne trouve l'item que dans la
 tranche déjà chargée (10 résultats) et le lien reste sans effet.
+`bookedResources.poiFilters` ne garde que les équipements du site (une organisation
+réserve aussi ailleurs). `reservations.hours` / `bookedResources.hours` (opt-in)
+affichent le volume horaire (par semaine + cumulé, créneaux en cours ou à venir) ;
+`reservations.periods` (opt-in, exige `fields.periodStart`/`periodEnd`) : un créneau
+n'occupe que sa période, filtre « du … au … » dans la section et, avec `booking`,
+prise de réservation par période (dates pré-remplies, chevauchement refusé à
+l'enregistrement) — le formulaire doit accepter plusieurs réponses par personne ;
+`booking.editHours` (opt-in) : crayon « modifier l'horaire » sur chaque créneau
+(heures seulement, admins) ; posés sur le bloc `reservations` de l'ANNUAIRE,
+`booking` + `periods` donnent à la fiche organisation l'ajout de créneaux par
+équipement et le filtre de période ; `bookedResources.placement: "column"` range
+les équipements réservés à gauche, la localisation à droite ;
+côté observatoire, KPI `{kind:"reservationHours", period:"weekly"|"cumulative"}` —
+`data-observatory` seule, exige `rowAction.preview.reservations`. Une dimension peut
+reprendre la liste d'un filtre de la recherche, `valueMapFrom: {filter: "<id>"}`
+(ex. `commune` sur `address.postalCode` + le filtre des communes de la page
+Équipements) : une seule liste, plutôt qu'une seconde écrite en dur. Libellés d'options SANS virgule : le
+filtre de l'observatoire joint ses valeurs par des virgules. **Annuaire des usagers** : `searchProStatic.reservationUsers`
+`{reservations, poiFilters, sourceKey?, includeCostumOrganizations?}` restreint une liste d'organisations à celles
+qui ont au moins un créneau sur un équipement du site — périmètre calculé (client +
+SSR), qui suit seul les nouveaux créneaux ; `fields.userOrga` requis. `includeCostumOrganizations: true`
+y ajoute les organisations rattachées au costum du site : patron « ajouter une association »
+(`addButton.modal` + `costumForms` au `costumSlug` du site, étiquette du finder en stamp, `profileAdd: false`
+pour que l'« Ajouter » des profils garde le formulaire standard — c'est `addButton.adminOnly`, `true` par défaut,
+qui réserve l'ajout aux admins —, `coform.finderAddNew` sur la question du finder pour qu'un club créé depuis le
+formulaire de réservation porte l'étiquette, liste filtrée sur l'étiquette) dans `doc/07`. **Filtre de
+disponibilité** : `searchHeader.slotFilter` `{id, label, reservations, amplitude?}`
+retire de la liste les ressources réservées sur une plage horaire, des jours de la
+semaine (aucun = les 7, libre chacun d'eux) et une période facultative (début absent →
+aujourd'hui) ; début seul → jusqu'à `amplitude.endHour`, fin seule → depuis `startHour`,
+défaut 8 → 22 ;
+combiné en ET aux dropdowns (URL, pastilles, réinitialisation) ; `id` distinct de ceux
+des `dropdownFilters`.
 
 Variantes transverses : `preview.width` (`sm`…`5xl`\|`full`, défaut code `5xl`, dialog
 seulement) ; `card.variant` surcharge `card.type` pour le dispatch (sous-ensemble
@@ -381,7 +414,7 @@ l'ordre des règles et la présence des contrats. Exemple vivant :
 | `coform` | routes `/coform/:formId` (+ `/answer/:answerId`, `/place`) | réf. de formulaire | CoForm défini côté backend |
 | `toolsCatalog` | section `toolsCatalog` (catalogue d'outils d'usage : recherche/filtres/pagination CÔTÉ SERVEUR + modale détail des lieux, bloc commun, bouton de réponse, édition d'enrichissement réservée aux admins du costum) | `formId`/`step`/`finderPath` (+ options : `showOpenSourceToggle`, `showUsageFilter`, `defaultView`, `showCommunInfo`+`communFormId`, `showAnswerButton`, `enableEnrichmentEditing`…) | réponses coform (commonTable) + collection `navigatorcriteria` (enrichissement) |
 | `aac` | sections `aac-directory`/`aac-highlight` (l'annuaire des communs — `variant` full/preview — et la bande CTA + médaillon compteur), routes `/aac` + `/aac/commun/:answerId` (montées seulement si `config.aac` existe) | `config.aac.formId` (form parent `type:aap,aapType:aac` — jamais dans les props de section), `config.aac.directory.fields` (⚠ `choose` n'est JAMAIS deviné : le déclarer sur un AAC, l'omettre sur un AAP — sinon pas de sélection, et tout l'annuaire est public), `config.aac.detail` ; interface (clés = DESIGN, jamais un slug) : `config.aac.detail.pageVariant`, `config.aac.directory.defaultCardVariant`/`defaultShellVariant`, par section `props.cardVariant`/`shellVariant` — `default` ou `editorial` (doc/34 §3.4) ; `config.aac.detail.demoBlocks` (editorial : contenu de démonstration, faux par défaut — jamais sur un site en ligne) | CoForm/AAP défini côté backend (form + aapConfig) — cf. doc/34 §3 |
-| `cagnotte` | sections `actions`/`finance`/`*-summary` | `idProjet` | projet + Stripe/HelloAsso |
+| `cagnotte` | sections `actions`/`finance`/`*-summary`, boutons du header | `idProjet` ; `header.utilities.piggyBank` (tirelire), `header.utilities.pledge` (« Mes promesses » : promesses à régler et paiements, membres connectés) | projet + Stripe/HelloAsso |
 | `profil` | `/profil/:slug`, section `member` | `config.profiles` (tabs, editModal) | types d'entités |
 | `auth` | `loginForm`/`registerForm`/`recoverPasswordForm`, `<AuthMenu>` (dont entrée « Kanban » plateforme via `auth.menu.kanban`, admins du costum) | `config.auth`, `header.utilities.auth` | comptes/SSO Communecter |
 | `notification` | cloche header, section `notifications` | `header.utilities.notifications` | notifications backend |

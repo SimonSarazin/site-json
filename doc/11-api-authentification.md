@@ -721,6 +721,7 @@ export function CocolightProvider({
 **Points clés** :
 * `useCocolightInit()` est appelé **dans** le provider (pas en dehors) -- il utilise `useSuspenseQuery` pour bloquer le rendu tant que l'API n'est pas prête
 * L'état mutable (`me`, `api`, `entity`, etc.) est mis à jour via les event listeners `userLoggedIn` et `sessionReset`
+* Un écouteur `storage` (non reproduit ci-dessus) couvre la connexion faite dans un **autre onglet** (retour SSO hors popup) : sur la clé `cocolight_tokens_<baseURL>`, il recharge access + refresh dans le client et rejoue `userLoggedIn` (cf. [SSO](#single-sign-on-sso))
 * `refreshMe` (via `useCallback`) recharge `me` depuis `api.me()` sans déclencher une ré-initialisation complète
 * Le contexte est mémoïsé via `useMemo` pour éviter les re-renders inutiles
 * `loading` est toujours `false` car `useSuspenseQuery` garantit que les données sont prêtes avant le rendu
@@ -850,6 +851,7 @@ const { openLogin } = useAuthModal();
 
    * Le composant `LoginForm` récupère `userApi` via `useCocolight()` et appelle `userApi.login(email, password)` (paramètres positionnels).
    * En cas de succès, les tokens sont stockés via la stratégie configurée.
+   * **Double authentification** (lib ≥ 1.0.204, cocolight-backend `docs/34-2FA-LOT1.md`) : pour un compte soumis au second facteur, le serveur répond 401 `{error:"twoFactorRequired", challenge, method:"email", sentTo, expireAt}` après avoir envoyé un code par e-mail, et `login` lève `TwoFactorRequiredError` (sous-classe d'`ApiResponseError`, exposée via `cocolightApiClient.error`) — aucun token posé. `userApi.verifyTwoFactor(challenge, code)` (`TWO_FACTOR_VERIFY`, mêmes `postActions` qu'`AUTHENTICATE_URL`) rend alors le `User` et pose les tokens ; `userApi.resendTwoFactor(challenge)` (`TWO_FACTOR_RESEND`) renvoie un code (3 fois par défi, 1 par minute). Les refus (`codeInvalid` + `attemptsLeft`, `challengeExpired`, `resendTooSoon` + `retryIn`, `resendLimit`, `resendTooLate`, `twoFactorMailFailed`, `twoFactorTooMany`) remontent en `ApiResponseError` dont `message` est le code serveur et `responseData` le corps. Les JWT délivrés après le code portent le claim informatif `amr: ["pwd","otp"]`, recopié par le refresh. La règle « compte soumis » est serveur (flag citoyen ou costum `auth.twoFactor:"required"`) : rien à configurer côté site, cf. [doc/23 → `config.auth.twoFactor`](23-module-auth.md#configauthtwofactor--textes-de-létape--code-de-vérification-).
 
 2. **Requête API**
 
@@ -964,9 +966,11 @@ OAuth, puis récupère les JWT tokens via `postMessage`.
 
 | Fichier | Rôle |
 |---|---|
-| `src/modules/auth/hooks/useSSOAuth.ts` (~118 lignes) | Hook qui ouvre la popup, écoute `postMessage`, injecte les tokens dans `ApiClient`, émet `userLoggedIn` |
+| `src/modules/auth/hooks/useSSOAuth.ts` | Hook qui ouvre la popup (avec le costum du site), écoute `postMessage`, injecte les tokens dans `ApiClient`, émet `userLoggedIn` |
 | `src/modules/auth/components/forms/SSOLoginButton.tsx` | Composant bouton React avec logo provider, loading state, gestion des erreurs |
 | `src/modules/auth/components/forms/LoginForm.tsx` | Affiche un `<SSOLoginButton>` pour chaque provider listé dans `entity.serverData.costum.sso` |
+| `src/modules/auth/pages/SsoCallbackPage.tsx` (route `/sso/callback`) | Retour **hors popup** : troque le code d'échange du fragment `#code=` contre les JWT (`userApi.loginWithSsoCode`, lib ≥ 1.0.203) |
+| `src/contexts/CocolightProvider.tsx` (écouteur `storage`) | L'onglet d'origine adopte les jetons écrits par un autre onglet (`cocolight_tokens_<baseURL>`) et rejoue `userLoggedIn` |
 
 ### Flow complet
 
@@ -975,6 +979,7 @@ OAuth, puis récupère les JWT tokens via `postMessage`.
    ↓
 2. Frontend ouvre une popup centrée :
      <backend>/co2/sso/services?authclient=X&origin=<frontendOrigin>
+         &costumSlug=<slug du site>[&costumId=…&costumType=…]   // provenance (source.key) du compte créé
    ↓
 3. Backend Cocolight redirige la popup vers le provider OAuth externe
    ↓
@@ -991,6 +996,10 @@ OAuth, puis récupère les JWT tokens via `postMessage`.
      )
      ou en cas d'erreur :
      { type: "SSO_AUTH_ERROR", error: "..." }
+   Sans `opener` (lien de vérification d'e-mail ouvert dans un nouvel onglet) :
+     location.replace("<frontendOrigin>/sso/callback#code=<code d'échange>")   // ou #error=
+     → SsoCallbackPage : POST /api/cocolight/ssoexchange {code} → {user, accessToken, refreshToken}
+     → l'onglet d'origine suit par l'événement `storage` (CocolightProvider)
    ↓
 8. Frontend (`useSSOAuth`) reçoit le message, vérifie l'origine, puis :
      - apiClient.setToken(accessToken)
@@ -1069,9 +1078,11 @@ Si `entity.serverData.costum.sso` est vide ou absent → aucun bouton SSO n'est 
 
 2. **Cleanup au démontage** — les listeners `message` et le `setInterval` sont retirés si le composant est démonté avant la fin du flux (évite les leaks).
 
-3. **Pas de fallback dangereux** si la popup est bloquée — on signale juste une erreur, on n'essaie pas de basculer en redirect (qui exposerait le token dans l'URL).
+3. **Pas de fallback dangereux** si la popup est bloquée — on signale juste une erreur, on n'essaie pas de basculer en redirect avec le token dans l'URL. Le seul repli par URL (`/sso/callback`) ne transporte **jamais un jeton** : un code d'échange à usage unique (2 min), lié à l'origine du site (l'échange vérifie l'en-tête `Origin`), en fragment — non envoyé au serveur, effacé de l'historique avant tout rendu. Le backend n'émet ce code que pour une origine qu'il autorise (`costum.host`, liste de config).
 
 4. **Tokens injectés directement dans `ApiClient`** — ils sont stockés via `MultiServerTokenStorageStrategy` (cf. § "Stratégies de stockage des tokens"). Le flux SSO s'exécute toujours côté client (popup navigateur) ; le storage utilisé est donc `localStorage`.
+
+5. **Écouteur `storage` borné** — `CocolightProvider` ne lit que la clé de son backend (`cocolight_tokens_<baseURL>`) : deux fronts sur la même origine ne se mélangent pas, et une valeur illisible est ignorée.
 
 ### Ajouter un nouveau provider
 
@@ -1090,11 +1101,14 @@ Côté **backend Communecter (Yii2)** :
 | **`postMessage` cross-origin** | Le flow ne fonctionne que si le backend et le frontend partagent le bon `origin` et le bon protocole. En dev, vérifier que `VITE_BASE_URL_BACKEND` pointe vers le bon backend. |
 | **Pas de revocation côté frontend** | Si l'user "se déconnecte" du provider externe (ex: logout sur tierslieux.org), le token JWT côté SiteForge reste valide jusqu'à expiration. La revocation effective nécessite que le backend Cocolight invalide aussi le refresh token. |
 | **Pas de PKCE explicite côté front** | Le flux PKCE/state est entièrement géré par le backend Cocolight (qui agit comme client OAuth confidentiel). Le frontend ne voit que les JWT finaux. |
-| **Mobile** | Les popups OAuth ne fonctionnent pas toujours bien sur navigateurs mobiles (Safari iOS notamment). Pas de fallback redirect implémenté actuellement. |
+| **Mobile** | Les popups OAuth ne fonctionnent pas toujours bien sur navigateurs mobiles (Safari iOS notamment). Le repli `/sso/callback` ne couvre que le retour **sans `opener`** ; une popup bloquée reste une erreur signalée, pas un redirect. |
+| **Vérification d'e-mail depuis un autre appareil** | Keycloak confirme l'e-mail et s'arrête, sans rediriger vers le backend : la fenêtre d'origine, rechargée, reprend le flux. Comportement du provider, pas contournable côté site. |
+| **Ordre de déploiement** | Le legacy redirige vers `/sso/callback` dès qu'il est déployé : site-json doit l'être **avant ou avec** lui, sinon 404. L'origine du site doit être autorisée côté legacy (`costum.host` ou `params['sso']['allowedOrigins']`). |
 
 ### Historique
 
-Implémenté dans le commit `7835da0 SSO login`.
+- `7835da0 SSO login` — flux popup.
+- Branche `feat/sso-callback-hors-popup` (10/2026, lib 1.0.203) — retour hors popup `/sso/callback`, provenance costum du compte créé, connexion propagée entre onglets. Détail : [Module Auth → Retour hors popup](23-module-auth.md#retour-hors-popup-ssocallback).
 
 ---
 

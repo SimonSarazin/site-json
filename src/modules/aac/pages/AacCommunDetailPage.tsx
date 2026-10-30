@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { allEmbedded } from "@/lib/variants";
 import { useT } from "@/hooks/useT";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
+import { CommunActionDialogs } from "../components/pageDetail/CommunActionDialogs.tsx";
 import { CommunMilestoneDialogs } from "../components/pageDetail/CommunMilestoneDialogs.tsx";
 import { CommunFormLineDiscussions } from "../components/pageDetail/CommunFormLineDiscussions";
 import { AAC_DETAIL_VARIANTS } from "../components/pageDetail/variants/registry";
@@ -58,6 +59,7 @@ export default function AacCommunDetailPage() {
             )}
 
             <CommunMilestoneDialogs ctrl={vm.overlays.milestones} />
+            <CommunActionDialogs ctrl={vm.overlays.milestones} />
 
             {/* Le bouton « Discuter » de chaque ligne de dépense, dans le formulaire aussi — comme
                 « Commenter » sur la liste des dépenses du formulaire legacy. Les dépenses enregistrées

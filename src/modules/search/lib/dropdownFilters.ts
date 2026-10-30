@@ -1,6 +1,7 @@
 import type { SiteConfig } from "@/types/site-schema";
 import type { SearchHeaderSectionProps } from "@/modules/search/schema";
 import type { SearchByFieldValue } from "@/modules/search/contexts/pageFilters";
+import { TOKEN_MATCH_TYPE } from "./tokenMatch";
 
 /**
  * Logique **pure** et **agnostique de l'entité** des dropdownFilters de la
@@ -73,7 +74,41 @@ export function resolveOptionInList(
   if (byValue) return byValue;
 
   const byLabel = options.find((o) => normalizeFilterValue(labelText(o.label)) === n);
-  return byLabel ?? null;
+  if (byLabel) return byLabel;
+
+  // Option qui interroge plusieurs valeurs (`values`, ex. une commune et ses codes postaux) : un jeton
+  // égal à l'une d'elles la désigne — facette « 97460 », ancien lien `?poi-postalCode=97460`. En
+  // DERNIER : tout ce qui se résolvait avant se résout à l'identique.
+  const byValues = options.find((o) => o.values?.some((v) => normalizeFilterValue(v) === n));
+  return byValues ?? null;
+}
+
+/**
+ * Entrée `searchByFields` d'une option cochée — SOURCE UNIQUE des deux écrivains : l'en-tête
+ * (`SearchHeaderSection`) et la navigation par facette (`dropdownFilterToState`).
+ *  - `values` (déclarées en config) priment : l'option interroge plusieurs valeurs à la fois ;
+ *  - `variants` (graphies d'une source DYNAMIQUE) ne sont passées que par la navigation par facette,
+ *    comme avant : l'en-tête ne les a jamais interrogées, et les lui faire interroger changerait les
+ *    résultats des sites à options dynamiques (parent62, institut-bleu, bassin de vie de Saint-Paul) ;
+ *  - `match: "token"` sur le filtre → comparaison par élément d'une liste « a, b » (cf. tokenMatch.ts).
+ * Sans `values` ni `match`, l'entrée est exactement celle qu'écrivaient les deux appelants.
+ */
+export function dropdownOptionEntry(
+  filter: Pick<DropdownFilterConfig, "match">,
+  fieldName: string,
+  option: DropdownOptionConfig,
+  variants?: readonly string[],
+): SearchByFieldValue {
+  const value = option.values?.length
+    ? [...option.values]
+    : variants?.length
+      ? [...variants]
+      : [option.value ?? option.id];
+  return {
+    field: option.field ?? fieldName,
+    ...(filter.match === "token" ? { type: TOKEN_MATCH_TYPE } : {}),
+    value,
+  };
 }
 
 /** Idem, à partir du filtre de config (sa liste d'options déclarées). */
@@ -183,10 +218,7 @@ export function dropdownFilterToState(
         // « Le port » quand l'option affiche « Le Port » — trois écritures qui coexistent en base. On
         // interroge donc le GROUPE entier ; sans variantes, le comportement est inchangé.
         const variantes = (option as { variants?: string[] }).variants;
-        next[keyFor(filter.id, id)] = {
-          field: option.field ?? fieldName,
-          value: variantes?.length ? variantes : [option.value ?? option.id],
-        };
+        next[keyFor(filter.id, id)] = dropdownOptionEntry(filter, fieldName, option, variantes);
       }
       return next;
     });

@@ -120,7 +120,9 @@
           "geo",
           "geoPosition",
           "parent",
-          "source"
+          "source",
+          "inst_siret",
+          "inst_uai"
         ],
         "defaultFilters": {
           "type": "recoveryCenter"
@@ -187,7 +189,9 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
+          "parent",
+          "inst_siret",
+          "inst_uai"
         ],
         "defaultFilters": {
           "type": "recoveryCenter"
@@ -248,7 +252,9 @@
           "address",
           "geo",
           "geoPosition",
-          "parent"
+          "parent",
+          "inst_siret",
+          "inst_uai"
         ],
         "defaultFilters": {
           "type": "recoveryCenter"

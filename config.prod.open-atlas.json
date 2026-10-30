@@ -33,6 +33,9 @@
       "en": "Open Atlas"
     }
   },
+  "cagnotteModuleConfig": {
+    "defaultType": "aac"
+  },
   "header": {
     "type": "transparent-scroll",
     "path": "/",

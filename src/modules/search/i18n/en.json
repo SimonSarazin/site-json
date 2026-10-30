@@ -125,7 +125,9 @@
       "tracking": "Tracking"
     },
     "fields": {
+      "type": "Equipment type",
       "category": "Category",
+      "particularity": "Particularity type",
       "family": "Equipment family",
       "installation": "Installation",
       "sport": "Sport practiced",
@@ -175,7 +177,9 @@
       "lastUpdate": "Last update"
     },
     "equipNumero": {
-      "link": "View national record"
+      "link": "View national record",
+      "siret": "SIRET",
+      "uai": "UAI"
     },
     "installationDashboard": {
       "open": "Open the facility dashboard"
@@ -206,6 +210,7 @@
   "PreviewReservations": {
     "title": "Bookings",
     "empty": "No bookings recorded for this facility.",
+    "emptyPeriod": "No time slot in this period.",
     "error": "Unable to load bookings.",
     "unknownUser": "Unspecified user",
     "slotCount_one": "{{count}} time slot",
@@ -216,24 +221,90 @@
     "period": "From {{start}} to {{end}}",
     "periodFrom": "From {{start}}",
     "periodUntil": "Until {{end}}",
+    "periodShort": "{{start}} → {{end}}",
+    "kpiWeekly": "Hours / week",
+    "kpiCumulative": "Cumulative hours",
+    "kpiLoading": "Computing hours…",
+    "editHours": {
+      "title": "Change the time",
+      "aria": "Change the time of the {{day}} {{start}} – {{end}} slot",
+      "start": "Start",
+      "end": "End",
+      "hint": "Only the time changes: the day and the period stay those of the slot.",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "saved": "Time changed.",
+      "error": "The time was not changed."
+    },
     "hourColumn": "Time",
     "gridCaption": "Booking slots, by day and hour",
     "free": "Free slot",
     "bookAria": "Book {{day}} from {{start}} to {{end}}",
     "bookTitle": "Book a time slot",
+    "addSlot": "Add a time slot",
+    "addSlotAria": "Add a time slot for {{name}}",
+    "addSlotTitle": "Add a time slot for {{name}}",
     "conflict": "This slot is already booked by {{user}}.",
     "referenceNotice": "Reference grid: an empty cell means no booking is on record — not that the facility is open.",
     "orgaSheet": "Profile",
-    "orgaSheetAria": "Open {{name}}'s profile in the directory"
+    "orgaSheetAria": "Open {{name}}'s profile in the directory",
+    "filterLabel": "Period",
+    "filterFrom": "From",
+    "filterTo": "To",
+    "filterReset": "Clear",
+    "filterHint": "No date: current or upcoming time slots.",
+    "filterInvalid": "The end date must come after the start date.",
+    "issue": {
+      "period": "Enter the booking's start and end dates, the end after the start.",
+      "slotPeriod": "The period of the time slot {{slot}} must run forward and stay within the booking's.",
+      "overlap": "Two time slots of the form overlap: {{slot}}.",
+      "taken": "{{slot}} is already booked by {{user}} ({{period}}).",
+      "noPeriod": "no date limit",
+      "hours": "The end time must be after the start time.",
+      "stale": "This time slot has changed in the meantime: reopen the details to see its current time.",
+      "sibling": "{{slot}} would overlap another time slot of this booking."
+    }
   },
   "PreviewBookedResources": {
     "title": "Booked facilities",
     "error": "Unable to load booked facilities.",
+    "empty": "No booked facility.",
     "unknownResource": "Unspecified facility",
     "slotCount_one": "{{count}} time slot",
     "slotCount_other": "{{count}} time slots",
     "sheet": "Details",
-    "sheetAria": "Open the {{name}} details"
+    "sheetAria": "Open the {{name}} details",
+    "addSlot": "Add a time slot",
+    "addSlotAria": "Add a time slot on {{name}}",
+    "addTitle": "Add a time slot — {{name}}"
+  },
+  "ReservationHours": {
+    "summary": "{{weekly}} h/week · {{cumulative}} h in total",
+    "total": "Total: {{weekly}} h/week · {{cumulative}} h in total"
+  },
+  "SlotFilter": {
+    "from": "From",
+    "to": "To",
+    "hourOf": "{{label}}: hour",
+    "minuteOf": "{{label}}: minutes",
+    "days": "Days",
+    "everyDay": "Every day",
+    "period": "Period (optional)",
+    "periodStart": "From",
+    "periodEnd": "To",
+    "hint": "Start only: until {{close}}. End only: from {{open}}. No day: every day. No period: from today.",
+    "invalidRange": "The end time must be after the start time.",
+    "invalidPeriod": "The period must end after it starts (today if empty).",
+    "noDayInPeriod": "None of the chosen days falls within this period.",
+    "apply": "Apply",
+    "clear": "Clear",
+    "loading": "Loading bookings…",
+    "error": "Unable to load bookings.",
+    "retry": "Retry",
+    "summary": "{{days}} · {{start}}–{{end}}",
+    "chip": "Free: {{days}} · {{start}}–{{end}}",
+    "chipPeriod": "Free: {{days}} · {{start}}–{{end}} · {{period}}"
   },
   "Filtres actifs :": "Active filters:",
   "À partir du": "From",
@@ -297,6 +368,16 @@
   "card.servicePricing.price.room": "{{price}}€ per private room",
   "resourceDirectory.count": "{{count}} resource",
   "resourceDirectory.count_other": "{{count}} resources",
+  "resourceDirectory.placeServices": "{{count}} service",
+  "resourceDirectory.placeServices_other": "{{count}} services",
+  "resourceDirectory.mapUnplaced": "{{count}} service is not on the map: its place has no location.",
+  "resourceDirectory.mapUnplaced_other": "{{count}} services are not on the map: their place has no location.",
+  "resourceDirectory.loadError": "Resources could not be loaded.",
+  "resourceDirectory.parentsError": "Place addresses could not be read: the location filter cannot be applied.",
+  "resourceDirectory.retry": "Try again",
+  "resourceDirectory.viewMode": "View",
+  "resourceDirectory.viewList": "List",
+  "resourceDirectory.viewMap": "Map",
   "resourceDirectory.unknownPlace": "Third place",
   "resourceDirectory.viewDetails": "View details",
   "resourceDirectory.viewPlace": "View third place",

@@ -41,6 +41,7 @@
       "noteRange": "The rating must be between 0 and 5",
       "timeSlotIncomplete": "Each time slot needs a day, a start time and an end time",
       "timeSlotOrder": "End time must be after start time",
+      "timeSlotPeriodOrder": "A time slot's end date must come after its start date",
       "dynamicFieldsIncomplete": "Each row must be complete and valid"
     },
     "fields": {
@@ -508,6 +509,12 @@
       "endTime": "End",
       "addSlot": "Add a time slot",
       "removeSlot": "Remove this time slot",
+      "periodStart": "From",
+      "periodEnd": "To",
+      "periodHint": "Dates are optional: without them, a time slot applies to the whole period.",
+      "period": "From {{start}} to {{end}}",
+      "periodFrom": "From {{start}}",
+      "periodUntil": "Until {{end}}",
       "days": {
         "monday": "Monday",
         "tuesday": "Tuesday",

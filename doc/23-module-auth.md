@@ -51,7 +51,7 @@ personnaliser textes, header/footer et SEO via la section `config.auth`.
 ```
 src/modules/auth/
   module.config.ts          { name: "auth", type: "core", enabled: true }
-  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 11 routes (10 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
+  routes.tsx                routes: ModuleRouteFactory (_queryClient, config) → 12 routes (11 montées + `recover/:user/:code` en mode `node`) (cf. « Routes fournies par le module »)
   index.ts                  barrel (composants, contexte, hooks, sections, schema…)
   i18n.ts                   addResourceBundle("fr"/"en", "modules/auth", …, true, true)
   i18n/{fr,en}.json
@@ -86,6 +86,7 @@ src/modules/auth/
     ValidateInvitationPage.tsx   passerelle d'invitation → inscription
     AcceptInvitationPage.tsx     réponse Accepter/Refuser d'une invitation par e-mail
     JoinByLinkPage.tsx           lien d'adhésion partageable (connect/ref/:ref)
+    SsoCallbackPage.tsx          retour SSO hors popup (sso/callback#code=…) → échange du code contre les JWT
   lib/
     reponseParMail.ts       lecture du lien Accepter/Refuser (lireSegment, lireReponse) + charge utile (chargeReponseParMail)
   sections/
@@ -228,6 +229,7 @@ une de ses routes. `src/modules/auth/routes.tsx:32-80` déclare :
 | `co2/person/validateinvitation/user/:user/validationKey/:validationKey` (+ splat `/*`) | `ValidateInvitationPage` | passerelle d'invitation vers l'inscription (compte *pending*) |
 | `co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*` | `AcceptInvitationPage` | réponse Accepter/Refuser reçue par e-mail : à une invitation, ou à une **demande** d'adhésion/d'administration (voir ci-dessous) |
 | `co2/link/connect/ref/:ref` | `JoinByLinkPage` | lien d'adhésion partageable (`costum.invitationLink`) |
+| `sso/callback` | `SsoCallbackPage` | retour SSO **hors popup** : code d'échange en fragment `#code=` (ou `#error=`), troqué contre les JWT (voir [SSO → Retour hors popup](#retour-hors-popup-ssocallback)) |
 
 Les deux formes (moderne et legacy) sont servies pour que les e-mails **déjà
 envoyés** restent valides quand le domaine d'un costum pointe sur site-json.
@@ -296,7 +298,7 @@ revient après connexion. Voir [Gardes de page](34-gardes-de-page.md).
 Chaque formulaire redirige s'il détecte un utilisateur déjà connecté
 (`!loading && me?.isConnected` dans un `useEffect`), ce qui remplace l'ancien
 middleware config `redirect-if-authenticated` sur ces pages. La destination
-diffère selon le formulaire : `LoginForm` (`LoginForm.tsx:47`, `:95`) et
+diffère selon le formulaire : `LoginForm` (`returnTo` calculé en tête du composant, effet centralisé sur `me.isConnected`) et
 `RegisterForm` (`RegisterForm.tsx:58`, `:71`) renvoient vers
 `returnTo = returnToOrHome(location.state)`, c'est-à-dire la page mémorisée par
 la garde (`{ from: pathname + search }`), avec repli sur `/` ;
@@ -361,7 +363,9 @@ Bloc top-level optionnel de la config site (validé par `AuthConfigSchema`,
                   "subtitle": { "fr": "…", "en": "…" } },
     "register": { "title": { "fr": "…" }, "subtitle": { "fr": "…" } },
     "recover":  { "title": { "fr": "…" }, "subtitle": { "fr": "…" },
-                  "mode": "legacy" }   // "legacy" (défaut de fait) | "node" — cf. ci-dessous
+                  "mode": "legacy" },  // "legacy" (défaut de fait) | "node" — cf. ci-dessous
+    "twoFactor": { "title": { "fr": "Vérification en deux étapes" },
+                   "help":  { "fr": "…" } }   // textes SEULEMENT de l'étape « code » — cf. ci-dessous
   }
 }
 ```
@@ -406,6 +410,28 @@ backend Node.
 > lien reçu par e-mail tombe sur le catch-all du routeur
 > (`{ path: "*", element: <SiteRenderer /> }`, `src/lib/buildRoutes.tsx:216`), servi
 > en 200 — **sans erreur, donc invisible en recette**.
+
+### `config.auth.twoFactor` — textes de l'étape « code de vérification »
+
+Double authentification par code e-mail (spec : cocolight-backend `docs/34-2FA-LOT1.md`).
+Ce bloc ne porte **que des textes** (`AuthTwoFactorConfigSchema`) : `title` (défaut
+« Vérification en deux étapes ») et `help`, qui **remplace** la phrase par défaut « Un code à
+6 chiffres vient d'être envoyé à j***@… » (l'adresse masquée reste affichée dessous).
+
+**Aucune clé de config n'active ni ne désactive le second facteur.** La règle « compte
+soumis » vit côté serveur (flag `twoFactor.required` sur le citoyen, ou costum dont le document
+porte `auth.twoFactor: "required"` — rattachement par `source.key` ou par appartenance à
+l'élément porteur). Un site dont aucun compte n'est soumis ne voit jamais l'étape, et n'a rien
+à configurer. Le déroulé est décrit dans [`LoginForm`](#loginform).
+
+**Compte soumis sans mot de passe** (compte créé « par code e-mail » avant l'activation, cf. docs/34 §10.7) :
+le serveur répond 401 `passwordMissing`, que la lib 1.0.204 lève en `PasswordMissingError` (sous-classe
+d'`ApiResponseError`). `LoginForm` affiche alors le toast « Pas encore de mot de passe » avec une action vers la
+récupération dont le libellé suit `config.auth.recover.mode` : « Recevoir un mot de passe » en `legacy` (défaut,
+un mot de passe est envoyé par e-mail), « Définir un mot de passe » en `node`. L'e-mail saisi est transmis :
+en modale `onSwitchToRecover(email)` → `AuthModal` → `RecoverPasswordForm initialEmail`, en page
+`navigate("/recover-password", { state: { email } })` que `RecoverPasswordForm` lit dans `location.state`.
+Le lien « Mot de passe oublié ? » transmet aussi l'e-mail déjà saisi. Aucune étape « code » n'est affichée.
 
 ### Autres champs
 
@@ -696,18 +722,38 @@ interface LoginFormProps {
   `navigate(returnTo)` est déclenché **uniquement si `hideBackButton === false`** (valeur
   par défaut). C'est `hideBackButton` — et lui seul — qui discrimine le comportement
   de navigation, pas la présence ou l'absence des callbacks.
-- `returnTo` est calculé **une fois** en haut du composant (`LoginForm.tsx:47`) par
+- `returnTo` est calculé **une fois** en haut du composant par
   `returnToOrHome(location.state)` : la page mémorisée par la garde en mode `redirect`
   (`{ from: pathname + search }`, filtre d'URL compris), repli `/`, refus des URL
   externes et protocole-relatives (`src/lib/authRedirect.ts`). Les trois points de
-  navigation post-succès l'utilisent (effet centralisé `:95`, `handleLogin` `:159`,
-  `onSuccess` du bouton SSO `:278`).
+  navigation post-succès l'utilisent (effet centralisé, `handleLogin`, `handleVerify`,
+  `onSuccess` du bouton SSO).
 - En mode modal (`hideBackButton=true`) : pas de navigation après succès.
 - En mode page (`hideBackButton=false`) : navigue vers `/register` ou
   `/recover-password` via les boutons de bascule — en **transmettant le même `state`**
-  (`LoginForm.tsx:292`, `:303`), pour que la destination mémorisée survive à la
+  (boutons de bascule), pour que la destination mémorisée survive à la
   bascule ; navigue vers `returnTo` après connexion réussie.
 - Erreurs HTTP 401/404 → message "Email ou mot de passe incorrect".
+- **Double authentification** (cocolight-backend `docs/34-2FA-LOT1.md`) : si `userApi.login`
+  lève `TwoFactorRequiredError` (mot de passe correct, compte soumis : le serveur a créé un défi
+  et envoyé un code par e-mail, **aucun jeton posé**), le formulaire laisse place à l'étape
+  « code » (`data-testid="two-factor-step"`, même composant en modal et en page) : saisie à
+  6 chiffres (`inputMode="numeric"`, `autocomplete="one-time-code"`, chiffres seuls, bouton
+  actif à 6 chiffres), `userApi.verifyTwoFactor(challenge, code)` qui termine la connexion
+  **exactement comme `login`** (jetons posés par la lib, `userLoggedIn` émis, `onSuccess` /
+  `navigate(returnTo)`), « Renvoyer le code » verrouillé 60 s après chaque envoi
+  (`userApi.resendTwoFactor`, compte à rebours resynchronisé sur `retryIn` si le serveur
+  répond `resendTooSoon`), « Retour » qui revient au mot de passe (effacé). Messages en place
+  (`role="alert"`) : `codeInvalid` + essais restants, `resendLimit` (le dernier code reste
+  valable), `resendTooLate`, `twoFactorMailFailed`. `challengeExpired` (défi inconnu, 5 min
+  passées, déjà utilisé ou 5 échecs) ramène au mot de passe avec un toast. À la première
+  étape, `twoFactorMailFailed` (503) et `twoFactorTooMany` (429, `retryIn`) donnent un toast
+  dédié sans étape code. Une erreur RÉSEAU (ou breaker) pendant la vérification ou le renvoi ne jette
+  pas le défi : message en place, code conservé. Le temps restant (« Code valable encore N min ») vient
+  d'`expireAt` ; à expiration, retour au mot de passe sans appel serveur. Un défi RÉUTILISÉ par le
+  serveur (reconnexion < 60 s) hérite de son délai de renvoi réel. `userLoggedIn` est émis par les
+  postActions du contrat (lib), jamais par le formulaire. Textes : `config.auth.twoFactor` (titre, aide).
+  Test : `LoginForm.twoFactor.test.tsx` (11 cas, horloge simulée pour le renvoi et l'expiration).
 - Affiche les `SSOLoginButton` si `entity?.serverData.costum.sso` contient des
   providers (voir [SSO](#sso)).
 - **Mode SSO-only** (`costum.connectOnlyBySSO === true` + au moins un provider) :
@@ -870,7 +916,12 @@ interface SSOAuthResult {
 
 `openSSOPopup(service)` :
 1. Ouvre une popup vers `{backendUrl}/co2/sso/services?authclient={service}&origin={origin}`
-   centrée (600×700).
+   centrée (600×700). L'URL porte aussi le **costum du site** — `costumSlug`, plus
+   `costumId`/`costumType` quand l'entité porteuse est résolue (`getSiteCostumContext`, même trio
+   que `register`) : un compte **créé** par le SSO est alors estampillé `source.key` comme une
+   inscription classique depuis ce site. Un site sans slug n'envoie rien (la sentinelle `default`
+   est neutralisée). Le contexte est lu via une ref, pour que `openSSOPopup` garde la même
+   identité quand l'entité se résout (l'auto-trigger de `LoginForm` l'a en dépendance).
 2. En cas de popup bloqué par le navigateur : résout immédiatement `{ success: false, error: "Popup bloqué par le navigateur" }`.
 3. Écoute `window.addEventListener("message")` ; filtre strictement sur
    `event.origin === backendOrigin` (sécurité CSRF).
@@ -886,9 +937,48 @@ interface SSOAuthResult {
    `useEffect` se contente de la déclencher si elle existe.
 
 Le hook est testé par `hooks/__tests__/useSSOAuth.test.ts` (Vitest + jsdom,
-`@testing-library/react`). Les cas couverts : ouverture popup, encodage service,
-popup bloqué, filtrage d'origine, payload SSO_AUTH_SUCCESS/ERROR, type inconnu
-ignoré, fermeture manuelle, apiClient null, cleanup au démontage.
+`@testing-library/react`). Les cas couverts : ouverture popup, encodage service
+(`URLSearchParams` : `provider%2Fwith+space`), popup bloqué, filtrage d'origine,
+payload SSO_AUTH_SUCCESS/ERROR, type inconnu ignoré, fermeture manuelle, apiClient
+null, cleanup au démontage.
+
+### Retour hors popup (`/sso/callback`)
+
+Le retour du provider n'arrive pas toujours dans la popup. Cas réel (federationDesCae,
+Keycloak avec vérification d'e-mail obligatoire) : à l'inscription, le lien « Verify email » du
+mail s'ouvre dans un **nouvel onglet**, sans `opener` — le backend ne pouvait rien poster et
+renvoyait l'accueil de Communecter, jetons perdus. Depuis la lib **1.0.203** :
+
+1. Le backend (legacy `co2/views/oauth/redirect.php`, Node `sso.routes.ts`) détecte l'absence
+   d'`opener` et renvoie le navigateur sur `<origin>/sso/callback#code=<code>` — un **code
+   d'échange** à usage unique (2 min), lié à l'origine du site, en **fragment** d'URL : jamais
+   envoyé au serveur, jamais journalisé. En erreur : `#error=<code provider>`.
+2. `SsoCallbackPage` lit le fragment, l'efface aussitôt de l'historique
+   (`history.replaceState(window.history.state, "", pathname)` — l'état react-router est conservé),
+   puis appelle `userApi.loginWithSsoCode(code)` (contrat `SSO_EXCHANGE`,
+   `POST /api/cocolight/ssoexchange`). Les `postActions` de l'endpoint posent les jetons et
+   émettent `userLoggedIn`, exactement comme un login classique ; la page redirige vers `/`.
+3. En échec : icône, message et bouton « Se connecter ». Le message vient du serveur
+   (`ApiResponseError` : code invalide, expiré, déjà utilisé, origine différente) ou d'une
+   traduction locale — le texte de `#error=` n'est **jamais** affiché tel quel (un lien forgé
+   afficherait n'importe quoi sous l'en-tête du site) ; seul `access_denied` est reconnu
+   (« Connexion annulée. »).
+
+L'onglet d'**origine** (celui qui a ouvert la popup) apprend la connexion par l'événement
+`storage` : `CocolightProvider` écoute la clé `cocolight_tokens_<baseURL du site>` — celle de
+**son** backend seulement —, recharge les jetons dans le client et rejoue `userLoggedIn`. La lib
+écrit l'access puis le refresh en deux écritures, donc deux événements : le second arrive
+connecté, et le refresh est adopté s'il diffère de celui déjà pris (sans ça, cet onglet vivait
+10 min sans refresh). La popup, elle, reste sur la page du provider : l'utilisateur la ferme, et
+`openSSOPopup` se résout en annulation silencieuse.
+
+Hors de ce cas, le flux popup est inchangé. Depuis un **autre appareil**, Keycloak confirme
+l'e-mail et s'arrête (« Your email address has been verified ») sans rediriger : la fenêtre
+d'origine, rechargée, reprend le flux — rien à faire côté site.
+
+**Déploiement** : la page est inerte tant que le backend ne redirige pas vers elle. Déployer
+site-json **avant ou avec** le legacy, sinon le repli tombe en 404. Côté legacy, l'origine du
+site doit être autorisée (`costum.host` en base ou `params['sso']['allowedOrigins']`).
 
 Pour le flux complet, voir aussi [API & Authentification](11-api-authentification.md#sso--single-sign-on).
 
