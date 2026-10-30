@@ -11,7 +11,7 @@
 > [Module Admin](../doc/30-module-admin.md) · [Module CoForm](../doc/21-module-coform.md).
 > Mémoire : `[[project-equipements-sportifs]]`.
 
-Dernière mise à jour : **2026-08-03** (création du dossier — état des lieux ; rafraîchi SDK 1.0.172, aucun commit projet depuis le 28/07).
+Dernière mise à jour : **2026-10-28** (review de la MR 114 : la mention « non committé » du lot du 15/10 remplacée par son commit) ; 27/10 (fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type annoncé) ; 23/10 : lecture de la période propre d'un créneau par le moteur.
 
 ---
 
@@ -197,6 +197,62 @@ npx tsx scripts/config-probe.ts config.prod.equipements-Sportifs.json
 
 ## 9. Impacts des modifications
 
+### 27/10/2026 — review de la MR 114 : fiche équipement et tableau de bord d'installation
+
+Suite de la review de Thomas sur la MR 114 (`ess974` → `main`). Le détail est au §9
+d'[equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md), lot B.
+
+**Ce qui change dans la config** : `"equipmentDetails": true` sur les 4 blocs `preview` poi-amenities (liste
+des équipements, observatoire, table Data, palette). La fiche garde ce qu'elle montre depuis le lot du 15/10 :
+« Type d'équipement », « Catégorie », « Type de particularité », sports cliquables, SIRET et UAI. Ce rendu est
+désormais une option : sport-santé-bien-être, qui partage le composant sans la poser, retrouve sa fiche
+historique. La fenêtre des doublons du formulaire costum garde la même fiche.
+
+**Déjà dans la branche, annoncé ici** : le tableau de bord d'installation (`installationDashboard`) calcule le taux
+d'occupation et la répartition des activités sur la SEMAINE TYPE, c'est-à-dire les créneaux actifs le jour de la
+consultation (`weeklyReservations`). Avant, il portait sur toutes les réservations. Les chiffres baissent donc dès
+qu'une réservation est passée. C'est le bon calcul : additionner les saisons passées, puis chaque trimestre
+importé, faussait un taux qui ne vaut que pour une semaine (lots 8 et 9 d'ESS974).
+
+**Validation** : `config:validate` ✅ 8 pages, 14 sections · `audit:config` RAS · test de la fiche, avec et sans
+l'option ✅.
+
+### 23/10/2026 — aucun changement de config
+
+Le moteur lit désormais la période PROPRE d'un créneau (`periodStart` / `periodEnd` sur l'objet du
+créneau, sinon celle de sa réservation), contrat des créneaux datés par cycle que l'import des
+communes va écrire (cf. le §9 d'[equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md),
+lot 7). Ce site affiche les réservations en lecture seule, sans `periods` ni `booking` : tant qu'aucun
+créneau ne porte de période propre (aucun au 23/10), rien ne change ; ensuite, la fiche affichera la
+période d'un créneau à côté de lui quand elle diffère de celle de la réservation. Le filtre « du … au
+… » et la prise de réservation par période restent à activer ici si besoin (`periods: true`).
+
+La fixture `effective-config` du site a été resynchronisée le même jour : elle n'avait pas suivi les
+`inst_siret` / `inst_uai` ajoutés aux `defaultFields` le 15/10. Préflight ✅ 889/894, avec seulement
+les 4 échecs d'environnement (cf. le §9 « Conformité » d'[ESS974](equipements-sportifs-scolaires.md)).
+
+### 15/10/2026 — lot « fiche équipement et filtres multi-valeurs » (commit `7f240d4c`)
+
+Lot commun aux trois sites équipements — fiche, moteur et justification détaillés dans le §9 de
+[saint-paul-sport.md](saint-paul-sport.md).
+
+Pour ce site : filtre `type` renommé « Type d'équipement » (même id) ; ajout de « Catégorie »
+(`categorie`) et « Type de particularité » (`inst_part_type`, 7 options dont « Etablissement
+pénitentiaire », présent ici seulement) ; « Type d'utilisateur » et « Locaux disponibles » en
+`match: "token"` ; `inst_siret` et `inst_uai` ajoutés aux `defaultFields` des trois pages qui ouvrent
+la fiche. Option « Salle(s) de réunion / cours » corrigée : elle interroge les deux graphies, celle
+de l'import (`réunion/cours`) et celle de la liste `equip_loc_type` du formulaire de saisie
+(`réunion / cours`) — **0 → 556** équipements.
+
+**Périmètre de la liste** : `source.keys` **ou** `reference.costum` = `equipementsSportifs974`, soit
+**3 061** équipements (dont 432 référencés). Un contrôle en base sur `source.keys` seul (2 629) ne
+retrouve pas les compteurs affichés.
+
+**Validation** (base `prod230926`) : au navigateur, 5/5 compteurs identiques à la base — salles de
+réunion 556, « Terrain de football » 297 (exact, inchangé), « Clubs sportifs » **16 → 1 643**,
+« Etablissement pénitentiaire » 11, « Buvette » 336. `config:validate` ✅ 8 pages, 13 sections ·
+`audit:config` RAS ; gates de code : cf. §9 de [saint-paul-sport.md](saint-paul-sport.md).
+
 ### 28/07 — aucun changement de config
 
 Ce site est en revanche **le premier bénéficiaire** de deux correctifs du moteur livrés pour
@@ -236,7 +292,7 @@ institut-bleu :
 | 9 | Inscription | ✅ | Page `/rejoindre` (`registerForm`) + `auth.register` |
 | 10 | Palette ⌘K | ✅ | `entitySearch` |
 | 11 | Socle légal | ✅ | Mentions légales, confidentialité, accessibilité — rédigées |
-| 12 | Rendu navigateur | ❌ | **Jamais vérifié** dans le cadre de ce dossier |
+| 12 | Rendu navigateur | 🟡 | Page Équipements vérifiée le 15/10 (filtres, §9) ; le reste du site jamais vérifié dans le cadre de ce dossier |
 | 13 | Mode sombre | ❌ | Jamais vérifié |
 
 ---

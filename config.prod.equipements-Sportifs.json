@@ -675,8 +675,8 @@
               {
                 "id": "type",
                 "label": {
-                  "fr": "Catégorie",
-                  "en": "Category"
+                  "fr": "Type d'équipement",
+                  "en": "Equipment type"
                 },
                 "field": "equip_type_name",
                 "multiple": true,
@@ -1556,6 +1556,101 @@
                 ]
               },
               {
+                "id": "categorie",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "categorie",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "structurant",
+                    "value": "structurant",
+                    "label": {
+                      "fr": "Structurant",
+                      "en": "Major facility"
+                    }
+                  },
+                  {
+                    "id": "proximite",
+                    "value": "proximité",
+                    "label": {
+                      "fr": "Proximité",
+                      "en": "Local facility"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "particularite",
+                "label": {
+                  "fr": "Type de particularité",
+                  "en": "Particularity type"
+                },
+                "field": "inst_part_type",
+                "multiple": true,
+                "match": "token",
+                "options": [
+                  {
+                    "id": "etablissement-scolaire",
+                    "value": "Etablissement scolaire",
+                    "label": {
+                      "fr": "Établissement scolaire",
+                      "en": "School"
+                    }
+                  },
+                  {
+                    "id": "complexe-sportif",
+                    "value": "Complexe sportif",
+                    "label": {
+                      "fr": "Complexe sportif",
+                      "en": "Sports complex"
+                    }
+                  },
+                  {
+                    "id": "piscine",
+                    "value": "Piscine",
+                    "label": {
+                      "fr": "Piscine",
+                      "en": "Swimming pool"
+                    }
+                  },
+                  {
+                    "id": "base-plein-air-loisirs",
+                    "value": "Base de plein air et/ou de loisirs",
+                    "label": {
+                      "fr": "Base de plein air et/ou de loisirs",
+                      "en": "Outdoor / leisure centre"
+                    }
+                  },
+                  {
+                    "id": "creps-ecole-nationale",
+                    "value": "CREPS ou Ecole nationale",
+                    "label": {
+                      "fr": "CREPS ou École nationale",
+                      "en": "CREPS or national school"
+                    }
+                  },
+                  {
+                    "id": "aerodrome-aeroport",
+                    "value": "Aérodrome/aéroport",
+                    "label": {
+                      "fr": "Aérodrome / aéroport",
+                      "en": "Airfield / airport"
+                    }
+                  },
+                  {
+                    "id": "etablissement-penitentiaire",
+                    "value": "Etablissement pénitentiaire",
+                    "label": {
+                      "fr": "Établissement pénitentiaire",
+                      "en": "Prison"
+                    }
+                  }
+                ]
+              },
+              {
                 "id": "poi-amenities",
                 "label": {
                   "fr": "Aménagements",
@@ -1731,6 +1826,7 @@
                 },
                 "field": "equip_utilisateur",
                 "multiple": true,
+                "match": "token",
                 "options": [
                   {
                     "id": "individuels",
@@ -1814,6 +1910,7 @@
                 },
                 "field": "equip_loc_type",
                 "multiple": true,
+                "match": "token",
                 "options": [
                   {
                     "id": "reception-accueil",
@@ -1866,6 +1963,10 @@
                   {
                     "id": "salle-reunion-cours",
                     "value": "Salle(s) de réunion / cours",
+                    "values": [
+                      "Salle(s) de réunion/cours",
+                      "Salle(s) de réunion / cours"
+                    ],
                     "label": {
                       "fr": "Salle(s) de réunion / cours",
                       "en": "Meeting / class rooms"
@@ -1990,7 +2091,9 @@
                 "geo",
                 "geoPosition",
                 "parent",
-                "source"
+                "source",
+                "inst_siret",
+                "inst_uai"
               ],
               "defaultFilters": {
                 "type": "recoveryCenter"
@@ -2018,6 +2121,7 @@
               },
               "preview": {
                 "type": "poi-amenities",
+                "equipmentDetails": true,
                 "reservations": {
                   "form": "6a4e4e4105e5972f7b4b1823",
                   "step": "equipementsSportifs974872026_1619_0",
@@ -2164,7 +2268,9 @@
                 "address",
                 "geo",
                 "geoPosition",
-                "parent"
+                "parent",
+                "inst_siret",
+                "inst_uai"
               ],
               "defaultFilters": {
                 "type": "recoveryCenter"
@@ -2952,6 +3058,7 @@
               "detailsMode": "dialog",
               "preview": {
                 "type": "poi-amenities",
+                "equipmentDetails": true,
                 "reservations": {
                   "form": "6a4e4e4105e5972f7b4b1823",
                   "step": "equipementsSportifs974872026_1619_0",
@@ -3086,7 +3193,9 @@
                 "address",
                 "geo",
                 "geoPosition",
-                "parent"
+                "parent",
+                "inst_siret",
+                "inst_uai"
               ],
               "defaultFilters": {
                 "type": "recoveryCenter"
@@ -3362,6 +3471,7 @@
                 "detailsMode": "dialog",
                 "preview": {
                   "type": "poi-amenities",
+                  "equipmentDetails": true,
                   "reservations": {
                     "form": "6a4e4e4105e5972f7b4b1823",
                     "step": "equipementsSportifs974872026_1619_0",
@@ -4017,6 +4127,7 @@
         "detailsMode": "dialog",
         "preview": {
           "type": "poi-amenities",
+          "equipmentDetails": true,
           "reservations": {
             "form": "6a4e4e4105e5972f7b4b1823",
             "step": "equipementsSportifs974872026_1619_0",

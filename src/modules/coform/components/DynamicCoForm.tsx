@@ -42,6 +42,7 @@ import { scrollToFieldByName } from "../utils/helpers";
 import { cn } from "@/lib/utils";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useHiddenFields } from "../hooks/useHiddenFields";
+import { useTimeSlotNotices } from "../hooks/useTimeSlotNotices";
 import { ConditionalField } from "./ConditionalField";
 import { useCoFormDraft } from "../hooks/useCoFormDraft";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
@@ -365,6 +366,8 @@ export function DynamicCoForm({
   // Auto-submit unifié : useWatch détecte les changements de valeur (tous types d'input)
   // puis debounce 600ms avant de soumettre si la valeur a effectivement changé.
   const watchedValues = useWatch({ control });
+  // Avertissements de l'appelant sous les créneaux (`slotCheck`) — vide sans contrôle posé.
+  const slotNotices = useTimeSlotNotices(control, subFormId);
 
   // Propager isDirty vers CoFormModal (détection de modifications non enregistrées)
   useEffect(() => {
@@ -877,6 +880,7 @@ export function DynamicCoForm({
                           errors={errors}
                           value={controllerField.value}
                           onChange={controllerField.onChange}
+                          notices={slotNotices[field.name]}
                         />
                       )}
                     />

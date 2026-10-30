@@ -167,6 +167,16 @@ describe("computeKpiValue", () => {
     expect(computeKpiValue({ kind: "avg", dimension: "surface" }, items, DIMS)).toBe("210");
     expect(computeKpiValue({ kind: "sum", dimension: "surface" }, [], DIMS)).toBe("—");
   });
+
+  it("reservationHours : heures passées par la section, hebdo par défaut ou cumulées ; « — » pendant le chargement", () => {
+    const hours = { weeklyMinutes: 8100, cumulativeMinutes: 422640 };
+    expect(computeKpiValue({ kind: "reservationHours" }, items, DIMS, undefined, hours)).toBe("135");
+    expect(computeKpiValue({ kind: "reservationHours", period: "cumulative" }, items, DIMS, undefined, hours)).toBe(
+      (7044).toLocaleString("fr-FR"),
+    );
+    expect(computeKpiValue({ kind: "reservationHours", unit: "h" }, items, DIMS, undefined, hours)).toBe("135 h");
+    expect(computeKpiValue({ kind: "reservationHours" }, items, DIMS)).toBe("—");
+  });
 });
 
 /* ── Graphes ─────────────────────────────────────────────────────────────── */
@@ -384,6 +394,13 @@ describe("DataObservatorySectionSchema", () => {
     const badKind = structuredClone(valid);
     (badKind.props.kpis[0] as { kind: string }).kind = "median";
     expect(DataObservatorySectionSchema.safeParse(badKind).success).toBe(false);
+  });
+
+  it("kpiColumns : de 3 à 6 cartes par ligne, rien d'autre", () => {
+    const avec = (kpiColumns: unknown) => ({ ...valid, props: { ...valid.props, kpiColumns } });
+    expect(DataObservatorySectionSchema.safeParse(avec(5)).success).toBe(true);
+    expect(DataObservatorySectionSchema.safeParse(avec(7)).success).toBe(false);
+    expect(DataObservatorySectionSchema.safeParse(avec("5")).success).toBe(false);
   });
 });
 

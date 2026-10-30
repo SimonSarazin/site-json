@@ -516,12 +516,13 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
 | `subheadClassName` | string | `"text-foreground"` | Override classe couleur du sous-titre. Mettre `""` pour hériter sans forcer `text-foreground` |
 | `filtersClassName` | string | `"flex flex-col lg:flex-row lg:items-center"` | Override du conteneur flex de la rangée filtres (texte + dropdowns). Ex. : `"flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:justify-center"` |
 | `types` | `Array<{id, label}>` | — | Onglets/badges de type d'entité (bascule `selectedFilters.type`) |
-| `dropdownFilters` | `TitleWithFiltersDropdownSchema[]` | — | Dropdowns de filtres multi-sélection |
+| `dropdownFilters` | `TitleWithFiltersDropdownSchema[]` | — | Dropdowns de filtres multi-sélection. `match: "token"` pour un champ multi-valeurs, `options[].values` pour une option qui interroge plusieurs valeurs (cf. « Champs multi-valeurs » et « Option à plusieurs valeurs » plus bas) |
+| `slotFilter` | `SlotFilterSchema` | — | Filtre « créneau » : retire les ressources réservées sur une plage horaire, des jours de la semaine et une période facultative (cf. « Filtre créneau » ci-dessous) |
 | `buttons` | `ActionButtonSchema[]` | — | Boutons d'action (modal, lien, rejoindre…) via `ActionButtonGroup` |
 | `showSearch` | boolean | — | Afficher le champ de recherche texte (lié au `PageFiltersContext.searchQuery`) |
 | `searchPlaceholder` | LocalizedString | — | Placeholder du champ de recherche |
 
-**Comportement mobile des `dropdownFilters`** : sur mobile (`lg:hidden`), les dropdowns sont regroupés derrière un unique bouton `SlidersHorizontal` qui ouvre une `Sheet` latérale du bas (`side="bottom"`). La Sheet affiche tous les dropdowns en liste, un badge avec le compteur de filtres actifs, un bouton « Réinitialiser » (si filtres actifs) et un bouton « Voir les résultats » (SheetClose). Sur desktop (`lg:flex`), les dropdowns s'affichent inline dans la barre. Le compteur `activeFilterCount` compte le nombre de dropdowns ayant au moins une valeur sélectionnée.
+**Comportement mobile des `dropdownFilters`** : sur mobile (`lg:hidden`), les dropdowns sont regroupés derrière un unique bouton `SlidersHorizontal` qui ouvre une `Sheet` latérale du bas (`side="bottom"`). La Sheet affiche tous les dropdowns en liste, un badge avec le compteur de filtres actifs, un bouton « Réinitialiser » (si filtres actifs) et un bouton « Voir les résultats » (SheetClose). Sur desktop (`lg:flex`), les dropdowns s'affichent inline dans la barre. Le compteur `activeFilterCount` compte les valeurs sélectionnées (autant que de pastilles). Le filtre créneau (`slotFilter`) partage tout cela : même rangée, même Sheet, même compteur (1 quand il est appliqué), même réinitialisation.
 
 ```json
 {
@@ -548,6 +549,47 @@ Section bandeau de filtres **horizontal** (variante de `FiltersSection` présent
   }
 }
 ```
+
+#### Filtre créneau — `slotFilter`
+
+Retire de la liste les ressources **réservées** sur un créneau hebdomadaire : une plage horaire, des jours de la semaine et, au besoin, une période — la forme même d'une réservation. Les réservations sont les réponses d'un formulaire CoForm — des créneaux hebdomadaires valables sur une période, le modèle de la section réservations de la fiche (cf. [« Liens croisés équipement ↔ organisation usagère »](#liens-croisés-équipement--organisation-usagère)). On cherche donc comme on réserve : « chaque lundi et chaque jeudi de 15 h à 18 h, du 17/08/2026 au 12/08/2027 ». Une ressource sans réservation enregistrée reste dans la liste.
+
+```json
+"slotFilter": {
+  "id": "creneau",
+  "label": { "fr": "Créneau disponible", "en": "Available slot" },
+  "reservations": {
+    "form": "<ObjectId du formulaire>",
+    "step": "<clé d'étape>",
+    "fields": { "finder": "…", "user": "…", "activity": "…", "slots": "…", "periodStart": "…", "periodEnd": "…" }
+  },
+  "amplitude": { "startHour": 8, "endHour": 22 }
+}
+```
+
+Chaque borne horaire se choisit en deux listes, l'heure puis la minute au quart d'heure (`SLOT_QUARTERS` : 00, 15, 30, 45) ; sans heure, pas de borne. Une minute venue d'un lien plus ancien (17 h 10) reste proposée telle quelle (`minuteOptions`).
+
+| Saisie | Créneau vérifié |
+|---|---|
+| heures + jours | la plage, **chacun** des jours choisis : une réservation sur l'un d'eux suffit à exclure |
+| aucun jour | les 7 jours de la semaine |
+| début seul | du début jusqu'à `amplitude.endHour` (22 h par défaut) |
+| fin seule | de `amplitude.startHour` (8 h par défaut) jusqu'à la fin |
+| aucune heure | toute l'amplitude |
+| période (facultative) | bornes incluses ; début absent → aujourd'hui, fin absente → sans limite. Sans période, une réservation **terminée** ne gêne donc plus, une réservation **à venir** gêne déjà |
+| période de moins d'une semaine | seuls les jours qu'elle contient (le 14/11 seul : un samedi) |
+
+Une borne horaire hors de l'amplitude l'emporte sur elle (un début à 22 h 30 vaut jusqu'à minuit). Le formulaire refuse — et l'URL ignore — des heures inversées, une période qui finit avant son début (aujourd'hui s'il est vide) ou qui ne contient aucun des jours choisis. Le bouton affiche les jours et la plage **résolus** (« Lun, Jeu · 15:00–18:00 », « Tous les jours · 14:00–22:00 ») : la règle se lit à l'écran. La pastille y ajoute la période saisie, dans la formulation des fiches (`formatReservationPeriod` : « Du 17 août 2026 au 12 août 2027 »).
+
+**Mécanique** — glue `hooks/useSlotFilter.ts`, logique pure `lib/slotFilter.ts` :
+
+- **occupé** = une réservation dont un créneau chevauche la plage **l'un des jours cherchés**, sur une **période** — celle du créneau, sinon celle de la réservation — qui recouvre celle de la recherche. C'est la détection de conflit de la prise de réservation (`reservationConflicts`), le créneau cherché tenant lieu de réservation envisagée (un créneau par jour), avec ses règles : bornes de période incluses, créneaux semi-ouverts (18 h–20 h ne gêne pas 20 h–21 h) ;
+- l'entrée publiée dans `searchByFields`, sous la clé `${id}:${valeur d'URL}`, porte les ressources occupées en `type: "exclude"` (`EXCLUDE_TYPE`), que `searchByFieldsToQuery` traduit en `{ _id: { $nin } }`. Le filtre se combine donc en ET avec les autres, et la liste, son compteur, la carte, l'observatoire intégré et l'export CSV le suivent sans le connaître. Les identifiants sont gardés au format ObjectId : le backend convertit chaque valeur de `_id.$nin` (`SearchNew`) et échouerait sur une valeur malformée ;
+- **URL** : `?<id>=<jours>_<heures>_<période>`, chaque partie facultative, les vides de fin omis — `monday.thursday_15h00-18h00`, `_18h00-20h00` (tous les jours), `monday_15h00-` (début seul), `monday.thursday_15h00-18h00_2026-08-17-2027-08-12`, `__-2027-08-12` (période seule). La date du jour n'y figure jamais : un lien partagé sans période se lit « à partir d'aujourd'hui » chez qui l'ouvre. Le créneau demandé se lit dans l'URL : choix, lien partagé, retour arrière et réinitialisation du bandeau (qui retire le param dans sa mutation unique) passent tous par elle ;
+- **réservations chargées à la demande** — ouverture du filtre ou créneau dans l'URL —, toutes celles du formulaire qui pointent une ressource, rattachées à une organisation ou non (`useSlotReservationsQuery`, plafond 5 000, cache 5 min). Tant qu'elles manquent, le bouton affiche l'attente et aucune pastille ne paraît : le filtre n'est publié qu'une fois réellement appliqué ;
+- **rendu serveur** : comme les autres filtres d'URL du bandeau, le créneau ne s'applique qu'à l'hydratation — la page servie est complète.
+
+**Limites** : l'occupation est celle des réservations **enregistrées** — « libre » veut dire « aucune réservation connue », pas « équipement ouvert » (aucun horaire d'ouverture n'existe en base, comme pour `reservations.booking`). Comme pour la prise de réservation, les jours d'une réservation ne sont pas confrontés aux dates de SA période : une réservation de moins d'une semaine gêne tous ses jours. Le premier chargement suit le nombre de réservations du formulaire : `answerslist` joint à chaque réponse son usager, ses documents et ses commentaires.
 
 ### `coform-resource-directory` — annuaire à plat de ressources CoForm
 
@@ -1500,7 +1542,10 @@ Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du c
 | `equip_long` / `equip_larg` | `longueur` / `largeur` | Technique |
 | `equip_eclair` | `eclairage` | Technique + Accessibilité |
 | `equip_acc_libre` | `libreAccess` | Technique + Accessibilité |
-| `inst_part_bool` / `inst_part_type` | `partenariat` / `typePartenariat` | Technique |
+| `inst_part_bool` / `inst_part_type` | `partenariat` / `typeParticularite` | Technique (fiche historique) ou Général (`equipmentDetails`) |
+| `equip_numero` / `inst_siret` / `inst_uai` | `equipNumero` / `instSiret` / `instUai` | Fiche nationale (SIRET et UAI : `equipmentDetails`) |
+
+**Fiche des sites d'équipements sportifs — `preview.equipmentDetails`** (opt-in, testé `=== true`). Posé sur les aperçus d'Équipements sportifs, d'ESS974 et de Saint-Paul — liste, observatoire, table Data, palette —, et par la fenêtre des doublons (`PoiEquipementDoublonsSlot`, sans config d'aperçu). Avec l'option, la section Général montre « Type d'équipement » (`equip_type_name`), « Catégorie » (`categorie`) et « Type de particularité » (`inst_part_type`) en valeurs cliquables, et chaque sport (`aps_name`) filtre la liste ; SIRET et UAI s'affichent sous la fiche nationale quand ils sont renseignés (`isProvided` écarte « Donnée non renseignée »). Sans l'option — sport-santé-bien-être —, la fiche historique : « Catégorie » sur `equip_type_name`, sport en texte, rangée « Partenariat » en section Technique (le type si `inst_part_bool` est vrai, sinon « Non »).
 
 **`toDate()`** : même logique que `CardPoiAmenities` — gère `Date` et `string` ISO.
 
@@ -1509,7 +1554,7 @@ Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du c
 **Sections affichées** (dans l'ordre de la grille) :
 
 Colonne principale :
-1. **Informations générales** — catégorie, famille, installation, sport pratiqué
+1. **Informations générales** — catégorie, famille, installation, sport pratiqué (avec `equipmentDetails` : type d'équipement, catégorie, famille, installation, type de particularité, sports)
 2. **Gestion & usages** — propriétaire, gestionnaire, locaux, utilisateurs
 3. **Accessibilité & services** — features PMR/transport/éclairage/douches/libre accès + types ; sous-sections « Détails PMR » (6 infos) et « Détails PSHS » (6 infos)
 
@@ -1528,7 +1573,7 @@ Colonne latérale :
 
 **Labels traduits** : tous les libellés passent par `t("PreviewPoiAmenities.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PreviewPoiAmenities.yes")` / `t("PreviewPoiAmenities.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
 
-**Valeurs cliquables** : catégorie, type de propriété, locaux, utilisateurs et code postal sont rendus via `<ClickableFacet>` (cf. section suivante) — un clic applique le filtre correspondant sur le listing. `PreviewPoiAmenities` n'embarque **plus** de logique de navigation : plus de `getSiteDropdownFilters`/`findFilterOption`/`handleFilterNavigation`/`setTimeout`/path en dur — tout passe par le mécanisme générique ci-dessous.
+**Valeurs cliquables** : catégorie, type de propriété, locaux, utilisateurs, sport pratiqué (`aps_name`, chaque sport de la liste) et code postal sont rendus via `<ClickableFacet>` (cf. section suivante) — un clic applique le filtre correspondant sur le listing. Une valeur n'est cliquable que si un filtre de la page indexe son champ ET la reconnaît : sur un site sans filtre sport, le sport reste du texte. `PreviewPoiAmenities` n'embarque **plus** de logique de navigation : plus de `getSiteDropdownFilters`/`findFilterOption`/`handleFilterNavigation`/`setTimeout`/path en dur — tout passe par le mécanisme générique ci-dessous.
 
 #### Liens croisés équipement ↔ organisation usagère
 
@@ -1547,6 +1592,66 @@ Deux sections se répondent d'un bout à l'autre du **même** formulaire de cré
 
 **Les deux boutons exigent `list.previewFetch` sur la page VISÉE** (cf. [§SearchListView](#searchlistview)) : sans lui, `?preview=<id>` ne trouverait l'item que dans la tranche déjà chargée, et le lien resterait sans effet.
 
+**Restreindre les équipements réservés au site — `bookedResources.poiFilters`** (opt-in). Une organisation réserve aussi AILLEURS : sur un site scolaire, ses salles municipales n'ont rien à faire dans sa fiche, et leur bouton « fiche » viserait une page qui ne les porte pas. Avec `poiFilters` (même sémantique que `installationDashboard.poiFilters`, + `sourceKey` optionnel), `useResourcesInPerimeterQuery` ne garde que les équipements du périmètre — un seul appel `_id: {$in}` sur les équipements réservés, scopé au costum du site. Pendant cet appel, la section reste en squelette (jamais un instant « tous les équipements »). Absent : aucune requête de plus, comportement historique.
+
+**Volume horaire — `reservations.hours` / `bookedResources.hours`** (opt-in). Fiche équipement : le total de l'équipement en deux cartes d'indicateur sous le titre (`KpiCard` du module observatoire, en grande taille `size="lg"`, sablier pendant le chargement), puis celui de chaque club sur une ligne SOUS sa rangée. Fiche organisation : les deux cartes au-dessus de la liste, total sur les équipements LISTÉS (donc après `poiFilters`), puis celui de chaque équipement — le total est la somme des lignes. Deux valeurs à chaque fois : **par semaine** et **cumulée** (chaque créneau × le nombre de fois où son jour tombe réellement dans SA période — celle du créneau, sinon celle de la réservation —, bornes incluses). Seuls comptent les créneaux **en cours ou à venir** (fin de leur période ≥ aujourd'hui, le test du filtre créneau sans période), jugés créneau par créneau : une saison ou un cycle terminés n'occupent plus l'équipement. L'hebdomadaire se lit au **jour de référence** (`weeklyReferenceDay`) : les créneaux actifs ce jour-là — aujourd'hui, ou le début de la période choisie —, sinon ceux du prochain jour où commence un créneau à venir (vacances, intersaison). Additionner tout ce qui est en cours ou à venir comptait chaque créneau autant de fois qu'il reste de périodes, dès qu'un club a une réservation par trimestre ou par cycle. Une fiche calcule ce jour une fois, sur tout ce qu'elle affiche, et le passe à chaque ligne. Avec `reservations.periods`, la fiche compte les créneaux AFFICHÉS, depuis le début de la période choisie. Le nombre de créneaux affiché à côté compte, lui, toutes les réservations listées. Sans période exploitable, le cumul vaut 0 ; ni jours fériés ni vacances ne sont déduits (aucune donnée) ; deux réservations qui se chevauchent s'additionnent. Arrondi au dixième d'heure (`formatHours`, règle du tableau de bord installation). Logique pure dans `lib/reservationHours.ts` (testée), partagée avec le KPI `reservationHours` de l'observatoire (cf. `doc/27-module-observatoire.md`) et avec le tableau de bord installation, qui calcule son taux d'occupation sur la même semaine type (`weeklyReservations` : les seuls créneaux actifs au jour de référence, plutôt que toutes les saisons ensemble). Les heures ont LEUR ligne : rangées à droite avec le nombre de créneaux, elles écrasaient le nom du club et passaient sous le bouton « Fiche » en mobile.
+
+**Périodes — `reservations.periods`** (opt-in ; exige `fields.periodStart` et `fields.periodEnd`, sinon `config:validate` refuse). Une réservation vaut pour UNE période (Date début / Date fin) ; une autre période est une autre réservation — c'est ce que produit l'import des plannings, une réservation par cycle ou par trimestre. Un créneau peut néanmoins porter sa propre période : `periodStart` / `periodEnd` posés sur l'objet `timeSlots` (données d'avant cette convention ou saisies ailleurs), lus borne par borne, sinon ceux de sa réservation (`slotPeriod`) — un créneau sans période vaut pour toute la réservation. Cette lecture vaut PARTOUT, option posée ou non : conflits (`reservationConflicts`, jugés créneau par créneau), filtre créneau, heures, blocs de la grille ; sur les fiches équipement et organisation, la période propre d'un créneau s'affiche à côté de lui quand elle diffère de celle de sa réservation (`ownSlotPeriod`).
+
+L'option ajoute à la section réservations de la fiche équipement un filtre « du … au … » (`PeriodFilter` et son état `usePeriodFilter`, partagés avec la fiche organisation) : ne restent que les créneaux dont la période recouvre l'intervalle, bornes incluses (`reservationsInPeriod`) ; sans date, ceux en cours ou à venir (`resolvePeriodFilter`, règles du filtre créneau : « du » vide → aujourd'hui, « au » vide → sans limite ; une fin avant le début est signalée, et la section garde ce défaut). Clubs, nombre de créneaux, heures et grille suivent. Chaque club affiche ses périodes sous sa rangée, fiche repliée (`distinctPeriods` : les périodes effectives distinctes de ses créneaux affichés, triées). Avec `booking` :
+- une case n'est occupée que par un créneau AFFICHÉ — un créneau d'août à septembre ne bloque plus octobre à décembre ;
+- le clic relit les réservations et contrôle la case sur la période choisie, puis ouvre le formulaire avec Date début / Date fin pré-remplies (`buildReservationPrefill`, sur la réservation et non sur le créneau cliqué), sans période par créneau ni en-tête d'étape (`CoFormModal.hideStepHeaders` : le titre de la fenêtre suffit) ;
+- chaque club rattaché par identifiant porte aussi, dans son détail, un bouton « Ajouter un créneau » (avec ou sans `periods`) : le même formulaire, équipement ET club verrouillés (`buildReservationPrefill`, option `orga`), sans créneau ni dates — comme depuis la fiche du club ;
+- pendant la SAISIE, chaque créneau est jugé en direct dès que les dates de la réservation et son horaire sont saisis (`CoFormModal.slotCheck` → `slotIssues`, sur les réservations en cache ; cf. `doc/21-module-coform.md`) : l'occupant et sa période, ou le chevauchement avec un créneau plus haut du formulaire, s'affichent sous le créneau en cause. Un avertissement seulement : c'est le contrôle suivant qui bloque, qu'il ait été lu ou non ;
+- l'ENREGISTREMENT est contrôlé sur ce que le formulaire envoie vraiment (`CoFormModal.beforeSubmit` → `bookingIssue`, sur les réservations relues) et refusé, formulaire laissé ouvert avec un message : période de la réservation incomplète ou à l'envers ; période d'un créneau à l'envers ou hors de celle de la réservation ; deux créneaux du formulaire qui se chevauchent ; créneau qui chevauche un créneau déjà enregistré de l'équipement (même jour, heures sécantes, périodes communes — l'occupant et sa période sont nommés).
+
+Ces deux contrôles sont les mêmes pour tous les formulaires d'ajout — case libre, bouton par club, fiche organisation (`useBookingChecks`) — et se jugent sur les réservations de chaque équipement saisi, par le cache de la fiche (`resourcesReservations`). Ces réservations sont lues en ENTIER, jusqu'à `SEARCH_ALL_DEFAULT_MAX_RESULTS`, sans tenir compte de `maxAnswers` (qui ne borne que la fiche organisation) : un contrôle sur une liste tronquée déclarerait libre un créneau occupé. Après l'enregistrement, le même hook fait relire les fiches et le filtre créneau (`afterSave`, invalidation par préfixe). Les trois rappels gardent leur identité d'un rendu à l'autre : ils dépendent de la langue, pas de `t`, que `useT` recrée à chaque rendu — l'avertissement en direct, dont `slotCheck` est la dépendance, ne repart qu'à la saisie ou au changement de langue. Logique pure dans `lib/reservationBooking.ts` (testée).
+
+Sans `periods`, la fiche garde son comportement historique : toute réservation, terminée comprise, s'affiche et occupe sa case. **Limites** : aucun contrôle serveur — deux admins qui enregistrent au même instant peuvent encore se chevaucher (fenêtre réduite par les relectures). Le formulaire doit accepter PLUSIEURS réponses par personne (`oneAnswerPerPers` décoché) : `SaveAnswerAction` vérifie ce réglage sans l'équipement et refuse toute nouvelle réservation à un compte qui en a déjà une, alors que la fenêtre de la fiche s'ouvre normalement.
+
+**Grille de réservation : une carte par plage continue.** Les créneaux d'un même club qui se suivent sans interruption — fin de l'un = début du suivant, même jour, même activité, même période — ne forment qu'un bloc (`buildWeeklyGrid`, ses morceaux dans `WeeklySlotBlock.parts`, énumérés par la bulle de détail). Dans la grille à l'échelle horaire, les rangées consécutives d'un jour occupées par un même bloc, ou par des blocs qui s'enchevêtrent, ne forment qu'une cellule `rowSpan` (`mergeBookingRows`) : un créneau de 7 h 35 à 15 h 10 n'est plus répété dans les 9 rangées d'une heure qu'il recouvre. Chaque colonne se fusionne seule, les autres jours ne bougent pas ; les cases libres restent une par rangée. Chaque carte porte la période de son créneau en dates courtes (`formatPeriodShort` : « 19/08/2026 → 05/11/2026 ») — depuis l'import par période, un même créneau peut figurer une fois par trimestre dans la même case. Logique pure dans `lib/reservations.ts` (testée).
+
+**Modifier l'horaire d'un créneau — `reservations.booking.editHours`** (opt-in, toujours réservé aux admins de l'entité du site). Un crayon sur chaque créneau, dans le détail d'un club (fiche équipement) et dans la liste d'un équipement (fiche organisation), ouvre `SlotHoursDialog` : le jour et la période se lisent, seules les heures se saisissent. Dès que les deux heures sont saisies et diffèrent de l'horaire actuel, le contrôle juge le nouvel horaire en direct, sur les réservations en cache, et son motif s'affiche sous les champs ; « Enregistrer » reste actif et rejoue le contrôle sur des réservations relues, qui refuse l'écriture. Le contrôle relit les réservations de chaque équipement de la réservation (`slotHoursIssue` : fin après début, créneau toujours le même, aucun chevauchement avec un autre créneau de la réservation ni avec un autre club sur une période commune). L'écriture relit la réponse, vérifie que le créneau visé n'a pas changé (`isSameSlot` : même jour, mêmes heures et même période — un cycle jumeau d'une autre période ne diffère que par elle) et réécrit ce seul élément du tableau `timeSlots` par `updateField` (`answers.<étape>.<étape><créneaux>.<index>`, l'index BRUT porté par `ReservationSlot.index`) : `withSlotHours` garde ses autres clés et recalcule la durée importée `duree`. Côté plateforme, `updatepathvalue` applique `Answer::canEdit` (auteur, admins du contexte de la réponse, super-admin) ; il n'écrit pas d'entrée d'historique `answerChanges`. Une réservation valant pour une période, la modification ne porte que sur elle : un horaire changé pour l'année se modifie dans chaque période. Hook : `useUpdateSlotHours`, commun aux deux fiches — la fenêtre (`editing`, `open` / `close`), `submit` (contrôle sur les réservations relues, puis écriture) et `checkLive` (même contrôle sur les réservations en cache, pendant la saisie ; stable, comme `submit`, car dépendance de l'effet d'avertissement de la fenêtre) ; il invalide par préfixe `RESERVATIONS_PREFIX`, `ORGA_RESERVATIONS_PREFIX`, `RESERVATION_SLOTS_PREFIX`.
+
+**Fiche organisation : ajout de créneaux, période, placement.** Avec `booking` sur le bloc `reservations` de l'annuaire, chaque équipement listé porte un bouton « Ajouter un créneau » (admins ; jamais pour un visiteur déconnecté, même avec `adminOnly: false`) : `CoFormModal` pré-rempli et verrouillé sur l'équipement ET l'organisation (`buildReservationPrefill`, option `orga`), mêmes contrôles que la fiche équipement — en direct pendant la saisie, puis à l'enregistrement (`useBookingChecks`). Avec `periods`, même filtre « du … au … » et même défaut que la fiche équipement (`resourceGroupsInPeriod`). `bookedResources.placement: "column"` range la section dans la colonne de GAUCHE, la large, de `PreviewStructure`, la localisation à droite — personnes, informations et documents passant sous la localisation ; sur téléphone, la section vient avant la localisation (ordre de lecture). Une organisation sans réservation y garde la section, avec un message, plutôt qu'une colonne vide. Défaut `full` : pleine largeur sous la fiche, comportement historique.
+
+#### Annuaire des organisations usagères — `searchProStatic.reservationUsers`
+
+Liste d'organisations dont le périmètre est **calculé** à partir des réservations : les usagères (finder `userOrga`) d'au moins une réservation qui porte sur un équipement du périmètre du site. Aucun filtre de la recherche ne sait relier réservation, équipement et organisation — trois collections. Le périmètre suit seul les nouveaux créneaux (saisis ou importés), les nouvelles organisations et les équipements rattachés au site. Avec `includeCostumOrganizations`, les organisations rattachées au costum du site s'y ajoutent (étape 4).
+
+```json
+"reservationUsers": {
+  "reservations": { "form": "…", "step": "…", "fields": { "finder": "…", "userOrga": "…", "user": "…", "activity": "…", "slots": "…" } },
+  "poiFilters": { "type": "recoveryCenter" }
+}
+```
+
+| Étape | Code | Appel |
+|---|---|---|
+| 1. Réservations rattachées à une organisation | `fetchReservationAnswers` (partagé avec `useReservationsQuery`/`useOrgaReservationsQuery`) | `answers.<step>.finder<step><userOrga>` `$exists`, pages de 100, plafond `SEARCH_ALL_DEFAULT_MAX_RESULTS` |
+| 2. Parmi les équipements réservés, ceux du site | `fetchResourceIdsInPerimeter` | `_id: {$in}` + `poiFilters`, scopé au costum du site |
+| 3. Organisations retenues → liste | `reservationUserIds` + `scopeFiltersToIds` (purs, testés) | la liste part avec `_id: {$in: […]}` |
+| 4. Option `includeCostumOrganizations` : organisations rattachées au costum | `fetchCostumOrganizationIds` (via `searchCostumIds`, la pagination partagée avec l'étape 2) + `withCostumOrganizations` (pur, testé) | recherche `organizations` scopée au costum du site (`source.keys` ou `reference.costum`), identifiants seuls, lancée en même temps que les étapes 1 et 2 ; réunie aux usagères avant l'étape 3 |
+
+- **SSR** : `prefetchReservationUsers` précharge le périmètre sous la clé du client (`SEARCH_QUERY_KEYS.RESERVATION_USERS`), puis la liste DÉJÀ restreinte — la page servie est la bonne, l'hydratation ne refait aucun appel.
+- **Mémo serveur** : les étapes 1 et 2, la partie lourde (`fetchReservationPerimeter`), passent au SSR par le mémo des facettes (`facetCache`, 5 min par défaut, `SSR_FACET_CACHE_TTL_MS`), sous la clé de la liste sans `includeCostumOrganizations` : une page servie ne relit plus toutes les réservations du formulaire. L'étape 4 reste lue à chaque rendu : une association ajoutée apparaît dès le rechargement. Contrepartie : au rendu serveur, les réservations peuvent avoir jusqu'à une durée de vie de retard — un club hors costum n'y entre qu'au renouvellement du mémo qui suit son premier créneau. `useReservationUsersQuery`, côté client, ne passe pas par ce mémo.
+- **`$in` vide jamais envoyé** : `SearchNew::searchFilters` ignore un `$in` vide et rendrait toutes les organisations. Aucune organisation possible → ni requête (client et SSR), liste vide — même convention que `parentIdsFilter`.
+- **Périmètre absent** (chargement, échec) : la liste, la carte et l'export CSV ne partent PAS ; l'échec s'affiche comme celui de la liste, et « Réessayer » relance le périmètre.
+- Un `_id.$in` déjà posé par une facette « par réponses » est **intersecté**, pas écrasé.
+- `fields.userOrga` est requis (`refine` du schéma → `config:validate`). Une réservation sans identifiant d'organisation (texte historique seul) ne compte pas, comme dans la fiche organisation.
+- Données publiques (endpoint `answerslist` sans authentification) : pas de dimension `userId` dans la clé.
+- **Organisations rattachées** (`includeCostumOrganizations: true`) : le périmètre ajoute les organisations rattachées au costum du site — une association ajoutée depuis l'annuaire y figure avant son premier créneau. L'option entre dans la clé ; absente, elle n'y change rien (`undefined` est ignoré au hachage). Une organisation créée par le bouton « Ajouter » de la section y entre AUSSITÔT (`useAddCostumOrganization`, branché sur `onCreated` de la modale) : la relecture, qui relit toutes les réservations, peut prendre plusieurs secondes. Le formulaire invalide aussi le périmètre en déclarant `search-reservation-users` (préfixe de `SEARCH_QUERY_KEYS.RESERVATION_USERS`) dans `invalidateFn.params.searchKeys` : la relecture confirme en arrière-plan. Sans création, staleTime + refetch au remontage.
+
+**Ajouter une association à l'annuaire** (patron d'ESS974, 100 % config) :
+
+- `addButton.modal: "add-<id>"` ouvre un `costumForms.<id>` d'`organizations`, réservé aux admins du site (`adminOnly` par défaut) ;
+- le formulaire déclare `costumSlug` = slug du site (obligatoire, préflight `costum-form-slug`) : la création passe par `me.costum(<slug>)` — résolu en direct pour un costum hors registre du SDK (`getcostumjson`, sinon `slug/getinfo`) — et le backend pose `source.key`/`source.keys` = slug du site : c'est ce rattachement que lit `includeCostumOrganizations` ;
+- un stamp `tags` en `append`, sur `both`, garantit l'étiquette du finder de réservation (`params.finder<clé>.filter`) : sans elle, l'association ne pourrait recevoir aucun créneau ;
+- `inject.extraFields.role: "admin"` fait du créateur l'administrateur de l'association, ce qui lui ouvre le bouton « Éditer » de la fiche `structure` ; `profiles.organizations.editModals` route vers le même formulaire, borné par la provenance (`sourceKeys` / `reference.costum`, cf. préflight `edit-modal-scope`) ;
+- `duplicateCheck` cherche les organisations qui portent déjà l'étiquette (réseau entier, `notSourceKey`) : un club existant se réserve, il ne se recrée pas ;
+- depuis le formulaire de réservation, `coform.finderAddNew` déclare ce même formulaire pour la question du finder « club usager » (`finder<étape><userOrga>: "add-<id>"`, cf. `doc/21`) : si le bouton « Ajouter » du finder est activé (`addNew`), le club créé porte l'étiquette ; sans la déclaration, le formulaire standard créerait un club sans elle, absent du finder comme de l'annuaire ;
+- l'ajout reste réservé aux admins de deux façons : `profileAdd: false` garde le formulaire standard dans l'« Ajouter » des profils (sinon tout inscrit y créerait une association, rattachée au site donc listée), et la liste filtre sur l'étiquette (`baseParams.defaultFilters.$or.tags`) — une organisation créée ailleurs sur le site est rattachée elle aussi, par le costum ambiant, mais n'a pas l'étiquette.
+
 ### Facettes cliquables & navigation par filtre (`dropdownFilters`)
 
 Mécanisme **générique et agnostique de l'entité** : une valeur affichée dans un preview (ou toute carte/cellule) qui correspond à un `dropdownFilter` du `searchHeader` devient **cliquable** pour filtrer le listing — pattern « recherche à facettes » (rebondir d'un équipement vers tous ceux qui partagent une caractéristique).
@@ -1561,7 +1666,8 @@ Source unique, sans React, testée (`dropdownFilters.test.ts`) :
 |---|---|
 | `keyFor(filterId, optionId)` / `splitKey(key)` | Contrat unique de clé `searchByFields` (`filterId:optionId`), écriture ET lecture |
 | `normalizeFilterValue(s)` | Normalisation **déterministe** : diacritiques + minuscules + suppression des caractères `(`/`)` seuls (garde le contenu : `Individuel(s)`→`individuels`) + variantes d'apostrophe + espaces autour du `/`. **Pas** de matching substring (élimine les faux positifs ordre-dépendants) |
-| `resolveDropdownOption(filter, value)` | id exact → value normalisée → label normalisé → `null` |
+| `resolveDropdownOption(filter, value)` | id exact → value normalisée → label normalisé → l'une des `values` de l'option (en DERNIER : rien de ce qui se résolvait ne change) → `null` |
+| `dropdownOptionEntry(filter, fieldName, option, variants?)` | Entrée `searchByFields` d'une option cochée — **source unique** de l'en-tête et de `dropdownFilterToState`. `values` priment, puis `variants` (passées par la seule navigation par facette, comme avant), puis `value ?? id` ; `match: "token"` ajoute `type: "token"` |
 | `getDropdownFilterOwner(config, filterId, preferPathname?)` | Page propriétaire + filtre (scan de tous les `searchHeader`, mergés par id) — remplace tout path en dur |
 | `findFilterByField(config, field, preferPathname?)` | Idem par `field` `serverData` (dérivation champ → filtre) |
 | `dropdownFilterToParam(params, filter, ids)` | Miroir URL `?filterId=ids` ; ids vide → suppression |
@@ -1570,6 +1676,35 @@ Source unique, sans React, testée (`dropdownFilters.test.ts`) :
 | `toFacetTokens(value)` | Tokens d'un champ : array → strings, `"a, b"` → `["a","b"]`, number/bool → `[String]` |
 
 > Ces helpers écrivent **exactement** les mêmes shapes que `SearchHeaderSection` lit (`keyFor`) : la feature marche par **compatibilité de contrat**, sans refactorer le header.
+
+#### Champs multi-valeurs — `match: "token"`
+
+Un `dropdownFilter` compare par défaut **à l'identique** (`{ champ: { $in: [...] } }`). Sur un champ
+qui stocke plusieurs valeurs dans une chaîne (`"Etablissement scolaire, Complexe sportif"`), toute
+fiche multi-valeurs est ignorée : « Clubs sportifs » ne trouvait qu'**un** équipement à Saint-Paul
+quand 241 portent cette valeur. `"match": "token"` sur le filtre fait comparer la valeur comme
+**élément entier** de la liste (`lib/tokenMatch.ts`) :
+
+- motif `(?:^|,)\s*(?:v1|v2)\s*(?:,|$)`, valeurs **échappées**, sensible à la casse comme `$in` ⇒
+  **sur-ensemble strict** de l'égalité (vérifié sur 81 options des 3 sites équipements : 0 fiche perdue) ;
+- transport : `$regex` Mongo posé sous `filters.$or = { $and: [...] }`, le canal que le backend legacy
+  recopie brut (cf. `mongoFilters.ts`) — le ET avec les autres filtres et le périmètre est préservé ;
+- ⚠ ne PAS utiliser la forme tableau `{ champ: [v] }` : `SearchNew::searchFilters` y entoure la valeur
+  de `.*` **sans l'échapper** (« Individuel(s) », « Aérodrome/aéroport » cassent), et avec deux
+  valeurs ou plus sa boucle combine les conditions de travers.
+
+Sans filtre `token` coché, la sortie de `searchByFieldsToQuery` est identique octet pour octet.
+
+#### Option à plusieurs valeurs — `values`
+
+Une option peut interroger **plusieurs** valeurs à la fois (en OU) : `"values": ["97400", "97490"]`
+prime sur `value`. Usages : regrouper des codes postaux par commune (ESS974 — « Saint-Denis (97400 /
+97490) », sans virgule dans le libellé, cf. doc 27) ; couvrir les graphies d'une même valeur — l'import du recensement écrit « Salle(s) de
+réunion/cours », le formulaire de saisie (liste `equip_loc_type` de l'entité) « Salle(s) de réunion /
+cours ». Un jeton égal à l'une des `values` désigne l'option : la facette cliquable « 97490 » d'une
+fiche et un ancien lien `?poi-postalCode=97490` tombent sur la commune. Distinct des `variants` d'une
+source dynamique (`optionsFrom`), que l'en-tête **n'interroge pas** — volontairement inchangé : les lui
+faire interroger changerait les résultats de parent62, institut-bleu et du bassin de vie de Saint-Paul.
 
 #### `useDropdownFilterNav()` — hook route-aware (Layer 1)
 
@@ -2115,6 +2250,8 @@ mémorisé **entrée par entrée**, avant son repli best-effort : une entrée en
 suivante réessaie), les autres sont servies. La clé que la page lit et la donnée hydratée sont inchangées. **Hors du cache** : `prefetchSearchResults` (les résultats restent frais
 à chaque rendu) et tout le code client (après hydratation, `useSearchZoneQuery` & co. parlent au backend
 directement). Seule contrepartie : une liste de filtres peut avoir jusqu'à une durée de vie de retard.
+Le même mémo porte la partie lourde du périmètre de l'annuaire des organisations usagères
+(`prefetchReservationUsers`, cf. « Annuaire des organisations usagères »).
 
 ---
 

@@ -955,6 +955,16 @@ describe("generateZodSchema", () => {
     expect(() => schema.parse({ ts: [{ ...validSlot, endHour: "07" }] })).toThrow();
   });
 
+  it("timeSlots — période propre d'un créneau : conservée, et refusée à l'envers", () => {
+    const schema = generateZodSchema([
+      makeSubFormFields([makeField({ name: "ts", componentType: "timeSlots", isRequired: false })]),
+    ]);
+    const date = { ...validSlot, periodStart: "2026-08-24", periodEnd: "2026-12-14" };
+    expect((schema.parse({ ts: [date] }) as { ts: unknown[] }).ts).toEqual([date]);
+    expect(() => schema.parse({ ts: [{ ...validSlot, periodStart: "2026-08-24" }] })).not.toThrow();
+    expect(() => schema.parse({ ts: [{ ...date, periodStart: "2026-12-15" }] })).toThrow();
+  });
+
   it("timeSlots rejette un slot incomplet et timeSlots required exige >= 1 slot", () => {
     const schema = generateZodSchema([
       makeSubFormFields([makeField({ name: "ts", componentType: "timeSlots", isRequired: true })]),

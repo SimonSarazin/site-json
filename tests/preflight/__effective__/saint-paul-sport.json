@@ -180,7 +180,10 @@
           "geoPosition",
           "parent",
           "source",
-          "reference"
+          "reference",
+          "equip_numero",
+          "inst_siret",
+          "inst_uai"
         ],
         "searchBy": [
           "name",
@@ -296,7 +299,9 @@
           "geoPosition",
           "parent",
           "source",
-          "reference"
+          "reference",
+          "inst_siret",
+          "inst_uai"
         ]
       }
     },
@@ -359,7 +364,9 @@
           "geoPosition",
           "parent",
           "source",
-          "reference"
+          "reference",
+          "inst_siret",
+          "inst_uai"
         ]
       }
     },
