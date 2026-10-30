@@ -97,9 +97,9 @@ export function AuthMenu({
   // dropdown desktop) : toute évolution (rel, aria, tracking) reste mono-source. Le span
   // sr-only annonce la sortie vers la plateforme — l'icône est aria-hidden et, dans le
   // dropdown, Radix pose role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux
-  // lecteurs d'écran. Nouvel onglet, PAS un modal/iframe : le chat (comme le Kanban) a ses
-  // propres événements temps réel (WebSocket) et verrous de session que l'isolation d'une
-  // iframe casse — mesuré en usage réel, 27/10/2026.
+  // lecteurs d'écran. Nouvel onglet, PAS un modal/iframe : le SDK n'expose pas de jeton de
+  // connexion pour authentifier une iframe Rocket.Chat — sans lui, l'iframe montre au mieux
+  // l'écran de connexion complet, au pire une page refusée par l'instance.
   const kanbanLink = kanbanUrl ? (
     <a href={kanbanUrl} target="_blank" rel="noopener noreferrer">
       <SquareKanban className="mr-2 h-4 w-4" />

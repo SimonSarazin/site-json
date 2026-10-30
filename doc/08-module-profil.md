@@ -679,12 +679,21 @@ recette qu'une organisation/un POI costum**, pas une clé générique dans `site
    correctif PHP (`Person::$dataBinding`/`Element::updateBlock`) n'est nécessaire : ce chemin est
    différent de la liste blanche figée d'`updateBlock`.
 4. **Formulaire côté site-json** : un `costumForm` dédié (`entityType:"citoyens"`), routé par
-   `profiles.citoyens.editModals` scopé au costum (`when` sur `sourceKeys`/`reference.costum`,
-   `userContext:"own"`) — PAS une option dans le descripteur générique partagé
-   (`editProfileConfig`/`editProfile.descriptor.ts`), qui reste identique pour tous les sites.
-   Exemple vivant : `config.prod.sport-sante-bien-etre.json`/`config.prod.maison-sport-sante-la-
-   tampon.json`, costumForm `<site>-citoyen` (commit `2fe9e545`) — même patron pour parent62
-   (`costumForms.parent62-citoyen`).
+   `profiles.citoyens.editModals` (`userContext:"own"` + un `when` qui borne la route) — PAS une
+   option dans le descripteur générique partagé (`editProfileConfig`/`editProfile.descriptor.ts`),
+   qui reste identique pour tous les sites. **La condition du `when` n'est PAS universelle — elle
+   dépend de comment le site peuple ses citoyens** :
+   - `sport-sante-bien-etre`/`maison-sport-sante-la-tampon` (commit `2fe9e545`) : `sourceKeys`/
+     `reference.costum` contient le slug — fonctionne car leurs professionnels s'inscrivent via le
+     flux costum-scopé (`UserApi.register({costumSlug})`, estampille à l'inscription).
+   - `parent62` (`costumForms.parent62-citoyen`) : `links.memberOf.<id de l'organisation porteuse>`
+     validé — ses coordinateur·rices étaient déjà des comptes existants AVANT ce lot, jamais
+     estampillés `source.key`/`reference.costum` (cette estampille n'est jamais posée
+     rétroactivement) ; seule l'adhésion réelle (lien `memberOf` à l'organisation) les identifie.
+
+   Choisir le bon `when` au cas par cas : si le site inscrit ses citoyens via le costum, la
+   provenance (`sourceKeys`/`reference.costum`) suffit ; si ses membres existaient déjà (ou
+   s'inscrivent hors costum), router sur l'adhésion (`links.memberOf`) est la seule option fiable.
 
 ⚠️ Composants `_location`/`editSocial` (widgets dédiés d'`editCitoyenDescriptor`, adresse/réseaux
 sociaux) : leur lecture/écriture est câblée dans le pipeline `editProfilePayload.ts`, PAS dispo

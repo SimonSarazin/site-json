@@ -100,8 +100,8 @@ const AuthMenuConfigSchema = z.object({
   // Entrée « Chat » : lien (nouvel onglet, comme Kanban) vers le chat de la plateforme
   // (instance Rocket.Chat SÉPARÉE, `getRocketChatUrl()` — PAS un chemin sous `getServerUrl()`),
   // réservé aux admins du costum — gate : `isRocketChatEntryVisible` (modules/admin/lib/adminEntry),
-  // indépendant de `config.admin`. PAS un modal/iframe : le chat a ses propres événements temps
-  // réel (WebSocket) et verrous de session qu'une iframe casse. Contrairement à `kanban`, ACTIF
+  // indépendant de `config.admin`. PAS un modal/iframe : le SDK n'expose pas de jeton de connexion
+  // pour authentifier une iframe Rocket.Chat — cf. `AuthMenu.tsx`. Contrairement à `kanban`, ACTIF
   // PAR DÉFAUT (absence de clé = visible) ; `false` explicite pour le désactiver sur un site.
   rocketChat: z.boolean().optional(),
 });

@@ -5228,8 +5228,9 @@ entier, contraire à la convention habituelle opt-in/défaut false. Lien **nouve
 pattern que Kanban) vers `getRocketChatUrl()` (`VITE_ROCKETCHAT_URL`, défaut
 `https://chat.communecter.org` — une instance Rocket.Chat SÉPARÉE de communecter :
 `<serverUrl>/co2/rocketchat` rouvre communecter, pas le chat). Lien externe, PAS un modal/iframe :
-le chat (WebSocket temps réel, verrous de session) ne fonctionne pas correctement isolé dans une
-iframe (pas de `layout=embedded`, pas d'échange de jeton de connexion). Fichiers :
+le SDK cocolight n'expose pas de jeton de connexion pour authentifier une iframe Rocket.Chat — sans
+lui, l'iframe montrerait au mieux l'écran de connexion complet, au pire une page refusée par
+l'instance. Fichiers :
 `src/modules/admin/lib/{adminEntry.ts,platformRocketChatUrl.ts}`,
 `src/modules/auth/components/AuthMenu.tsx`, `src/modules/auth/schema.ts`, `src/lib/constant/common.ts`,
 `src/types/site-schema.ts`. Gate par **code** (générique moteur), pas par config — le flag
