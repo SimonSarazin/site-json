@@ -166,6 +166,51 @@
           }
         },
         {
+          "type": "map-shapes",
+          "id": "commune-re-shapes",
+          "props": {
+            "title": {
+              "fr": "Les communes de la Réunion",
+              "en": "The municipalities of Reunion"
+            },
+            "description": {
+              "fr": "Cliquez une commune pour explorer ses équipements sportifs scolaires.",
+              "en": "Click a municipality to browse its school sports facilities."
+            },
+            "bg": "muted",
+            "maxHeight": 560,
+            "shapes": [
+              {
+                "id": "commune-re-shape",
+                "source": "cities",
+                "simplify": 10,
+                "showNames": true,
+                "filters": {
+                  "countryCode": "RE",
+                  "parentLevel": "4",
+                  "parentId": "58be4af494ef47df1d0ddbcc"
+                },
+                "label": {
+                  "fr": "Les communes",
+                  "en": "The municipalities"
+                },
+                "style": {
+                  "fill": "primary",
+                  "fillOpacity": 0.12,
+                  "stroke": "primary",
+                  "strokeWidth": 1.5,
+                  "strokeOpacity": 0.8
+                }
+              }
+            ],
+            "target": {
+              "path": "/equipements-sportifs",
+              "filterId": "commune",
+              "valueFrom": "_id"
+            }
+          }
+        },
+        {
           "type": "hero-quick-access",
           "id": "acces-rapide",
           "props": {
@@ -1675,6 +1720,27 @@
                     }
                   }
                 ]
+              },
+              {
+                "id": "commune",
+                "label": {
+                  "fr": "Communes",
+                  "en": "Municipalities"
+                },
+                "field": "address.localityId",
+                "multiple": true,
+                "optionsFrom": {
+                  "shapes": {
+                    "id": "commune-re",
+                    "source": "cities",
+                    "simplify": 10,
+                    "filters": {
+                      "countryCode": "RE",
+                      "parentLevel": "4",
+                      "parentId": "58be4af494ef47df1d0ddbcc"
+                    }
+                  }
+                }
               }
             ],
             "slotFilter": {
@@ -2297,7 +2363,32 @@
                     "color": "secondary"
                   }
                 }
-              }
+              },
+              "shapes": [
+                {
+                  "id": "commune-re",
+                  "source": "cities",
+                  "load": "idle",
+                  "simplify": 10,
+                  "showNames": true,
+                  "filters": {
+                    "countryCode": "RE",
+                    "parentLevel": "4",
+                    "parentId": "58be4af494ef47df1d0ddbcc"
+                  },
+                  "label": {
+                    "fr": "Communes",
+                    "en": "Municipalities"
+                  },
+                  "style": {
+                    "fill": "primary",
+                    "fillOpacity": 0.12,
+                    "stroke": "primary",
+                    "strokeWidth": 1.5,
+                    "strokeOpacity": 0.8
+                  }
+                }
+              ]
             },
             "observatory": {
               "dimensions": {
