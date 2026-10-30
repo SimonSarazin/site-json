@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-30** (production : mise à jour Data ES appliquée — 703 équipements, 128 structurants —, plannings de Petite-Île importés, questionnaire copié avec son identifiant, réglages du formulaire des créneaux posés ; lots CDC-1 à CDC-5 committés et poussés, à proposer dans une nouvelle MR, la MR 114 étant fusionnée depuis le 29/10 — §9 ; revue avant commit des lots CDC-1 à CDC-5, 11 corrections : KPI des structurants juste en anglais, couleurs du statut dans les deux langues, exports après le calcul, mesure d'usage « — » en cas d'échec, filtre de statut indépendant de l'ordre des filtres, doublons retirés, docs et Méthodologie précisées — §9 ; 28/10 : CDC de la DRAJES : lots CDC-1 à CDC-5 livrés et vérifiés au navigateur après l'import de Petite-Île, committés le 30/10 — §9 ; CDC de la DRAJES v1.0 reporté : chantier et synthèse au §1, lots CDC-1 à CDC-5 en checklist §10, questions au §13, plan en attente du go ; review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, appliquée en production le 30/10 (§9).
+Dernière mise à jour : **2026-10-30** (seconde note de Thomas sur la MR 114 : avec `adminOnly: false`, le bouton d'ajout de la fiche association s'affiche aussi hors connexion et ouvre la connexion, comme sur la fiche équipement — §9 ; production : mise à jour Data ES appliquée — 703 équipements, 128 structurants —, plannings de Petite-Île importés, questionnaire copié avec son identifiant, réglages du formulaire des créneaux posés ; lots CDC-1 à CDC-5 committés et poussés, à proposer dans une nouvelle MR, la MR 114 étant fusionnée depuis le 29/10 — §9 ; revue avant commit des lots CDC-1 à CDC-5, 11 corrections : KPI des structurants juste en anglais, couleurs du statut dans les deux langues, exports après le calcul, mesure d'usage « — » en cas d'échec, filtre de statut indépendant de l'ordre des filtres, doublons retirés, docs et Méthodologie précisées — §9 ; 28/10 : CDC de la DRAJES : lots CDC-1 à CDC-5 livrés et vérifiés au navigateur après l'import de Petite-Île, committés le 30/10 — §9 ; CDC de la DRAJES v1.0 reporté : chantier et synthèse au §1, lots CDC-1 à CDC-5 en checklist §10, questions au §13, plan en attente du go ; review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion — remplacé le 30/10) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, appliquée en production le 30/10 (§9).
 
 ---
 
@@ -55,6 +55,7 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 | 29/10 | Thomas | MR 114 (lots 2 à 11 et corrections de sa review) fusionnée dans `main` (`e9013d80`) |
 | 30/10 | Claude | Lots CDC-1 à CDC-5 committés après la revue avant commit (`80186746`, `768ac78e`, `9fc24c04`), poussés par Peterson |
 | 30/10 | Peterson | Production : mise à jour Data ES, plannings de Petite-Île, questionnaire, réglages du formulaire des créneaux (§9) |
+| 30/10 | Claude | Seconde note de Thomas sur la MR 114 : bouton « Ajouter un créneau » de la fiche association aligné sur la fiche équipement (§9) |
 
 ### Cahier des charges de la DRAJES (v1.0, octobre 2026)
 
@@ -265,6 +266,33 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### Seconde note de Thomas sur la MR 114 (2026-10-30)
+
+**Contexte** : la seconde note de Thomas sur la MR 114 relit en delta les commits posés depuis sa première note,
+jusqu'à `bfca9eb`, avant sa fusion du 29/10. Rien à corriger : les 10 points de la première note sont vérifiés, et
+ses gates sont vertes (dont préflight 896/896). Elle laisse deux suites, non bloquantes.
+
+**Ce qui change** (choix de Peterson du 30/10) :
+- **Fiche association, bouton « Ajouter un créneau »** (`PreviewBookedResources`) : aligné sur la fiche équipement.
+  Avec `booking.adminOnly: false`, un visiteur déconnecté voit le bouton, et le clic ouvre la connexion
+  (`openLogin()`) au lieu du formulaire ; l'ajout n'est pas repris après la connexion, comme sur la fiche
+  équipement. Remplace le choix du 27/10 (bouton masqué hors connexion, lot A), contraire à la règle de Thomas.
+- Fichiers : `PreviewBookedResources.tsx`, nouveau `PreviewBookedResources.test.tsx`, doc 07.
+
+**À savoir** : rien ne change à l'écran. Aucune config ne pose `booking.adminOnly: false` ; les deux `false` du parc
+(sport-santé-bien-être, maison sport-santé du Tampon) sont des `addButton`. Les palettes de commandes d'ESS974 et de
+Saint-Paul, rendues hors de `AuthModalProvider`, ne cherchent que des équipements : elles n'ouvrent jamais la fiche
+association.
+
+**Reste, pour `main` (Thomas)** : stabiliser `t` dans `useT` (`useCallback` sur `[tNs, tData]`) ferait tomber les
+5 `eslint-disable` cités par la note, et un 6ᵉ du lot CDC-2 (`DataObservatorySection.tsx:146`). Le `t` de
+`LocalizationProvider`, recréé à chaque rendu du fournisseur, est à mémoïser aussi.
+
+**Validation** : test du composant (4 cas : défaut sans bouton hors connexion, admin, visiteur déconnecté avec
+`adminOnly: false`, membre connecté non admin) ✅ ; eslint ✅ sur les deux fichiers ; typecheck ✅ sur tout le dépôt
+(0 erreur : client d'API local en 1.0.204 depuis le 30/10). Pas de vérification au navigateur : le cas changé n'est
+atteignable par aucune config.
 
 ### Mise en production des données, commits des lots CDC (2026-10-30)
 
@@ -522,7 +550,8 @@ bloquant. Peterson a demandé de corriger tous ses points, en 4 lots validés un
   5 000, au lieu de 200 au plus. Ils ne tiennent plus compte de `maxAnswers`, qui ne borne plus que la fiche
   association. Au-delà de 200 réponses, un doublon pouvait s'enregistrer sans avertissement.
 - **Fiche association** : le bouton « Ajouter un créneau » n'apparaît jamais à un visiteur déconnecté, même avec
-  `adminOnly: false`. Aucune config ne pose ce réglage aujourd'hui.
+  `adminOnly: false` — remplacé le 30/10 : il s'affiche et ouvre la connexion, comme sur la fiche équipement
+  (seconde note de Thomas, §9). Aucune config ne pose ce réglage aujourd'hui.
 
 **À savoir** : rien ne change à l'écran avec les données actuelles. En base locale, un équipement d'ESS974 a au
 plus 18 réservations.
