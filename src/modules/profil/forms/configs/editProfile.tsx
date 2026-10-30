@@ -12,26 +12,18 @@ import { MERGED_EDIT_DESCRIPTORS } from "../profilMerged";
 import { seedEntity, buildPayload, type EntityLike } from "@/modules/formEngine/engine/entityForm";
 import type { EntityModalConfig, EntityModalCtx } from "../EntityFormModal";
 import type { EntityKind } from "../../hooks/useEntityMutation";
-import type { SiteConfig } from "@/types/site-schema";
-import { withExtraCitizenFields, writeExtraCitizenFields } from "./editProfileExtraCitizenFields";
 
 const typeOf = (ctx: EntityModalCtx): string =>
   (typeof ctx.entity?.getEntityType === "function" ? ctx.entity.getEntityType() : "citoyens");
 
-// Liste vide pour tout site qui ne déclare pas le flag (AUCUN par défaut) — opt-in pur config, jamais de slug en dur.
-const extraCitizenFields = (ctx: EntityModalCtx): readonly string[] =>
-  typeOf(ctx) === "citoyens" ? ((ctx.costum as SiteConfig["costum"])?.citizenProfileFields ?? []) : [];
-
 export const editProfileConfig: EntityModalConfig = {
   // UN SEUL descripteur fusionné (rendu + read/write) par type — cf. profilMerged / mergeRenderPipeline.
-  // `withExtraCitizenFields` : SEULE la vue (widget/options des champs activés par
-  // `config.costum.citizenProfileFields`, déjà présents cachés dans le pipeline générique) change —
-  // read/write sont IDENTIQUES partout, inutile de conditionner buildDefaults/buildSpec ci-dessous.
-  descriptor: (ctx) => {
-    const d = MERGED_EDIT_DESCRIPTORS[typeOf(ctx)];
-    const fields = extraCitizenFields(ctx);
-    return fields.length ? withExtraCitizenFields(d, fields) : d;
-  },
+  // Un champ réservé à un seul costum (ex. parent62) ne passe PAS par ce descripteur générique partagé :
+  // il va dans un costumForm dédié + `profiles.citoyens.editModals` scopé au costum (cf. config
+  // sport-sante-bien-etre/maison-sport-sante-la-tampon, commit 2fe9e545) — le champ costum est alors
+  // ouvert nativement par `User._update()`/`_costumCtx.schema` (cocolight-api-client/src/api/User.ts),
+  // sans toucher à ce descripteur ni au backend PHP legacy.
+  descriptor: (ctx) => MERGED_EDIT_DESCRIPTORS[typeOf(ctx)],
   title: { add: "ProfileEdit.title", edit: "ProfileEdit.title" },
   submitLabel: { add: "ProfileEdit.save", edit: "ProfileEdit.save" },
   texts: (t) => ({ next: "", previous: "", cancel: t("ProfileEdit.cancel") }),
@@ -63,18 +55,8 @@ export const editProfileConfig: EntityModalConfig = {
     };
   },
 
-  // Slug changé → recharger sur la nouvelle URL (effet hors moteur, parité ancien modal). Champs
-  // opt-in (`config.costum.citizenProfileFields`) : écrits séparément, hors du schéma SDK — cf.
-  // editProfileExtraCitizenFields.ts. Le reload doit attendre cette écriture : sinon
-  // window.location.reload() coupe la requête updateField en vol si slug ET un champ opt-in
-  // changent dans la même sauvegarde. La promesse est RETOURNÉE (pas `void`) : `EntityFormModal.commit`
-  // l'attend pour rejouer l'invalidation après l'écriture et, si elle rejette, afficher un toast
-  // d'erreur dédié — un échec d'écriture ne doit pas rester muet derrière le toast de succès déjà
-  // affiché pour la sauvegarde principale.
+  // Slug changé → recharger sur la nouvelle URL (effet hors moteur, parité ancien modal).
   afterSubmit: (ctx, values) => {
-    const reload = () => reloadOnSlugChange((ctx.entity as EntityTypes | null)?.slug, values.slug);
-    const fields = extraCitizenFields(ctx);
-    if (!fields.length) { reload(); return; }
-    return writeExtraCitizenFields(ctx.entity, values, fields).finally(reload);
+    reloadOnSlugChange((ctx.entity as EntityTypes | null)?.slug, values.slug);
   },
 };

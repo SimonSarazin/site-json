@@ -2470,15 +2470,12 @@ export const SiteConfig = z.object({
   auth: AuthConfigSchema.optional(),
   // Contexte costum du déploiement. Le SLUG du costum vient de l'entité porteuse
   // (useCocolight().entity = VITE_SLUG, constant) ; costumId/costumType viennent du registry de la lib
-  // via `me.costum(slug)`. Ce bloc ne sert donc plus qu'aux TAGS observatoire (mainTag/compagnon) et
-  // aux flags opt-in du formulaire d'édition de profil citoyen (citizenProfileFields).
+  // via `me.costum(slug)`. Ce bloc ne sert donc plus qu'aux TAGS observatoire (mainTag/compagnon).
+  // Un champ de profil citoyen réservé à un seul costum se déclare en backend (`costum.typeObj.<clé>.
+  // dynFormCostum`) + un costumForm dédié (`profiles.citoyens.editModals`), PAS ici — cf. editProfile.tsx.
   costum: z.object({
     mainTag: z.string().optional(),
     compagnon: z.string().optional(),
-    // Champs du pipeline profil CITOYEN (déclarés génériquement, cachés par défaut — cf.
-    // src/modules/profil/forms/configs/editProfileExtraCitizenFields.ts) à exposer dans le formulaire
-    // d'édition de ce site. Opt-in explicite par site : AUCUN comportement nouveau sans cette clé.
-    citizenProfileFields: z.array(z.enum(["territoires", "structureRegister"])).optional(),
   }).optional(),
   // Modales costum déclarées EN DONNÉES (document fusionné `CostumFormSchema` par id). Compilées au boot
   // (`registerCostumForm`) en descriptor+spec → résolues par `add-/edit-<id>` via la table runtime, SANS code.

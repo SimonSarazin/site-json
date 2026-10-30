@@ -69,8 +69,9 @@ export function CardTeamMember({
     member.id,
   );
   const { email, telephone, adresse } = contactsDuProfil(sd);
-  // Employeur (`structureRegister`) : texte libre posé depuis le profil (cf. doc de spec « Champs
-  // employeur et territoire »), pas de champ dédié dans contactProfil.ts (un seul lecteur ici).
+  // Employeur (`structureRegister`) : texte libre posé depuis le profil citoyen (champ costum
+  // parent62, cf. doc/08 §Champs du profil CITOYEN réservés à un costum), pas de champ dédié dans
+  // contactProfil.ts (un seul lecteur ici).
   const employeur = typeof sd.structureRegister === "string" && sd.structureRegister.trim() !== ""
     ? sd.structureRegister.trim()
     : null;

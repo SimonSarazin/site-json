@@ -934,16 +934,6 @@
         "placeholder": "https://exemple.com",
         "description": "L'URL de votre site personnel"
       },
-      "structureRegister": {
-        "label": "Employeur",
-        "placeholder": "Nom et adresse de votre structure",
-        "description": "La structure qui vous emploie"
-      },
-      "territoires": {
-        "label": "Territoire",
-        "placeholder": "Sélectionnez votre territoire",
-        "description": "Le territoire du réseau auquel vous êtes rattaché·e"
-      },
       "addressCountry": {
         "label": "Pays",
         "placeholder": "Sélectionnez un pays"

@@ -32,6 +32,17 @@
     "poi": "add-poi"
   },
   "editModals": {
+    "citoyens": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-citoyen",
+          "native": "edit-profile",
+          "horsPerimetre": "edit-profile",
+          "nativeVuParUnTiers": "edit-profile"
+        }
+      ]
+    },
     "organizations": {
       "vierge": "edit-profile",
       "routes": [

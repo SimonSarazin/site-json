@@ -145,15 +145,6 @@ export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
     url: COMMON.url, email: COMMON.email,
     mobile: f("mobile", "coerce:orEmpty", "coerce:orEmpty"), fixe: f("fixe", "coerce:orEmpty", "coerce:orEmpty"),
     birthDate: f("birthDate", "coerce:dateYMDutc", "coerce:orEmpty"),
-    // `readOnly` : lus (seedés dans le form) mais JAMAIS émis au payload `element/save` — ces deux
-    // champs n'existent pas dans le schéma JSON bundlé du SDK (`UPDATE_BLOCK_INFO`/citoyens), donc
-    // `[DraftProxy] Le champ "…" n'est pas autorisé` si on tente de les y faire passer (mesuré en
-    // navigateur, 23/10/2026). Écrits SÉPARÉMENT par `entity.updateField()` (hors schéma, validé
-    // seulement par l'autorisation côté backend, cf. editProfile.tsx `afterSubmit`) — PAS par un stamp
-    // `channel:"pathValue"` classique : celui-ci lit la valeur sur le PAYLOAD déjà construit, qui ne
-    // porte justement plus ces deux champs une fois `readOnly` posé.
-    structureRegister: f("structureRegister", "coerce:orEmpty", undefined, "string", { readOnly: true }),
-    territoires: f("territoires", "coerce:orEmpty", undefined, "string", { readOnly: true }),
     tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   organizations: { ...base("organizations", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {

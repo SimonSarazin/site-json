@@ -23,17 +23,15 @@ const SOCIAL_9 = {
 };
 
 describe("seedProfileFormValues (READ via pipeline)", () => {
-  it("citoyens : objet complet (12 champs + 16 adresse + 9 social)", () => {
+  it("citoyens : objet complet (10 champs + 16 adresse + 9 social)", () => {
     const out = seedProfileFormValues("citoyens", { serverData: {
       name: "Jean", shortDescription: "court", description: "long", email: "a@b.fr", url: "https://x.fr",
       tags: ["t1"], slug: "jean", mobile: "06", fixe: "01", birthDate: "1990-01-01",
-      structureRegister: "Centre Social", territoires: "Arrageois",
       address: ADDRESS, socialNetwork: { github: "https://gh", facebook: "https://fb" },
     } });
     expect(out).toEqual({
       name: "Jean", slug: "jean", shortDescription: "court", description: "long", url: "https://x.fr", email: "a@b.fr",
       mobile: "06", fixe: "01", birthDate: "1990-01-01", tags: ["t1"],
-      structureRegister: "Centre Social", territoires: "Arrageois",
       ...ADDR_16, ...SOCIAL_9,
     });
   });

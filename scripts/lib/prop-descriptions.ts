@@ -501,7 +501,6 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
   costum: {
     mainTag: "Tag observatoire principal du costum porteur (dimension `data-observatory`), pas un slug.",
     compagnon: "Tag observatoire secondaire, au même usage que mainTag.",
-    citizenProfileFields: "Opt-in PAR SITE (`territoires`/`structureRegister`) : expose dans l'édition de profil CITOYEN des champs cachés par défaut du pipeline générique. Aucun site n'en a par défaut.",
   },
 
   auth: {

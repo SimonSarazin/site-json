@@ -172,8 +172,8 @@ export function EntityFormModal({ config: configProp, spec, open, onOpenChange, 
       await config.afterSubmit?.(ctx, cleaned);
       // L'invalidation du succès de la mutation a déjà tourné AVANT cet afterSubmit (il s'exécute
       // après que mutateAsync se soit résolu, lui-même résolu après onSuccess) : si afterSubmit
-      // écrit d'autres champs (ex. territoires/structureRegister hors schéma SDK), elle ne les voit
-      // pas. On la rejoue sur les mêmes clés.
+      // écrit d'autres champs (hors du payload principal), elle ne les voit pas. On la rejoue sur
+      // les mêmes clés.
       mutationSpec.invalidateQueries?.forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
     } catch (err) {
       toast.error(tr("toast.profile.extraFieldsError"), {

@@ -14,14 +14,18 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-10-26** — entrée « Chat » du menu avatar (moteur, tout le parc, ACTIVE
-PAR DÉFAUT), lien nouvel onglet vers l'instance Rocket.Chat séparée de la plateforme, et libellé nav
-parent62 (« Contenus » → « Actualités et Ressources ») qui a fait déborder la barre à 1280px — corrigé
-par une nouvelle option de design `header.navFontSize` (moteur, opt-in) plutôt qu'en reformulant les
-libellés ; 4 échecs e2e préexistants, sans rapport avec ce lot — détail §9tredecenties. Même jour, plus
-tôt : employeur et territoire éditables depuis le profil, les DEUX champs (`structureRegister` ET
-`territoires`) réservés à parent62 via un nouveau mécanisme de champ conditionnel **par config**
-(`costum.citizenProfileFields`), affichés sur la carte de `/equipe` ; deux correctifs backend préalables
+Dernière mise à jour : **2026-10-30** — employeur et territoire (`structureRegister`/`territoires`)
+migrés vers un `costumForm` citoyen dédié (`parent62-citoyen`), même recette que SSBE/Ekilib.re :
+plus de correctif backend PHP global ni de bricolage `readOnly`/`updateField` séparé, le champ costum
+passe nativement par `User._update()` — détail §9quattuordecenties (remplace le §9duodecenties).
+Reste à poser `costum.typeObj` en base avant mise en ligne. Précédemment, **2026-10-26** — entrée
+« Chat » du menu avatar (moteur, tout le parc, ACTIVE PAR DÉFAUT), lien nouvel onglet vers l'instance
+Rocket.Chat séparée de la plateforme, et libellé nav parent62 (« Contenus » → « Actualités et
+Ressources ») qui a fait déborder la barre à 1280px — corrigé par une nouvelle option de design
+`header.navFontSize` (moteur, opt-in) plutôt qu'en reformulant les libellés ; 4 échecs e2e préexistants,
+sans rapport avec ce lot — détail §9tredecenties. Même jour, plus tôt : employeur et territoire
+d'abord rendus éditables depuis le profil générique (mécanisme depuis remplacé, voir ci-dessus) ; deux
+correctifs backend préalables
 PLUS une 3e porte de validation côté SDK (`[DraftProxy]`), corrigée par `readOnly` + écriture séparée
 (`entity.updateField`) — détail §9duodecenties, vérification navigateur réelle non faite (pas de
 session authentifiée disponible). Précédemment, le 23/10 : 4 correctifs de relecture MR (dont
@@ -5137,6 +5141,84 @@ ajoutées à la fixture et à l'attendu.
 | `test:integration` (`SITE_CONFIG_PATH=config.prod.parent62.json`) | ✅ 1069 tests, 57 fichiers (26/10) |
 | `config:validate` des 19 configs du parc (brique partagée `editProfile*`/`site-schema.ts` touchée) | ✅ les 19 valident (26/10) |
 | Vérification navigateur en conditions réelles (login + édition profil, réseau local) | ⏳ **non faite** — confirmé seulement par lecture directe du SDK (`updateField` ne touche pas le `DraftProxy`) + tests unitaires des fonctions ; pas de session authentifiée disponible pour un aller-retour réel contre le backend local |
+
+## 9quattuordecenties. Employeur et territoire : migration vers un costumForm citoyen (remplace le §9duodecenties)
+
+**Le mécanisme du §9duodecenties (correctifs backend PHP globaux + `readOnly`/`updateField` séparé)
+est abandonné et remplacé.** `SCOPE_COLLECTIONS` (`cocolight-api-client/src/costum/runtime.ts:99`)
+inclut en réalité `"citoyens"` depuis le SDK `1.0.19x` (commit `3a4d7e1`, déjà présent dans la
+version `1.0.203` que site-json avait épinglée AVANT le §9duodecenties) — l'affirmation du
+§9duodecenties (« `SCOPE_COLLECTIONS` ne couvre pas `citoyens` ») provenait d'une confusion avec
+`ScopeCollection` (`runtime.ts:554`, périmètre de CRÉATION par costum seulement, lui effectivement
+sans `citoyens`). `User._update()` (`cocolight-api-client/src/api/User.ts`) sait nativement séparer
+les clés costum d'un `element/save` standard et les envoyer en un seul appel `SAVE_CITOYEN`, validé
+côté backend AVEC le costum posté — donc jamais rejeté par le `DraftProxy`, sans toucher
+`Person::$dataBinding` ni `Element::updateBlock()`.
+
+**Nouvelle recette, identique à `sport-sante-bienetre-citoyen`/`maison-sport-sante-la-tampon`
+(commit `2fe9e545`)** : un `costumForm` dédié `parent62-citoyen` (`entityType:"citoyens"`), routé par
+`profiles.citoyens.editModals` (`userContext:"own"`) — remplace ENTIÈREMENT le formulaire d'édition
+générique pour les citoyens de parent62 (identité, territoire & employeur, coordonnées + adresse,
+réseaux sociaux).
+
+**Correctif en cours de lot (28/10) : le `when` calqué sur SSBE (`sourceKeys`/`reference.costum`
+contient `parent62`) ne matchait pour PERSONNE** — constaté : l'onglet « Territoire & employeur »
+n'apparaissait jamais à l'édition. Cause : `source.key`/`reference.costum` d'un CITOYEN ne sont
+estampillés QUE par `UserApi.register({costumSlug})` à l'inscription, jamais rétroactivement — aucun
+coordinateur·rice déjà inscrit n'a ce marqueur. Remplacé par un prédicat d'ADHÉSION réelle :
+`links.memberOf.<id organisation « Réseau Parentalité 62 »>` (`6a450f0ac34c7070327d2a64`) existe ET
+`.toBeValidated` est faux (même garde que `useProfilMembersQuery.tsx`) — l'édition de ses propres
+champs réseau/employeur est ainsi réservée aux membres VALIDÉS de l'organisation porteuse, pas à
+n'importe quel citoyen connecté sur le site. `tests/preflight/edit-modal-scope.test.ts` (garde
+« route costum non bornée ») passe sans entrée `DETTE_CONNUE` grâce à ce `when` réel.
+
+**Retiré côté site-json** : `editProfileExtraCitizenFields.ts`/`.test.ts` (supprimés),
+`costum.citizenProfileFields` (`site-schema.ts`, bloc `costum`), les deux champs `readOnly` de
+`PROFIL_DESCRIPTORS.citoyens.fields` (`editProfilePayload.ts`), les deux champs optionnels de
+`userProfileSchema` (`schemaForm.ts`), les clés i18n `ProfileEdit.fields.{territoires,
+structureRegister}.*` (devenues orphelines, le costumForm porte ses propres libellés inline comme
+SSBE). `editProfile.tsx`/`EntityFormModal.commit()` retrouvent leur forme d'avant le §9duodecenties
+— le mécanisme générique `afterSubmit`/réinvalidation/`toast.error` ajouté dans `EntityFormModal.tsx`
+reste en place (utile à tout `afterSubmit` futur), mais n'est plus sollicité par ce cas précis.
+
+⚠️ **Reste à faire, hors site-json** : déclarer les deux champs dans `costum.typeObj` du costum
+`parent62` en base (clé `persons`, `citoyen` ou `citoyens` — toutes résolues vers la collection
+`citoyens`, `cocolight-api-client/src/costum/liveDigest.ts` `TYPEKEY_TO_COLL`), sous
+`dynFormCostum.beforeBuild.properties`, même forme que pour une organisation/un POI costum — données
+de costum, pas du code :
+```json
+"persons": {
+  "name": "Réseau Parentalité 62",
+  "sameAs": "person",
+  "dynFormCostum": {
+    "beforeBuild": {
+      "properties": {
+        "territoires": { "inputType": "select", "label": "Territoire" },
+        "structureRegister": { "inputType": "text", "label": "Employeur" }
+      }
+    }
+  }
+}
+```
+Sans cette déclaration, `_costumCtx` ne porte aucun champ costum pour un citoyen parent62 et
+`[DraftProxy] Le champ "…" n'est pas autorisé` réapparaît — mêmes symptômes que le §9duodecenties,
+cause différente (costum non déclaré, pas un trou du SDK). **Les deux correctifs PHP du
+§9duodecenties (`Person::$dataBinding`/`Element::updateBlock`) deviennent inutiles** — s'ils ont déjà
+été posés en base, les laisser en l'état ne gêne rien (code mort, jamais plus appelé par ce chemin).
+
+⚠️ **Vérification navigateur partielle** : le routage `editModals` lui-même (onglet « Territoire &
+employeur » qui apparaît ou non à l'édition) EST vérifié en conditions réelles (c'est ce qui a
+révélé le `when` cassé ci-dessus, corrigé le 28/10). Reste NON vérifié : que `_costumCtx` se résout
+bien côté SDK pour un citoyen qui édite SON PROPRE profil (`userContext:"own"`) une fois
+`costum.typeObj` posé en base — cas un peu différent du précédent SSBE/Ekilib.re, à valider avant
+mise en ligne définitive.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur (23 avertissements pré-existants) |
+| `npx vitest run src/modules/profil tests/preflight` | ✅ 1848 tests, 0 échec |
+| `config:validate` / `audit:config` | ✅ RAS sur `config.prod.parent62.json` |
+| `tests/preflight/effective-config.test.ts` | ✅ (snapshot `__effective__/parent62.json` régénéré : nouvelle route `editModals.citoyens`) |
 
 ## 9tredecenties. Entrée « Chat » du menu avatar (moteur, tout le parc) + libellés nav
 
