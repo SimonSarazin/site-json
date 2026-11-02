@@ -93,9 +93,10 @@ const AuthMenuConfigSchema = z.object({
   showName: z.boolean().optional(),
   showDropdownHeader: z.boolean().optional(),
   loginLabel: LocalizedString.optional(),
-  // Entrée « Kanban » : lien (nouvel onglet) vers la vue actions de la plateforme
-  // (`<serverUrl>/#@<costumSlug>.view.actions`). Opt-in ; réservé aux admins du costum —
-  // gate : `isKanbanEntryVisible` (modules/admin/lib/adminEntry), indépendant de `config.admin`.
+  // Entrée « Kanban » (opt-in). Module `kanban` actif : la page `/kanban` du site, pour les admins,
+  // membres et contributeurs du porteur. Sinon : la vue actions de la plateforme
+  // (`<serverUrl>/#@<costumSlug>.view.actions`, nouvel onglet), admins du costum seulement —
+  // règle : `resolveKanbanEntry` (modules/admin/lib/adminEntry), indépendante de `config.admin`.
   kanban: z.boolean().optional(),
 });
 export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;

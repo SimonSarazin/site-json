@@ -1,5 +1,7 @@
 import type { AdminAccessLevel } from "../schema";
 import type { SiteConfig } from "@/types/site-schema";
+import { KANBAN_HOME_PATH } from "@/modules/kanban/lib/kanbanPaths";
+import { platformKanbanUrl } from "./platformKanbanUrl";
 
 const RANK: Record<AdminAccessLevel, number> = {
   entityAdmin: 1,
@@ -42,18 +44,55 @@ export function isAdminEntryVisible(
   return levelSatisfies(resolveAdminAccessLevel(me, entity), admin.access?.min ?? "siteAdmin");
 }
 
+/** Carrier vu par l'entrée « Kanban » : admin, membre (organisation) ou contributeur (projet). */
+interface CarrierMemberLike extends CarrierLike {
+  isMember?: () => boolean;
+  isContributor?: () => boolean;
+}
+
 /**
- * L'entrée « Kanban » du menu avatar (lien externe vers la vue actions de la plateforme) doit-elle
- * être visible ? Opt-in `config.auth.menu.kanban` — INDÉPENDANT de `admin.enabled`/`access.min`
- * (le back-office peut rester désactivé) — réservé aux admins du costum (siteAdmin, superAdmin
- * compris), et jamais sans slug de carrier résolu : pas de lien cassé.
+ * Cible de l'entrée « Kanban » du menu avatar : la page `/kanban` du module (même onglet), ou
+ * l'ancien lien vers la vue actions de la plateforme (nouvel onglet).
  */
-export function isKanbanEntryVisible(
-  config: Pick<SiteConfig, "auth"> | null | undefined,
+export type KanbanEntry = { kind: "module"; to: string } | { kind: "platform"; href: string };
+
+export interface KanbanEntryContext {
+  /** Slug du carrier (`entity.slug`) : sans lui, pas de lien vers la plateforme. */
+  costumSlug: string | null | undefined;
+  /** Type de l'élément porteur (`useCocolight().contextType`). */
+  contextType: string | null | undefined;
+  /** Base de la plateforme (`getServerUrl()`), pour l'ancien lien. */
+  serverUrl: string;
+}
+
+/**
+ * L'entrée « Kanban » du menu avatar, ou `null` si elle n'a pas lieu d'être. Opt-in
+ * `config.auth.menu.kanban`, INDÉPENDANT de `admin.enabled`/`access.min` (le back-office peut
+ * rester désactivé).
+ *
+ * - **Module `kanban` actif** (`config.kanban`) : l'entrée mène à `/kanban`, dans le même onglet,
+ *   en remplacement de l’ancien lien (RFC kanban, Q8). Elle est montrée à qui le serveur ouvre le
+ *   tableau : admins du porteur (superAdmin compris), membres d'une organisation, contributeurs
+ *   d'un projet (Q5). Seuls une organisation et un projet ont un kanban : ailleurs, rien.
+ * - **Sans le module** : l'ancien lien vers la vue actions de la plateforme, réservé aux admins du
+ *   costum, et jamais sans slug de carrier résolu (pas de lien cassé).
+ *
+ * Le serveur reste juge : un membre que la page refuserait (lien en attente de validation) y lit
+ * « Réservé aux membres ».
+ */
+export function resolveKanbanEntry(
+  config: Pick<SiteConfig, "auth" | "kanban"> | null | undefined,
   me: MeLike | null | undefined,
-  entity: CarrierLike | null | undefined,
-  costumSlug: string | null | undefined,
-): boolean {
-  if (!config?.auth?.menu?.kanban || !costumSlug) return false;
-  return levelSatisfies(resolveAdminAccessLevel(me, entity), "siteAdmin");
+  entity: CarrierMemberLike | null | undefined,
+  { costumSlug, contextType, serverUrl }: KanbanEntryContext,
+): KanbanEntry | null {
+  if (!config?.auth?.menu?.kanban) return null;
+  const isAdmin = levelSatisfies(resolveAdminAccessLevel(me, entity), "siteAdmin");
+  if (config.kanban) {
+    if (contextType !== "organizations" && contextType !== "projects") return null;
+    const linked = contextType === "organizations" ? entity?.isMember?.() === true : entity?.isContributor?.() === true;
+    return isAdmin || linked ? { kind: "module", to: KANBAN_HOME_PATH } : null;
+  }
+  if (!costumSlug || !isAdmin) return null;
+  return { kind: "platform", href: platformKanbanUrl(serverUrl, costumSlug) };
 }
