@@ -1720,6 +1720,7 @@ import {
   AacDirectorySectionSchema,
   AacHighlightSectionSchema,
 } from "@/modules/aac/schema";
+import { KanbanConfigSchema } from "@/modules/kanban/schema";
 import {
   LoginFormSectionSchema,
   RegisterFormSectionSchema,
@@ -2503,6 +2504,9 @@ export const SiteConfig = z.object({
   // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
   // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
   aac: AacConfigSchema.optional(),
+  // Module kanban (le kanban de co-kanban sur l'élément porteur du site) : sa présence monte `/kanban`,
+  // `/kanban/actions` et `/kanban/roles` ; `boards` restreint et ordonne les kanbans proposés. cf. modules/kanban.
+  kanban: KanbanConfigSchema.optional(),
   // Config site-level des formulaires coform. `finderAddNew` : la modale d'AJOUT qu'ouvre le bouton
   // « Ajouter » d'un finder (réglage `addNew` du legacy). Clé = la QUESTION (`finder<étape><id>`) ou le
   // TYPE cherché (`organizations`…) ; valeur = une modale du ModalRegistry (`add-organization`,

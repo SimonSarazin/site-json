@@ -47,6 +47,9 @@
 | Déploiement | [Docker](16-deploiement-docker.md) |
 | Palette Cmd+K (implémentée) | [Command Palette](17-module-command-palette.md) — module implémenté ; les sections 1-11 du doc restent l'annexe RFC/justification d'architecture |
 | 🚧 RFC : assistant config × costums | [Assistant config costum (RFC)](31-rfc-assistant-config-costum.md) — formulaires costum générés, config admin, cycle de vie sans re-publication |
+| Module kanban (kanban de l'élément porteur, `/kanban`) | [Module Kanban](40-module-kanban.md) — 🚧 lots 0 à 6 livrés : écran de liste, couche de données, pont SDK, CORS, tableau des actions et ses vues (liste, table, chronologie, vue d'ensemble, jalons), fiche de carte, kanban des rôles, entrée du menu du compte ; branchement sur le SDK livré à venir |
+| RFC du module kanban (décisions, lots) | [Module kanban (RFC)](39-rfc-module-kanban.md) — portage depuis co-kanban, décisions et lots |
+| Routes SDK du module kanban | [Module kanban : routes à livrer dans le SDK](41-module-kanban-sdk.md) — les 20 fiches `KANBAN_*_URL` pour le mainteneur (sorties d'`ENDPOINT.md`), et la bascule de site-json à leur livraison |
 
 ## Documents annexes (non numérotés)
 
