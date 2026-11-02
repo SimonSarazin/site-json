@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { searchByFieldsToQuery } from "./searchByFieldsToQuery";
+import { EXCLUDE_TYPE, searchByFieldsToQuery } from "./searchByFieldsToQuery";
 
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 
@@ -54,6 +54,22 @@ describe("searchByFieldsToQuery", () => {
       sourceKeys: [],
       searchTarget: null,
     });
+  });
+
+  it("exclusion calculée (filtre créneau) → $nin cumulé, compatible avec un $in sur le même champ", () => {
+    const out = searchByFieldsToQuery({
+      "creneau:2026-10-26": entry({ field: "_id", type: EXCLUDE_TYPE, value: ["b", "a"] }),
+      autre: entry({ field: "_id", type: EXCLUDE_TYPE, value: ["a", "c"] }),
+      services: entry({ field: "_id", value: ["x"] }),
+    });
+    expect(out.filters).toEqual({ _id: { $nin: ["b", "a", "c"], $in: ["x"] } });
+  });
+
+  it("exclusion vide (rien d'occupé) → aucune clause", () => {
+    const out = searchByFieldsToQuery({
+      "creneau:2026-10-26": entry({ field: "_id", type: EXCLUDE_TYPE, value: [] }),
+    });
+    expect(out.filters).toEqual({});
   });
 });
 

@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,14 @@ import {
   TIME_SLOT_DAYS,
   createEmptySlot,
   dayI18nKey,
+  formatSlotPeriod,
   fromTimeString,
   isSlotOrdered,
+  isSlotPeriodOrdered,
   normalizeSlot,
   toTimeString,
 } from "../utils/timeSlots";
+import { TimeSlotPeriodsContext } from "../contexts/TimeSlotPeriodsContext";
 import { HintText, FieldError, FieldLabel } from "./FormFields";
 
 interface TimeSlotsFieldProps {
@@ -29,6 +33,8 @@ interface TimeSlotsFieldProps {
   errors: FieldErrors;
   value?: unknown;
   onChange?: (value: TimeSlotValue[]) => void;
+  /** Avertissement de l'appelant sous chaque créneau, même index que `value` (`TimeSlotCheckContext`). */
+  notices?: ReadonlyArray<string | null>;
 }
 
 /**
@@ -37,9 +43,17 @@ interface TimeSlotsFieldProps {
  * mobile adaptés, valeur toujours "HH:MM" 24h quel que soit l'affichage
  * locale) — le `timeFormat` legacy ne pilote donc que l'affichage, jamais le
  * stockage, qui reste au format legacy (cf. `utils/timeSlots.ts`).
+ *
+ * Période propre d'un créneau (`periodStart`/`periodEnd`) : saisissable quand
+ * l'appelant l'active (`TimeSlotPeriodsContext`), sinon affichée en lecture si
+ * le créneau en porte une — et toujours conservée, comme toute clé du créneau.
+ *
+ * Avertissement de l'appelant (`notices`, ex. « déjà réservé par… ») : affiché sous le créneau en cause,
+ * comme l'erreur d'ordre. Il ne bloque rien ici — l'appelant refuse l'enregistrement s'il le faut.
  */
-export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFieldProps) {
+export function TimeSlotsField({ field, errors, value, onChange, notices }: TimeSlotsFieldProps) {
   const t = useT("modules/coform");
+  const withPeriods = useContext(TimeSlotPeriodsContext);
   const config = field.timeSlotsConfig ?? {};
   // Données legacy 12h (clés AmPm) résolues en 24h à l'affichage — le save
   // repart de ces slots normalisés.
@@ -89,19 +103,25 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
     >
       <FieldLabel field={field} id={labelId} hasError={hasError} />
       {field.info && <HintText text={field.info} />}
+      {withPeriods && <HintText text={String(t("coform.timeSlots.periodHint"))} />}
 
       <div className="space-y-3">
         {slots.map((slot, index) => {
           const ordered = isSlotOrdered(slot);
+          const periodOrdered = isSlotPeriodOrdered(slot);
+          const notice = notices?.[index];
+          const periodLabel = withPeriods ? null : formatSlotPeriod(slot, t);
           const dayId = `${field.name}-${index}-day`;
           const startId = `${field.name}-${index}-start`;
           const endId = `${field.name}-${index}-end`;
+          const periodStartId = `${field.name}-${index}-period-start`;
+          const periodEndId = `${field.name}-${index}-period-end`;
           return (
             <div
               key={index}
               className={cn(
                 "rounded-md border bg-muted/30 p-3",
-                ordered ? "border-border/60" : "border-destructive",
+                ordered && periodOrdered && !notice ? "border-border/60" : "border-destructive",
               )}
             >
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
@@ -170,11 +190,58 @@ export function TimeSlotsField({ field, errors, value, onChange }: TimeSlotsFiel
                 </Button>
               </div>
 
+              {/* Période du créneau : deux dates natives quand l'appelant la rend saisissable — vides,
+                  le créneau vaut pour toute la période de la réponse (la clé est alors retirée du
+                  créneau à l'envoi : `undefined` ne survit pas à la sérialisation). */}
+              {withPeriods ? (
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor={periodStartId} className="text-xs text-muted-foreground">
+                      {t("coform.timeSlots.periodStart")}
+                    </Label>
+                    <Input
+                      id={periodStartId}
+                      type="date"
+                      value={slot.periodStart ?? ""}
+                      max={slot.periodEnd || undefined}
+                      onChange={(e) => updateSlot(index, { periodStart: e.target.value || undefined })}
+                      className="border border-input"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={periodEndId} className="text-xs text-muted-foreground">
+                      {t("coform.timeSlots.periodEnd")}
+                    </Label>
+                    <Input
+                      id={periodEndId}
+                      type="date"
+                      value={slot.periodEnd ?? ""}
+                      min={slot.periodStart || undefined}
+                      onChange={(e) => updateSlot(index, { periodEnd: e.target.value || undefined })}
+                      aria-invalid={!periodOrdered || undefined}
+                      className={cn("border border-input", !periodOrdered && "border-destructive")}
+                    />
+                  </div>
+                </div>
+              ) : (
+                periodLabel && <p className="mt-2 text-xs text-muted-foreground">{periodLabel}</p>
+              )}
+
               {/* Erreur d'ordre affichée SOUS le créneau fautif (pas seulement
                   au niveau du champ) — role="alert" pour l'annonce lecteur d'écran. */}
               {!ordered && (
                 <p role="alert" className="mt-2 text-xs font-medium text-destructive">
                   {t("coform.validation.timeSlotOrder")}
+                </p>
+              )}
+              {!periodOrdered && (
+                <p role="alert" className="mt-2 text-xs font-medium text-destructive">
+                  {t("coform.validation.timeSlotPeriodOrder")}
+                </p>
+              )}
+              {notice && (
+                <p role="alert" className="mt-2 text-xs font-medium text-destructive">
+                  {notice}
                 </p>
               )}
             </div>

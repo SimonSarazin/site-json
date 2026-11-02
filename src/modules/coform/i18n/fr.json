@@ -41,6 +41,7 @@
       "noteRange": "La note doit être comprise entre 0 et 5",
       "timeSlotIncomplete": "Chaque créneau doit avoir un jour, une heure de début et une heure de fin",
       "timeSlotOrder": "L'heure de fin doit être après l'heure de début",
+      "timeSlotPeriodOrder": "La date de fin d'un créneau doit suivre sa date de début",
       "dynamicFieldsIncomplete": "Chaque ligne doit être complète et valide"
     },
     "fields": {
@@ -508,6 +509,12 @@
       "endTime": "Fin",
       "addSlot": "Ajouter un créneau",
       "removeSlot": "Supprimer ce créneau",
+      "periodStart": "Du",
+      "periodEnd": "Au",
+      "periodHint": "Dates facultatives : sans date, un créneau vaut pour toute la période.",
+      "period": "Du {{start}} au {{end}}",
+      "periodFrom": "À partir du {{start}}",
+      "periodUntil": "Jusqu'au {{end}}",
       "days": {
         "monday": "Lundi",
         "tuesday": "Mardi",

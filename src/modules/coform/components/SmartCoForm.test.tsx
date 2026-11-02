@@ -83,8 +83,12 @@ vi.mock("./DynamicCoForm", () => ({
   ),
 }));
 
+/** Le `onFinalSubmit` reçu par le wizard au dernier rendu — pour rejouer sa soumission finale. */
+const wizard = vi.hoisted(() => ({ onFinalSubmit: undefined as undefined | ((data: Record<string, unknown>) => Promise<void>) }));
+
 vi.mock("./MultiStepCoForm", () => ({
-  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean; discardDraftRef?: unknown; hiddenFields?: readonly string[] }) => (
+  MultiStepCoForm: (props: { formData: CoFormData; submitMode?: string; initialStepKey?: string; elementId?: string | null; elementType?: string | null; unknownFieldVariant?: string; enableDraft?: boolean; discardDraftRef?: unknown; hiddenFields?: readonly string[]; onFinalSubmit?: (data: Record<string, unknown>) => Promise<void> }) => (
+    wizard.onFinalSubmit = props.onFinalSubmit,
     <div
       data-testid="multistep-coform"
       data-hidden-fields={(props.hiddenFields ?? []).join(",")}
@@ -150,6 +154,7 @@ vi.mock("@/hooks/useLoadNamespace", () => ({
   useLoadNamespace: () => ({ loaded: true }),
 }));
 
+import { toast } from "sonner";
 import { SmartCoForm } from "./SmartCoForm";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -411,6 +416,13 @@ describe("SmartCoForm", () => {
       const ro = screen.getByTestId("coform-readonly");
       expect(ro.dataset.stepCount).toBe("1");
       expect(ro.dataset.hideBanner).toBe("true");
+    });
+
+    it("readOnly + hideStepHeaders → CoFormReadOnly sans titres d'étape, comme la saisie", () => {
+      mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+      mockUseCoFormFinalMutation.mockReturnValue(defaultMutation());
+      render(<SmartCoForm formData={makeFormData(["s1"])} readOnly hideStepHeaders />, { wrapper: makeWrapper() });
+      expect(screen.getByTestId("coform-readonly").dataset.hideStepHeaders).toBe("true");
     });
   });
 
@@ -778,6 +790,70 @@ describe("SmartCoForm — le onSubmit du formulaire simple dit si le serveur a l
     fireEvent.click(screen.getByTestId("dyn-submit"));
     await waitFor(() => expect(soumission.resultat).toBe(true));
     expect(onError).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * `beforeSubmit` : contrôle MÉTIER de l'appelant (ex. chevauchement de créneaux sur une fiche
+ * équipement), rejoué juste avant l'enregistrement. Un message refuse : rien ne part, le message
+ * s'affiche, et le formulaire simple résout `false` — `DynamicCoForm` garde alors le brouillon.
+ */
+describe("SmartCoForm — beforeSubmit (contrôle de l'appelant)", () => {
+  beforeEach(() => {
+    mockUseCoFormQuery.mockReturnValue(defaultQueryResult(null));
+    soumission.resultat = undefined;
+    wizard.onFinalSubmit = undefined;
+    vi.mocked(toast.error).mockClear();
+  });
+
+  it("formulaire simple : un refus n'envoie rien, s'affiche et résout `false`", async () => {
+    const mutation = defaultMutation();
+    mockUseCoFormFinalMutation.mockReturnValue(mutation);
+    const beforeSubmit = vi.fn().mockResolvedValue("Lundi 17:00 – 19:00 est déjà réservé");
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" beforeSubmit={beforeSubmit} />, {
+      wrapper: makeWrapper(),
+    });
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(false));
+    // Le contrôle voit les données au format serveur, emballées sous la clé de l'étape.
+    expect(beforeSubmit).toHaveBeenCalledWith({ s1: { textField: "saisie" } });
+    expect(toast.error).toHaveBeenCalledWith("Lundi 17:00 – 19:00 est déjà réservé");
+    expect(mutation.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("formulaire simple : sans refus, l'enregistrement part et résout `true`", async () => {
+    const mutation = defaultMutation();
+    mockUseCoFormFinalMutation.mockReturnValue(mutation);
+    render(<SmartCoForm formData={makeFormData(["s1"])} formId="form123" beforeSubmit={() => null} />, {
+      wrapper: makeWrapper(),
+    });
+    fireEvent.click(screen.getByTestId("dyn-submit"));
+    await waitFor(() => expect(soumission.resultat).toBe(true));
+    expect(mutation.mutateAsync).toHaveBeenCalledTimes(1);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it("wizard : un refus lève sans rien envoyer — le brouillon reste (submitAllData ne purge pas)", async () => {
+    const mutation = defaultMutation();
+    mockUseCoFormFinalMutation.mockReturnValue(mutation);
+    render(
+      <SmartCoForm formData={makeFormData(["s1", "s2"])} formId="form123" beforeSubmit={() => "refusé"} />,
+      { wrapper: makeWrapper() },
+    );
+    await expect(wizard.onFinalSubmit!({ s1: {} })).rejects.toThrow("refusé");
+    expect(toast.error).toHaveBeenCalledWith("refusé");
+    expect(mutation.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("wizard : sans refus, la soumission finale part comme avant", async () => {
+    const mutation = defaultMutation();
+    mockUseCoFormFinalMutation.mockReturnValue(mutation);
+    render(
+      <SmartCoForm formData={makeFormData(["s1", "s2"])} formId="form123" beforeSubmit={async () => null} />,
+      { wrapper: makeWrapper() },
+    );
+    await wizard.onFinalSubmit!({ s1: {} });
+    expect(mutation.mutateAsync).toHaveBeenCalledWith({ allData: { s1: {} } });
   });
 });
 
