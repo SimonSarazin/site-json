@@ -454,6 +454,32 @@ et « Suivi des actions ») affichent leur barre de gestion dès qu'**UN** des t
 — édition, suppression ou restauration — et passent `canRestore = canRestoreMilestone(status)` :
 un palier **clos ET financé** reste donc restaurable, alors qu'il n'est plus supprimable.
 
+**Retirer une promesse** (clé `cagnotteModuleConfig.pledgeRetraction`). Dans « Besoins financiers »
+(rendus `cards` et `list`), une ligne de financement porte « Retirer » quand
+`useCommunPledgeRetraction` (porté par le contrôleur des paliers) l'accepte :
+- la ligne est relue dans le document brut (`findPledgeLine` : sa `finkey`, son financeur, la CLÉ de
+  sa dépense) ;
+- elle ne porte aucun argent (`isRetractablePledgeLine`) ;
+- l'utilisateur en est le financeur (lui-même ou une organisation qu'il administre) ou admin du commun
+  (`cagnottePerms.isAdmin` : admin du projet lié ou déposant ; ou admin de son organisation parente,
+  `isProjectAdmin(…, { checkHierarchy: true })`) ;
+- l'étape résolue est `aapStep1`, la seule que lise le serveur.
+
+Une ligne en cours de paiement affiche « Paiement en cours » à la place de son statut, sans bouton :
+promesse cochée dans « Mes promesses », par n'importe qui, payeur compris, ou facture ouverte. La fiche
+relit ces paiements (`usePledgesInProgress` dans `useCommunPledgeRetraction`) seulement pour qui peut voir
+ce signal, admin du commun ou financeur d'une promesse retirable : toutes les 60 s page visible, au retour
+sur l'onglet, et aussitôt qu'un autre onglet du navigateur signale un changement. Sinon, et tant que la
+relecture n'a pas répondu, elle lit `paymentsInProgress` de l'enveloppe du commun. La
+confirmation est montée une fois par page (`CommunMilestoneDialogs`). Après le retrait, la page relit dépenses, enveloppe, réponse du commun
+et annuaire. Règle serveur et refus : `doc/18` §Permissions.
+
+**Contribution en cours sur un palier** (`paymentsInProgress.depenses`, `depenseInProgress` de
+`useCommunPledgeRetraction`, même relecture). La suppression du palier disparaît, quelle que soit la clé du site, dans
+« Besoins financiers » comme dans la barre de gestion de « Suivi des actions » (`hasTransactions`) : le
+serveur la refuse aussi (`doc/18` §Permissions, écrans legacy). Avec la clé, l'en-tête du palier
+affiche « Paiement en cours ».
+
 **Cofinanceurs : une seule agrégation.** `lib/cofinancers.ts` (`aggregateCofinancers`) agrège les
 lignes `allFunding` des paliers **ouverts** par `id` → à défaut par `nom` → à défaut en ligne
 anonyme. Le compteur de la carte est la **longueur de ce résultat** : les deux chiffres coïncident
@@ -729,7 +755,7 @@ src/modules/aac/
   lib/filterCommuns.ts      # filtrage + tri CLIENT du chemin balayage (usageSubKey / parseUsageSubKey)
   lib/associateExistingProject.ts # rattacher un commun à un projet DÉJÀ existant (§9 piège n°11)
   lib/communDeletion.ts     # resolveCommunDeletionPlan : ce qu'une suppression emporterait, et
-                            #   quand elle est INTERDITE (dès qu'un versement existe, §6)
+                            #   quand elle est INTERDITE (versement ou paiement en cours, §6)
   hooks/useAacConfig.ts     # résolveur câblé (api.form ×2, 0 nouvel endpoint)
   hooks/useCommunFundingContext.ts # où vit un commun : l'appel où il a été DÉPOSÉ
   hooks/useCommunFundingHost.ts    # l'entité de ce contexte — celle qui détient l'enveloppe
@@ -816,8 +842,10 @@ financière.
   backend, §13.5.
 - **Compte temporaire** : un answer peut avoir pour auteur un **compte temporaire (email seul,
   sans `userId`)** → tout calcul ancré sur `userId` doit tolérer son absence.
-- **Manquant, à ajouter au moment du financement** : la **garde d'immuabilité `paid`**
-  (aucun garde en lecture seule n'existe aujourd'hui sur un financement payé).
+- **Garde d'immuabilité `paid`** : une ligne qui porte de l'argent (versement, même en attente,
+  marqueur legacy, facture ouverte) ne se retire pas (`Aap::deleteFinancerEngagement`, front §3.3).
+  Les écrans legacy ne peuvent ni la modifier ni l'effacer (garde de la route générique), et le commun
+  qui la porte ne se supprime pas (§6). `doc/18` §Permissions.
 
 **Paliers et actions d'un commun** — droits calculés par le namespace `cagnotte`, pas `aac` :
 `useCommunObjectivesController` passe l'entité **du projet lié SEULE** (jamais de repli sur l'org du
@@ -835,6 +863,7 @@ ci-dessous.
 | Sélectionner / valider un commun | admin de l'appel | `aac` (`canSelectCommun`) |
 | **Générer / Associer un projet** | admin de l'appel **ou** déposant | `project.canManage` de `CommunActionBar` (entrées de « ⋯ ») |
 | **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
+| **Retirer une promesse sans versement** | financeur (soi, admin de l'organisation financeuse) **ou** admin du projet lié ou de son organisation parente **ou** déposant | `useCommunPledgeRetraction` ; serveur `Aap::canDeleteFinancerLine` |
 | **Supprimer DÉFINITIVEMENT un commun** | auteur **ou** admin | `aac` (`canDeleteCommun`) |
 | **Gérer les contributeurs à l'édition** | bouton : auteur **ou** admin ; par la question « Référent » reliée : tout éditeur (parité legacy) | `aac` (`canManageEditors`) |
 
@@ -854,8 +883,10 @@ Deux garde-fous s'ajoutent au droit, côté front :
 - **L'argent bloque.** `resolveCommunDeletionPlan` ([`lib/communDeletion.ts`](../src/modules/aac/lib/communDeletion.ts))
   refuse la suppression dès qu'un versement existe — compté sur `items[].allFunding`, **jamais** sur
   `resourceFinancedAmount`, qui ne somme que les paliers OUVERTS : un commun financé puis clôturé
-  afficherait 0 € et redeviendrait supprimable. Le retrait de l'annuaire
-  (« Retirer de l'annuaire », `useCommunSelectionAction`) reste la voie non destructive.
+  afficherait 0 € et redeviendrait supprimable. Un paiement en cours bloque aussi (`paymentInProgress`,
+  lu par `hasPaymentInProgress` dans l'enveloppe : promesse réservée ou facturée, contribution), avec
+  son propre motif. Le retrait de l'annuaire (« Retirer de l'annuaire », `useCommunSelectionAction`)
+  reste la voie non destructive.
 - **La cascade est EXPLICITE et sur demande** : le backend n'en fait aucune (`Element::deleteSimple`
   retire le document, ses commentaires et ses fichiers, mais ni les actions d'un projet ni les liens
   croisés). `useDeleteCommun` supprime le commun d'abord — seul échec qui fait échouer le geste —
@@ -865,10 +896,13 @@ Deux garde-fous s'ajoutent au droit, côté front :
 
 Depuis l'annuaire, le plan vient de `useCommunDeletionPlan` : document réponse, hôte de son contexte
 (`useCommunFundingHost`), enveloppe, repli sur le document. Au repos, ni le commun ni son enveloppe ne
-sont lus ; le dialogue reste en attente tant que le plan n'est pas résolu.
+sont lus ; le dialogue reste en attente tant que le plan n'est pas résolu. Depuis la fiche,
+`useAacFundingResource` fournit la ressource et `paymentInProgress`, lu dans la relecture de la fiche
+(sans nouvel appel), à défaut dans l'enveloppe.
 
 ⚠️ Gate d'**affichage** uniquement, comme les autres : le backend reste la source de vérité
-(`Authorisation::canDeleteElement`).
+(`Authorisation::canDeleteElement`, puis `Aap::answerDeleteBlock` dans `Element::deleteSimple` : une
+réponse qui porte de l'argent ou un paiement en cours n'est pas supprimée).
 
 ## 7. Query keys
 

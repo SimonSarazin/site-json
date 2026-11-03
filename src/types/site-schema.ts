@@ -2407,6 +2407,8 @@ const CagnotteModuleConfig = z.object({
     defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
     predefinedAmounts: z.array(z.number()).optional(),
     context: z.string().optional(),
+    // Bouton « Retirer » d'une promesse sans versement (fiche commun, « Mes promesses ») ; OFF par défaut.
+    pledgeRetraction: z.boolean().optional(),
 });
 
 export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;

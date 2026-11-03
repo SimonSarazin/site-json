@@ -329,6 +329,7 @@
       "title": "Ce commun ne peut pas être supprimé",
       "description": "Il a déjà reçu {{count}} financement(s), pour un total de {{amount}}. Supprimer ce commun effacerait la contrepartie de sommes réellement engagées.",
       "hint": "Pour le faire disparaître de l'annuaire sans rien détruire, utilisez « Retirer de l'annuaire ».",
+      "paymentInProgress": "Un paiement est en cours sur ce commun : il ne peut pas être supprimé avant son issue.",
       "close": "Fermer"
     },
     "withProject": {

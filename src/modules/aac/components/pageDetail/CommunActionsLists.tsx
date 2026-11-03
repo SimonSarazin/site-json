@@ -152,6 +152,7 @@ function MilestoneRow({
                 onMilestoneDelete={ctrl.handleDeleteMilestone}
                 onMilestoneRestore={ctrl.handleRestoreMilestone}
                 onActionCreate={ctrl.handleCreateAction}
+                paymentInProgress={ctrl.pledgeRetraction.depenseInProgress(item)}
                 className="relative z-10 pt-3"
             />
         </li>

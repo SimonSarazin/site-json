@@ -27,6 +27,7 @@ import { generateMilestoneId } from "@/modules/cagnotte/utils/idGeneration";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { appendProjectMilestone, updateAnswerDepenseFields } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
 import { dueAmountOf, unpaidAmountOf } from "@/modules/cagnotte/utils/financerPayment";
+import { isRetractablePledgeLine, type PaymentInProgressReader } from "@/modules/cagnotte/utils/pledgeRetraction";
 
 /** Financeur d'une dépense tel que l'enveloppe le sert, avant enrichissement. */
 type RawDepenseFinancer = FundingTransaction & { method?: string };
@@ -620,9 +621,15 @@ export function useOrphanDepenseRepair(params: {
  * partiellement versée reste une promesse pour son solde, d'où le filtre sur
  * `dueAmountOf(fund) > 0` — un versement en attente de validation n'est plus dû.
  * `remainingAmount` porte ce solde ; `fundingAmount` reste le montant engagé, pour
- * l'affichage seul — payer dessus surfacturerait.
+ * l'affichage seul — payer dessus surfacturerait. `isPaymentInProgress` : lecteur de
+ * `paymentsInProgress` de l'enveloppe (`readPledgesLockedForSelection`).
  */
-export function computePledgesFromResources(resources: CagnotteResource[], userId?: string, orgsIds: string[] = []): Pledge[] {
+export function computePledgesFromResources(
+    resources: CagnotteResource[],
+    userId?: string,
+    orgsIds: string[] = [],
+    isPaymentInProgress: PaymentInProgressReader = () => false,
+): Pledge[] {
 
     return resources.flatMap((resource) =>
         (resource.items ?? [])
@@ -644,6 +651,8 @@ export function computePledgesFromResources(resources: CagnotteResource[], userI
                         financerName: fund.financerName,
                         userPledge: item.userPledge,
                         userfundingPledge: item.funding,
+                        retractable: isRetractablePledgeLine(fund) && !!resource.answerId && item.depenseIndex >= 0,
+                        paymentInProgress: !!resource.answerId && isPaymentInProgress(resource.answerId, fund.finkey ?? ""),
                     }))
             )
     );

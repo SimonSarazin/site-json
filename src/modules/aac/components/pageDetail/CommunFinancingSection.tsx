@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import type { CoFormData } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
 import { useT } from "@/hooks/useT";
@@ -23,6 +23,8 @@ import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
 import { ListRowsSkeleton, MilestoneCardsSkeleton } from "./CommunSkeletons";
 import { ClosedMilestonesGroup } from "./CommunActionsSection";
 import { readFinancerPaymentState } from "@/modules/cagnotte/utils/financerPayment";
+import type { RetractPledgeRequest } from "@/modules/cagnotte/components/parts/RetractPledgeDialog";
+import type { PledgeLineRetraction } from "@/modules/aac/hooks/useCommunPledgeRetraction";
 import {
   toMilestoneStatus,
   fundableItemToMilestone,
@@ -66,9 +68,44 @@ interface FinancingMilestoneProps {
     loadingIds: { deletingItemId: string; closingItemId: string; restoringItemId: string };
     /** Le bouton de discussion du palier, à droite de l'en-tête — hors du bouton qui déplie. */
     discussion?: ReactNode;
+    /** Retrait d'une ligne de financement, `null` si elle ne se retire pas. */
+    retractStateFor: (fund: FundingLine) => PledgeLineRetraction | null;
+    onRetract: (request: RetractPledgeRequest) => void;
+    /** Une contribution est en cours de paiement sur ce palier : il ne se supprime pas avant son issue. */
+    paymentInProgress: boolean;
+    /** Signaler ce paiement en cours dans l'en-tête du palier (clé `pledgeRetraction` du site). */
+    showPaymentInProgress: boolean;
 }
 
 type FundingLine = CagnotteFundableItem["allFunding"][number];
+
+/** Remplace le statut d'une ligne en cours de paiement. */
+function PaymentInProgressLabel({ className }: { className?: string }) {
+    useLoadNamespace("modules/cagnotte");
+    const t = useT("modules/cagnotte");
+    return (
+        <span className={className} title={String(t("PledgeRetract.inProgressHint"))}>
+            {String(t("PledgeRetract.inProgress"))}
+        </span>
+    );
+}
+
+/** « Retirer » d'une ligne de financement. */
+function RetractPledgeButton({ request, onRetract }: { request: RetractPledgeRequest; onRetract: (request: RetractPledgeRequest) => void }) {
+    useLoadNamespace("modules/cagnotte");
+    const t = useT("modules/cagnotte");
+    return (
+        <button
+            type="button"
+            onClick={() => onRetract(request)}
+            aria-label={String(t("PledgeRetract.aria", undefined, { financer: request.financerName }))}
+            title={String(t("PledgeRetract.action"))}
+            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+        >
+            <Trash2 className="size-3.5" aria-hidden="true" />
+        </button>
+    );
+}
 
 const collectedPercent = (item: CagnotteFundableItem): number =>
     toSafeInt(item.price) > 0
@@ -92,12 +129,13 @@ function FinancingMilestoneActions({
     onMilestoneDelete,
     permissions,
     loadingIds,
-}: Omit<FinancingMilestoneProps, "index">) {
+    paymentInProgress,
+}: Omit<FinancingMilestoneProps, "index" | "retractStateFor" | "onRetract" | "showPaymentInProgress">) {
     const milestoneStatus = toMilestoneStatus(item.status);
     const canEditThisMilestone = permissions.canEditMilestone({ status: milestoneStatus });
     const canDeleteThisMilestone = permissions.canDeleteMilestone({
         status: milestoneStatus,
-        hasTransactions: toSafeInt(item.currentFunding) > 0,
+        hasTransactions: toSafeInt(item.currentFunding) > 0 || paymentInProgress,
     });
     /**
      * « Restaurer » a SA règle (`isAdmin && status === "close"`), distincte de l'édition
@@ -149,6 +187,8 @@ function FinancingMilestoneCard(props: FinancingMilestoneProps) {
 
     const pct = collectedPercent(item);
     const done = pct >= 100;
+    const fundingLines = (item?.allFunding || []).map((fund: FundingLine) => ({ fund, retraction: props.retractStateFor(fund) }));
+    const hasRetractButton = fundingLines.some(({ retraction }) => retraction !== null && !retraction.paymentInProgress);
     // Un palier clos reste listé — c'est ici qu'on le restaure — mais la carte et
     // la table des cofinanceurs l'excluent de leurs totaux : sans marqueur, le
     // lecteur additionnait des montants absents du total annoncé juste au-dessus.
@@ -176,6 +216,9 @@ function FinancingMilestoneCard(props: FinancingMilestoneProps) {
                                 >
                                     {String(c("detail.objectives.closedBadge"))}
                                 </span>
+                            ) : null}
+                            {props.showPaymentInProgress && props.paymentInProgress ? (
+                                <PaymentInProgressLabel className="rounded-sm border border-border bg-surface-2 px-1.5 py-0.5 text-[9px] normal-case tracking-normal" />
                             ) : null}
                         </div>
                         <h4 className={`font-display font-bold truncate ${isClosed ? "text-muted-foreground" : ""}`}>{item.name}</h4>
@@ -259,16 +302,27 @@ function FinancingMilestoneCard(props: FinancingMilestoneProps) {
                                 {String(c("detail.objectives.noFundingYet"))}
                             </li>
                         )}
-                        {(item?.allFunding || []).map((fund: FundingLine, i: number) => {
+                        {fundingLines.map(({ fund, retraction }, i: number) => {
                             const status = fundingStatus(fund);
                             return (
-                                <li key={i} className="flex p-3 rounded-md border text-sm">
+                                <li key={i} className="flex items-center p-3 rounded-md border text-sm">
                                     <span className="w-[35%]">{fund.financerName}</span>
                                     <span className="w-[25%]">{formatCurrency(toSafeInt(fund.amount))}</span>
                                     <span className="w-[25%]">{fund?.date ? new Date(fund.date).toLocaleDateString("fr-FR") : ""}</span>
-                                    <span className={cn("w-[15%]", status.className)}>
-                                        {String(c(status.labelKey))}
-                                    </span>
+                                    {retraction?.paymentInProgress ? (
+                                        <PaymentInProgressLabel className="w-[15%] text-muted-foreground" />
+                                    ) : (
+                                        <span className={cn("w-[15%]", status.className)}>
+                                            {String(c(status.labelKey))}
+                                        </span>
+                                    )}
+                                    {hasRetractButton ? (
+                                        <span className="flex w-7 shrink-0 justify-end">
+                                            {retraction && !retraction.paymentInProgress ? (
+                                                <RetractPledgeButton request={retraction.request} onRetract={props.onRetract} />
+                                            ) : null}
+                                        </span>
+                                    ) : null}
                                 </li>
                             );
                         })}
@@ -317,6 +371,9 @@ function FinancingExpenseRow(props: FinancingMilestoneProps) {
                             {String(c("detail.objectives.collectedPercent", undefined, { percent: collectedPercent(item) }))}
                         </span>
                     )}
+                    {props.showPaymentInProgress && props.paymentInProgress ? (
+                        <PaymentInProgressLabel className="ml-2 rounded-sm border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground" />
+                    ) : null}
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
                     <span className="font-medium tabular-nums">{formatCurrency(toSafeInt(item.price))}</span>
@@ -343,17 +400,25 @@ function FinancingExpenseRow(props: FinancingMilestoneProps) {
                         <ul className="space-y-1.5 border-l-2 border-border pl-3">
                             {fundingLines.map((fund: FundingLine, i: number) => {
                                 const status = fundingStatus(fund);
+                                const retraction = props.retractStateFor(fund);
                                 return (
                                     <li key={i} className="flex items-baseline justify-between gap-3 text-xs">
                                         <span className="min-w-0 text-muted-foreground">
                                             <span className="text-foreground">{fund.financerName}</span>
                                             {fund.date ? ` · ${new Date(fund.date).toLocaleDateString("fr-FR")}` : ""}
                                         </span>
-                                        <span className="shrink-0 tabular-nums">
+                                        <span className="flex shrink-0 items-center gap-1 tabular-nums">
                                             {formatCurrency(toSafeInt(fund.amount))}
-                                            <span className={cn("ml-2", status.className || "text-muted-foreground")}>
-                                                {String(c(status.labelKey))}
-                                            </span>
+                                            {retraction?.paymentInProgress ? (
+                                                <PaymentInProgressLabel className="ml-1 text-muted-foreground" />
+                                            ) : (
+                                                <span className={cn("ml-1", status.className || "text-muted-foreground")}>
+                                                    {String(c(status.labelKey))}
+                                                </span>
+                                            )}
+                                            {retraction && !retraction.paymentInProgress ? (
+                                                <RetractPledgeButton request={retraction.request} onRetract={props.onRetract} />
+                                            ) : null}
                                         </span>
                                     </li>
                                 );
@@ -406,6 +471,10 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
         onMilestoneDelete: ctrl.handleDeleteMilestone,
         permissions: ctrl.cagnottePerms,
         loadingIds: ctrl.loadingIds,
+        retractStateFor: (fund) => ctrl.pledgeRetraction.stateFor(fund, item.name),
+        onRetract: ctrl.pledgeRetraction.open,
+        paymentInProgress: ctrl.pledgeRetraction.depenseInProgress(item),
+        showPaymentInProgress: ctrl.pledgeRetraction.showDepenseProgress,
         // La clé se lit dans le document : la liste affichée l'a perdue, et une position ne la vaut
         // que si les dépenses sont un vrai tableau. Introuvable, pas de bouton : retomber sur la
         // position inventait la clé que `depenseKey.ts` interdit, et un palier pouvait ouvrir le fil

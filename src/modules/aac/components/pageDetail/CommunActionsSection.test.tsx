@@ -121,6 +121,7 @@ function controleur(over: Record<string, unknown> = {}): CommunObjectivesControl
     handleActionDone: vi.fn(),
     handleActionDelete: vi.fn(),
     handleActionEdit: vi.fn(),
+    pledgeRetraction: { depenseInProgress: () => false },
     refetchFundingEnvelope: vi.fn(),
     ...over,
   } as unknown as CommunObjectivesController;

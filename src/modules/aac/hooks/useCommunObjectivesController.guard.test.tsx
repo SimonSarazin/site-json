@@ -38,6 +38,10 @@ vi.mock("@/hooks/useCocolight", () => ({
     me: { id: "auteur", isConnected: true, serverData: { id: "auteur" } },
   }),
 }));
+vi.mock("@/modules/cagnotte/hooks/usePledgesInProgress", () => ({ usePledgesInProgress: () => undefined }));
+vi.mock("@/modules/aac/hooks/useCommunPledgeRetraction", () => ({
+  useCommunPledgeRetraction: () => ({ stateFor: () => null, request: null, open: () => {}, close: () => {}, extraInvalidate: [] }),
+}));
 vi.mock("@/modules/profil/hooks/useProfileEntity", () => ({ useOptionalProfileEntity: () => null }));
 vi.mock("@/modules/aac/hooks/useCommunFundingContext", () => ({ useCommunFundingContext: () => ({ context: null }) }));
 vi.mock("@/modules/aac/hooks/useCommunFundingHost", () => ({

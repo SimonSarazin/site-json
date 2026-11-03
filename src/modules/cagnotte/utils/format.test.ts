@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const { mockI18n } = vi.hoisted(() => ({ mockI18n: { language: "fr" } }));
 vi.mock("@/i18n", () => ({ default: mockI18n }));
 
-import { formatCurrency, formatDate, formatNumber, initials } from "./format";
+import { formatCurrency, formatDate, formatNumber, formatTime, initials } from "./format";
 
 describe("initials", () => {
   it("extrait les initiales de 'Jean Dupont' → 'JD'", () => {
@@ -108,5 +108,20 @@ describe("formatDate", () => {
 
   afterEach(() => {
     mockI18n.language = "fr";
+  });
+});
+
+describe("formatTime", () => {
+  const quatorzeHeuresTrente = new Date(2024, 4, 14, 14, 30).getTime();
+
+  afterEach(() => {
+    mockI18n.language = "fr";
+  });
+
+  it("heures et minutes selon la locale active", () => {
+    mockI18n.language = "fr";
+    expect(formatTime(quatorzeHeuresTrente)).toBe("14:30");
+    mockI18n.language = "en";
+    expect(formatTime(quatorzeHeuresTrente)).toMatch(/^02:30\sPM$/);
   });
 });

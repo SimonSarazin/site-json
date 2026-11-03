@@ -57,6 +57,7 @@ function controleur(over: Record<string, unknown> = {}): CommunObjectivesControl
   return {
     cagnottePerms: DROITS_ADMIN,
     resolvedAnswerId: "ans1",
+    pledgeRetraction: { stateFor: () => null, open: vi.fn(), depenseInProgress: () => false, showDepenseProgress: false },
     loadingIds: { deletingItemId: "", closingItemId: "", restoringItemId: "" },
     openCreateMilestoneModal: vi.fn(),
     openEditMilestoneModal: vi.fn(),

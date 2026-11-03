@@ -329,6 +329,7 @@
       "title": "This common cannot be deleted",
       "description": "It has already received {{count}} contribution(s), totalling {{amount}}. Deleting it would erase the counterpart of funds that were actually committed.",
       "hint": "To remove it from the directory without destroying anything, use “Remove from directory”.",
+      "paymentInProgress": "A payment is in progress on this commun: it cannot be deleted until it completes.",
       "close": "Close"
     },
     "withProject": {

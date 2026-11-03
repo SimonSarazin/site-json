@@ -193,6 +193,7 @@ export function MilestoneManageBar({
     onMilestoneDelete,
     onMilestoneRestore,
     onActionCreate,
+    paymentInProgress = false,
     className = "mb-3",
 }: {
     item: CagnotteFundableItem;
@@ -203,6 +204,8 @@ export function MilestoneManageBar({
     onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
     onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
     onActionCreate: (milestoneId: string, milestoneTitle: string) => void;
+    /** Une contribution est en cours de paiement sur ce palier : il ne se supprime pas avant son issue. */
+    paymentInProgress?: boolean;
     /** Marges du contenu déplié. */
     className?: string;
 }) {
@@ -212,7 +215,7 @@ export function MilestoneManageBar({
     const canEditThisMilestone = permissions.canEditMilestone({ status: milestoneStatus });
     const canDeleteThisMilestone = permissions.canDeleteMilestone({
         status: milestoneStatus,
-        hasTransactions: toSafeInt(item.currentFunding) > 0,
+        hasTransactions: toSafeInt(item.currentFunding) > 0 || paymentInProgress,
     });
     // « Restaurer » a sa propre règle : un palier clos et financé reste restaurable.
     const canRestoreThisMilestone = permissions.canRestoreMilestone({ status: milestoneStatus });
@@ -271,6 +274,7 @@ function ActionsMilestoneCard({
     onMilestoneRestore,
     permissions,
     loadingIds,
+    paymentInProgress,
 }: {
     /** Position dans la liste complète : le numéro « Palier n ». */
     index: number;
@@ -295,6 +299,7 @@ function ActionsMilestoneCard({
         closingItemId: string;
         restoringItemId: string;
     };
+    paymentInProgress: boolean;
 }) {
     const [open, setOpen] = useState(defaultOpen);
     const panelId = `palier-actions-${index}-panel`;
@@ -415,6 +420,7 @@ function ActionsMilestoneCard({
                 onMilestoneDelete={onMilestoneDelete}
                 onMilestoneRestore={onMilestoneRestore}
                 onActionCreate={onActionCreate}
+                paymentInProgress={paymentInProgress}
             />
         </div>
     );
@@ -446,6 +452,7 @@ export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProp
             onActionDone={ctrl.handleActionDone}
             permissions={ctrl.cagnottePerms}
             loadingIds={ctrl.loadingIds}
+            paymentInProgress={ctrl.pledgeRetraction.depenseInProgress(item)}
         />
     );
 
