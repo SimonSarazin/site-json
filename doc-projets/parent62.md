@@ -14,9 +14,12 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-11-03** — retrait complet du concept « partenaire » (page `/annuaire`,
-formulaire costum, onglet admin, tag) au profit de l'annuaire des acteurs du soutien à la
-parentalité, déjà doté du filtre territoire — détail §9quindecenties. Même jour, plus tôt :
+Dernière mise à jour : **2026-11-03** — « Ajouter un acteur » corrigé : champs `type`/`role` manquants
+au contrat `ADD_ORGANIZATION`, ajoutés en `hidden` + `subType:"acteur"` pour ne pas casser le
+discriminant de sous-type costum — détail §9sedecies. Plus tôt le même jour : retrait complet du
+concept « partenaire » (page `/annuaire`, formulaire costum, onglet admin, tag) au profit de
+l'annuaire des acteurs du soutien à la parentalité, déjà doté du filtre territoire — détail
+§9quindecenties. Plus tôt encore :
 `costum.typeObj.persons` posé en base PROD (et locale), vérification navigateur faite en local
 (login, écriture, relecture après reload) ; les deux correctifs PHP devenus inutiles
 (`Person::$dataBinding`/`Element::updateBlock`) retirés du backend.
@@ -5310,6 +5313,14 @@ sert aussi au filtre territoire de `/annuaire-acteurs-parentalite` — **ajouté
 même champ déjà déclaré sur `parent62-article`) pour qu'un acteur puisse désormais le renseigner à la
 création/édition, ce qu'aucun formulaire `organizations` ne permettait jusqu'ici.
 
+✅ **Dépendance backend posée en LOCAL et en PROD (03/11)** : `territoires` déclaré directement sur
+`typeObj.acteur` (`dynFormCostum.beforeBuild.properties.territoires`, `inputType:"selectMultiple"`,
+liste `territoires`), pas sur la racine `typeObj.organizations` — suffisant : la liste blanche du
+`DraftProxy` pour le sous-type `acteur` est l'UNION de la racine et du sous-type lui-même
+(`pickCostumOverlay`, `cocolight-api-client/src/costum/runtime.ts:539`), déclarer sur le sous-type
+seul couvre déjà le formulaire `parent62-acteur` sans toucher aux autres sous-types `organizations`
+du costum. Non vérifié en navigateur depuis cet environnement (pas de session authentifiée).
+
 **Tuile d'accueil « Rejoindre le réseau »** (page `/pro`) : pointait vers `/annuaire`, redirigée vers
 `/annuaire-acteurs-parentalite`.
 
@@ -5335,6 +5346,44 @@ toute organisation parent62 s'édite désormais par le même formulaire quel que
 | `config:validate` / `audit:config` | ✅ 51 pages/182 sections, RAS (aucun lien mort) |
 | `tests/preflight/` (suite complète) | ✅ 906 tests, 0 échec |
 | `npx vitest run src/modules/profil` | ✅ 960/961 tests (1 flaky sous charge, confirmé propre isolément) |
+
+## 9sedecies. « Ajouter un acteur » : champs `type`/`role` manquants au contrat `ADD_ORGANIZATION`
+
+**Bug (03/11, remonté en navigateur par le client)** : la création via « Ajouter un acteur »
+(§9quindecenties) échouait côté client avec `ApiValidationError` — `"The root value is missing the
+required field 'type'."` et `"...'role'."` — le formulaire `parent62-acteur` ne déclarait ni l'un ni
+l'autre, alors que le contrat SDK `ADD_ORGANIZATION` les exige tous les deux (précédent générique :
+`addOrganization.descriptor.ts`, utilisé hors costum).
+
+**Piège évité** : `type` n'est pas qu'un champ du contrat de base — pour parent62 c'est AUSSI le
+discriminant de sous-type costum (`serverData.type === "acteur"` → résout `costum.typeObj.acteur`, cf.
+le commentaire de `ProfileParent62About.tsx`). Un précédent existe dans le parc
+(`rezo-sante-acteur`, `config.prod.rezo-sante-reunion.json`) où `type`/`role` sont des SELECTS
+VISIBLES — mais ce costum n'a pas de `typeObj` à discriminer ; recopier ce patron tel quel sur
+parent62 aurait écrit n'importe quelle valeur choisie par l'utilisateur (NGO/Association/…) dans
+`serverData.type`, cassant la résolution de `typeObj.acteur` à l'édition (les champs costum
+`territoires`/`categoryThematic`/… seraient devenus invisibles sur toute fiche créée ainsi).
+
+**Fix retenu** : `mutation.inject.extraFields: {type:"acteur", role:"admin"}` — le patron DÉJÀ en
+usage dans le parc pour ce besoin exact (`federationDesCae`/`cae` : `extraFields.type:"Cooperative"`,
+`role:"admin"`, aux côtés de son propre `subType`). `useEntityMutation.tsx` (`Object.assign(payload,
+spec.inject.extraFields)`) l'applique UNIQUEMENT dans la branche CRÉATION, après construction du
+payload depuis les valeurs du formulaire — aucun faux champ `fields`/section n'est nécessaire, et rien
+n'est injecté à l'édition (où `type`/`role` ne sont pas requis par `UPDATE_ORGANIZATION`). `type:
+"acteur"` fixe la valeur du discriminant de sous-type ; `role:"admin"` (la personne qui dépose la
+fiche doit pouvoir la modifier ensuite ; pas de cas d'usage « member » identifié à la création d'un
+acteur). `subType:"acteur"` reste posé au niveau du formulaire (orthogonal : il cible la variante
+costum `typeObj.acteur` pour la validation/les presets, indépendamment de la valeur réelle écrite dans
+le champ `type` — même double usage que `cae`).
+
+Non vérifié en navigateur depuis cet environnement (pas de session authentifiée) — à confirmer par le
+client sur le flux réel « Ajouter un acteur ».
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 51 pages/182 sections |
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur |
+| `tests/preflight/` (suite complète) | ✅ 906 tests, 0 échec |
 
 ## 10. Checklist d'avancement
 
@@ -5501,7 +5550,7 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
-| **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies). **À confirmer depuis le 03/11** : ces trois champs n'étaient écrits QUE par le formulaire `parent62-partenaire`, retiré (§9quindecenties) — si `typeObj.organizations` ne sert qu'à lui, cette ligne est sans objet ; si un autre formulaire parent62 (`acteur` ou autre) les écrit aussi, elle reste valable | Thomas / backend |
+| ~~**`typeObj` de production (2.7)**~~ — **FAIT le 03/11, mais pas comme prévu à l'origine** : `publics`/`themes` étaient spécifiques au formulaire `parent62-partenaire` retiré, sans objet désormais. `territoires`, lui, sert maintenant à `parent62-acteur` (§9quindecenties) — déclaré sur `typeObj.acteur` directement (pas la racine `typeObj.organizations` envisagée initialement), en LOCAL et en PROD. **Vérifié en navigateur par le client (03/11)** : `territoires` accepté sans erreur à la soumission — le blocage rencontré était `type`/`role` manquants au contrat `ADD_ORGANIZATION`, sans rapport avec `territoires`, corrigé depuis (§9sedecies). Succès de bout en bout (création effective) reste à reconfirmer après ce correctif | — |
 | **`typeObj.acteur` de production** — créé et appliqué en LOCAL uniquement (cf. §9septquadragies.3) ; reste à reporter sur la base de PRODUCTION (même opération) avant toute édition réelle en prod | Thomas / backend |
 | **Republication SDK (`costum-extensions.json`)** — aucune entrée `organizations` pour `parent62` dans l'artefact vendu (généré 03/09, périmé) ; le scanner backend qui le produit (`tools/parity/scripts/costum-fields.mjs`) est hors d'atteinte depuis ce poste. Nécessaire pour que l'édition des champs costum de `parent62-acteur` soit fiable en PRODUCTION (sans dépendre de `VITE_COSTUM_FORCE_LIVE`, local uniquement) | backend / Thomas |
 | ~~**[AVANT MERGE] Partenaires déjà en prod sans tag `"Partenaires"`**~~ — **SANS OBJET depuis le 03/11 : `/annuaire` et son routage par tag ont été retirés** (§9quindecenties). Le risque décrit (bascule de routage selon le tag) ne s'applique plus : toute organisation parent62 s'édite désormais par le même formulaire `parent62-acteur`, tag présent ou non. _(libellé d'origine ci-dessous, conservé pour l'historique)_ | — |

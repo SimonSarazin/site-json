@@ -25230,6 +25230,7 @@
       "entityType": "organizations",
       "collection": "organizations",
       "costumSlug": "parent62",
+      "subType": "acteur",
       "icon": "building-2",
       "layout": {
         "kind": "tabs"
@@ -25800,6 +25801,12 @@
       "mutation": {
         "entityType": "organizations",
         "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "type": "acteur",
+            "role": "admin"
+          }
+        },
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
