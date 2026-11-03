@@ -29,7 +29,7 @@ import { hashKey, useQueryClient } from '@tanstack/react-query';
 import { syncBoard } from '@/modules/kanban/api/boards';
 import { applyActivities, commentThreadsTouched, decideSync, rolesRereadNeeded } from '@/modules/kanban/lib/boardSync';
 import { nowTimestamp } from '@/modules/kanban/lib/dates';
-import { isAccessLostFailure } from '@/modules/kanban/lib/kanbanErrors';
+import { KanbanAuthError, isAccessLostFailure } from '@/modules/kanban/lib/kanbanErrors';
 import { KANBAN_QUERY_KEYS } from '@/modules/kanban/constants/queryKeys';
 import { useCurrentUserId, useKanbanClient } from '@/modules/kanban/hooks/useKanbanSession';
 import type { BoardSnapshot, RoleListResult } from '@/modules/kanban/types';
@@ -149,10 +149,13 @@ export function useBoardSync(boardId: string): void {
           }
         }
       } catch (error) {
-        if (isAccessLostFailure(error)) {
-          // Acces perdu (contributeur retire du projet, lien supprime) : ce
-          // n'est pas une coupure reseau, reessayer toutes les 10 s n'y
-          // changera rien. On SUSPEND la boucle et l'on recharge l'instantane :
+        if (isAccessLostFailure(error) || error instanceof KanbanAuthError) {
+          // Acces perdu (contributeur retire du projet, lien supprime, route
+          // absente) ou session morte (jeton refuse, rafraichissement rate :
+          // le SDK a remis la session du site a zero) : ce n'est pas une
+          // coupure reseau, reessayer toutes les 10 s n'y changera rien — sur
+          // une session morte, chaque passe couterait en plus un `refreshtoken`
+          // voue a l'echec. On SUSPEND la boucle et l'on recharge l'instantane :
           // `board/get` repond le meme refus, que l'ecran d'erreur explique.
           suspended = true;
           void queryClient.invalidateQueries({ queryKey });

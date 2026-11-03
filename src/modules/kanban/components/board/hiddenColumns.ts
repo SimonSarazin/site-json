@@ -9,7 +9,7 @@
  * `localStorage` (une cle par tableau ET par portee) et n'est lue qu'apres
  * l'hydratation.
  *
- * Tout ce qui se calcule ici est teste (`tests/unit/hiddenColumns.test.ts`) :
+ * Tout ce qui se calcule ici est teste (`components/board/hiddenColumns.test.ts`) :
  * une valeur de stockage abimee ne doit jamais masquer tout un tableau.
  */
 

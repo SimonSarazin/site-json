@@ -16,7 +16,7 @@
  */
 import { useMutation, useQuery, useQueryClient, type QueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { addComment as requestAddComment, deleteComment as requestDeleteComment, listComments } from '@/modules/kanban/api/comments';
-import { adjustCardCommentCount, markCardCommentsSeen, setCardCommentCount } from '@/modules/kanban/lib/boardSync';
+import { adjustCardCommentCount, decideRollback, markCardCommentsSeen, setCardCommentCount } from '@/modules/kanban/lib/boardSync';
 import { nowTimestamp } from '@/modules/kanban/lib/dates';
 import { KANBAN_QUERY_KEYS } from '@/modules/kanban/constants/queryKeys';
 import { useCurrentUserId, useKanbanClient, useSessionProfile } from '@/modules/kanban/hooks/useKanbanSession';
@@ -67,8 +67,15 @@ export interface DeleteCommentVariables {
 }
 
 interface CommentMutationContext {
-  /** Fil d'avant-mutation, restaure tel quel en cas d'echec. */
+  /** Fil d'avant-mutation, restaure en cas d'echec — si le cache porte encore `optimistic`. */
   previous?: CommentListResult;
+  /**
+   * Fil REELLEMENT ecrit par `onMutate` : le temoin du rollback (`decideRollback`). La file
+   * `scope` serialise l'EXECUTION des mutations, pas leurs `onMutate` : deux ajouts rapides
+   * photographient le meme fil, et reposer aveuglement la photo du second apres le succes du
+   * premier ressusciterait son `tmp-comment` a la place du message serveur.
+   */
+  optimistic?: CommentListResult;
   /** `true` si le compteur du tableau a bien ete decale : il faut le defaire. */
   adjusted: boolean;
   temporaryId: string;
@@ -172,12 +179,13 @@ export function useCardComments(boardId: string | null, cardId: string | null): 
         author: optimisticAuthor(),
       };
       const base = previous ?? EMPTY_THREAD;
-      queryClient.setQueryData<CommentListResult>(queryKey, {
+      const written: CommentListResult = {
         comments: [...base.comments, optimistic],
         total: base.total + 1,
-      });
+      };
+      queryClient.setQueryData<CommentListResult>(queryKey, written);
       updateBoards((snapshot) => adjustCardCommentCount(snapshot, id, 1));
-      return { previous, adjusted: true, temporaryId };
+      return { previous: previous ?? EMPTY_THREAD, optimistic: written, adjusted: true, temporaryId };
     },
     onSuccess: (data, _variables, context) => {
       queryClient.setQueryData<CommentListResult>(queryKey, (current) => {
@@ -194,7 +202,7 @@ export function useCardComments(boardId: string | null, cardId: string | null): 
       updateBoards((snapshot) => setCardCommentCount(snapshot, id, data.commentCount));
     },
     onError: (error, _variables, context) => {
-      if (context?.previous) queryClient.setQueryData<CommentListResult>(queryKey, context.previous);
+      rollbackThread(context);
       if (context?.adjusted) updateBoards((snapshot) => adjustCardCommentCount(snapshot, id, -1));
       reportFailure(error);
     },
@@ -209,16 +217,18 @@ export function useCardComments(boardId: string | null, cardId: string | null): 
       const previous = queryClient.getQueryData<CommentListResult>(queryKey);
       const temporaryId = nextTemporaryId();
       const existed = previous?.comments.some((comment) => comment._id === variables.commentId) ?? false;
+      let written: CommentListResult | undefined;
       if (previous) {
-        queryClient.setQueryData<CommentListResult>(queryKey, {
+        written = {
           comments: previous.comments.filter((comment) => comment._id !== variables.commentId),
           total: Math.max(0, previous.total - (existed ? 1 : 0)),
-        });
+        };
+        queryClient.setQueryData<CommentListResult>(queryKey, written);
       }
       // Pas de decalage du compteur si le message n'etait deja plus la : le
       // decrementer deux fois afficherait « 4 commentaires » sur un fil de 5.
       if (existed) updateBoards((snapshot) => adjustCardCommentCount(snapshot, id, -1));
-      return { previous, adjusted: existed, temporaryId };
+      return { previous, optimistic: written, adjusted: existed, temporaryId };
     },
     onSuccess: (data) => {
       queryClient.setQueryData<CommentListResult>(queryKey, (current) =>
@@ -227,11 +237,31 @@ export function useCardComments(boardId: string | null, cardId: string | null): 
       updateBoards((snapshot) => setCardCommentCount(snapshot, id, data.commentCount));
     },
     onError: (error, _variables, context) => {
-      if (context?.previous) queryClient.setQueryData<CommentListResult>(queryKey, context.previous);
+      rollbackThread(context);
       if (context?.adjusted) updateBoards((snapshot) => adjustCardCommentCount(snapshot, id, 1));
       reportFailure(error);
     },
   });
+
+  /**
+   * Retour arriere du fil, CONDITIONNEL (meme regle que `rollbackBoardSnapshot`) : la photo
+   * d'avant n'est reposee que si le cache porte encore exactement ce que `onMutate` a ecrit.
+   * Sinon une autre ecriture est passee (succes d'un ajout precedent, rechargement) et c'est le
+   * serveur qui tranche : on relit le fil.
+   */
+  function rollbackThread(context: CommentMutationContext | undefined): void {
+    const current = queryClient.getQueryData<CommentListResult>(queryKey);
+    switch (decideRollback(current, context)) {
+      case 'restore':
+        queryClient.setQueryData<CommentListResult>(queryKey, context?.previous);
+        return;
+      case 'invalidate':
+        void queryClient.invalidateQueries({ queryKey });
+        return;
+      default:
+        return;
+    }
+  }
 
   return {
     comments: query.data?.comments ?? [],

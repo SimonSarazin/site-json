@@ -1,59 +1,35 @@
 import Cocolight from "@communecter/cocolight-api-client";
-import { getBaseUrl } from "@/lib/constant/common";
 import { KanbanApiError, KanbanAuthError, isKanbanApiError } from "@/modules/kanban/lib/kanbanErrors";
 import { isRecord } from "@/modules/kanban/types";
 import type { KanbanClient, KanbanRequestOptions, ResponseGuard } from "./kanbanClient";
-import { KANBAN_ENDPOINTS, type KanbanEndpoint } from "./kanbanEndpoints";
+import { kanbanRoutePath, type KanbanEndpoint } from "./kanbanRoutes";
 
 /**
- * Implémentation SDK du transport kanban.
+ * Implémentation SDK du transport kanban : les 20 routes sont dans le registre du SDK (1.0.205,
+ * `doc/41-module-kanban-sdk.md`), l'appel passe par le client principal du site —
+ * `callEndpoint(constante, corps, false, false)`. Jeton Bearer, rafraîchissement sur 401,
+ * disjoncteur et erreurs typées sont ceux du SDK ; ce fichier ne fait que traduire ses erreurs en
+ * `KanbanApiError` et déplier l'enveloppe `{result, data}`.
  *
- * Les routes kanban ne sont pas encore dans le registre du SDK (cf. `kanbanEndpoints.ts`) : on
- * les sert par un client `ApiClient` DÉDIÉ, le « pont », construit avec ces seules routes.
- *
- * Le pont n'a pas de session propre. Avant chaque appel, il prend les jetons du client
- * principal du site. Si le SDK les rafraîchit pendant l'appel (intercepteur 401), il les rend
- * au client principal. Le jeton d'accès vit 10 minutes : sans ce retour, le polling du tableau
- * (toutes les 10 s) referait un rafraîchissement à chaque passe. Ce double rafraîchissement est
- * sûr : le jeton de rafraîchissement de Communecter n'est ni stocké ni révoqué
- * (`RefreshTokenAction`), deux clients peuvent s'en servir.
- *
- * À la livraison des routes dans le SDK, `bridgeFor` disparaît : on appelle `main.callEndpoint`.
+ * `false, false` : ni `_transformData` (normalisations des entités legacy, sans objet ici : dates en
+ * secondes, `_id` en chaîne), ni validation AJV de la réponse (le registre n'en déclare pas, les
+ * gardes de `types.ts` font foi).
  */
 
 /**
- * Ce que le transport utilise d'un `ApiClient` : la session et l'appel d'une route. Un
- * `ApiClient` du SDK le satisfait tel quel ; les tests passent des faux sans simuler le reste.
+ * Ce que le transport utilise d'un `ApiClient` : l'appel d'une route par sa constante. Un
+ * `ApiClient` du SDK le satisfait tel quel ; les tests passent un faux qui sert les routes.
  */
 export interface KanbanSdkClient {
-  getToken(): string | null;
-  setToken(token: string | null): void;
-  getRefreshToken(): string | null;
-  setRefreshToken(token: string | null): void;
   callEndpoint(endpoint: string, data: object, transformResponseData: boolean, validateResponseSchema: boolean): Promise<{ data: unknown }>;
 }
 
-/** Délai d'un appel, celui de co-kanban : au-delà, l'écran propose de réessayer. */
-const KANBAN_TIMEOUT_MS = 15_000;
-
-/** Un pont par client principal : au rendu serveur, chaque requête a le sien, ramassé avec lui. */
-const bridges = new WeakMap<KanbanSdkClient, KanbanSdkClient>();
-
-function bridgeFor(main: KanbanSdkClient): KanbanSdkClient {
-  let bridge = bridges.get(main);
-  if (bridge === undefined) {
-    // Stockage mémoire (défaut du SDK) : le pont ne persiste rien, la session reste celle
-    // du client principal.
-    bridge = new Cocolight.ApiClient({ baseURL: getBaseUrl(), endpoints: [...KANBAN_ENDPOINTS], timeout: KANBAN_TIMEOUT_MS });
-    bridges.set(main, bridge);
-  }
-  return bridge;
-}
-
-/** Chemin d'une route, pour le diagnostic porté par l'erreur. */
-function routeLabel(endpoint: KanbanEndpoint): string {
-  return KANBAN_ENDPOINTS.find((entry) => entry.constant === endpoint)?.path ?? endpoint;
-}
+/**
+ * Message de l'intercepteur 401 du SDK quand le rafraîchissement du jeton échoue. Cette erreur naît
+ * DANS `callEndpoint`, dont le `catch` la ré-emballe sans `response` : statut 500, corps `null` — la
+ * forme d'une panne réseau. Seul le message la distingue.
+ */
+const REFRESH_FAILED = /rafra[iî]chissement du token/i;
 
 /**
  * Traduit une erreur du SDK en `KanbanApiError`, la seule erreur que lisent les écrans
@@ -65,15 +41,16 @@ function routeLabel(endpoint: KanbanEndpoint): string {
  *  - sans réponse (réseau coupé, délai dépassé), le statut vaut 500 et le corps `null`. Un vrai
  *    500 du serveur a toujours un corps (page HTML ou JSON), même vide (`""`) : c'est ce qui
  *    sépare une panne réseau d'une panne serveur. Le délai, lui, ne se lit que dans le
- *    message d'axios (« timeout of … exceeded ») ;
+ *    message d'axios (« timeout of … exceeded ») ; un rafraîchissement de jeton raté, que dans
+ *    le sien (`REFRESH_FAILED`) — le SDK a alors remis la session du site à zéro ;
  *  - `CircuitBreakerError` (503) quand le SDK a coupé les appels après des pannes répétées ;
- *  - un 401 quand aucun jeton n'est posé, ou quand le rafraîchissement a échoué.
+ *  - un 401 quand aucun jeton n'est posé.
  *
  * Toute autre valeur levée (bug local) passe telle quelle : la classer « serveur » mentirait.
  */
 export function kanbanErrorFromSdk(error: unknown, endpoint: KanbanEndpoint): unknown {
   if (isKanbanApiError(error)) return error;
-  const url = routeLabel(endpoint);
+  const url = kanbanRoutePath(endpoint);
   if (error instanceof Cocolight.error.CircuitBreakerError) {
     return new KanbanApiError(error.message, { status: 503, code: "serverError", cause: error, url });
   }
@@ -85,7 +62,9 @@ export function kanbanErrorFromSdk(error: unknown, endpoint: KanbanEndpoint): un
     const options = { status, code, detail: body.detail, cause: error, url };
     return status === 401 ? new KanbanAuthError(code, options) : new KanbanApiError(code, options);
   }
-  if (status === 401) return new KanbanAuthError(error.message, { status, cause: error, url });
+  if (status === 401 || REFRESH_FAILED.test(error.message)) {
+    return new KanbanAuthError(error.message, { status: 401, cause: error, url });
+  }
   if (body === null || body === undefined) {
     const code = /timeout/i.test(error.message) ? "timeout" : "network";
     return new KanbanApiError(error.message, { status: 0, code, cause: error, url });
@@ -101,7 +80,7 @@ export function kanbanErrorFromSdk(error: unknown, endpoint: KanbanEndpoint): un
  * `{result:false}` en HTTP 200 (refus métier du legacy) lève comme un refus HTTP.
  */
 export function unwrapKanbanEnvelope<T>(payload: unknown, parse: ResponseGuard<T>, endpoint: KanbanEndpoint, status = 200): T {
-  const url = routeLabel(endpoint);
+  const url = kanbanRoutePath(endpoint);
   if (!isRecord(payload) || typeof payload.result !== "boolean") {
     throw new KanbanApiError(`Enveloppe inattendue (${status}) sur ${url}`, { status, code: "invalidResponse", detail: payload, url });
   }
@@ -121,54 +100,36 @@ export function unwrapKanbanEnvelope<T>(payload: unknown, parse: ResponseGuard<T
 function abortReason(signal: AbortSignal, endpoint: KanbanEndpoint): unknown {
   return signal.reason instanceof Error
     ? signal.reason
-    : new KanbanApiError("Requête annulée", { code: "aborted", url: routeLabel(endpoint) });
+    : new KanbanApiError("Requête annulée", { code: "aborted", url: kanbanRoutePath(endpoint) });
 }
 
 /**
  * Transport kanban branché sur le client principal du site.
  *
- * `getMainClient` est relu à CHAQUE appel : le client du contexte peut naître après le
- * composant (initialisation asynchrone), et un client figé à la construction resterait nul.
- * `makeBridge` n'existe que pour les tests.
+ * `getClient` est relu à CHAQUE appel : le client du contexte peut naître après le composant
+ * (initialisation asynchrone), et un client figé à la construction resterait nul.
  */
-export function createSdkKanbanClient(
-  getMainClient: () => KanbanSdkClient | null,
-  makeBridge: (main: KanbanSdkClient) => KanbanSdkClient = bridgeFor,
-): KanbanClient {
+export function createSdkKanbanClient(getClient: () => KanbanSdkClient | null): KanbanClient {
   async function post<T>(endpoint: KanbanEndpoint, body: object, parse: ResponseGuard<T>, options: KanbanRequestOptions = {}): Promise<T> {
     const { signal } = options;
     if (signal?.aborted) throw abortReason(signal, endpoint);
-    const main = getMainClient();
-    if (main === null) {
-      throw new KanbanAuthError("Client API indisponible", { status: 401, url: routeLabel(endpoint) });
+    const sdk = getClient();
+    if (sdk === null) {
+      throw new KanbanAuthError("Client API indisponible", { status: 401, url: kanbanRoutePath(endpoint) });
     }
-
-    const bridge = makeBridge(main);
-    const accessBefore = main.getToken();
-    const refreshBefore = main.getRefreshToken();
-    if (bridge.getToken() !== accessBefore) bridge.setToken(accessBefore);
-    if (bridge.getRefreshToken() !== refreshBefore) bridge.setRefreshToken(refreshBefore);
 
     let response: { data: unknown };
     try {
-      // `false, false` : ni `_transformData` (normalisations des entités legacy, sans objet
-      // ici), ni validation AJV de la réponse (le registre du pont n'en déclare pas).
-      response = await bridge.callEndpoint(endpoint, { ...body }, false, false);
+      response = await sdk.callEndpoint(endpoint, { ...body }, false, false);
     } catch (error) {
       throw kanbanErrorFromSdk(error, endpoint);
-    } finally {
-      // Jetons rafraîchis par le SDK pendant l'appel : on les rend au client principal. Un
-      // `null` (rafraîchissement raté, session du pont remise à zéro) ne remonte PAS : la
-      // déconnexion du site n'est pas l'affaire du kanban, le client principal la constatera.
-      const accessAfter = bridge.getToken();
-      if (accessAfter !== null && accessAfter !== accessBefore) main.setToken(accessAfter);
-      const refreshAfter = bridge.getRefreshToken();
-      if (refreshAfter !== null && refreshAfter !== refreshBefore) main.setRefreshToken(refreshAfter);
     }
 
     if (signal?.aborted) throw abortReason(signal, endpoint);
-    // Le pont n'a pas de gestionnaire hors ligne : une mise en file n'arrive pas. Si elle
-    // arrivait, `data` vaudrait `null` et l'enveloppe lèverait `invalidResponse`.
+    // Client hors ligne ou disjoncteur ouvert AVEC gestionnaire hors-ligne : le SDK met en file et rend
+    // `{data: null, offline|breaker: true}` au lieu d'appeler. Le site ne configure pas ce gestionnaire ;
+    // s'il le faisait, `data` vaudrait `null` et l'enveloppe lèverait `invalidResponse` — une mutation
+    // kanban rejouée plus tard sans sa réponse n'a pas de sens pour un tableau synchronisé par polling.
     return unwrapKanbanEnvelope(response.data, parse, endpoint);
   }
 

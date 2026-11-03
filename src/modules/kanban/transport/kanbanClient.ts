@@ -1,4 +1,4 @@
-import type { KanbanEndpoint } from "./kanbanEndpoints";
+import type { KanbanEndpoint } from "./kanbanRoutes";
 
 /**
  * Contrat du transport kanban : la SEULE porte du module vers le backend.
@@ -8,8 +8,8 @@ import type { KanbanEndpoint } from "./kanbanEndpoints";
  * `api/*.ts` et les hooks se reprennent ainsi presque tels quels, et le jour où le SDK livre
  * ces routes, seule l'implémentation change (`sdkKanbanClient.ts`).
  *
- * Deux implémentations : celle du SDK, la seule livrée, et les faux des tests
- * (`__fixtures__/fakeKanbanClient.ts`).
+ * Une implémentation : celle du SDK (`sdkKanbanClient.ts`), que les tests branchent sur un faux
+ * client principal (`__fixtures__/fakeSdk.ts`).
  */
 
 export interface KanbanRequestOptions {

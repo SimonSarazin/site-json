@@ -11,6 +11,13 @@
 > **20**, et non 22 : le compte du §3.1 était faux (21), et `member/list` est retirée, faute de
 > consommateur (les membres arrivent avec `board/get`).
 >
+> **Mise à jour du 03/11/2026** : les 20 routes sont **livrées dans le SDK 1.0.205** (registre, façade
+> `api.kanban.*`) et site-json est basculé sur le client principal (doc 41 §2). Les mentions d'`ENDPOINT.md`
+> ci-dessous (§0, §4.1, §4.2, §9) désignent un fichier qui n'a jamais existé dans ce dépôt : la description des
+> routes est la doc 41. Le paragraphe « Écart de versions » du §4.1 est périmé (dépôt et `node_modules` en 1.0.204
+> au 03/11). Le PHP des routes est sur `master` du legacy depuis le 03/11/2026 (citizenToolKit `5da315fa`, costum
+> `6a5479116`) : la recette réelle contre un serveur qui le porte reste à faire.
+>
 > **Mise à jour du 02/11/2026** : lots 3 (tableau des actions), 4 (fiche de carte, route
 > `/kanban/actions/carte/:cardId`), 5 (kanban des rôles) et 6 (vues Liste, Table, Chronologie, Vue
 > d'ensemble et Jalons, gestion des jalons ; doc 40 §11) livrés ; lot 7 : entrée de menu faite (Q5 et Q8

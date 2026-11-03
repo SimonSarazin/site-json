@@ -1,12 +1,12 @@
 import Cocolight from "@communecter/cocolight-api-client";
-import { KANBAN_ENDPOINTS } from "@/modules/kanban/transport/kanbanEndpoints";
+import { KANBAN_ROUTES, type KanbanEndpoint } from "@/modules/kanban/transport/kanbanRoutes";
 import type { KanbanSdkClient } from "@/modules/kanban/transport/sdkKanbanClient";
 
 /**
- * Faux du SDK pour les tests du transport et des hooks : un client principal (la session du
- * site) et un pont qui répond route par route.
+ * Faux du SDK pour les tests du transport, des hooks et des écrans : le client principal du
+ * site, qui sert les routes kanban une par une.
  *
- * Le pont rend ce que rendrait le vrai SDK : `{data: corps}` sur un 2xx, et une VRAIE
+ * Il rend ce que rendrait le vrai SDK : `{data: corps}` sur un 2xx, et une VRAIE
  * `ApiClientError(message, statut, corps)` sinon. Les tests traversent donc la traduction
  * d'erreurs et le dépliage d'enveloppe de `sdkKanbanClient.ts`, au lieu de les contourner.
  */
@@ -31,7 +31,7 @@ export type RouteHandler = (body: Record<string, unknown>) => FakeResponse | Pro
 
 /** Route courte d'une constante : `KANBAN_BOARD_SYNC_URL` -> `board/sync`. */
 function routeOf(endpoint: string): string {
-  const path = KANBAN_ENDPOINTS.find((entry) => entry.constant === endpoint)?.path ?? endpoint;
+  const path = endpoint in KANBAN_ROUTES ? KANBAN_ROUTES[endpoint as KanbanEndpoint] : endpoint;
   const match = /\/costum\/kanban-([a-z]+)\/([a-z]+)$/.exec(path);
   return match ? `${match[1]}/${match[2]}` : endpoint;
 }
@@ -46,60 +46,23 @@ export function sdkError(status: number, body: unknown, message = `Erreur lors d
   return new Cocolight.error.ApiClientError(message, status, body as Record<string, unknown>);
 }
 
-/** Session minimale : deux jetons, lus et écrits comme sur un `ApiClient`. */
-export class FakeSession {
-  accessToken: string | null;
-  refreshToken: string | null;
-
-  constructor(accessToken: string | null = "jeton", refreshToken: string | null = "rafraichissement") {
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-  }
-
-  getToken(): string | null {
-    return this.accessToken;
-  }
-
-  setToken(token: string | null): void {
-    this.accessToken = token;
-  }
-
-  getRefreshToken(): string | null {
-    return this.refreshToken;
-  }
-
-  setRefreshToken(token: string | null): void {
-    this.refreshToken = token;
-  }
-}
-
-/** Client principal du site : une session, jamais appelé pour une route kanban. */
-export class FakeMainClient extends FakeSession implements KanbanSdkClient {
-  async callEndpoint(endpoint: string): Promise<{ data: unknown }> {
-    throw new Error(`le client principal ne sert pas les routes kanban (${endpoint})`);
-  }
-}
-
-/** Appel reçu par le pont. */
-export interface BridgeCall {
+/** Appel reçu par le faux SDK. */
+export interface SdkCall {
   route: string;
   body: Record<string, unknown>;
-  /** Jeton d'accès porté par le pont au moment de l'appel. */
-  token: string | null;
   transform: boolean;
   validate: boolean;
 }
 
 /**
- * Pont simulé. Une route sans gestionnaire répond 404 `notFound` : un appel inattendu se voit
- * dans le test au lieu de passer inaperçu.
+ * Client principal simulé. Une route sans gestionnaire répond 404 `notFound` : un appel
+ * inattendu se voit dans le test au lieu de passer inaperçu.
  */
-export class FakeBridge extends FakeSession implements KanbanSdkClient {
-  readonly calls: BridgeCall[] = [];
+export class FakeSdk implements KanbanSdkClient {
+  readonly calls: SdkCall[] = [];
   private readonly handlers: Map<string, RouteHandler>;
 
   constructor(routes: Record<string, RouteHandler> = {}) {
-    super(null, null);
     this.handlers = new Map(Object.entries(routes));
   }
 
@@ -114,7 +77,7 @@ export class FakeBridge extends FakeSession implements KanbanSdkClient {
   async callEndpoint(endpoint: string, data: object, transform: boolean, validate: boolean): Promise<{ data: unknown }> {
     const route = routeOf(endpoint);
     const body: Record<string, unknown> = Object.fromEntries(Object.entries(data));
-    this.calls.push({ route, body, token: this.accessToken, transform, validate });
+    this.calls.push({ route, body, transform, validate });
     const handler = this.handlers.get(route);
     const response = handler ? await handler(body) : refusal(404, "notFound", { route });
     if (response.status >= 200 && response.status < 300) return { data: response.body };

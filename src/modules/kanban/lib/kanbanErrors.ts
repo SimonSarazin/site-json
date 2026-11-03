@@ -402,8 +402,10 @@ export function kanbanFailureKind(error: unknown): KanbanFailureKind {
 
 /**
  * L'appelant a-t-il PERDU l'acces a la ressource ? Refus d'acces (403
- * `notMember`, `forbidden`) ou ressource disparue (404 `notFound`) — mais pas
- * une session expiree (401), qui appelle une reconnexion (cf. `kanbanAccessState`).
+ * `notMember`, `forbidden`) ou ressource disparue (404 : `notFound`, ou une route
+ * que le serveur ne sert pas — page HTML Yii quand le module PHP n'est pas
+ * deploye) — mais pas une session expiree (401), qui appelle une reconnexion
+ * (cf. `kanbanAccessState`).
  *
  * Sert au polling d'un tableau : ces echecs-la ne se resolvent pas en
  * reessayant. Sur un board-lien, les droits changent dans Communecter, hors du
@@ -412,7 +414,7 @@ export function kanbanFailureKind(error: unknown): KanbanFailureKind {
  */
 export function isAccessLostFailure(error: unknown): boolean {
   if (!isKanbanApiError(error) || error.status === 401) return false;
-  return error.kind === 'denied' || error.code === 'notFound';
+  return error.kind === 'denied' || error.code === 'notFound' || error.status === 404;
 }
 
 /** Message affichable a l'utilisateur pour n'importe quelle erreur d'appel. */

@@ -319,7 +319,8 @@ export interface Milestone {
   /** Chaine de 17 caracteres facon Meteor : la cle d'ecriture, jamais l'index. */
   milestoneId: string;
   name: string;
-  description: string;
+  /** `null` apres un effacement par `milestone/update`, ou sur un jalon sans description. */
+  description: string | null;
   startDate: number | null;
   endDate: number | null;
   status: MilestoneStatus;
@@ -848,7 +849,10 @@ export function isMilestone(value: unknown): value is Milestone {
     isRecord(value) &&
     isString(value.milestoneId) &&
     isString(value.name) &&
-    isString(value.description) &&
+    // `null` admis : `milestone/update` efface la description par `null` (doc 41), et un
+    // jalon pose par Kanban gestion peut n'en avoir aucune. Refuser la reponse entiere pour
+    // ce seul champ priverait l'ecran de tout le tableau.
+    isNullableString(value.description) &&
     isNullableNumber(value.startDate) &&
     isNullableNumber(value.endDate) &&
     isMilestoneStatus(value.status)

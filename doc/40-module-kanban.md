@@ -5,15 +5,18 @@
 Le kanban de l'application co-kanban, branché sur l'organisation ou le projet qui porte le site :
 `/kanban` liste les kanbans de cet élément (les actions, les rôles), un clic ouvre l'un d'eux.
 
-> **En un mot** : le backend existe déjà (routes `POST /costum/kanban-*`), la logique se reprend de
-> co-kanban avec ses tests, et le SDK, qui ne connaît pas encore ces routes, est servi par un
-> **pont** qui passe par lui sans le modifier (§3).
+> **En un mot** : les routes `POST /costum/kanban-*` sont celles de co-kanban, poussées dans le legacy le
+> 03/11/2026 (citizenToolKit `5da315fa`, costum `6a5479116`, cf. doc 41 §3) ; la logique se reprend de
+> co-kanban avec ses tests, et le SDK les porte depuis 1.0.205 : le module l'appelle par le client
+> principal du site (§3).
 
 **État** (02/11/2026, branche `judi-kanban`) : lots 0 à 6 de la [RFC](39-rfc-module-kanban.md) livrés :
 l'écran de liste du lot 1, le **tableau des actions** (lot 3, §9), la **fiche de carte** (lot 4, §10),
 le **kanban des rôles** (lot 5, §8) et les **autres vues** du tableau des actions avec la gestion des
-jalons (lot 6, §11). Lot 7 : l'entrée « Kanban » du menu du compte mène à `/kanban` (§1) ; reste le
-branchement sur le SDK, une fois les routes livrées ([doc 41](41-module-kanban-sdk.md)).
+jalons (lot 6, §11). Lot 7 : l'entrée « Kanban » du menu du compte mène à `/kanban` (§1), et le module
+est branché sur le SDK 1.0.205 depuis le 03/11/2026 ([doc 41](41-module-kanban-sdk.md) §2) ; reste la
+recette contre le vrai backend (PHP sur `master` du legacy depuis le 03/11/2026, à déployer : classmap
+composer et CORS, doc 41 §3).
 
 ## 1. Activer le module
 
@@ -60,36 +63,37 @@ donc sans attendre depuis la tuile. Un pied par type de kanban (`TILE_FOOTERS`, 
 identifiants du registre), squelette tant que la session ou les chiffres chargent, rien si l'accès
 est refusé ou si l'appel échoue.
 
-## 3. Accès aux données : le pont SDK
+## 3. Accès aux données : le SDK
 
-Le SDK n'a aucune route kanban et il est en lecture seule (CLAUDE.md §3). Les **20 routes**
-utilisées sont décrites pour le mainteneur dans la [doc 41](41-module-kanban-sdk.md), avec la bascule à
-faire à leur livraison ; `ENDPOINT.md` y renvoie. En attendant :
+Les **20 routes** du module sont dans le registre du SDK depuis `@communecter/cocolight-api-client`
+**1.0.205** (constantes `KANBAN_*_URL`, décrites dans la [doc 41](41-module-kanban-sdk.md)). Le module les
+appelle par le client principal du site :
 
 ```
 api/*.ts ──► KanbanClient.post(constante, corps, garde)        transport/kanbanClient.ts
                 │
                 ▼
-     createSdkKanbanClient                                       transport/sdkKanbanClient.ts
-        ├─ prend les jetons du client principal du site
-        ├─ bridge.callEndpoint(constante, corps, false, false)   ApiClient DÉDIÉ, construit avec
-        │                                                         KANBAN_ENDPOINTS (option publique
-        ├─ rend au client principal les jetons rafraîchis         `endpoints`) — transport/kanbanEndpoints.ts
+     createSdkKanbanClient(() => apiClient)                      transport/sdkKanbanClient.ts
+        ├─ apiClient.callEndpoint(constante, corps, false, false)   le client principal (useCocolight)
         ├─ ApiClientError → KanbanApiError (code, raison, classe d'échec)
         └─ déplie {result, data} et valide data par la garde
 ```
 
-- **Pas de `fetch` brut, pas de SDK modifié.** L'appel passe par `callEndpoint` du SDK : en-tête
-  Bearer, rafraîchissement sur 401, disjoncteur, erreurs typées.
-- **Pas de schéma `request` dans le registre du pont** : avec un schéma, le SDK retire tous les `null`
-  du payload (`stripNullsInPlace`), et `null` veut dire « effacer » dans ce contrat (`dueDate`,
-  `milestoneId`…). La forme des payloads est tenue par les types de `api/*.ts`.
-- **Jetons** : le pont n'a pas de session propre. Il copie les jetons du client principal avant chaque
-  appel et lui rend ceux que le SDK a rafraîchis (jeton d'accès de 10 min, polling toutes les 10 s).
-  Le jeton de rafraîchissement de Communecter n'est ni stocké ni révoqué : deux clients peuvent s'en
-  servir sans se gêner.
-- **À la livraison du SDK** : supprimer `kanbanEndpoints.ts` et faire appeler par `sdkKanbanClient.ts`
-  le client principal. Les constantes sont les mêmes, rien d'autre ne change.
+- **Pas de `fetch` brut, pas de SDK modifié.** Jeton Bearer, rafraîchissement sur 401, disjoncteur,
+  erreurs typées : ceux du SDK. `false, false` : ni `_transformData` (normalisations des entités legacy,
+  sans objet sur des dates en secondes et des `_id` en chaîne), ni validation AJV de la réponse.
+- **Pas de schéma `request` dans le registre du SDK** pour ces 20 routes : avec un schéma, le SDK retire
+  tous les `null` du payload (`stripNullsInPlace`), et `null` veut dire « effacer » dans ce contrat
+  (`dueDate`, `milestoneId`…). La forme des payloads est tenue par les types de `api/*.ts`, celle des
+  réponses par les gardes de `types.ts`. Vérifié par `transport/kanbanRoutes.test.ts` contre le registre
+  du SDK installé.
+- **`transport/kanbanRoutes.ts`** garde la table constante → chemin : pour le type `KanbanEndpoint` (le
+  SDK type `callEndpoint(constant: string)` et n'exporte pas d'union utilisable en type) et pour le chemin
+  porté par `KanbanApiError.url` (diagnostic). Ce n'est plus un registre.
+- **Session morte** : un jeton refusé, ou un rafraîchissement raté (le SDK remet alors la session du site
+  à zéro), remonte en `KanbanAuthError` ; le polling se suspend (`useBoardSync`), comme sur un accès perdu
+  ou une route absente du serveur (404).
+- **Mode `clean`** (`X-Coco-Mode`) : non couvert — le site tourne en `legacy`, le défaut (doc 41 §3).
 
 **Session du module** : `KanbanSessionProvider` (racine des pages) pose `{hydrated, userId, profile,
 client}` à partir de `useCocolight()`. Les hooks repris de co-kanban gardent leurs deux entrées,
@@ -124,7 +128,7 @@ Vérifié sur le backend local : préflight `ssbe.00.re` → origine reflétée 
 src/modules/kanban/
   module.config.ts · routes.tsx · schema.ts · index.ts · i18n.ts · i18n/{fr,en}.json
   types.ts                 types et gardes de réponse de co-kanban
-  transport/               KanbanClient, pont SDK, registre des 20 routes
+  transport/               KanbanClient, transport SDK (client principal), table constante → chemin
   api/                     les 20 fonctions d'appel (constante + garde)
   constants/queryKeys.ts   KANBAN_QUERY_KEYS
   hooks/                   useContextBoard (board/create idempotent), useBoard, useBoardSync,
@@ -150,13 +154,14 @@ src/modules/kanban/
 
 ## 6. Tests
 
-- `npx vitest run -c vitest.config.unit.ts src/modules/kanban` : 74 fichiers, 805 tests.
+- `npx vitest run -c vitest.config.unit.ts src/modules/kanban` : 75 fichiers, 808 tests (03/11/2026).
   - Logique pure reprise de co-kanban, tests compris (17 fichiers). `lib/__fixtures__/merge-cases.json`
     est une **copie** des vecteurs de fusion (front co-kanban, PHP, site-json) : une correction se
     reporte dans les trois.
   - Hooks (polling delta, mutations optimistes, rôles) sur le harnais `__fixtures__/hookHarness.ts` :
-    le backend simulé est le pont du SDK (`FakeBridge`), servi par le vrai transport.
-  - Pont : registre, traduction de chaque erreur du SDK, enveloppe, jetons rendus, annulation.
+    le backend simulé est le client principal du SDK (`FakeSdk`), servi par le vrai transport.
+  - Transport : table des routes vérifiée contre le registre du SDK installé, traduction de chaque erreur
+    du SDK (dont le rafraîchissement raté), enveloppe, annulation.
   - Écran de liste : les six états du §2.
 - Préflight : `i18n-files` (parité fr/en, aucune valeur vide, pas de placeholder répété),
   `module-routes`, `skill-integrity` (ligne du skill config-assistant).
@@ -169,7 +174,7 @@ src/modules/kanban/
 
 | Lot | Contenu |
 |---|---|
-| 7 | Fait : entrée de menu (`auth.menu.kanban` → `/kanban`, §1). Reste : branchement sur le SDK une fois les routes livrées (procédure : [doc 41](41-module-kanban-sdk.md) §2), recette multi-sites |
+| 7 | Fait : entrée de menu (`auth.menu.kanban` → `/kanban`, §1) ; branchement sur le SDK 1.0.205 (03/11/2026, [doc 41](41-module-kanban-sdk.md) §2). Reste : publication du SDK puis `npm install`, recette contre le vrai backend (PHP sur `master` du legacy, à déployer), recette multi-sites |
 
 **Élagage fait au lot 3** : les gardes de réponse et les types des tableaux autonomes de co-kanban
 (liste des tableaux, suppression, membres, colonnes gérées, recherche, éléments source), les lecteurs
@@ -252,9 +257,9 @@ Une colonne par statut des actions de l'élément (`todo`, `next`, `tracking`, `
   geste, et déclarées dans `lazyDialogs.ts`, importé par `routes.tsx`. Un `import()` écrit dans le chunk
   d'une page lui ferait perdre sa façade de manifest, donc ses modulepreload SSR (préflight
   `lazy-entry-facades`).
-- **Tests** : logique pure de co-kanban (11 fichiers), tableau monté (fenêtre de cartes, focus après un
+- **Tests** : logique pure de co-kanban (12 fichiers), tableau monté (fenêtre de cartes, focus après un
   archivage, composeur, annonces, focus après « Déplacer vers… »), glisser rejoué dans les deux modes
-  d'ordre, composeur, barre de filtres, carte et « Déplacer vers… », vue montée sur le faux pont du
+  d'ordre, composeur, barre de filtres, carte et « Déplacer vers… », vue montée sur le faux client du
   SDK (chargement, recherche, masquage, archivage, échec et « Réessayer »). Rendu vérifié en capture sur
   le thème SSBE (clair, sombre, 375 px), sans défilement horizontal de la page.
 

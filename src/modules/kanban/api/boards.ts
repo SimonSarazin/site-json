@@ -1,7 +1,7 @@
 /**
  * Routes `board/*` de l'API kanban (blueprint §3 et §11.6).
  *
- * Chaque route se designe par sa constante de registre (`transport/kanbanEndpoints.ts`) ;
+ * Chaque route se designe par sa constante du registre du SDK (`transport/kanbanRoutes.ts`) ;
  * site-json n'utilise que les routes d'un tableau RELIE a l'element porteur du site.
  *
  * Chaque fonction impose une garde de type sur la reponse : un backend qui

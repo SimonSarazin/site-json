@@ -1,11 +1,11 @@
 /**
  * Harnais des tests de HOOKS du module (`renderHook`) : session simulée, backend simulé route
- * par route, fournisseurs React. Repris de co-kanban (`tests/fixtures/hookHarness.tsx`), avec
+ * par route, fournisseurs React. Repris de co-kanban (`tests/fixtures/hookHarness.tsx` la-bas), avec
  * la même interface (`signIn`, `stubKanbanFetch`, `hookWrapper`…) pour que ses tests se
  * reprennent tels quels.
  *
- * Différence : co-kanban remplaçait `fetch`. Ici, le backend simulé est le PONT du SDK
- * (`FakeBridge`), servi par le vrai transport (`createSdkKanbanClient`) : chaque test traverse
+ * Différence : co-kanban remplaçait `fetch`. Ici, le backend simulé est le client principal du
+ * SDK (`FakeSdk`), servi par le vrai transport (`createSdkKanbanClient`) : chaque test traverse
  * donc la traduction d'erreurs et le dépliage d'enveloppe du module.
  */
 import "@/modules/kanban/i18n";
@@ -16,12 +16,12 @@ import { MemoryRouter } from "react-router";
 import { Toaster } from "sonner";
 import { KanbanSessionContext, type KanbanSession } from "@/modules/kanban/hooks/useKanbanSession";
 import { createSdkKanbanClient } from "@/modules/kanban/transport/sdkKanbanClient";
-import { FakeBridge, FakeMainClient, type RouteHandler } from "./fakeSdk";
+import { FakeSdk, type RouteHandler } from "./fakeSdk";
 
 export { ok, refusal, type FakeResponse, type RouteHandler } from "./fakeSdk";
 
 let currentUserId: string | null = null;
-let bridge = new FakeBridge();
+let sdk = new FakeSdk();
 
 /** Ouvre une session : les hooks de données restent inertes sans utilisateur. */
 export function signIn(userId = "u1"): void {
@@ -35,7 +35,7 @@ export function signIn(userId = "u1"): void {
 export function resetHarness(): void {
   cleanup();
   currentUserId = null;
-  bridge = new FakeBridge();
+  sdk = new FakeSdk();
   // Préférences du poste (colonnes masquées) : un test ne doit pas hériter de celles du précédent.
   if (typeof window !== "undefined") window.localStorage.clear();
 }
@@ -52,8 +52,8 @@ export interface FakeKanban {
  * inattendu se voit dans le test. Le nom est celui de co-kanban, gardé pour ses tests.
  */
 export function stubKanbanFetch(routes: Record<string, RouteHandler>): FakeKanban {
-  bridge = new FakeBridge(routes);
-  const installed = bridge;
+  sdk = new FakeSdk(routes);
+  const installed = sdk;
   return {
     calls: (route) => installed.count(route),
     on: (route, handler) => installed.on(route, handler),
@@ -80,13 +80,12 @@ export function testQueryClient(): QueryClient {
  * ceux qui naviguent.
  */
 export function hookWrapper(queryClient: QueryClient, options: { router?: boolean } = {}) {
-  const main = new FakeMainClient();
-  const installed = bridge;
+  const installed = sdk;
   const session: KanbanSession = {
     hydrated: true,
     userId: currentUserId,
     profile: null,
-    client: createSdkKanbanClient(() => main, () => installed),
+    client: createSdkKanbanClient(() => installed),
   };
   // `createElement` et non du JSX : ce fichier reste un `.ts`, que la règle `react-refresh`
   // (un fichier `.tsx` n'exporte que des composants) ne vise pas.

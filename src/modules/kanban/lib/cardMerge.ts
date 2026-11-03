@@ -1,6 +1,6 @@
 /**
  * Fusion A TROIS des listes de `card/update` sur un board-lien (BLUEPRINT §11,
- * protocole `card/update`) — pure, testee par `tests/unit/cardMerge.test.ts`.
+ * protocole `card/update`) — pure, testee par `lib/cardMerge.test.ts`.
  *
  * Le probleme : la modale de carte envoie la liste qu'elle a vue a l'OUVERTURE,
  * modifiee par la personne. Remplacer la liste en base par celle-la effacerait

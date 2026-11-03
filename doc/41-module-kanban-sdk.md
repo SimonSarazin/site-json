@@ -3,59 +3,68 @@
 # Module `kanban` — les routes à livrer dans le SDK
 
 Les 20 routes kanban que le module appelle, décrites pour le mainteneur du SDK
-(`@communecter/cocolight-api-client`), et ce que site-json fera quand elles seront livrées.
+(`@communecter/cocolight-api-client`), et la bascule de site-json à leur livraison.
 
-> **Pourquoi un fichier à part** : ces 20 fiches formaient le lot KANBAN d'[`ENDPOINT.md`](../../ENDPOINT.md).
-> Elles en sont sorties le 02/11/2026 : un seul lot y prenait plus de mille lignes. `ENDPOINT.md` garde une fiche
-> courte qui renvoie ici, et la règle ne change pas : on ne modifie pas le SDK, on décrit ce qu'il doit livrer
-> (CLAUDE.md §3).
+> **Pourquoi un fichier à part** : vingt fiches font plus de mille lignes ; elles vivent ici plutôt que dans la
+> doc du module. La règle ne change pas : site-json ne modifie pas le SDK, il décrit ce qu'il doit livrer.
 
-**État** : à créer côté SDK, demandé le 28/10/2026. En attendant, le module passe par un **pont** qui sert ces
-routes par le SDK sans le modifier ([doc 40 §3](40-module-kanban.md#3-accès-aux-données--le-pont-sdk)). Tout le
-module en dépend : liste, tableau des actions et ses vues, fiche de carte, jalons, rôles.
+**État** : **Livré** dans le SDK **1.0.205** (03/11/2026), selon les conventions du SDK : 20 entrées de registre
+AVEC schéma `request` (champs effaçables typés `["…", "null"]`) et `responses.200`, deux drapeaux de registre nouveaux
+et honorés par `ApiClient.callEndpoint` — `keepNulls: true` (le corps garde ses `null`, qui veulent dire « effacer »)
+et `rawResponse: true` (aucune transformation de la réponse) —, les méthodes générées `kanban<Ctrl><Action>Url()`
+d'`EndpointApi`, la façade `api.kanban.<contrôleur>.<action>()` (`src/api/Kanban.ts`, types de la forme réelle)
+et l'export `KANBAN_ENDPOINT_CONSTANTS`. Bascule de site-json faite le même jour (§2) :
+le module appelle le client principal du site. Le PHP des 20 routes est sur `master` du legacy depuis le
+03/11/2026 (citizenToolKit `5da315fa`, costum `6a5479116` ; §3, « Prérequis backend ») — le chemin authentifié
+reste à éprouver sur un serveur qui le porte.
 
 ## 1. Ce qui est demandé au mainteneur
 
 - **Enregistrer 20 routes** qui existent déjà côté PHP (`/costum/kanban-<contrôleur>/<action>`) : POST,
   `application/json`, jeton bearer, sans contexte costum. Aucun backend à écrire.
-- **Ne déclarer aucun schéma `request`** (ou fournir une option qui garde les `null`) : le SDK retire les `null`
-  du corps, et `null` veut dire « effacer » dans ce contrat (§3, point critique).
+- **Garder les `null` du corps** : le SDK retire les `null` par défaut, et `null` veut dire « effacer » dans ce
+  contrat (§3, point critique). Livré par le drapeau de registre `keepNulls: true` (les schémas `request` typent les
+  champs effaçables `["…", "null"]`).
 - **Pas de transformation ni de validation AJV de la réponse** : les gardes de type du front font foi.
 - **Façade souhaitée** : `api.kanban.<contrôleur>.<action>(input)`, sur le modèle de `api.discussions`, qui
   renvoie `data` déplié et lève sur un refus avec le corps de la réponse.
 - Les conventions communes sont au §3, une fiche par route au §4.
 
-## 2. Bascule de site-json à la livraison (lot 7)
+## 2. Bascule de site-json à la livraison (lot 7) — faite le 03/11/2026
 
-Les constantes demandées (`KANBAN_BOARD_GET_URL`…) sont déjà celles qu'utilise le module : seule la couche de
-transport change.
+Les constantes (`KANBAN_BOARD_GET_URL`…) sont celles qu'utilisait déjà le module : seule la couche de transport
+a changé.
 
-1. **Monter la version du SDK** dans `site-json/package.json` (`npm install
-   @communecter/cocolight-api-client@<version livrée>`), puis vérifier que les 20 constantes sont dans son
-   registre.
-2. **Supprimer le pont** :
-   - `src/modules/kanban/transport/kanbanEndpoints.ts` (les 20 entrées de registre du pont) ;
-   - dans `transport/sdkKanbanClient.ts`, `bridgeFor` et la copie des jetons : l'appel passe au client principal
-     (`main.callEndpoint(constante, corps, false, false)`), ou à la façade `api.kanban.*` si elle est livrée.
-     `KanbanSdkClient` se réduit alors à `callEndpoint`.
-3. **Garder le reste tel quel** : l'interface `KanbanClient` (`post(constante, corps, garde)`), la traduction des
-   erreurs (`kanbanErrorFromSdk`), le dépliage de l'enveloppe (`unwrapKanbanEnvelope`), les fonctions de
-   `api/*.ts` et les hooks. Le type `KanbanEndpoint` vient alors des constantes du SDK.
-4. **Tests** : `transport/sdkKanbanClient.test.ts` perd les cas du pont (jetons rendus au client principal) ;
-   le faux SDK des tests (`__fixtures__/fakeSdk.ts`) sert le client principal au lieu du pont. La suite du module
-   doit passer sans autre changement.
-5. **Recette** : connexion réelle sur le site de dev (`VITE_BASE_URL_BACKEND=http://communecter74-dev`), puis
-   `/kanban`, une carte créée, déplacée, modifiée et archivée, un commentaire, un jalon, un rôle attribué. Le
-   chemin authentifié n'a encore jamais été éprouvé contre le vrai backend.
-6. **Docs** : retirer le pont de la [doc 40](40-module-kanban.md) §3, passer ce fichier et la fiche
-   d'`ENDPOINT.md` en « Livré (vX.Y.Z) ».
+1. **Version du SDK** : `site-json/package.json` exige `^1.0.205`. Le SDK n'étant pas encore publié, le
+   `package-lock.json` n'a pas bougé : après `npm publish` de la lib, lancer
+   `npm install @communecter/cocolight-api-client@1.0.205` pour le régénérer (jusque-là, `npm ci` refuse le
+   désaccord package.json / lock, et le `node_modules` doit porter une copie du `dist` construit).
+2. **Pont supprimé** : `transport/kanbanEndpoints.ts` (registre du pont) a disparu ; dans
+   `transport/sdkKanbanClient.ts`, plus de `bridgeFor` ni de copie des jetons : `createSdkKanbanClient(() =>
+   apiClient)` appelle `apiClient.callEndpoint(constante, corps, false, false)` sur le client principal, et
+   `KanbanSdkClient` se réduit à `callEndpoint`. La façade `api.kanban.*` n'est pas utilisée : le module garde
+   sa traduction d'erreurs (`kanbanErrorFromSdk`) et ses gardes.
+3. **Ce qui ne pouvait pas disparaître** : le type `KanbanEndpoint` et le chemin d'une route. Le SDK type
+   `callEndpoint(constant: string)` et n'exporte pas d'union utilisable en type ; `KanbanApiError.url` et le
+   faux SDK des tests ont besoin du chemin. D'où `transport/kanbanRoutes.ts` : une table constante → chemin
+   (plus un registre), vérifiée contre le registre du SDK installé par `kanbanRoutes.test.ts` (constantes =
+   `KANBAN_ENDPOINT_CONSTANTS` exportées par le SDK, chemins, POST/JSON/bearer, `keepNulls`/`rawResponse`).
+4. **Tests** : `transport/sdkKanbanClient.test.ts` a perdu les cas du pont (jetons rendus) et gagné la forme
+   RÉELLE d'un rafraîchissement raté (500, corps nul, message de l'intercepteur → `KanbanAuthError`) ; le faux SDK
+   (`__fixtures__/fakeSdk.ts`, `FakeSdk`) sert le client principal. Le reste de la suite passe tel quel.
+5. **Recette** — À FAIRE : connexion réelle sur un serveur qui porte le PHP kanban (sur `master` du legacy
+   depuis le 03/11/2026, cf. §3), puis `/kanban`, une carte créée, déplacée, modifiée et archivée, un
+   commentaire, un jalon, un rôle attribué. Le chemin authentifié n'a jamais été éprouvé contre le vrai backend.
+6. **Ce que le client principal change par rapport au pont** : délai d'appel 30 s (défaut du SDK) au lieu de
+   15 s ; mode `clean` du client appliqué aux routes kanban si le site l'activait (§3, non couvert) ; une mise en
+   file hors-ligne du SDK (`data: null`) sort en `invalidResponse` (le site ne configure pas ce gestionnaire).
 
 ## 3. Conventions communes aux 20 fiches
 
 > Ce bloc factorise ce qui vaut pour les 20 fiches `KANBAN_*_URL` du §4. Chaque fiche ne reprend que ce qui
 > lui est propre.
 
-- **Statut du lot** : À créer — demandé le 2026-10-28 · module `kanban` de site-json (RFC
+- **Statut du lot** : Livré (SDK 1.0.205, PHP sur `master`, 2026-11-03) — demandé le 2026-10-28 · module `kanban` de site-json (RFC
   [`site-json/doc/39-rfc-module-kanban.md`](39-rfc-module-kanban.md)) : le kanban de l'app
   co-kanban, branché sur l'organisation ou le projet porteur du site.
 - **Ce qui est demandé** : enregistrer dans le registre du SDK des routes **qui existent déjà côté PHP**. Aucun
@@ -71,7 +80,11 @@ transport change.
   - Formes réelles : les exports du vrai PHP dans `co-kanban/tests/fixtures/php/<contrôleur>/<action>.<cas>.json`.
     Les exemples ci-dessous en sont tirés et abrégés par `"…"`.
 - **Prérequis backend, hors SDK** :
-  - Le code PHP du kanban n'est **pas encore poussé** (BLUEPRINT §13 : « Rien n'est commité »).
+  - Le code PHP du kanban est **poussé sur `master`** depuis le 03/11/2026 : citizenToolKit `5da315fa` (actions,
+    modèles, tests ; 83 fichiers) et costum `6a5479116` (les huit contrôleurs). Déploiement : `php composer.phar
+    dump-autoload` dans `pixelhumain/ph` (les 12 modèles `models/kanban/*.php` sont des classes globales, résolues
+    par le classmap seulement — sinon page d'erreur HTML en 500, sans en-tête CORS), puis vérifier qu'un `POST`
+    sans jeton répond 401 `missingToken` en JSON (`citizenToolKit/controllers/kanban/README.md` §2).
   - Le chemin authentifié n'a jamais été éprouvé contre le serveur de dev (BLUEPRINT §11.10, Q6).
   - Le CORS n'est ouvert qu'aux origines de `kanbanCorsOrigins` (`paramsconfig.php`, D40). L'allow-list accepte
     désormais les motifs de sous-domaine, et sa valeur par défaut couvre `https://*.00.re`, l'hébergement des sites
@@ -97,9 +110,9 @@ transport change.
     - 415 `unsupportedMediaType` ;
     - 422 `validation` ;
     - 500 `serverError`.
-  - La liste fermée des codes est `KanbanResponse::$statuses` côté PHP, `KANBAN_ERROR_CODES` côté front (co-kanban
-    `src/lib/http.ts`). La raison fine voyage dans `detail.reason`. Les raisons traduites sont listées dans
-    `KANBAN_ERROR_REASONS` (même fichier).
+  - La liste fermée des codes est `KanbanResponse::$statuses` côté PHP, `KANBAN_ERROR_CODES` côté front
+    (site-json `src/modules/kanban/lib/kanbanErrors.ts`, repris de co-kanban `src/lib/http.ts`). La raison fine
+    voyage dans `detail.reason`. Les raisons traduites sont listées dans `KANBAN_ERROR_REASONS` (même fichier).
   - Ce module n'émet jamais `{result: false}` en HTTP 200.
 - **Ce que voit le SDK en cas de refus** :
   - Tout statut non-2xx fait lever `ApiClientError(message, status, details)`, où `details` est le **corps** de la
@@ -141,8 +154,9 @@ transport change.
 - **Révision** : toute réponse d'écriture porte `rev`, la révision du tableau estampillée par l'écriture. Seule
   exception : `board/create`, dont la révision est dans `board.rev`. Le front la reçoit sans en dépendre : le
   polling (`board/sync`) réconcilie.
-- **⚠️ POINT CRITIQUE pour le mainteneur — ne PAS déclarer de schéma `request` sur ces 20 endpoints** (ou fournir
-  une option qui préserve `null`) :
+- **⚠️ POINT CRITIQUE — les `null` doivent ARRIVER au serveur** (livré en 1.0.205 par le drapeau de registre
+  `keepNulls: true` sur les 20 entrées, honoré par `ApiClient.callEndpoint` ; les schémas `request` typent les champs
+  effaçables `["…", "null"]`). Le mécanisme qu'il fallait contourner :
   - Quand un endpoint a un schéma `request`, `ApiClient.callEndpoint` appelle
     `ApiClient.stripNullsInPlace(dataForValidation)` (`cocolight-api-client/src/ApiClient.ts`, étape « 2. Validation
     données (request schema) »).
@@ -169,8 +183,7 @@ transport change.
   - site-json tourne en `legacy`, le mode par défaut. Le point compte si le mode change, ou s'il faut exclure ces
     routes du mode `clean`.
 - **Façade souhaitée** : `api.kanban.<contrôleur>.<action>(input)`, sur le modèle de `api.discussions`.
-  - `api.discussions` est livrée en SDK 1.0.202. Elle est absente du dépôt local (1.0.195) et du `node_modules` de
-    site-json (1.0.197).
+  - Livrée en 1.0.205 : `src/api/Kanban.ts`, `api.kanban.board|column|card|comment|milestone|role.*`.
   - La façade renvoie `data` déplié et typé.
   - Elle lève sur un statut non-2xx comme sur un `result: false`, avec le corps de la réponse
     (`checkAndThrowApiResponseError` pour le second cas).
@@ -178,22 +191,21 @@ transport change.
     `Project`/`Organization`.
   - Types de retour : ceux de `site-json/src/modules/kanban/types.ts`, repris de co-kanban `src/types/kanban.ts`.
     Ces types **ne déclarent pas** les champs en plus que le PHP envoie et que les gardes tolèrent :
-    - `rev` des écritures ;
+    - `rev` des écritures de carte et de colonne (`ColumnMoveResult`, `CardMoveResult`, `CardArchiveResult` ;
+      les résultats `role/*` le déclarent) ;
     - `capabilities` de `board/create` ;
     - `cardId` de `card/archive` ;
     - `assignedCards`, `addedBy` et `addedAt` des membres ;
     - `origin` et `inheritedFrom` des capacités.
 
-    La façade devrait typer la forme réelle (à confirmer).
+    La façade du SDK type la forme réelle (`KanbanBoardCreateResult`, `KanbanCardArchiveResult`, `KanbanMember`,
+    `KanbanCapabilities`…).
 - **Consommateur front** : `site-json/src/modules/kanban/api/*.ts`, via le transport
   `site-json/src/modules/kanban/transport/` (`KanbanClient.post(constante, corps, garde)`), appelés par les hooks
   de `site-json/src/modules/kanban/hooks/`.
-- **PONT temporaire, en attendant la livraison** :
-  - `site-json/src/modules/kanban/transport/kanbanEndpoints.ts` déclare ces 20 mêmes entrées de registre : POST,
-    `application/json`, `bearer`, ni `request` ni `responses`.
-  - `transport/sdkKanbanClient.ts` les sert par une instance `ApiClient` dédiée, créée avec l'option publique
-    `endpoints` du constructeur. L'appel est `callEndpoint(constante, corps, false, false)`.
-  - À la livraison, ce fichier sera supprimé. Les constantes restent les mêmes.
+- **Transport côté site-json** (depuis la bascule du 03/11/2026, §2) : `transport/sdkKanbanClient.ts` appelle le
+  client principal du site, `callEndpoint(constante, corps, false, false)` ; `transport/kanbanRoutes.ts` tient
+  la table constante → chemin, vérifiée contre le registre du SDK.
 - **Query keys** : `KANBAN_QUERY_KEYS` (`site-json/src/modules/kanban/constants/queryKeys.ts`). Toutes ont une
   dimension utilisateur :
   - `CONTEXT_BOARD` : résultat de `board/create`, par élément ;
@@ -213,7 +225,7 @@ transport change.
 
 ### KANBAN_BOARD_CREATE_URL — ouvrir (ou retrouver) le tableau relié à l'élément porteur
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-board/create`
 - **Auth requise** : oui (bearer)
@@ -288,7 +300,7 @@ transport change.
 
 ### KANBAN_BOARD_GET_URL — instantané complet du tableau
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-board/get`
 - **Auth requise** : oui (bearer)
@@ -370,7 +382,7 @@ transport change.
 
 ### KANBAN_BOARD_SYNC_URL — polling delta du tableau
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-board/sync`
 - **Auth requise** : oui (bearer)
@@ -427,7 +439,7 @@ transport change.
 
 ### KANBAN_COLUMN_MOVE_URL — réordonner les colonnes du tableau
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-column/move`
 - **Auth requise** : oui (bearer)
@@ -477,7 +489,7 @@ transport change.
 
 ### KANBAN_CARD_CREATE_URL — créer une carte (action Communecter)
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-card/create`
 - **Auth requise** : oui (bearer)
@@ -539,7 +551,7 @@ transport change.
 
 ### KANBAN_CARD_GET_URL — carte complète (fiche)
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-card/get`
 - **Auth requise** : oui (bearer)
@@ -573,7 +585,7 @@ transport change.
 
 ### KANBAN_CARD_UPDATE_URL — modifier une carte (écriture partielle, fusion à trois)
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-card/update`
 - **Auth requise** : oui (bearer)
@@ -648,7 +660,7 @@ transport change.
 
 ### KANBAN_CARD_MOVE_URL — déplacer une carte vers une autre colonne
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-card/move`
 - **Auth requise** : oui (bearer)
@@ -693,7 +705,7 @@ transport change.
 
 ### KANBAN_CARD_ARCHIVE_URL — retirer une carte du tableau
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-card/archive`
 - **Auth requise** : oui (bearer)
@@ -726,7 +738,7 @@ transport change.
 
 ### KANBAN_COMMENT_LIST_URL — fil de discussion d'une carte
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-comment/list`
 - **Auth requise** : oui (bearer)
@@ -767,7 +779,7 @@ transport change.
 
 ### KANBAN_COMMENT_ADD_URL — commenter une carte
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-comment/add`
 - **Auth requise** : oui (bearer)
@@ -808,7 +820,7 @@ transport change.
 
 ### KANBAN_COMMENT_DELETE_URL — supprimer un commentaire
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-comment/delete`
 - **Auth requise** : oui (bearer)
@@ -841,7 +853,7 @@ transport change.
 
 ### KANBAN_MILESTONE_LIST_URL — jalons du projet
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-milestone/list`
 - **Auth requise** : oui (bearer)
@@ -876,7 +888,7 @@ transport change.
 
 ### KANBAN_MILESTONE_CREATE_URL — créer un jalon (projet seulement)
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-milestone/create`
 - **Auth requise** : oui (bearer)
@@ -918,7 +930,7 @@ transport change.
 
 ### KANBAN_MILESTONE_UPDATE_URL — modifier, clore ou rouvrir un jalon
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-milestone/update`
 - **Auth requise** : oui (bearer)
@@ -963,7 +975,7 @@ transport change.
 
 ### KANBAN_ROLE_LIST_URL — kanban des rôles de l'élément
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-role/list`
 - **Auth requise** : oui (bearer)
@@ -1009,7 +1021,7 @@ transport change.
 
 ### KANBAN_ROLE_CREATE_URL — déclarer un rôle (nouvelle colonne)
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-role/create`
 - **Auth requise** : oui (bearer)
@@ -1043,7 +1055,7 @@ transport change.
 
 ### KANBAN_ROLE_ASSIGN_URL — attribuer un rôle à un membre
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-role/assign`
 - **Auth requise** : oui (bearer)
@@ -1091,7 +1103,7 @@ transport change.
 
 ### KANBAN_ROLE_UNASSIGN_URL — retirer un rôle à un membre
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-role/unassign`
 - **Auth requise** : oui (bearer)
@@ -1134,7 +1146,7 @@ transport change.
 
 ### KANBAN_ROLE_DELETE_URL — supprimer un rôle (colonne et porteurs)
 
-- **Statut** : À créer — lot KANBAN (2026-10-28)
+- **Statut** : Livré — SDK 1.0.205 et PHP sur `master` (2026-11-03), demandé le 2026-10-28
 - **Méthode HTTP** : POST
 - **URL / path** : `/costum/kanban-role/delete`
 - **Auth requise** : oui (bearer)

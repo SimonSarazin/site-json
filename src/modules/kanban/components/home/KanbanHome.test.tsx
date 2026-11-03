@@ -16,7 +16,7 @@ import { CocolightContext, type CocolightContextType } from '@/contexts/Cocoligh
 import { LocalizationProvider } from '@/contexts/LocalizationProvider';
 import { SiteContext } from '@/contexts/SiteContext';
 import type { SiteConfig } from '@/types/site-schema';
-import { FakeBridge, FakeMainClient, ok, refusal, sdkError, type RouteHandler } from '@/modules/kanban/__fixtures__/fakeSdk';
+import { FakeSdk, ok, refusal, sdkError, type RouteHandler } from '@/modules/kanban/__fixtures__/fakeSdk';
 import { testQueryClient } from '@/modules/kanban/__fixtures__/hookHarness';
 import { makeBoard, makeColumn } from '@/modules/kanban/__fixtures__/snapshot';
 import { KanbanSessionContext } from '@/modules/kanban/hooks/useKanbanSession';
@@ -62,14 +62,14 @@ interface Setup {
 }
 
 function renderHome({ hydrated = true, userId = 'u1', contextType = 'projects', config = {}, createBoard = () => ok(CREATED), listRoles = () => ok(ROLES) }: Setup = {}) {
-  const bridge = new FakeBridge({ 'board/create': createBoard, 'role/list': listRoles });
+  const sdk = new FakeSdk({ 'board/create': createBoard, 'role/list': listRoles });
   const cocolight = {
     contextType,
     contextId: 'p1',
     entity: { serverData: { name: 'Jardin partagé' } },
   } as unknown as CocolightContextType;
   const site = { config: { kanban: config } as unknown as SiteConfig, setConfig: () => undefined };
-  const session = { hydrated, userId: hydrated ? userId : null, profile: null, client: createSdkKanbanClient(() => new FakeMainClient(), () => bridge) };
+  const session = { hydrated, userId: hydrated ? userId : null, profile: null, client: createSdkKanbanClient(() => sdk) };
   const wrap = (children: ReactNode) => (
     <QueryClientProvider client={testQueryClient()}>
       <SiteContext.Provider value={site}>
@@ -84,44 +84,44 @@ function renderHome({ hydrated = true, userId = 'u1', contextType = 'projects', 
     </QueryClientProvider>
   );
   render(wrap(<KanbanHome />));
-  return bridge;
+  return sdk;
 }
 
 describe('écran /kanban', () => {
   test('avant hydratation : les tuiles du registre, aucun état d accès, aucun appel', () => {
-    const bridge = renderHome({ hydrated: false });
+    const sdk = renderHome({ hydrated: false });
     expect(screen.getByRole('heading', { level: 1, name: 'Kanbans' })).toBeTruthy();
     expect(screen.getByRole('link', { name: /Actions/ }).getAttribute('href')).toBe('/kanban/actions');
     expect(screen.getByRole('link', { name: /Rôles/ }).getAttribute('href')).toBe('/kanban/roles');
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.queryByText(/Connectez-vous/)).toBeNull();
-    expect(bridge.calls).toHaveLength(0);
+    expect(sdk.calls).toHaveLength(0);
   });
 
   test('anonyme : invitation à se connecter, nommant l élément ; aucun appel', () => {
-    const bridge = renderHome({ userId: null });
+    const sdk = renderHome({ userId: null });
     expect(screen.getByText('Connectez-vous pour ouvrir les kanbans de Jardin partagé.')).toBeTruthy();
-    expect(bridge.calls).toHaveLength(0);
+    expect(sdk.calls).toHaveLength(0);
   });
 
   test('membre : board/create sur le porteur, puis le flux du tableau des actions', async () => {
-    const bridge = renderHome();
+    const sdk = renderHome();
     expect(await screen.findByText('5 ouvertes')).toBeTruthy();
     expect(screen.getByText('2 terminées sur 7')).toBeTruthy();
     // La légende nomme les colonnes ouvertes NON VIDES, dans l'ordre du tableau ; « Terminé » a
     // son propre chiffre, « À tester » (vide) n'y figure pas.
     const legend = screen.getByRole('list', { name: 'Actions ouvertes par colonne' });
     expect(within(legend).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['À faire 4', 'En cours 1']);
-    expect(bridge.calls[0]).toMatchObject({ route: 'board/create', body: { source: 'communecter', parentType: 'projects', parentId: 'p1' } });
+    expect(sdk.calls[0]).toMatchObject({ route: 'board/create', body: { source: 'communecter', parentType: 'projects', parentId: 'p1' } });
     expect(screen.getAllByRole('link')).toHaveLength(2);
   });
 
   test('membre : role/list sur le tableau, puis l aperçu des rôles', async () => {
-    const bridge = renderHome();
+    const sdk = renderHome();
     expect(await screen.findByText('2 rôles')).toBeTruthy();
     expect(screen.getByText('3 membres')).toBeTruthy();
     expect(screen.getByText('1 rôle sans titulaire')).toBeTruthy();
-    expect(bridge.calls.find((call) => call.route === 'role/list')?.body).toMatchObject({ boardId: CREATED.board._id });
+    expect(sdk.calls.find((call) => call.route === 'role/list')?.body).toMatchObject({ boardId: CREATED.board._id });
   });
 
   test('tableau vide : le dit, sans légende', async () => {
@@ -131,10 +131,10 @@ describe('écran /kanban', () => {
   });
 
   test('échec de role/list : la tuile des rôles reste un lien, sans chiffres ni squelette', async () => {
-    const bridge = renderHome({ listRoles: () => refusal(403, 'forbidden') });
+    const sdk = renderHome({ listRoles: () => refusal(403, 'forbidden') });
     const rolesTile = screen.getByRole('link', { name: /Rôles/ });
     expect(await screen.findByText('5 ouvertes')).toBeTruthy();
-    await waitFor(() => expect(bridge.count('role/list')).toBe(1));
+    await waitFor(() => expect(sdk.count('role/list')).toBe(1));
     await waitFor(() => expect(rolesTile.querySelector('[data-slot="skeleton"]')).toBeNull());
     expect(within(rolesTile).queryByText(/membres?$/)).toBeNull();
   });
@@ -147,7 +147,7 @@ describe('écran /kanban', () => {
   });
 
   test('panne réseau : une nouvelle tentative, puis message de la classe d échec et « Réessayer »', async () => {
-    const bridge = renderHome({
+    const sdk = renderHome({
       createBoard: () => {
         throw sdkError(500, null, "Erreur lors de l'appel de l'API : Network Error");
       },
@@ -155,14 +155,14 @@ describe('écran /kanban', () => {
     // `shouldRetryKanbanQuery` réessaie UNE fois un échec passager (délai de TanStack : 1 s).
     expect(await screen.findByRole('alert', undefined, { timeout: 3000 })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Réessayer/ })).toBeTruthy();
-    expect(bridge.count('board/create')).toBe(2);
+    expect(sdk.count('board/create')).toBe(2);
   });
 
   test('porteur ni organisation ni projet : pas de kanban, pas de tuile, aucun appel', async () => {
-    const bridge = renderHome({ contextType: 'events' });
+    const sdk = renderHome({ contextType: 'events' });
     expect(await screen.findByText('Pas de kanban sur ce site')).toBeTruthy();
     expect(screen.queryAllByRole('link')).toHaveLength(0);
-    await waitFor(() => expect(bridge.calls).toHaveLength(0));
+    await waitFor(() => expect(sdk.calls).toHaveLength(0));
   });
 
   test('`boards` de la config restreint les tuiles', () => {

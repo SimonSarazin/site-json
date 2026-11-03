@@ -13,8 +13,10 @@
  *
  * Deux garde-fous encadrent cet optimisme, parce que le cache est ECRIT PAR
  * PLUSIEURS SOURCES (ces mutations, les jalons et le polling delta) :
- *  - les mutations d'un MEME tableau sont SERIALISEES (`scope`), donc jamais
- *    deux `onMutate` en vol sur le meme instantane ;
+ *  - les mutations d'un MEME tableau sont SERIALISEES (`scope`) — pour leur
+ *    EXECUTION seulement : TanStack Query joue `onMutate` AVANT de consulter la
+ *    file, donc deux `onMutate` peuvent bien photographier le meme instantane ;
+ *    c'est le second garde-fou qui rend ce cas inoffensif ;
  *  - le rollback est CONDITIONNEL : il ne restaure la photo d'avant que si le
  *    cache est reste exactement celui qu'on avait ecrit. Sinon on invalide.
  *    Restaurer aveuglement une photo perimee ressusciterait les entites
