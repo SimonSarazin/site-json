@@ -223,7 +223,8 @@
       "empty": "No upcoming events.",
       "emptyPast": "No past events.",
       "error": "The project's events could not be loaded.",
-      "more": "Show more"
+      "more": "Show more",
+      "addCta": "Add an event"
     },
     "prose": {
       "empty": "No information available."

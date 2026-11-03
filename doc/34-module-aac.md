@@ -570,7 +570,10 @@ l'interrupteur « Masquer les terminées (n) », état local de `CommunActionsFe
 - `CommunAgendaSection` liste les événements dont le projet est organisateur ou participant
   (`project.getEvents`, `useCommunProjectEvents`), en deux flux bornés côté serveur : à venir
   (`from` = maintenant, `asc`) et passés (`to` = maintenant, `desc`, sans récurrents), paginés par
-  « Voir plus ».
+  « Voir plus ». « Ajouter un événement », pour un admin du projet ou de son parent
+  (`isProjectAdmin(project, { checkHierarchy: true })`, le droit de « Ajouter > Événement » du profil),
+  ouvre la modale d'ajout d'événement organisé par le projet, ou le formulaire costum du site
+  (`costumCreateKey`) ; les deux flux sont relus après la création (`COMMUN_EVENTS_PREFIX`).
 
 ---
 

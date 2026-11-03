@@ -223,7 +223,8 @@
       "empty": "Aucun événement à venir.",
       "emptyPast": "Aucun événement passé.",
       "error": "Les événements du projet n'ont pas pu être chargés.",
-      "more": "Voir plus"
+      "more": "Voir plus",
+      "addCta": "Ajouter un événement"
     },
     "prose": {
       "empty": "Aucun renseignement disponible."
