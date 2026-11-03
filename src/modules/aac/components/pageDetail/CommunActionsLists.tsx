@@ -17,7 +17,9 @@ import { toSafeInt } from "@/modules/cagnotte/utils/dataTransform";
 import {
     actionCreatedLabel,
     actionRights,
+    isClosedMilestone,
     normalizeActionForEdit,
+    splitOpenAndClosedMilestones,
     uniqueActionRows,
 } from "@/modules/aac/lib/objectiveHelpers";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
@@ -25,6 +27,7 @@ import { ListRowsSkeleton } from "./CommunSkeletons";
 import {
     ActionRowButtons,
     AddMilestoneButton,
+    ClosedMilestonesGroup,
     MilestoneManageBar,
     type CommunActionsSectionProps,
 } from "./CommunActionsSection";
@@ -33,6 +36,7 @@ type ActionsListProps = Pick<CommunActionsSectionProps, "funding" | "ctrl">;
 
 /**
  * Les paliers en frise : état, description, avancement des tâches ; gestion au survol.
+ * Les clos sont rangés dessous, masqués par défaut.
  * Avec `onSelectMilestone`, un clic sur un palier le sélectionne (`itemId`), un second le désélectionne.
  */
 export function CommunMilestonesList({
@@ -50,6 +54,20 @@ export function CommunMilestonesList({
     if (!ctrl.canManageActions) return null;
 
     const items = funding?.items ?? [];
+    const { open, closed } = splitOpenAndClosedMilestones(items);
+    const row = ({ item, index }: { item: CagnotteFundableItem; index: number }) => (
+        <MilestoneRow
+            key={item.itemId || index}
+            item={item}
+            ctrl={ctrl}
+            isSelected={item.itemId === selectedMilestoneId}
+            onSelect={
+                onSelectMilestone
+                    ? () => onSelectMilestone(item.itemId === selectedMilestoneId ? null : item.itemId)
+                    : undefined
+            }
+        />
+    );
 
     return (
         <div className="grid gap-4">
@@ -61,21 +79,12 @@ export function CommunMilestonesList({
                     <p className="text-sm text-muted-foreground">{String(t("editorial.detail.noMilestones"))}</p>
                 )
             ) : (
-                <ol className="space-y-4">
-                    {items.map((item, i) => (
-                        <MilestoneRow
-                            key={item.itemId || i}
-                            item={item}
-                            ctrl={ctrl}
-                            isSelected={item.itemId === selectedMilestoneId}
-                            onSelect={
-                                onSelectMilestone
-                                    ? () => onSelectMilestone(item.itemId === selectedMilestoneId ? null : item.itemId)
-                                    : undefined
-                            }
-                        />
-                    ))}
-                </ol>
+                <>
+                    {open.length > 0 ? <ol className="space-y-4">{open.map(row)}</ol> : null}
+                    <ClosedMilestonesGroup count={closed.length} labelKey="editorial.detail.closedToggle" className="pt-2">
+                        <ol className="space-y-4">{closed.map(row)}</ol>
+                    </ClosedMilestonesGroup>
+                </>
             )}
         </div>
     );
@@ -93,7 +102,7 @@ function MilestoneRow({
     onSelect?: () => void;
 }) {
     const t = useT("modules/aac");
-    const isClosed = item.status === "close" || item.status === "done";
+    const isClosed = isClosedMilestone(item);
     const tasksDone = item.actions.filter((action) => action.status === "done").length;
 
     return (

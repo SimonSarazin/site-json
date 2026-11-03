@@ -239,6 +239,7 @@ describe("CommunMilestonesList", () => {
       palier({ actions: [action(), action({ id: "a2", status: "done" })] }),
       palier({ itemId: "it2", milestoneId: "m2", name: "Lancement", status: "close", actions: [] }),
     ]);
+    fireEvent.click(screen.getByRole("button", { name: "Afficher les jalons clos (1)" }));
 
     const [ouvert, clos] = screen.getAllByRole("listitem");
     expect(within(ouvert).getByText("En cours")).toBeTruthy();
@@ -253,8 +254,27 @@ describe("CommunMilestonesList", () => {
     fireEvent.click(screen.getByRole("button", { name: /Ajouter une action/ }));
     expect(ctrl.handleCreateAction).toHaveBeenCalledWith("m1", "Prototype");
 
+    fireEvent.click(screen.getByRole("button", { name: "Afficher les jalons clos (1)" }));
     fireEvent.click(screen.getByRole("button", { name: "Restaurer" }));
     expect(ctrl.handleRestoreMilestone).toHaveBeenCalledWith("it2", expect.objectContaining({ id: "m2" }));
+  });
+
+  it("les jalons clos, `close` comme `done`, sont rangés sous ceux en cours et masqués par défaut", () => {
+    poserPaliers(controleur(), [
+      palier({ itemId: "it1", milestoneId: "m1", name: "Étude", status: "done", actions: [] }),
+      palier({ itemId: "it2", milestoneId: "m2", name: "Prototype" }),
+      palier({ itemId: "it3", milestoneId: "m3", name: "Lancement", status: "close", actions: [] }),
+    ]);
+    const noms = () => screen.getAllByRole("heading", { level: 3 }).map((titre) => titre.textContent);
+
+    expect(noms()).toEqual(["Prototype"]);
+    const bascule = screen.getByRole("button", { name: "Afficher les jalons clos (2)" });
+    expect(bascule.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(bascule);
+    expect(noms()).toEqual(["Prototype", "Étude", "Lancement"]);
+    expect(bascule.getAttribute("aria-expanded")).toBe("true");
+    expect(bascule.textContent).toBe("Masquer les jalons clos (2)");
   });
 
   it("aucun palier : message vide", () => {

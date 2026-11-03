@@ -113,7 +113,10 @@ describe("CommunFinancingSection — un palier clos est marqué comme tel (M17)"
     ];
     renderSection();
 
+    // Le palier clos est rangé sous les paliers en cours, masqué jusqu'au clic.
     expect(screen.getByText("Ouvert")).toBeTruthy();
+    expect(screen.queryByText("Clos")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "detail.objectives.closedToggle.show" }));
     expect(screen.getByText("Clos")).toBeTruthy();
     const badges = screen.getAllByText("detail.objectives.closedBadge");
     expect(badges).toHaveLength(1);
@@ -161,12 +164,35 @@ describe("CommunFinancingSection — rendu `list` (interface editorial)", () => 
       { poste: "Clos", priceInt: 900, include: false },
     ];
     renderSection({ layout: "list" });
+    fireEvent.click(screen.getByRole("button", { name: "detail.financing.closedToggle.show" }));
 
     const badges = screen.getAllByText("detail.objectives.closedBadge");
     expect(badges).toHaveLength(1);
     expect(badges[0].closest("button")?.textContent).toContain("Clos");
     const total = screen.getByText("detail.financing.expensesTotal").closest("p");
     expect(total?.textContent).toMatch(/350/);
+  });
+
+  it("dépenses closes masquées par défaut, sous le total ; le bouton les affiche", () => {
+    depenses = [
+      { poste: "Ouvert", priceInt: 100 },
+      { poste: "Clos", priceInt: 900, include: false },
+    ];
+    renderSection({ layout: "list" });
+
+    expect(screen.queryByText("Clos")).toBeNull();
+    const total = screen.getByText("detail.financing.expensesTotal").closest("p")!;
+    expect(total.textContent).toMatch(/100/);
+
+    const bascule = screen.getByRole("button", { name: "detail.financing.closedToggle.show" });
+    expect(bascule.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(bascule);
+
+    expect(bascule.getAttribute("aria-expanded")).toBe("true");
+    expect(bascule.textContent).toBe("detail.financing.closedToggle.hide");
+    const clos = screen.getByText("Clos");
+    expect(total.compareDocumentPosition(clos) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(total.textContent).toMatch(/100/);
   });
 });
 

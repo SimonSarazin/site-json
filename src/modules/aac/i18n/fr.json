@@ -146,6 +146,10 @@
       "cofinancersCount_other": "{{count}} cofinanceurs",
       "remainingToFund": "{{amount}} restant à financer",
       "expensesTotal": "Total :",
+      "closedToggle": {
+        "show": "Afficher les dépenses closes ({{count}})",
+        "hide": "Masquer les dépenses closes ({{count}})"
+      },
       "support": "Soutenir ce projet",
       "selectOrganization": "Sélectionnez une organisation",
       "noOrganizationFound": "Aucune organisation trouvée."
@@ -189,7 +193,11 @@
       },
       "archivedMilestones": "{{count}} palier(s) archivé(s)",
       "closedBadge": "Clos",
-      "closedBadgeHint": "Palier clos : exclu des montants et des cofinanceurs comptés dans la carte."
+      "closedBadgeHint": "Palier clos : exclu des montants et des cofinanceurs comptés dans la carte.",
+      "closedToggle": {
+        "show": "Afficher les paliers clos ({{count}})",
+        "hide": "Masquer les paliers clos ({{count}})"
+      }
     },
     "cofinancers": {
       "unknownContributor": "Contributeur inconnu",
@@ -389,6 +397,10 @@
       "actions": "Actions",
       "actionsIntro": "Les tâches de chaque jalon, qui s'en charge et où elles en sont.",
       "noMilestones": "Aucun jalon pour l'instant.",
+      "closedToggle": {
+        "show": "Afficher les jalons clos ({{count}})",
+        "hide": "Masquer les jalons clos ({{count}})"
+      },
       "filterByMilestone": "Afficher les actions de ce jalon",
       "milestoneFilter": "Jalon : {{name}}",
       "showAllActions": "Toutes les actions",

@@ -21,11 +21,13 @@ import { useCommunRawDepenses } from "@/modules/aac/hooks/useCommunRawDepenses";
 import type { CagnottePermissions } from "@/modules/cagnotte/permissions/types";
 import type { CommunObjectivesController } from "./CommunMilestoneDialogs";
 import { ListRowsSkeleton, MilestoneCardsSkeleton } from "./CommunSkeletons";
+import { ClosedMilestonesGroup } from "./CommunActionsSection";
 import { readFinancerPaymentState } from "@/modules/cagnotte/utils/financerPayment";
 import {
   toMilestoneStatus,
   fundableItemToMilestone,
   fundableItemToMilestoneRef,
+  splitOpenAndClosedMilestones,
   type MilestoneCardPermissions,
 } from "@/modules/aac/lib/objectiveHelpers";
 
@@ -41,7 +43,8 @@ interface CommunFinancingSectionProps {
     ctrl: CommunObjectivesController;
     /**
      * `cards` (défaut) : une carte dépliable par palier, jauge comprise. `list` : lignes
-     * sobres libellé / montant, historique des financements au clic, total en pied.
+     * sobres libellé / montant, historique des financements au clic, total sous les dépenses
+     * en cours. Dans les deux, les paliers clos sont rangés dessous, masqués par défaut.
      */
     layout?: "cards" | "list";
     /**
@@ -382,6 +385,7 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
     );
 
     const items = buildItemsFromRawDepenses(depenses ?? [], funding?.items ?? []);
+    const { open, closed } = splitOpenAndClosedMilestones(items);
 
     // Le fil d'un palier est celui d'une ligne de `answers.aapStep1.depense` : la seule liste que
     // l'espace de discussion connaisse, celle du gabarit legacy. Une fiche qui lit ses dépenses à
@@ -421,10 +425,13 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
     ) : null;
 
     if (layout === "list") {
-        // Les dépenses closes sont hors total, comme dans la carte de financement.
+        // Même total que la carte de financement : seules les dépenses `close` en sont exclues.
         const total = items
             .filter((item) => item.status !== "close")
             .reduce((sum, item) => sum + toSafeInt(item.price), 0);
+        const row = ({ item, index }: { item: CagnotteFundableItem; index: number }) => (
+            <FinancingExpenseRow key={item.itemId} {...milestoneProps(item, index)} />
+        );
 
         return (
             <div className="group/paliers grid gap-4">
@@ -432,29 +439,33 @@ export function CommunFinancingSection({ aacConfig, funding, ctrl, layout = "car
                 {isLoading ? <ListRowsSkeleton count={2} /> : null}
                 {items.length > 0 ? (
                     <div>
-                        <ul className="divide-y divide-border">
-                            {items.map((o: CagnotteFundableItem, i: number) => (
-                                <FinancingExpenseRow key={o.itemId} {...milestoneProps(o, i)} />
-                            ))}
-                        </ul>
+                        {open.length > 0 ? <ul className="divide-y divide-border">{open.map(row)}</ul> : null}
                         <p className="mt-4 text-sm text-muted-foreground">
                             {String(t("detail.financing.expensesTotal"))}{" "}
                             <strong className="text-foreground tabular-nums">{formatCurrency(total)}</strong>
                         </p>
+                        <ClosedMilestonesGroup count={closed.length} labelKey="detail.financing.closedToggle" className="mt-4">
+                            <ul className="divide-y divide-border">{closed.map(row)}</ul>
+                        </ClosedMilestonesGroup>
                     </div>
                 ) : null}
             </div>
         );
     }
 
+    // Clé sur l'identité du palier : l'état déplié suit son palier.
+    const card = ({ item, index }: { item: CagnotteFundableItem; index: number }) => (
+        <FinancingMilestoneCard key={item.itemId} {...milestoneProps(item, index)} />
+    );
+
     return (
         <div className="group/paliers grid gap-4">
             {addMilestone}
             {isLoading ? <MilestoneCardsSkeleton /> : null}
-            {items.map((o: CagnotteFundableItem, i: number) => (
-                // Clé sur l'identité du palier : l'état déplié suit son palier.
-                <FinancingMilestoneCard key={o.itemId} {...milestoneProps(o, i)} />
-            ))}
+            {open.map(card)}
+            <ClosedMilestonesGroup count={closed.length} labelKey="detail.objectives.closedToggle" className="pt-2">
+                <div className="grid gap-4">{closed.map(card)}</div>
+            </ClosedMilestonesGroup>
         </div>
     );
 }

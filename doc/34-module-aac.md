@@ -439,9 +439,17 @@ l'étape de dépôt n'est pas la première, les paliers s'affichent quand même.
 réaction appellent `useAuthModal().openLogin()` et **rejouent l'intention** une fois la connexion
 faite (patron décrit dans [`doc/23`](23-module-auth.md)) — pas de bouton grisé ni de `toast.error`.
 
-**Paliers clos.** « Besoins financiers » **liste** les paliers clôturés, avec un badge « Clos »
-(`detail.objectives.closedBadge` / `…Hint`) et la restauration possible ; ils sont **exclus des
-totaux** de la carte et des cofinanceurs comptés. Les deux cartes de palier (« Besoins financiers »
+**Paliers clos.** Les quatre listes de paliers — « Besoins financiers » (rendus `cards` et `list`),
+« Suivi des actions » et « Jalons » (interface `editorial`) — montrent d'abord les paliers en cours.
+Les paliers clos (`close`, ou `done` côté projet : `isClosedMilestone`, `lib/objectiveHelpers.ts`)
+sont rangés dessous, **masqués par défaut**. Le bouton « Afficher les paliers clos (n) »
+(`ClosedMilestonesGroup`, exporté par `CommunActionsSection.tsx`) les affiche ; son état est propre à
+chaque liste, et il dit « jalons » ou « dépenses » dans l'interface `editorial`. Un palier garde son
+numéro « Palier n », sa position dans la liste complète ; dans « Suivi des actions », la première carte
+**en cours** est dépliée. « Besoins financiers » marque les paliers clôturés d'un badge « Clos »
+(`detail.objectives.closedBadge` / `…Hint`), et on les restaure depuis le groupe déplié ; ils sont
+**exclus des totaux** de la carte et des cofinanceurs comptés (en rendu `list`, le total, au-dessus du
+bouton, est celui de la carte : hors dépenses `close`). Les deux cartes de palier (« Besoins financiers »
 et « Suivi des actions ») affichent leur barre de gestion dès qu'**UN** des trois droits est acquis
 — édition, suppression ou restauration — et passent `canRestore = canRestoreMilestone(status)` :
 un palier **clos ET financé** reste donc restaurable, alors qu'il n'est plus supprimable.
@@ -550,13 +558,18 @@ ligne d'un site réel** : un visiteur y lirait des dons et des chiffres qui n'ex
 
 **Jalons et actions** (onglet « Passage à l'action » de l'interface `editorial`). Deux colonnes à
 partir de `lg`, sur le même contrôleur et les mêmes droits que `CommunActionsSection` (interface par
-défaut) : `CommunMilestonesList` (frise des paliers, gestion au survol, « Ajouter un palier ») et
+défaut) : `CommunMilestonesList` (frise des paliers, gestion au survol, « Ajouter un palier », jalons
+clos masqués sous « Afficher les jalons clos (n) », cf. §3.3) et
 `CommunActionsFeed` (toutes les actions à plat, commandes en ligne), dans
 `components/pageDetail/CommunActionsLists.tsx`. Les dialogues d'action (`CommunActionDialogs`) sont
 montés une fois par la page (`AacCommunDetailPage`), à côté de `CommunMilestoneDialogs`, pour toutes
 les interfaces : une vue ne les monte pas. La liste ne montre chaque action qu'une fois
 (`uniqueActionRows`, `lib/objectiveHelpers.ts`). Un clic sur un palier filtre la liste des actions sur
-ce palier, un second clic ou « Toutes les actions » retire le filtre. L'état vit dans l'interface
+ce palier, un second clic ou « Toutes les actions » retire le filtre. Pour qu'une longue liste de
+jalons ne cache pas les actions filtrées, la carte « Actions » reste collée sous l'en-tête à partir de
+`lg` (`sticky top-24`, défilement interne si elle dépasse l'écran). Sur mobile, où les actions suivent
+les jalons, choisir un palier fait défiler la page jusqu'à elles quand elles sont hors de vue
+(`revealSection`, `hooks/useCommunSectionNav.ts`). L'état vit dans l'interface
 (`selectedMilestoneId`/`onSelectMilestone`, `milestoneFilter`/`onClearMilestoneFilter`) ; sans ces
 props, les deux listes restent sans filtre. Les actions terminées sont masquées par défaut :
 l'interrupteur « Masquer les terminées (n) », état local de `CommunActionsFeed`, les réaffiche.
