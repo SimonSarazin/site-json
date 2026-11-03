@@ -14,9 +14,12 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-11-03** — `costum.typeObj.persons` posé en base PROD (et locale),
-vérification navigateur faite en local (login, écriture, relecture après reload) ; les deux
-correctifs PHP devenus inutiles (`Person::$dataBinding`/`Element::updateBlock`) retirés du backend.
+Dernière mise à jour : **2026-11-03** — retrait complet du concept « partenaire » (page `/annuaire`,
+formulaire costum, onglet admin, tag) au profit de l'annuaire des acteurs du soutien à la
+parentalité, déjà doté du filtre territoire — détail §9quindecenties. Même jour, plus tôt :
+`costum.typeObj.persons` posé en base PROD (et locale), vérification navigateur faite en local
+(login, écriture, relecture après reload) ; les deux correctifs PHP devenus inutiles
+(`Person::$dataBinding`/`Element::updateBlock`) retirés du backend.
 **2026-10-30** —
 employeur et territoire (`structureRegister`/`territoires`) migrés vers un `costumForm` citoyen
 dédié (`parent62-citoyen`), même recette que SSBE/Ekilib.re : plus de correctif backend PHP global
@@ -5271,6 +5274,68 @@ sur la config d'ORIGINE, avant tout changement de ce lot, via `git stash`) :
 | `e2e/parent62.spec.ts` (suite complète, chromium) | ✅ 24/29, 4 échecs confirmés préexistants (ci-dessus), 1 skip |
 | `config:validate` des 19 configs du parc | ✅ les 19 valident |
 
+## 9quindecenties. Retrait complet du concept « partenaire » (annuaire dédié, formulaire, onglet admin)
+
+**Demande client (03/11)** : supprimer l'annuaire des partenaires et faire passer les structures
+qu'il listait par l'annuaire des acteurs du soutien à la parentalité, dont le filtre « Territoire »
+existait déjà (§9quinquagies). **Motif** : l'import des données Gogocarto a créé un DOUBLON entre les
+deux annuaires (mêmes structures listées dans `/annuaire` ET `/annuaire-acteurs-parentalite`) — d'où
+la décision de n'en garder qu'un seul plutôt que de réconcilier les deux listes. Le périmètre retenu
+est le retrait COMPLET du concept « partenaire » (formulaire, onglet admin, tag), pas seulement de la
+page publique — aucune organisation ne portait le tag `"Partenaires"` au moment du retrait (vérifié),
+donc aucune fiche existante n'est concernée par la bascule.
+
+**Retiré** :
+- La page `/annuaire` (« Annuaire des partenaires ») et son entrée de nav sous « Le Réseau
+  parentalité ».
+- Le `costumForm` `parent62-partenaire` (`organizations`), son onglet admin « Partenaires », l'entrée
+  « Ajouter un partenaire » du menu profil citoyen (`addConfig.custom`), et la route d'édition
+  `edit-parent62-partenaire` — toutes les organisations parent62 passent désormais par
+  `edit-parent62-acteur`/`add-parent62-acteur` (déjà doté d'un chrome `add`, réutilisable tel quel).
+- Le filtre `tags: {$nin: ["Partenaires"]}`, posé SUR `/annuaire-acteurs-parentalite` ET sur les 9
+  pages `/territoire/*` (§9sexagies) pour exclure les partenaires des listes « acteurs » — 10
+  occurrences retirées, ces listes ne discriminent plus par ce tag.
+- `hideTags: ["Partenaires"]` d'un `profile-tags` d'organisation — ce tag n'a plus de raison d'être
+  masqué publiquement.
+- Le stamp `mutation.stamps.parent62-partenaire` (tag `Partenaires` posé automatiquement à la
+  création) — disparu avec le `costumForm` qui le portait.
+
+**Retiré aussi (confirmé : aucune organisation ne portait le tag `"Partenaires"` à la livraison)** :
+le branchement `isPartenaire` de `ProfileParent62About.tsx` qui aurait affiché `publics`/`themes` à la
+place de `categoryThematic`/`typeAction`/`publicCible` — supprimé plutôt que gardé « au cas où »,
+aucune fiche réelle ne l'aurait jamais emprunté. `territoires` reste affiché (carte dédiée, 4ᵉ bloc à
+côté de `categoryThematic`/`typeAction`/`publicCible`) : ce champ n'est pas propre au partenariat, il
+sert aussi au filtre territoire de `/annuaire-acteurs-parentalite` — **ajouté à la section
+« Catégorisation » du formulaire `parent62-acteur`** (widget `multiselect`, 9 territoires, copié du
+même champ déjà déclaré sur `parent62-article`) pour qu'un acteur puisse désormais le renseigner à la
+création/édition, ce qu'aucun formulaire `organizations` ne permettait jusqu'ici.
+
+**Tuile d'accueil « Rejoindre le réseau »** (page `/pro`) : pointait vers `/annuaire`, redirigée vers
+`/annuaire-acteurs-parentalite`.
+
+**Nouveau bouton « Ajouter un acteur »** ajouté sur `/annuaire-acteurs-parentalite` (section
+`searchHeader`, absente de cette page jusqu'ici) — reprend le patron de l'ancien bouton
+`/annuaire` (`requiresAdmin:false`, modale costum), pointé sur `add-parent62-acteur`.
+
+**Nettoyage de gates associés** : `tests/preflight/stamps.test.ts` (inventaire des stamps du parc,
+entrée `parent62/parent62-partenaire` retirée), snapshot `.claude/skills/config-assistant/examples/
+admin.json` régénéré (`config:example -- admin --write`, il sourçait l'onglet « Partenaires »
+supprimé), snapshot `__effective__/parent62.json` régénéré. Trois commentaires de code (`schema.ts`,
+`ProfileParent62About.tsx`, `profileParent62Social.ts`) mentionnant encore `parent62-partenaire`
+mis à jour pour décrire l'état actuel (formulaire disparu, fiches historiques seules concernées).
+
+**Checklist** : la ligne « [AVANT MERGE] Partenaires déjà en prod sans tag "Partenaires" » (§10) est
+devenue SANS OBJET — elle décrivait un risque de bascule de routage entre `/annuaire` et
+`/annuaire-acteurs-parentalite` selon ce tag ; les deux n'existent plus en tant que routes distinctes,
+toute organisation parent62 s'édite désormais par le même formulaire quel que soit son tag.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur (23 avertissements pré-existants) |
+| `config:validate` / `audit:config` | ✅ 51 pages/182 sections, RAS (aucun lien mort) |
+| `tests/preflight/` (suite complète) | ✅ 906 tests, 0 échec |
+| `npx vitest run src/modules/profil` | ✅ 960/961 tests (1 flaky sous charge, confirmé propre isolément) |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -5298,7 +5363,7 @@ sur la config d'ORIGINE, avant tout changement de ce lot, via `git stash`) :
 | 2.4 | Impression de l'agenda | ✅ *(code prêt, non activé)* | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` (défaut `false`, vérifié en direct avec l'option forcée à `true` puis retirée — §9quinquadragies) — à activer sur `/agenda` quand souhaité |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
-| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies) |
+| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies). **03/11** : page `/annuaire`, formulaire `parent62-partenaire` et onglet admin « Partenaires » **RETIRÉS** — toute organisation passe désormais par `parent62-acteur`, bouton « Ajouter un acteur » posé sur `/annuaire-acteurs-parentalite` (§9quindecenties) |
 
 ### Partie 3 (2 000 €) — statuts revus par l'audit du 24/07
 
@@ -5436,10 +5501,11 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
-| **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies) | Thomas / backend |
+| **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies). **À confirmer depuis le 03/11** : ces trois champs n'étaient écrits QUE par le formulaire `parent62-partenaire`, retiré (§9quindecenties) — si `typeObj.organizations` ne sert qu'à lui, cette ligne est sans objet ; si un autre formulaire parent62 (`acteur` ou autre) les écrit aussi, elle reste valable | Thomas / backend |
 | **`typeObj.acteur` de production** — créé et appliqué en LOCAL uniquement (cf. §9septquadragies.3) ; reste à reporter sur la base de PRODUCTION (même opération) avant toute édition réelle en prod | Thomas / backend |
 | **Republication SDK (`costum-extensions.json`)** — aucune entrée `organizations` pour `parent62` dans l'artefact vendu (généré 03/09, périmé) ; le scanner backend qui le produit (`tools/parity/scripts/costum-fields.mjs`) est hors d'atteinte depuis ce poste. Nécessaire pour que l'édition des champs costum de `parent62-acteur` soit fiable en PRODUCTION (sans dépendre de `VITE_COSTUM_FORCE_LIVE`, local uniquement) | backend / Thomas |
-| **[AVANT MERGE] Partenaires déjà en prod sans tag `"Partenaires"`** — le découpage `/annuaire` vs `/annuaire-acteurs-parentalite` (§9septquadragies.6/.12) repose entièrement sur ce tag ; toute organisation référencée via `/annuaire` AVANT ce lot en est dépourvue et basculerait sur le formulaire acteur (sans auto-réparation). Aucune vérification possible sur les données de PRODUCTION depuis ce poste — à confirmer (aucune organisation réelle dans ce cas) ou prévoir un passage unique en base avant merge | Thomas / réseau |
+| ~~**[AVANT MERGE] Partenaires déjà en prod sans tag `"Partenaires"`**~~ — **SANS OBJET depuis le 03/11 : `/annuaire` et son routage par tag ont été retirés** (§9quindecenties). Le risque décrit (bascule de routage selon le tag) ne s'applique plus : toute organisation parent62 s'édite désormais par le même formulaire `parent62-acteur`, tag présent ou non. _(libellé d'origine ci-dessous, conservé pour l'historique)_ | — |
+| **[25/08, formulation d'origine]** le découpage `/annuaire` vs `/annuaire-acteurs-parentalite` (§9septquadragies.6/.12) reposait entièrement sur le tag `"Partenaires"` ; toute organisation référencée via `/annuaire` AVANT ce lot en était dépourvue et aurait basculé sur le formulaire acteur (sans auto-réparation). Aucune vérification possible sur les données de PRODUCTION depuis ce poste — à confirmer (aucune organisation réelle dans ce cas) ou prévoir un passage unique en base avant merge | Thomas / réseau |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |
