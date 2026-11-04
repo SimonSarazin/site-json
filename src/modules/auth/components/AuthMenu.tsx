@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban } from "lucide-react";
+import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban, MessageCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +13,11 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import type { LocalizedString } from "@/types/site-schema";
-import { getServerUrl } from "@/lib/constant/common";
+import { getServerUrl, getRocketChatUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { isAdminEntryVisible, isKanbanEntryVisible } from "@/modules/admin/lib/adminEntry";
+import { isAdminEntryVisible, isKanbanEntryVisible, isRocketChatEntryVisible } from "@/modules/admin/lib/adminEntry";
 import { platformKanbanUrl } from "@/modules/admin/lib/platformKanbanUrl";
+import { platformRocketChatUrl } from "@/modules/admin/lib/platformRocketChatUrl";
 import { useAuthActions } from "../hooks/useAuthActions";
 import { CurrentUserAvatar } from "./CurrentUserAvatar";
 import { LoginButton } from "./LoginButton";
@@ -88,14 +89,29 @@ export function AuthMenu({
     isConnected && costumSlug && isKanbanEntryVisible(config, me, entity, costumSlug)
       ? platformKanbanUrl(getServerUrl(), costumSlug)
       : null;
-  // Ancre kanban UNIQUE, habillée en asChild par les deux layouts (stack mobile / dropdown
-  // desktop) : toute évolution (rel, aria, tracking) reste mono-source. Le span sr-only annonce
-  // la sortie vers la plateforme — l'icône est aria-hidden et, dans le dropdown, Radix pose
-  // role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux lecteurs d'écran.
+  const rocketChatUrl =
+    isConnected && isRocketChatEntryVisible(config, me, entity)
+      ? platformRocketChatUrl(getRocketChatUrl())
+      : null;
+  // Ancres kanban/chat UNIQUES, habillées en asChild par les deux layouts (stack mobile /
+  // dropdown desktop) : toute évolution (rel, aria, tracking) reste mono-source. Le span
+  // sr-only annonce la sortie vers la plateforme — l'icône est aria-hidden et, dans le
+  // dropdown, Radix pose role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux
+  // lecteurs d'écran. Nouvel onglet, PAS un modal/iframe : le SDK n'expose pas de jeton de
+  // connexion pour authentifier une iframe Rocket.Chat — sans lui, l'iframe montre au mieux
+  // l'écran de connexion complet, au pire une page refusée par l'instance.
   const kanbanLink = kanbanUrl ? (
     <a href={kanbanUrl} target="_blank" rel="noopener noreferrer">
       <SquareKanban className="mr-2 h-4 w-4" />
       {t("Kanban")}
+      <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
+      <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
+    </a>
+  ) : null;
+  const rocketChatLink = rocketChatUrl ? (
+    <a href={rocketChatUrl} target="_blank" rel="noopener noreferrer">
+      <MessageCircle className="mr-2 h-4 w-4" />
+      {t("Chat")}
       <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
       <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
     </a>
@@ -162,6 +178,11 @@ export function AuthMenu({
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
+                </Button>
+              )}
+              {rocketChatLink && (
+                <Button asChild variant="ghost" className="w-full justify-start" onClick={onAction}>
+                  {rocketChatLink}
                 </Button>
               )}
               {kanbanLink && (
@@ -247,6 +268,9 @@ export function AuthMenu({
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
                 </DropdownMenuItem>
+              )}
+              {rocketChatLink && (
+                <DropdownMenuItem asChild>{rocketChatLink}</DropdownMenuItem>
               )}
               {kanbanLink && (
                 <DropdownMenuItem asChild>{kanbanLink}</DropdownMenuItem>

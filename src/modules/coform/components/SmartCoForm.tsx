@@ -6,6 +6,8 @@ import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
 import { CommonTableCatalogsLoader } from "../contexts/CommonTableCatalogsLoader";
+import { TimeSlotPeriodsContext } from "../contexts/TimeSlotPeriodsContext";
+import { TimeSlotCheckContext, type TimeSlotCheck } from "../contexts/TimeSlotCheckContext";
 import { parseCoFormFields, omitHiddenSteps, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, collectCommonTableInputKeys } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
@@ -115,6 +117,16 @@ interface SmartCoFormProps {
    */
   unknownFieldVariant?: "error" | "placeholder";
   /**
+   * Contrôle MÉTIER de l'appelant, rejoué juste avant l'enregistrement sur les données prêtes à partir
+   * (format serveur). Un message REFUSE l'enregistrement : il s'affiche, le formulaire reste ouvert et la
+   * saisie est gardée (brouillon compris). `null` laisse passer. Ne doit pas lever : un contrôle qui ne
+   * peut pas conclure tranche lui-même (laisser passer ou refuser), le formulaire ne le devine pas.
+   */
+  beforeSubmit?: (allData: AllStepsData) => Promise<string | null> | string | null;
+  /** Saisie d'une période (« du … au … ») sur chaque créneau des champs `timeSlots` — cf.
+   *  `TimeSlotPeriodsContext`. Défaut : non. */
+  slotPeriods?: boolean;
+  /**
    * Libellé du bouton d'envoi (mode single-step). Défaut :
    * `coform.navigation.submit`. Sert aux surfaces hôtes qui portent leur propre
    * appel à l'action (ex. « Soumettre à la communauté » d'`AmpliFeatures`) —
@@ -127,6 +139,13 @@ interface SmartCoFormProps {
    * s'affiche en `<h1>` au milieu de la page hôte. Toujours vrai en standalone.
    */
   hideBanner?: boolean;
+  /** Avertissement EN DIRECT sous les créneaux des champs `timeSlots` (« ce créneau est déjà pris… »), jugé par
+   *  l'appelant sur la saisie de l'étape — cf. `TimeSlotCheckContext`. Défaut : aucun. */
+  slotCheck?: TimeSlotCheck;
+  /** Masque l'en-tête d'étape (titre « Étape 1 », description) du formulaire à UNE étape — choix de
+   *  l'appelant quand son propre titre suffit (fenêtre de réservation). Sans effet sur le parcours en
+   *  plusieurs étapes, dont la navigation a besoin de ses titres. Défaut : non. */
+  hideStepHeaders?: boolean;
 }
 
 interface LoadingStateProps {
@@ -231,8 +250,12 @@ export function SmartCoForm({
   elementId,
   elementType,
   unknownFieldVariant,
+  beforeSubmit,
+  slotPeriods = false,
   submitButtonText,
   hideBanner = false,
+  slotCheck,
+  hideStepHeaders = false,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -357,11 +380,16 @@ export function SmartCoForm({
   // - les discussions des questions ouvertes aux commentaires — l'hôte décide s'il
   //   en ouvre (réponse enregistrée, question ouverte, site complet), sans jamais
   //   changer la forme de l'arbre : le formulaire ne remonte pas quand une réponse
-  //   reçoit son identifiant.
+  //   reçoit son identifiant ;
+  // - la saisie de période des créneaux (`slotPeriods`) et leur contrôle en direct
+  //   (`slotCheck`) : comme les catalogues, des données de l'APPELANT que seuls
+  //   certains champs consomment.
   const withFormContext = (node: ReactNode) => (
     <CommonTableCatalogsLoader formId={formId} inputKeys={commonTableInputKeys}>
       <FormQuestionDiscussions answerId={answerId} form={formData} steps={subFormsFields}>
-        {node}
+        <TimeSlotPeriodsContext.Provider value={slotPeriods}>
+          <TimeSlotCheckContext.Provider value={slotCheck ?? null}>{node}</TimeSlotCheckContext.Provider>
+        </TimeSlotPeriodsContext.Provider>
       </FormQuestionDiscussions>
     </CommonTableCatalogsLoader>
   );
@@ -507,7 +535,7 @@ export function SmartCoForm({
         answerData={normalizedDefaults ?? {}}
         answerId={answerId}
         hideBanner={hideBanner || isStandalone}
-        hideStepHeaders={isInputStandalone}
+        hideStepHeaders={hideStepHeaders || isInputStandalone}
         hideMetadata
       />
     );
@@ -515,17 +543,29 @@ export function SmartCoForm({
 
   // Afficher le composant approprié
   if (shouldUseMultiStep) {
+    const finalSubmit = onFinalSubmit
+      ? (data: AllStepsData) => onFinalSubmit(data)
+      : async (data: AllStepsData) => {
+          await internalMutation.mutateAsync({ allData: data });
+        };
     return withFormContext(
       <MultiStepCoForm
         formData={effectiveFormData}
         submitMode={submitMode}
         onStepSubmit={onStepSubmit}
         onFinalSubmit={
-          onFinalSubmit
-            ? (data: AllStepsData) => onFinalSubmit(data)
-            : async (data: AllStepsData) => {
-                await internalMutation.mutateAsync({ allData: data });
+          beforeSubmit
+            ? async (data: AllStepsData) => {
+                // Refus de l'appelant : levé en erreur, que `CoFormProvider.submitAllData` laisse
+                // remonter SANS purger le brouillon — rien n'est parti au serveur.
+                const refus = await beforeSubmit(data);
+                if (refus) {
+                  toast.error(refus);
+                  throw new Error(refus);
+                }
+                await finalSubmit(data);
               }
+            : finalSubmit
         }
         onSuccess={onAfterSubmit}
         onDirtyChange={onDirtyChange}
@@ -574,7 +614,7 @@ export function SmartCoForm({
       defaultValues={stepDefaults}
       answerId={answerId}
       hideBanner={hideBanner || isStandalone}
-      hideStepHeaders={isInputStandalone}
+      hideStepHeaders={hideStepHeaders || isInputStandalone}
       hideSubmitButton={isInputStandalone}
       autoSubmitOnBlur={isInputStandalone}
       onDirtyChange={onDirtyChange}
@@ -607,6 +647,14 @@ export function SmartCoForm({
           const links = extractFinderLinks(rawData, subFormsFields);
           const formattedAddedOptions = addedOptions ? { [subFormId]: addedOptions } : undefined;
           const linksOrUndef = Object.keys(links).length > 0 ? links : undefined;
+
+          // Refus de l'appelant (`beforeSubmit`) : rien ne part, et `false` dit à `DynamicCoForm` de
+          // garder le brouillon — le formulaire reste ouvert sur la saisie à corriger.
+          const refus = beforeSubmit ? await beforeSubmit(dataForServer) : null;
+          if (refus) {
+            toast.error(refus);
+            return false;
+          }
 
           // Soumettre les données (onFinalSubmit externe ou mutation interne)
           if (onFinalSubmit) {

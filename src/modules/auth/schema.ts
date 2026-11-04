@@ -97,8 +97,28 @@ const AuthMenuConfigSchema = z.object({
   // (`<serverUrl>/#@<costumSlug>.view.actions`). Opt-in ; réservé aux admins du costum —
   // gate : `isKanbanEntryVisible` (modules/admin/lib/adminEntry), indépendant de `config.admin`.
   kanban: z.boolean().optional(),
+  // Entrée « Chat » : lien (nouvel onglet, comme Kanban) vers le chat de la plateforme
+  // (instance Rocket.Chat SÉPARÉE, `getRocketChatUrl()` — PAS un chemin sous `getServerUrl()`),
+  // réservé aux admins du costum — gate : `isRocketChatEntryVisible` (modules/admin/lib/adminEntry),
+  // indépendant de `config.admin`. PAS un modal/iframe : le SDK n'expose pas de jeton de connexion
+  // pour authentifier une iframe Rocket.Chat — cf. `AuthMenu.tsx`. Contrairement à `kanban`, ACTIF
+  // PAR DÉFAUT (absence de clé = visible) ; `false` explicite pour le désactiver sur un site.
+  rocketChat: z.boolean().optional(),
 });
 export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
+
+/**
+ * Textes de l'étape « code de vérification » (double authentification, cocolight-backend docs/34).
+ * TEXTES SEULEMENT : le serveur décide seul quels comptes sont soumis (flag citoyen ou costum à
+ * `auth.twoFactor:"required"`) ; aucune clé de config n'active ni ne désactive le second facteur.
+ * Un site dont aucun compte n'est soumis ne voit jamais cette étape. `help` REMPLACE la phrase par
+ * défaut (« Un code à 6 chiffres vient d'être envoyé à … ») ; l'adresse masquée reste affichée dessous.
+ */
+const AuthTwoFactorConfigSchema = z.object({
+  title: LocalizedString.optional(),
+  help: LocalizedString.optional(),
+});
+export type AuthTwoFactorConfig = z.infer<typeof AuthTwoFactorConfigSchema>;
 
 export const AuthConfigSchema = z.object({
   // Variant de design résolu par `resolveAuthVariant` (registry). Absent → "default".
@@ -116,5 +136,7 @@ export const AuthConfigSchema = z.object({
   register: AuthRegisterConfigSchema.optional(),
   // textes + `mode` du flux « mot de passe oublié » (défaut legacy, cf. AuthRecoverConfigSchema).
   recover: AuthRecoverConfigSchema.optional(),
+  // textes de l'étape « code de vérification » (2FA) — jamais un interrupteur, cf. AuthTwoFactorConfigSchema.
+  twoFactor: AuthTwoFactorConfigSchema.optional(),
 });
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;

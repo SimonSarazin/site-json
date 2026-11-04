@@ -27,6 +27,8 @@ import {
   type LabelMaps,
 } from "./dimensions";
 import { countBy } from "./utils";
+import { formatHours } from "./installation";
+import type { ReservationHours } from "@/modules/search/lib/reservationHours";
 
 export const PLACEHOLDER = "—";
 
@@ -168,12 +170,15 @@ export function applySelection(
 /* KPI                                                           */
 /*───────────────────────────────────────────────────────────────*/
 
-/** Calcule la valeur d'un KPI déclaratif (formes : count/distinct/percentTrue/valueSplit/top). */
+/** Calcule la valeur d'un KPI déclaratif (formes : count/distinct/percentTrue/valueSplit/top/sum/avg/
+ *  reservationHours). `reservationHours` ne se calcule pas sur les items : la section lui passe les
+ *  heures déjà sommées sur les items affichés — absentes (chargement), la valeur est `PLACEHOLDER`. */
 export function computeKpiValue(
   def: KpiDef,
   data: ObservatoryItem[],
   dims: DimensionsConfig,
   labels?: LabelMaps,
+  reservationHours?: ReservationHours,
 ): string {
   const total = data.length;
   const dim = def.dimension ? dims[def.dimension] : undefined;
@@ -215,6 +220,13 @@ export function computeKpiValue(
       // Arrondi 1 décimale, format locale fr (séparateurs de milliers).
       const rounded = Math.round(n * 10) / 10;
       const text = rounded.toLocaleString("fr-FR");
+      return def.unit ? `${text} ${def.unit}` : text;
+    }
+    case "reservationHours": {
+      if (!reservationHours) return PLACEHOLDER;
+      const text = formatHours(
+        def.period === "cumulative" ? reservationHours.cumulativeMinutes : reservationHours.weeklyMinutes,
+      );
       return def.unit ? `${text} ${def.unit}` : text;
     }
   }

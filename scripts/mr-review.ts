@@ -530,8 +530,12 @@ async function controler(iid: number, meta: Meta, note: string, enLigne: boolean
   }
   if (s[SECTIONS.verifie] !== undefined && sectionVide(s[SECTIONS.verifie])) ko("section Vérifié vide : coller gates.md");
 
-  const fuites = fuiteSecrets(note, lireDotEnv(ROOT));
-  if (fuites.length) ko(`valeur(s) de .env dans la note : ${fuites.map((k) => `${k}=${masquer(lireDotEnv(ROOT)[k])}`).join(", ")}`);
+  // Un chemin de fichier du dépôt (ex. `SITE_CONFIG_PATH=config.prod.x.json`) n'est pas un secret : le bloc gates le cite.
+  const envSecrets = Object.fromEntries(
+    Object.entries(lireDotEnv(ROOT)).filter(([, v]) => !fs.existsSync(path.join(ROOT, v))),
+  );
+  const fuites = fuiteSecrets(note, envSecrets);
+  if (fuites.length) ko(`valeur(s) de .env dans la note : ${fuites.map((k) => `${k}=${masquer(envSecrets[k])}`).join(", ")}`);
 
   const verdictDerive = verdict(note, lireGates(iid));
   if (!note.includes("<!-- verdict -->")) {

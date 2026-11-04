@@ -1,4 +1,4 @@
-import { ArrowRight, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, Building2, Mail, MapPin, Phone } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
 import { Card } from "@/components/ui/card";
@@ -69,6 +69,12 @@ export function CardTeamMember({
     member.id,
   );
   const { email, telephone, adresse } = contactsDuProfil(sd);
+  // Employeur (`structureRegister`) : texte libre posé depuis le profil citoyen (champ costum
+  // parent62, cf. doc/08 §Champs du profil CITOYEN réservés à un costum), pas de champ dédié dans
+  // contactProfil.ts (un seul lecteur ici).
+  const employeur = typeof sd.structureRegister === "string" && sd.structureRegister.trim() !== ""
+    ? sd.structureRegister.trim()
+    : null;
   const lignesEquipe = lignesContactEquipe(contactText, { email, telephone });
   const lienTerritoire = cheminTerritoire(territoire, rattachement);
   // `fixedColors` prime : une section sans territoire (animation départementale, contact CAF)
@@ -158,7 +164,7 @@ export function CardTeamMember({
 
         {/* Contacts de la PERSONNE, lus sur la liste projetée. Icônes plutôt que libellés : la colonne est
             étroite, et « Courriel : » y mangerait une ligne entière. */}
-        {(email || telephone || adresse) && (
+        {(email || telephone || adresse || employeur) && (
           <div className="mt-3 flex flex-col gap-1 text-sm leading-snug opacity-85">
             {email && (
               <a href={`mailto:${email}`} className="flex items-start gap-1.5 hover:underline">
@@ -176,6 +182,12 @@ export function CardTeamMember({
               <span className="flex items-start gap-1.5">
                 <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>{adresse}</span>
+              </span>
+            )}
+            {employeur && (
+              <span className="flex items-start gap-1.5">
+                <Building2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span>{employeur}</span>
               </span>
             )}
           </div>

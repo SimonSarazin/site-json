@@ -42,7 +42,7 @@ export function useInstallationAnswersQuery(
         count: true,
         indexMin: 0,
         // Plafond d'answers chargées : honore `reservations.maxAnswers` (comme
-        // `useReservationsQuery`), défaut 500. Une installation = quelques
+        // `useOrgaReservationsQuery`), défaut 500. Une installation = quelques
         // équipements → volume normalement < 500.
         // TODO si une installation dépasse le plafond : paginer via next().
         indexStep: reservations.maxAnswers ?? 500,

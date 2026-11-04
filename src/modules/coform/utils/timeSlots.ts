@@ -9,7 +9,10 @@
  * vers 24h) mais on sauve TOUJOURS en 24h, le format des données observées.
  */
 
+import type { useT } from "@/hooks/useT";
 import type { TimeSlotValue } from "../types";
+
+type Translate = ReturnType<typeof useT>;
 
 /** Jours de la semaine — clés EXACTES stockées en base (legacy, capitalisées). */
 export const TIME_SLOT_DAYS = [
@@ -115,4 +118,39 @@ export function normalizeSlot(slot: TimeSlotValue): TimeSlotValue {
     endHour: end.hour,
     endMinute: end.minute,
   };
+}
+
+/**
+ * La période propre du créneau, si elle a ses deux bornes, va dans le bon sens (comparaison
+ * lexicographique, valide sur des jours ISO). Un créneau sans période, ou à une seule borne, n'est pas
+ * « désordonné » : il prend le reste de la période de la réponse.
+ */
+export function isSlotPeriodOrdered(slot: TimeSlotValue): boolean {
+  return !slot.periodStart || !slot.periodEnd || slot.periodStart <= slot.periodEnd;
+}
+
+/**
+ * Jour ISO → date courte de la locale (« 19/08/2026 ») ; repli sur la valeur brute si ce n'est pas un jour
+ * ISO. Construite en heure LOCALE : `new Date("2026-08-19")` vaut minuit UTC, donc la veille sous un fuseau
+ * négatif (Antilles).
+ */
+export function formatSlotDay(iso: string, locale?: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString(locale, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+/** « Du 19/08/2026 au 10/10/2026 » — la période propre d'un créneau, à afficher à côté de lui ; `null`
+ *  sans période (le créneau vaut alors pour toute la réponse, rien à dire). */
+export function formatSlotPeriod(slot: TimeSlotValue, t: Translate, locale?: string): string | null {
+  const start = slot.periodStart ? formatSlotDay(slot.periodStart, locale) : undefined;
+  const end = slot.periodEnd ? formatSlotDay(slot.periodEnd, locale) : undefined;
+  if (start && end) return t("coform.timeSlots.period", undefined, { start, end });
+  if (start) return t("coform.timeSlots.periodFrom", undefined, { start });
+  if (end) return t("coform.timeSlots.periodUntil", undefined, { end });
+  return null;
 }

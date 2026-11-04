@@ -95,6 +95,12 @@ describe("préflight mutation.stamps", () => {
   it("les stamps du parc sont bien là où on les attend (sentinelle d'inventaire)", () => {
     const parc = SITES.flatMap(({ site, cfg }) => stampsDe(cfg).map(({ formId, stamps }) => `${site.replace("config.prod.", "").replace(".json", "")}/${formId}:${stamps.length}`));
     expect(parc).toEqual([
+      // ESS974 : le form « Ajouter une association » pose l'étiquette `usagerEquipementSportif`
+      // (append, on:both) — c'est le filtre du finder « club usager » du formulaire de réservation
+      // (`params.finder<clé>.filter`) : sans elle, l'association ajoutée ne pourrait recevoir aucun
+      // créneau. Pas de champ `tags` visible dans ce form (rien à réconcilier au retrait), comme
+      // parent62-partenaire ci-dessous.
+      "equipements-Sportifs-Scolaire/ess974-association:1",
       // CAE : le form « Créer votre CAE » pose le marqueur `CAE` dans `tags` (append, on:add) et
       // refusionne à l'édition la saisie du mode de gestion (append $from tags, on:edit) — c'est le
       // discriminant `identity {tags:"CAE"}` du sous-type `organizationsTls`.
@@ -105,12 +111,8 @@ describe("préflight mutation.stamps", () => {
       // `tagsWrite` du champ `tags`. Le stamp `append` refusionnait les tags serveur, donc l'ancien tag
       // revenait quand on changeait de type (impossible de sortir une actu du bandeau « à la une »).
       // Garde de non-retour : `src/modules/profil/forms/article.configDriven.test.ts`.
-      // parent62-partenaire, lui, EN pose un : tag fixe `Partenaires` (append, on:both) — pas de champ
-      // `tags` visible dans ce form (rien à réconcilier au retrait), sert uniquement à différencier
-      // `/annuaire` (tag présent) de `/annuaire-acteurs-parentalite` (tag absent, `$nin`) : `type` et
-      // `source.key` se sont révélés non fiables sur les fiches importées (cf. doc-projets/parent62.md
-      // §9septquadragies.6).
-      "parent62/parent62-partenaire:1",
+      // parent62-partenaire a disparu avec tout le concept « partenaire » (annuaire dédié, costumForm,
+      // onglet admin, tag Partenaires) — supprimé le 03/11, cf. doc-projets/parent62.md §9septquadragies.6.
       // MSS structure n'a PLUS de stamp : `statusActor` est déclaré au dynForm du costum
       // `associationEkilibre` depuis la copie du chantier A (plan mss-la-tampon) — l'inject
       // payload « En cours » passe la whitelist, le stamp pathValue de contournement a été retiré.

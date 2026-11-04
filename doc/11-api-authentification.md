@@ -851,6 +851,7 @@ const { openLogin } = useAuthModal();
 
    * Le composant `LoginForm` récupère `userApi` via `useCocolight()` et appelle `userApi.login(email, password)` (paramètres positionnels).
    * En cas de succès, les tokens sont stockés via la stratégie configurée.
+   * **Double authentification** (lib ≥ 1.0.204, cocolight-backend `docs/34-2FA-LOT1.md`) : pour un compte soumis au second facteur, le serveur répond 401 `{error:"twoFactorRequired", challenge, method:"email", sentTo, expireAt}` après avoir envoyé un code par e-mail, et `login` lève `TwoFactorRequiredError` (sous-classe d'`ApiResponseError`, exposée via `cocolightApiClient.error`) — aucun token posé. `userApi.verifyTwoFactor(challenge, code)` (`TWO_FACTOR_VERIFY`, mêmes `postActions` qu'`AUTHENTICATE_URL`) rend alors le `User` et pose les tokens ; `userApi.resendTwoFactor(challenge)` (`TWO_FACTOR_RESEND`) renvoie un code (3 fois par défi, 1 par minute). Les refus (`codeInvalid` + `attemptsLeft`, `challengeExpired`, `resendTooSoon` + `retryIn`, `resendLimit`, `resendTooLate`, `twoFactorMailFailed`, `twoFactorTooMany`) remontent en `ApiResponseError` dont `message` est le code serveur et `responseData` le corps. Les JWT délivrés après le code portent le claim informatif `amr: ["pwd","otp"]`, recopié par le refresh. La règle « compte soumis » est serveur (flag citoyen ou costum `auth.twoFactor:"required"`) : rien à configurer côté site, cf. [doc/23 → `config.auth.twoFactor`](23-module-auth.md#configauthtwofactor--textes-de-létape--code-de-vérification-).
 
 2. **Requête API**
 

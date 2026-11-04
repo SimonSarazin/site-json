@@ -298,7 +298,7 @@ revient après connexion. Voir [Gardes de page](34-gardes-de-page.md).
 Chaque formulaire redirige s'il détecte un utilisateur déjà connecté
 (`!loading && me?.isConnected` dans un `useEffect`), ce qui remplace l'ancien
 middleware config `redirect-if-authenticated` sur ces pages. La destination
-diffère selon le formulaire : `LoginForm` (`LoginForm.tsx:47`, `:95`) et
+diffère selon le formulaire : `LoginForm` (`returnTo` calculé en tête du composant, effet centralisé sur `me.isConnected`) et
 `RegisterForm` (`RegisterForm.tsx:58`, `:71`) renvoient vers
 `returnTo = returnToOrHome(location.state)`, c'est-à-dire la page mémorisée par
 la garde (`{ from: pathname + search }`), avec repli sur `/` ;
@@ -363,7 +363,9 @@ Bloc top-level optionnel de la config site (validé par `AuthConfigSchema`,
                   "subtitle": { "fr": "…", "en": "…" } },
     "register": { "title": { "fr": "…" }, "subtitle": { "fr": "…" } },
     "recover":  { "title": { "fr": "…" }, "subtitle": { "fr": "…" },
-                  "mode": "legacy" }   // "legacy" (défaut de fait) | "node" — cf. ci-dessous
+                  "mode": "legacy" },  // "legacy" (défaut de fait) | "node" — cf. ci-dessous
+    "twoFactor": { "title": { "fr": "Vérification en deux étapes" },
+                   "help":  { "fr": "…" } }   // textes SEULEMENT de l'étape « code » — cf. ci-dessous
   }
 }
 ```
@@ -381,6 +383,7 @@ restent utilisées comme défaut si le bloc `menu` est absent.
 | `showDropdownHeader` | `boolean` | Afficher un en-tête nom + email dans le dropdown |
 | `loginLabel` | `LocalizedString` | Libellé du bouton « Se connecter » — surchargé par la prop `loginLabel` du header |
 | `kanban` | `boolean` | Opt-in : entrée « Kanban » (nouvel onglet vers la vue actions de la plateforme), réservée aux admins du costum — gate `isKanbanEntryVisible` (modules/admin), détails dans [doc/30-module-admin.md](30-module-admin.md) |
+| `rocketChat` | `boolean` | Entrée « Chat » (lien nouvel onglet, comme Kanban, vers l'instance Rocket.Chat séparée — `getRocketChatUrl()`/`VITE_ROCKETCHAT_URL`, défaut `chat.communecter.org`), réservée aux admins du costum, **ACTIVE PAR DÉFAUT** sur tout le parc — `false` explicite pour la désactiver sur un site ; gate `isRocketChatEntryVisible` (modules/admin). Pas de modal/iframe : le SDK n'expose pas de jeton de connexion pour authentifier une iframe Rocket.Chat — sans lui, l'iframe montre au mieux l'écran de connexion complet, au pire une page refusée par l'instance. |
 
 Le `tone` (défaut / onColor) et le `loginVariant` (ghost / solid / outline)
 restent couplés au design du header (props du composant), pas à `config.auth.menu`.
@@ -408,6 +411,28 @@ backend Node.
 > lien reçu par e-mail tombe sur le catch-all du routeur
 > (`{ path: "*", element: <SiteRenderer /> }`, `src/lib/buildRoutes.tsx:216`), servi
 > en 200 — **sans erreur, donc invisible en recette**.
+
+### `config.auth.twoFactor` — textes de l'étape « code de vérification »
+
+Double authentification par code e-mail (spec : cocolight-backend `docs/34-2FA-LOT1.md`).
+Ce bloc ne porte **que des textes** (`AuthTwoFactorConfigSchema`) : `title` (défaut
+« Vérification en deux étapes ») et `help`, qui **remplace** la phrase par défaut « Un code à
+6 chiffres vient d'être envoyé à j***@… » (l'adresse masquée reste affichée dessous).
+
+**Aucune clé de config n'active ni ne désactive le second facteur.** La règle « compte
+soumis » vit côté serveur (flag `twoFactor.required` sur le citoyen, ou costum dont le document
+porte `auth.twoFactor: "required"` — rattachement par `source.key` ou par appartenance à
+l'élément porteur). Un site dont aucun compte n'est soumis ne voit jamais l'étape, et n'a rien
+à configurer. Le déroulé est décrit dans [`LoginForm`](#loginform).
+
+**Compte soumis sans mot de passe** (compte créé « par code e-mail » avant l'activation, cf. docs/34 §10.7) :
+le serveur répond 401 `passwordMissing`, que la lib 1.0.204 lève en `PasswordMissingError` (sous-classe
+d'`ApiResponseError`). `LoginForm` affiche alors le toast « Pas encore de mot de passe » avec une action vers la
+récupération dont le libellé suit `config.auth.recover.mode` : « Recevoir un mot de passe » en `legacy` (défaut,
+un mot de passe est envoyé par e-mail), « Définir un mot de passe » en `node`. L'e-mail saisi est transmis :
+en modale `onSwitchToRecover(email)` → `AuthModal` → `RecoverPasswordForm initialEmail`, en page
+`navigate("/recover-password", { state: { email } })` que `RecoverPasswordForm` lit dans `location.state`.
+Le lien « Mot de passe oublié ? » transmet aussi l'e-mail déjà saisi. Aucune étape « code » n'est affichée.
 
 ### Autres champs
 
@@ -698,18 +723,38 @@ interface LoginFormProps {
   `navigate(returnTo)` est déclenché **uniquement si `hideBackButton === false`** (valeur
   par défaut). C'est `hideBackButton` — et lui seul — qui discrimine le comportement
   de navigation, pas la présence ou l'absence des callbacks.
-- `returnTo` est calculé **une fois** en haut du composant (`LoginForm.tsx:47`) par
+- `returnTo` est calculé **une fois** en haut du composant par
   `returnToOrHome(location.state)` : la page mémorisée par la garde en mode `redirect`
   (`{ from: pathname + search }`, filtre d'URL compris), repli `/`, refus des URL
   externes et protocole-relatives (`src/lib/authRedirect.ts`). Les trois points de
-  navigation post-succès l'utilisent (effet centralisé `:95`, `handleLogin` `:159`,
-  `onSuccess` du bouton SSO `:278`).
+  navigation post-succès l'utilisent (effet centralisé, `handleLogin`, `handleVerify`,
+  `onSuccess` du bouton SSO).
 - En mode modal (`hideBackButton=true`) : pas de navigation après succès.
 - En mode page (`hideBackButton=false`) : navigue vers `/register` ou
   `/recover-password` via les boutons de bascule — en **transmettant le même `state`**
-  (`LoginForm.tsx:292`, `:303`), pour que la destination mémorisée survive à la
+  (boutons de bascule), pour que la destination mémorisée survive à la
   bascule ; navigue vers `returnTo` après connexion réussie.
 - Erreurs HTTP 401/404 → message "Email ou mot de passe incorrect".
+- **Double authentification** (cocolight-backend `docs/34-2FA-LOT1.md`) : si `userApi.login`
+  lève `TwoFactorRequiredError` (mot de passe correct, compte soumis : le serveur a créé un défi
+  et envoyé un code par e-mail, **aucun jeton posé**), le formulaire laisse place à l'étape
+  « code » (`data-testid="two-factor-step"`, même composant en modal et en page) : saisie à
+  6 chiffres (`inputMode="numeric"`, `autocomplete="one-time-code"`, chiffres seuls, bouton
+  actif à 6 chiffres), `userApi.verifyTwoFactor(challenge, code)` qui termine la connexion
+  **exactement comme `login`** (jetons posés par la lib, `userLoggedIn` émis, `onSuccess` /
+  `navigate(returnTo)`), « Renvoyer le code » verrouillé 60 s après chaque envoi
+  (`userApi.resendTwoFactor`, compte à rebours resynchronisé sur `retryIn` si le serveur
+  répond `resendTooSoon`), « Retour » qui revient au mot de passe (effacé). Messages en place
+  (`role="alert"`) : `codeInvalid` + essais restants, `resendLimit` (le dernier code reste
+  valable), `resendTooLate`, `twoFactorMailFailed`. `challengeExpired` (défi inconnu, 5 min
+  passées, déjà utilisé ou 5 échecs) ramène au mot de passe avec un toast. À la première
+  étape, `twoFactorMailFailed` (503) et `twoFactorTooMany` (429, `retryIn`) donnent un toast
+  dédié sans étape code. Une erreur RÉSEAU (ou breaker) pendant la vérification ou le renvoi ne jette
+  pas le défi : message en place, code conservé. Le temps restant (« Code valable encore N min ») vient
+  d'`expireAt` ; à expiration, retour au mot de passe sans appel serveur. Un défi RÉUTILISÉ par le
+  serveur (reconnexion < 60 s) hérite de son délai de renvoi réel. `userLoggedIn` est émis par les
+  postActions du contrat (lib), jamais par le formulaire. Textes : `config.auth.twoFactor` (titre, aide).
+  Test : `LoginForm.twoFactor.test.tsx` (11 cas, horloge simulée pour le renvoi et l'expiration).
 - Affiche les `SSOLoginButton` si `entity?.serverData.costum.sso` contient des
   providers (voir [SSO](#sso)).
 - **Mode SSO-only** (`costum.connectOnlyBySSO === true` + au moins un provider) :
@@ -993,6 +1038,7 @@ const AuthMenuConfigSchema = z.object({
   showDropdownHeader: z.boolean().optional(),
   loginLabel: LocalizedString.optional(),
   kanban: z.boolean().optional(),          // entrée « Kanban », opt-in (cf. tableau config.auth.menu)
+  rocketChat: z.boolean().optional(),      // entrée « Chat », ACTIVE PAR DÉFAUT (cf. tableau config.auth.menu)
 });
 export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
 
