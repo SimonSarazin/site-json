@@ -1,14 +1,16 @@
 import Cocolight from "@communecter/cocolight-api-client";
-import { KANBAN_ROUTES, type KanbanEndpoint } from "@/modules/kanban/transport/kanbanRoutes";
-import type { KanbanSdkClient } from "@/modules/kanban/transport/sdkKanbanClient";
+import type { KanbanFacade } from "@/modules/kanban/transport/kanbanClient";
+import type { KanbanSdkApi } from "@/modules/kanban/transport/sdkKanbanClient";
+import { isRecord } from "@/modules/kanban/types";
 
 /**
- * Faux du SDK pour les tests du transport, des hooks et des écrans : le client principal du
- * site, qui sert les routes kanban une par une.
+ * Faux de l'`Api` du site pour les tests du transport, des hooks et des écrans : sa façade
+ * `kanban` sert les routes une par une, sous leur nom court (`board/sync`, `card/update`…).
  *
- * Il rend ce que rendrait le vrai SDK : `{data: corps}` sur un 2xx, et une VRAIE
- * `ApiClientError(message, statut, corps)` sinon. Les tests traversent donc la traduction
- * d'erreurs et le dépliage d'enveloppe de `sdkKanbanClient.ts`, au lieu de les contourner.
+ * Il rend ce que rendrait la vraie façade : `data` déplié sur un `{result: true}` en 2xx, une
+ * VRAIE `ApiResponseError` sur un `{result: false}` en 2xx, et une VRAIE
+ * `ApiClientError(message, statut, corps)` sur un statut d'erreur. Les tests traversent donc la
+ * traduction d'erreurs et la garde de `sdkKanbanClient.ts`, au lieu de les contourner.
  */
 
 /** Réponse simulée d'une route : statut HTTP et corps. */
@@ -29,13 +31,6 @@ export function refusal(status: number, msg: string, detail: Record<string, unkn
 
 export type RouteHandler = (body: Record<string, unknown>) => FakeResponse | Promise<FakeResponse>;
 
-/** Route courte d'une constante : `KANBAN_BOARD_SYNC_URL` -> `board/sync`. */
-function routeOf(endpoint: string): string {
-  const path = endpoint in KANBAN_ROUTES ? KANBAN_ROUTES[endpoint as KanbanEndpoint] : endpoint;
-  const match = /\/costum\/kanban-([a-z]+)\/([a-z]+)$/.exec(path);
-  return match ? `${match[1]}/${match[2]}` : endpoint;
-}
-
 /**
  * Erreur levée par le SDK sur un statut non 2xx : `details` porte le corps BRUT de la réponse.
  * Le SDK le type `Record<string, any>`, mais c'est `error.response.data` d'axios : une page HTML
@@ -46,24 +41,33 @@ export function sdkError(status: number, body: unknown, message = `Erreur lors d
   return new Cocolight.error.ApiClientError(message, status, body as Record<string, unknown>);
 }
 
-/** Appel reçu par le faux SDK. */
+/** Appel reçu par la façade simulée. */
 export interface SdkCall {
   route: string;
   body: Record<string, unknown>;
-  transform: boolean;
-  validate: boolean;
 }
 
 /**
- * Client principal simulé. Une route sans gestionnaire répond 404 `notFound` : un appel
- * inattendu se voit dans le test au lieu de passer inaperçu.
+ * `Api` simulée. Une route sans gestionnaire répond 404 `notFound` : un appel inattendu se voit
+ * dans le test au lieu de passer inaperçu.
  */
-export class FakeSdk implements KanbanSdkClient {
+export class FakeSdk implements KanbanSdkApi {
   readonly calls: SdkCall[] = [];
+  readonly kanban: KanbanFacade;
   private readonly handlers: Map<string, RouteHandler>;
 
   constructor(routes: Record<string, RouteHandler> = {}) {
     this.handlers = new Map(Object.entries(routes));
+    // Chaque méthode de la façade sert sa route ; `Promise<never>` se glisse sous tout type de retour.
+    const route = (name: string) => (input: object) => this.serve(name, input) as Promise<never>;
+    this.kanban = {
+      board: { create: route("board/create"), get: route("board/get"), sync: route("board/sync") },
+      column: { move: route("column/move") },
+      card: { create: route("card/create"), get: route("card/get"), update: route("card/update"), move: route("card/move"), archive: route("card/archive") },
+      comment: { list: route("comment/list"), add: route("comment/add"), delete: route("comment/delete") },
+      milestone: { list: route("milestone/list"), create: route("milestone/create"), update: route("milestone/update") },
+      role: { list: route("role/list"), create: route("role/create"), assign: route("role/assign"), unassign: route("role/unassign"), delete: route("role/delete") },
+    };
   }
 
   on(route: string, handler: RouteHandler): void {
@@ -74,13 +78,18 @@ export class FakeSdk implements KanbanSdkClient {
     return this.calls.filter((call) => call.route === route).length;
   }
 
-  async callEndpoint(endpoint: string, data: object, transform: boolean, validate: boolean): Promise<{ data: unknown }> {
-    const route = routeOf(endpoint);
-    const body: Record<string, unknown> = Object.fromEntries(Object.entries(data));
-    this.calls.push({ route, body, transform, validate });
+  private async serve(route: string, input: object): Promise<unknown> {
+    const body: Record<string, unknown> = Object.fromEntries(Object.entries(input));
+    this.calls.push({ route, body });
     const handler = this.handlers.get(route);
     const response = handler ? await handler(body) : refusal(404, "notFound", { route });
-    if (response.status >= 200 && response.status < 300) return { data: response.body };
-    throw sdkError(response.status, response.body);
+    if (response.status < 200 || response.status >= 300) throw sdkError(response.status, response.body);
+    // Ce que fait la vraie façade en 2xx : `checkAndThrowApiResponseError` lève sur `{result:false}`,
+    // `Kanban.unwrap` rend `data`.
+    const payload = response.body;
+    if (isRecord(payload) && payload.result === false) {
+      throw new Cocolight.error.ApiResponseError(typeof payload.msg === "string" ? payload.msg : "Erreur inconnue", response.status, payload);
+    }
+    return isRecord(payload) ? payload.data : undefined;
   }
 }

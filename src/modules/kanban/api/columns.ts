@@ -5,14 +5,14 @@
  * ou supprimer une colonne repond 409 `sourceManaged`, les six colonnes sont
  * les statuts de Kanban gestion.
  */
-import type { KanbanClient, KanbanRequestOptions } from '@/modules/kanban/transport/kanbanClient';
+import { sdkColumnId, type KanbanClient, type KanbanRequestOptions } from '@/modules/kanban/transport/kanbanClient';
 import type { InterfaceLanguage } from '@/modules/kanban/lib/language';
 import {
   isColumnMoveResult,
   type ColumnMoveResult,
 } from '@/modules/kanban/types';
 
-export interface MoveColumnInput {
+export type MoveColumnInput = {
   /**
    * Designe la source (§11.6) : sur un board-lien, `columnId` est un statut
    * virtuel (`todo`, `next`…) et le deplacement reecrit l'ordre du PROJET
@@ -25,13 +25,19 @@ export interface MoveColumnInput {
   afterColumnId?: string;
   /** Board-lien : langue du libelle personnalise de la colonne renvoyee (§11.3). */
   lang?: InterfaceLanguage;
-}
+};
 
 export function moveColumn(
   client: KanbanClient,
   input: MoveColumnInput,
   options?: KanbanRequestOptions,
 ): Promise<ColumnMoveResult> {
-  return client.post('KANBAN_COLUMN_MOVE_URL', input, isColumnMoveResult, options);
+  return client.call('KANBAN_COLUMN_MOVE_URL', (kanban) =>
+      kanban.column.move({
+        ...input,
+        columnId: sdkColumnId(input.columnId),
+        beforeColumnId: input.beforeColumnId === undefined ? undefined : sdkColumnId(input.beforeColumnId),
+        afterColumnId: input.afterColumnId === undefined ? undefined : sdkColumnId(input.afterColumnId),
+      }), isColumnMoveResult, options);
 }
 

@@ -74,6 +74,9 @@ export default function MilestonesView() {
   const statusColumnId = snapshot ? newCardStatusColumnId(snapshot.columns) : undefined;
   const handleCreateCard = useCallback(
     ({ columnId, title }: CardComposerSubmit) => {
+      // Le registre du SDK exige la colonne. Sans instantané il n'y a pas de colonne de statut, mais
+      // pas de composeur non plus : ce rejet ne sert qu'à tenir le contrat.
+      if (statusColumnId === undefined) return Promise.reject(new Error("Tableau non chargé : aucune colonne de statut."));
       const milestoneId = milestoneIdOfColumn(columnId);
       return createCardAsync({ columnId: statusColumnId, title, ...(milestoneId ? { milestoneId } : {}) });
     },

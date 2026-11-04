@@ -39,16 +39,20 @@ a changé.
    `package-lock.json` n'a pas bougé : après `npm publish` de la lib, lancer
    `npm install @communecter/cocolight-api-client@1.0.205` pour le régénérer (jusque-là, `npm ci` refuse le
    désaccord package.json / lock, et le `node_modules` doit porter une copie du `dist` construit).
-2. **Pont supprimé** : `transport/kanbanEndpoints.ts` (registre du pont) a disparu ; dans
-   `transport/sdkKanbanClient.ts`, plus de `bridgeFor` ni de copie des jetons : `createSdkKanbanClient(() =>
-   apiClient)` appelle `apiClient.callEndpoint(constante, corps, false, false)` sur le client principal, et
-   `KanbanSdkClient` se réduit à `callEndpoint`. La façade `api.kanban.*` n'est pas utilisée : le module garde
-   sa traduction d'erreurs (`kanbanErrorFromSdk`) et ses gardes.
-3. **Ce qui ne pouvait pas disparaître** : le type `KanbanEndpoint` et le chemin d'une route. Le SDK type
-   `callEndpoint(constant: string)` et n'exporte pas d'union utilisable en type ; `KanbanApiError.url` et le
-   faux SDK des tests ont besoin du chemin. D'où `transport/kanbanRoutes.ts` : une table constante → chemin
-   (plus un registre), vérifiée contre le registre du SDK installé par `kanbanRoutes.test.ts` (constantes =
-   `KANBAN_ENDPOINT_CONSTANTS` exportées par le SDK, chemins, POST/JSON/bearer, `keepNulls`/`rawResponse`).
+2. **Pont supprimé, façade adoptée** : `transport/kanbanEndpoints.ts` (registre du pont) a disparu ; dans
+   `transport/sdkKanbanClient.ts`, plus de `bridgeFor` ni de copie des jetons : `createSdkKanbanClient(() => api)`
+   reçoit l'`Api` du site (`useCocolight().api`) et chaque fonction de `api/*.ts` appelle une méthode de sa façade
+   `api.kanban.*` — `client.call('KANBAN_CARD_UPDATE_URL', (kanban) => kanban.card.update(input), isCardEnvelope)`.
+   La façade déplie l'enveloppe et lève sur `{result:false}` ; le module garde sa traduction d'erreurs
+   (`kanbanErrorFromSdk`, étendue à `ApiAuthenticationError`, `ApiResponseError` et `ApiValidationError`) et ses
+   gardes (`parseKanbanData`). Un premier état de la bascule (03/11) appelait `apiClient.callEndpoint(constante,
+   corps, false, false)` à côté de la façade ; il est remplacé le 04/11.
+3. **Ce qui ne pouvait pas disparaître** : le chemin d'une route, pour `KanbanApiError.url` et pour le faux SDK
+   des tests. `transport/kanbanRoutes.ts` le DÉRIVE de la constante (`KANBAN_<ctrl>_<action>_URL` →
+   `/costum/kanban-<ctrl>/<action>`), et `kanbanRoutes.test.ts` vérifie la dérivation contre le registre du SDK
+   installé (constantes = `KANBAN_ENDPOINT_CONSTANTS`, POST/JSON/bearer, `keepNulls`/`rawResponse`). Le type
+   `KanbanEndpoint` est `KanbanEndpointConstant` du SDK. Les types d'entrée de `api/*.ts` sont des alias de type
+   (un littéral d'objet porte la signature d'index implicite qu'exigent les `*UrlData` du SDK, une interface non).
 4. **Tests** : `transport/sdkKanbanClient.test.ts` a perdu les cas du pont (jetons rendus) et gagné la forme
    RÉELLE d'un rafraîchissement raté (500, corps nul, message de l'intercepteur → `KanbanAuthError`) ; le faux SDK
    (`__fixtures__/fakeSdk.ts`, `FakeSdk`) sert le client principal. Le reste de la suite passe tel quel.
@@ -201,11 +205,11 @@ a changé.
     La façade du SDK type la forme réelle (`KanbanBoardCreateResult`, `KanbanCardArchiveResult`, `KanbanMember`,
     `KanbanCapabilities`…).
 - **Consommateur front** : `site-json/src/modules/kanban/api/*.ts`, via le transport
-  `site-json/src/modules/kanban/transport/` (`KanbanClient.post(constante, corps, garde)`), appelés par les hooks
+  `site-json/src/modules/kanban/transport/` (`KanbanClient.call(constante, (kanban) => kanban.<ctrl>.<action>(corps), garde)`), appelés par les hooks
   de `site-json/src/modules/kanban/hooks/`.
-- **Transport côté site-json** (depuis la bascule du 03/11/2026, §2) : `transport/sdkKanbanClient.ts` appelle le
-  client principal du site, `callEndpoint(constante, corps, false, false)` ; `transport/kanbanRoutes.ts` tient
-  la table constante → chemin, vérifiée contre le registre du SDK.
+- **Transport côté site-json** (bascule du 03/11/2026, façade le 04/11, §2) : `transport/sdkKanbanClient.ts` appelle
+  la façade `api.kanban.*` de l'`Api` du site ; `transport/kanbanRoutes.ts` dérive le chemin de la constante,
+  dérivation vérifiée contre le registre du SDK.
 - **Query keys** : `KANBAN_QUERY_KEYS` (`site-json/src/modules/kanban/constants/queryKeys.ts`). Toutes ont une
   dimension utilisateur :
   - `CONTEXT_BOARD` : résultat de `board/create`, par élément ;

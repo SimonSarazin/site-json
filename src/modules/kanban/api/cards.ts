@@ -6,7 +6,7 @@
  * Communecter, et seul le tableau dit au serveur ou la chercher et avec
  * quels droits.
  */
-import type { KanbanClient, KanbanRequestOptions } from '@/modules/kanban/transport/kanbanClient';
+import { sdkColumnId, type KanbanClient, type KanbanRequestOptions } from '@/modules/kanban/transport/kanbanClient';
 import {
   isCardArchiveResult,
   isCardEnvelope,
@@ -21,15 +21,15 @@ import {
 } from '@/modules/kanban/types';
 
 /** Designation d'une carte : le tableau (la source) ET la carte. */
-export interface CardRef {
+export type CardRef = {
   boardId: string;
   cardId: string;
-}
+};
 
-export interface CreateCardInput {
+export type CreateCardInput = {
   boardId: string;
-  /** Sans colonne, le backend depose la carte dans la premiere colonne. */
-  columnId?: string;
+  /** Colonne de depot : exigee par le registre du SDK (un board-lien en a six, le statut en decoule). */
+  columnId: string;
   title: string;
   description?: string;
   /**
@@ -55,14 +55,14 @@ export interface CreateCardInput {
   tags?: string[];
   /** Board-lien : jalon du projet, ou `null`. */
   milestoneId?: string | null;
-}
+};
 
 export async function createCard(
   client: KanbanClient,
   input: CreateCardInput,
   options?: KanbanRequestOptions,
 ): Promise<Card> {
-  const { card } = await client.post('KANBAN_CARD_CREATE_URL', input, isCardEnvelope, options);
+  const { card } = await client.call('KANBAN_CARD_CREATE_URL', (kanban) => kanban.card.create({ ...input, columnId: sdkColumnId(input.columnId) }), isCardEnvelope, options);
   return card;
 }
 
@@ -71,11 +71,11 @@ export async function getCard(
   ref: CardRef,
   options?: KanbanRequestOptions,
 ): Promise<Card> {
-  const { card } = await client.post('KANBAN_CARD_GET_URL', ref, isCardEnvelope, options);
+  const { card } = await client.call('KANBAN_CARD_GET_URL', (kanban) => kanban.card.get(ref), isCardEnvelope, options);
   return card;
 }
 
-export interface UpdateCardInput extends CardRef {
+export type UpdateCardInput = CardRef & {
   title?: string;
   description?: string;
   /** `null` = retirer la priorite (board-lien seulement). */
@@ -112,18 +112,18 @@ export interface UpdateCardInput extends CardRef {
   checklistBase?: ChecklistItem[];
   assigneesBase?: string[];
   tagsBase?: string[];
-}
+};
 
 export async function updateCard(
   client: KanbanClient,
   input: UpdateCardInput,
   options?: KanbanRequestOptions,
 ): Promise<Card> {
-  const { card } = await client.post('KANBAN_CARD_UPDATE_URL', input, isCardEnvelope, options);
+  const { card } = await client.call('KANBAN_CARD_UPDATE_URL', (kanban) => kanban.card.update(input), isCardEnvelope, options);
   return card;
 }
 
-export interface MoveCardInput extends CardRef {
+export type MoveCardInput = CardRef & {
   columnId: string;
   /**
    * Intention de placement, pas un rang : deux clients qui calculeraient le
@@ -132,14 +132,14 @@ export interface MoveCardInput extends CardRef {
    */
   beforeCardId?: string;
   afterCardId?: string;
-}
+};
 
 export function moveCard(
   client: KanbanClient,
   input: MoveCardInput,
   options?: KanbanRequestOptions,
 ): Promise<CardMoveResult> {
-  return client.post('KANBAN_CARD_MOVE_URL', input, isCardMoveResult, options);
+  return client.call('KANBAN_CARD_MOVE_URL', (kanban) => kanban.card.move({ ...input, columnId: sdkColumnId(input.columnId) }), isCardMoveResult, options);
 }
 
 /**
@@ -152,6 +152,6 @@ export function archiveCard(
   ref: CardRef,
   options?: KanbanRequestOptions,
 ): Promise<CardArchiveResult> {
-  return client.post('KANBAN_CARD_ARCHIVE_URL', ref, isCardArchiveResult, options);
+  return client.call('KANBAN_CARD_ARCHIVE_URL', (kanban) => kanban.card.archive(ref), isCardArchiveResult, options);
 }
 

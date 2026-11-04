@@ -24,10 +24,10 @@ import {
   type CommentListResult,
 } from '@/modules/kanban/types';
 
-export interface ListCommentsInput extends CardRef {
+export type ListCommentsInput = CardRef & {
   page?: number;
   limit?: number;
-}
+};
 
 /**
  * Lire le fil le marque comme VU cote serveur sur un board-lien
@@ -38,12 +38,12 @@ export function listComments(
   input: ListCommentsInput,
   options?: KanbanRequestOptions,
 ): Promise<CommentListResult> {
-  return client.post('KANBAN_COMMENT_LIST_URL', input, isCommentListResult, options);
+  return client.call('KANBAN_COMMENT_LIST_URL', (kanban) => kanban.comment.list(input), isCommentListResult, options);
 }
 
-export interface AddCommentInput extends CardRef {
+export type AddCommentInput = CardRef & {
   text: string;
-}
+};
 
 export function addComment(
   client: KanbanClient,
@@ -52,17 +52,17 @@ export function addComment(
 ): Promise<CommentAddResult> {
   // L'auteur n'est PAS dans la charge utile : il vient de la session cote
   // serveur, sans quoi n'importe qui signerait au nom de n'importe qui.
-  return client.post('KANBAN_COMMENT_ADD_URL', input, isCommentAddResult, options);
+  return client.call('KANBAN_COMMENT_ADD_URL', (kanban) => kanban.comment.add(input), isCommentAddResult, options);
 }
 
-export interface DeleteCommentInput extends CardRef {
+export type DeleteCommentInput = CardRef & {
   commentId: string;
-}
+};
 
 export function deleteComment(
   client: KanbanClient,
   input: DeleteCommentInput,
   options?: KanbanRequestOptions,
 ): Promise<CommentDeleteResult> {
-  return client.post('KANBAN_COMMENT_DELETE_URL', input, isCommentDeleteResult, options);
+  return client.call('KANBAN_COMMENT_DELETE_URL', (kanban) => kanban.comment.delete(input), isCommentDeleteResult, options);
 }

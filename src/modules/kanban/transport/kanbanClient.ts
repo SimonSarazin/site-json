@@ -1,16 +1,23 @@
-import type { KanbanEndpoint } from "./kanbanRoutes";
+import type { Kanban, KanbanColumnId, KanbanEndpointConstant } from "@communecter/cocolight-api-client";
 
 /**
  * Contrat du transport kanban : la SEULE porte du module vers le backend.
  *
- * Même forme que le `KanbanClient` de co-kanban (`src/lib/http.ts`), à une différence près :
- * la route se désigne par sa CONSTANTE de registre, pas par son chemin. Les fonctions de
- * `api/*.ts` et les hooks se reprennent ainsi presque tels quels, et le jour où le SDK livre
- * ces routes, seule l'implémentation change (`sdkKanbanClient.ts`).
+ * Le SDK (≥ 1.0.205) porte les 20 routes d'un tableau relié et les sert par sa façade typée
+ * `api.kanban.board/column/card/comment/milestone/role.*`. Le transport ne refait pas cette
+ * façade : il l'EXPOSE à `api/*.ts` au travers d'un appel unique (`call`), qui ajoute ce que le
+ * SDK ne fait pas — traduction des erreurs en `KanbanApiError`, garde de type sur `data`,
+ * annulation — et désigne la route par sa constante de registre pour le diagnostic.
  *
- * Une implémentation : celle du SDK (`sdkKanbanClient.ts`), que les tests branchent sur un faux
- * client principal (`__fixtures__/fakeSdk.ts`).
+ * Une implémentation : celle du SDK (`sdkKanbanClient.ts`), que les tests branchent sur une
+ * façade simulée (`__fixtures__/fakeSdk.ts`).
  */
+
+/** Les 20 routes kanban, par leur constante de registre (`KANBAN_ENDPOINT_CONSTANTS` du SDK). */
+export type KanbanEndpoint = KanbanEndpointConstant;
+
+/** La façade `api.kanban` du SDK : six familles de routes, entrées et sorties typées par lui. */
+export type KanbanFacade = Pick<Kanban, "board" | "column" | "card" | "comment" | "milestone" | "role">;
 
 export interface KanbanRequestOptions {
   /**
@@ -25,6 +32,18 @@ export interface KanbanRequestOptions {
 export type ResponseGuard<T> = (value: unknown) => value is T;
 
 export interface KanbanClient {
-  /** Envoie `body` à la route et renvoie `data`, déplié de l'enveloppe et validé par `parse`. */
-  post<T>(endpoint: KanbanEndpoint, body: object, parse: ResponseGuard<T>, options?: KanbanRequestOptions): Promise<T>;
+  /**
+   * Exécute `invoke` sur la façade du SDK et renvoie `data`, validé par `parse`. `endpoint` nomme
+   * la route que `invoke` appelle : c'est lui qui donne son `url` à l'erreur en cas d'échec.
+   */
+  call<T>(endpoint: KanbanEndpoint, invoke: (kanban: KanbanFacade) => Promise<unknown>, parse: ResponseGuard<T>, options?: KanbanRequestOptions): Promise<T>;
+}
+
+/**
+ * Identifiant de colonne pour le SDK. Le module manipule des colonnes en `string` (`Column._id`,
+ * `Card.columnId`), le SDK type les six colonnes d'un board-lien en énumération : le registre
+ * vérifie la valeur à l'envoi (schéma `request`), le type ne fait que suivre.
+ */
+export function sdkColumnId(columnId: string): KanbanColumnId {
+  return columnId as KanbanColumnId;
 }

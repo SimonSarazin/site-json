@@ -2,7 +2,7 @@ import Cocolight from "@communecter/cocolight-api-client";
 import { describe, expect, test } from "vitest";
 import { FakeSdk, ok, refusal, sdkError } from "@/modules/kanban/__fixtures__/fakeSdk";
 import { isAccessLostFailure, kanbanErrorReason, KanbanAuthError, KanbanApiError } from "@/modules/kanban/lib/kanbanErrors";
-import { createSdkKanbanClient, kanbanErrorFromSdk, unwrapKanbanEnvelope } from "./sdkKanbanClient";
+import { createSdkKanbanClient, kanbanErrorFromSdk, parseKanbanData } from "./sdkKanbanClient";
 
 const isAny = (_value: unknown): _value is unknown => true;
 const isBoardId = (value: unknown): value is { boardId: string } =>
@@ -23,6 +23,26 @@ describe("traduction des erreurs du SDK", () => {
   test("401 : erreur de session, enveloppe ou pas (jeton absent, jeton refusé)", () => {
     expect(kanbanErrorFromSdk(sdkError(401, { result: false, msg: "unauthorized", detail: { reason: "invalidToken" } }), "KANBAN_BOARD_GET_URL")).toBeInstanceOf(KanbanAuthError);
     expect(kanbanErrorFromSdk(sdkError(401, undefined, "Token requis pour l'endpoint sécurisé"), "KANBAN_BOARD_GET_URL")).toBeInstanceOf(KanbanAuthError);
+  });
+
+  test("`Api` du site non connectée : la façade lève AVANT l'appel, c'est une erreur de session", () => {
+    const error = kanbanErrorFromSdk(new Cocolight.error.ApiAuthenticationError("Vous devez être connecté pour faire cette action.", 401), "KANBAN_BOARD_GET_URL");
+    expect(error).toBeInstanceOf(KanbanAuthError);
+    expect(error).toMatchObject({ status: 401, kind: "denied", url: "/costum/kanban-board/get" });
+  });
+
+  test("`{result:false}` servi en HTTP 200 : la façade lève `ApiResponseError`, traduite comme un refus", () => {
+    const body = { result: false, msg: "notMember", detail: { boardId: "b1" } };
+    const error = kanbanErrorFromSdk(new Cocolight.error.ApiResponseError("notMember", 200, body), "KANBAN_BOARD_GET_URL");
+    expect(error).toBeInstanceOf(KanbanApiError);
+    expect(error).not.toBeInstanceOf(KanbanAuthError);
+    expect(error).toMatchObject({ status: 200, code: "notMember", kind: "denied", detail: { boardId: "b1" } });
+  });
+
+  test("réponse hors schéma `responses.200` du registre : réponse hors contrat", () => {
+    const error = kanbanErrorFromSdk(new Cocolight.error.ApiValidationError("Response validation failed.", 200, ["data/board must be object"], { errors: [] }), "KANBAN_BOARD_GET_URL");
+    expect(error).toMatchObject({ status: 200, code: "invalidResponse", kind: "invalidResponse" });
+    expect((error as KanbanApiError).message).toContain("data/board must be object");
   });
 
   test("rafraîchissement du jeton raté : la forme RÉELLE du SDK (500, corps nul, message de l'intercepteur) est une erreur de session", () => {
@@ -63,53 +83,59 @@ describe("traduction des erreurs du SDK", () => {
   });
 });
 
-describe("enveloppe", () => {
-  test("`data` déplié et validé par la garde", () => {
-    expect(unwrapKanbanEnvelope({ result: true, data: { boardId: "b1" } }, isBoardId, "KANBAN_BOARD_CREATE_URL")).toEqual({ boardId: "b1" });
+describe("garde sur `data`", () => {
+  test("`data` validé par la garde, rendu tel quel", () => {
+    expect(parseKanbanData({ boardId: "b1" }, isBoardId, "KANBAN_BOARD_CREATE_URL")).toEqual({ boardId: "b1" });
   });
 
-  test("`{result:false}` en HTTP 200 lève comme un refus", () => {
-    expect(() => unwrapKanbanEnvelope({ result: false, msg: "notMember", detail: {} }, isAny, "KANBAN_BOARD_GET_URL")).toThrow(
-      expect.objectContaining({ code: "notMember", kind: "denied" }),
-    );
-  });
-
-  test("hors contrat : enveloppe absente, sans `data`, ou `data` refusée par la garde", () => {
-    for (const payload of [null, "texte", { data: {} }, { result: true }, { result: true, data: { autre: 1 } }]) {
-      expect(() => unwrapKanbanEnvelope(payload, isBoardId, "KANBAN_BOARD_GET_URL")).toThrow(expect.objectContaining({ code: "invalidResponse" }));
+  test("hors contrat : `data` absent (réponse qui n'était pas une enveloppe) ou refusé par la garde", () => {
+    for (const data of [undefined, null, {}, { autre: 1 }, "texte"]) {
+      expect(() => parseKanbanData(data, isBoardId, "KANBAN_BOARD_GET_URL")).toThrow(expect.objectContaining({ code: "invalidResponse", url: "/costum/kanban-board/get" }));
     }
   });
 });
 
-describe("transport sur le client principal", () => {
-  test("appelle la constante avec le corps, sans transformation ni validation legacy", async () => {
+describe("transport sur la façade `api.kanban`", () => {
+  test("appelle la méthode de la façade avec le corps tel quel, et rend `data` validé", async () => {
     const sdk = new FakeSdk({ "board/get": () => ok({ boardId: "b1" }) });
     const client = createSdkKanbanClient(() => sdk);
     const body = { boardId: "b1", dueDate: null };
 
-    await expect(client.post("KANBAN_BOARD_GET_URL", body, isBoardId)).resolves.toEqual({ boardId: "b1" });
-    expect(sdk.calls).toEqual([{ route: "board/get", body: { boardId: "b1", dueDate: null }, transform: false, validate: false }]);
+    await expect(client.call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get(body), isBoardId)).resolves.toEqual({ boardId: "b1" });
+    expect(sdk.calls).toEqual([{ route: "board/get", body: { boardId: "b1", dueDate: null } }]);
     expect(body).toEqual({ boardId: "b1", dueDate: null });
   });
 
-  test("un refus remonte en erreur kanban, avec sa raison", async () => {
+  test("un refus remonte en erreur kanban, avec sa raison et l'URL de la route", async () => {
     const sdk = new FakeSdk({ "card/update": () => refusal(422, "validation", { field: "title", reason: "contributorsLimit" }) });
-    const failure = createSdkKanbanClient(() => sdk).post("KANBAN_CARD_UPDATE_URL", { boardId: "b1", cardId: "c1" }, isAny);
-    await expect(failure).rejects.toMatchObject({ code: "validation", status: 422, detail: { field: "title" } });
+    const failure = createSdkKanbanClient(() => sdk).call("KANBAN_CARD_UPDATE_URL", (kanban) => kanban.card.update({ boardId: "b1", cardId: "c1" }), isAny);
+    await expect(failure).rejects.toMatchObject({ code: "validation", status: 422, detail: { field: "title" }, url: "/costum/kanban-card/update" });
   });
 
-  test("client du site absent : erreur de session, aucun appel", async () => {
+  test("`{result:false}` en HTTP 200 lève comme un refus", async () => {
+    const sdk = new FakeSdk({ "board/get": () => refusal(200, "notMember", { boardId: "b1" }) });
+    const failure = createSdkKanbanClient(() => sdk).call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get({ boardId: "b1" }), isAny);
+    await expect(failure).rejects.toMatchObject({ code: "notMember", kind: "denied", status: 200 });
+  });
+
+  test("réponse qui n'est pas une enveloppe (page HTML en 200) : réponse hors contrat", async () => {
+    const sdk = new FakeSdk({ "board/get": () => ({ status: 200, body: "<html>Maintenance</html>" }) });
+    const failure = createSdkKanbanClient(() => sdk).call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get({ boardId: "b1" }), isAny);
+    await expect(failure).rejects.toMatchObject({ code: "invalidResponse" });
+  });
+
+  test("`Api` du site absente : erreur de session, aucun appel", async () => {
     const sdk = new FakeSdk();
-    await expect(createSdkKanbanClient(() => null).post("KANBAN_BOARD_GET_URL", {}, isAny)).rejects.toBeInstanceOf(KanbanAuthError);
+    await expect(createSdkKanbanClient(() => null).call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get({ boardId: "b1" }), isAny)).rejects.toBeInstanceOf(KanbanAuthError);
     expect(sdk.calls).toHaveLength(0);
   });
 
-  test("le client est relu à chaque appel : né après le transport, il sert quand même", async () => {
+  test("l'`Api` est relue à chaque appel : née après le transport, elle sert quand même", async () => {
     let current: FakeSdk | null = null;
     const client = createSdkKanbanClient(() => current);
-    await expect(client.post("KANBAN_BOARD_GET_URL", { boardId: "b1" }, isBoardId)).rejects.toBeInstanceOf(KanbanAuthError);
+    await expect(client.call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get({ boardId: "b1" }), isBoardId)).rejects.toBeInstanceOf(KanbanAuthError);
     current = new FakeSdk({ "board/get": () => ok({ boardId: "b1" }) });
-    await expect(client.post("KANBAN_BOARD_GET_URL", { boardId: "b1" }, isBoardId)).resolves.toEqual({ boardId: "b1" });
+    await expect(client.call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get({ boardId: "b1" }), isBoardId)).resolves.toEqual({ boardId: "b1" });
   });
 
   test("annulation : avant l'appel, rien ne part ; à l'arrivée, la réponse est abandonnée", async () => {
@@ -117,7 +143,7 @@ describe("transport sur le client principal", () => {
     const client = createSdkKanbanClient(() => sdk);
     const before = new AbortController();
     before.abort(new Error("démonté"));
-    await expect(client.post("KANBAN_BOARD_GET_URL", {}, isBoardId, { signal: before.signal })).rejects.toThrow("démonté");
+    await expect(client.call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get({ boardId: "b1" }), isBoardId, { signal: before.signal })).rejects.toThrow("démonté");
     expect(sdk.calls).toHaveLength(0);
 
     const during = new AbortController();
@@ -125,6 +151,6 @@ describe("transport sur le client principal", () => {
       during.abort(new Error("navigation"));
       return ok({ boardId: "b1" });
     });
-    await expect(client.post("KANBAN_BOARD_GET_URL", {}, isBoardId, { signal: during.signal })).rejects.toThrow("navigation");
+    await expect(client.call("KANBAN_BOARD_GET_URL", (kanban) => kanban.board.get({ boardId: "b1" }), isBoardId, { signal: during.signal })).rejects.toThrow("navigation");
   });
 });

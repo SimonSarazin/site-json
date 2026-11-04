@@ -20,33 +20,28 @@ export async function listMilestones(
   boardId: string,
   options?: KanbanRequestOptions,
 ): Promise<Milestone[]> {
-  const { milestones } = await client.post(
-    'KANBAN_MILESTONE_LIST_URL',
-    { boardId },
-    isMilestoneListResult,
-    options,
-  );
+  const { milestones } = await client.call('KANBAN_MILESTONE_LIST_URL', (kanban) => kanban.milestone.list({ boardId }), isMilestoneListResult, options);
   return milestones;
 }
 
-export interface CreateMilestoneInput {
+export type CreateMilestoneInput = {
   boardId: string;
   name: string;
   description?: string;
   startDate?: number | null;
   endDate?: number | null;
-}
+};
 
 export async function createMilestone(
   client: KanbanClient,
   input: CreateMilestoneInput,
   options?: KanbanRequestOptions,
 ): Promise<Milestone> {
-  const { milestone } = await client.post('KANBAN_MILESTONE_CREATE_URL', input, isMilestoneEnvelope, options);
+  const { milestone } = await client.call('KANBAN_MILESTONE_CREATE_URL', (kanban) => kanban.milestone.create(input), isMilestoneEnvelope, options);
   return milestone;
 }
 
-export interface UpdateMilestoneInput {
+export type UpdateMilestoneInput = {
   boardId: string;
   milestoneId: string;
   name?: string;
@@ -55,13 +50,13 @@ export interface UpdateMilestoneInput {
   endDate?: number | null;
   /** Clore (`close`) ou rouvrir (`open`) le jalon. */
   status?: MilestoneStatus;
-}
+};
 
 export async function updateMilestone(
   client: KanbanClient,
   input: UpdateMilestoneInput,
   options?: KanbanRequestOptions,
 ): Promise<Milestone> {
-  const { milestone } = await client.post('KANBAN_MILESTONE_UPDATE_URL', input, isMilestoneEnvelope, options);
+  const { milestone } = await client.call('KANBAN_MILESTONE_UPDATE_URL', (kanban) => kanban.milestone.update(input), isMilestoneEnvelope, options);
   return milestone;
 }

@@ -30,10 +30,10 @@ export function listRoles(
   boardId: string,
   options?: KanbanRequestOptions,
 ): Promise<RoleListResult> {
-  return client.post('KANBAN_ROLE_LIST_URL', { boardId }, isRoleListResult, options);
+  return client.call('KANBAN_ROLE_LIST_URL', (kanban) => kanban.role.list({ boardId }), isRoleListResult, options);
 }
 
-export interface RoleNameInput {
+export type RoleNameInput = {
   boardId: string;
   /**
    * Libelle TEL QUE SAISI : c'est le serveur qui `trim` et refuse (422
@@ -41,7 +41,7 @@ export interface RoleNameInput {
    * definition, partagee avec le composeur).
    */
   role: string;
-}
+};
 
 /** Declare un role dans `roles` de l'element ; deja declare : `created: false`, rien d'ecrit. */
 export function createRole(
@@ -49,13 +49,13 @@ export function createRole(
   input: RoleNameInput,
   options?: KanbanRequestOptions,
 ): Promise<RoleCreateResult> {
-  return client.post('KANBAN_ROLE_CREATE_URL', input, isRoleCreateResult, options);
+  return client.call('KANBAN_ROLE_CREATE_URL', (kanban) => kanban.role.create(input), isRoleCreateResult, options);
 }
 
-export interface RoleMemberInput extends RoleNameInput {
+export type RoleMemberInput = RoleNameInput & {
   memberId: string;
   memberType: RoleMemberType;
-}
+};
 
 /** Ajoute le role a la liste du membre (des deux cotes du lien) ; deja porte : `changed: false`. */
 export function assignRole(
@@ -63,7 +63,7 @@ export function assignRole(
   input: RoleMemberInput,
   options?: KanbanRequestOptions,
 ): Promise<RoleWriteResult> {
-  return client.post('KANBAN_ROLE_ASSIGN_URL', input, isRoleWriteResult, options);
+  return client.call('KANBAN_ROLE_ASSIGN_URL', (kanban) => kanban.role.assign(input), isRoleWriteResult, options);
 }
 
 /** Retire le role de la liste du membre ; liste vide = `$unset` des deux cotes (D29). */
@@ -72,7 +72,7 @@ export function unassignRole(
   input: RoleMemberInput,
   options?: KanbanRequestOptions,
 ): Promise<RoleWriteResult> {
-  return client.post('KANBAN_ROLE_UNASSIGN_URL', input, isRoleWriteResult, options);
+  return client.call('KANBAN_ROLE_UNASSIGN_URL', (kanban) => kanban.role.unassign(input), isRoleWriteResult, options);
 }
 
 /** Retire le role de chaque porteur, puis de `roles` de l'element ; `removedFrom` compte les porteurs. */
@@ -81,5 +81,5 @@ export function deleteRole(
   input: RoleNameInput,
   options?: KanbanRequestOptions,
 ): Promise<RoleDeleteResult> {
-  return client.post('KANBAN_ROLE_DELETE_URL', input, isRoleDeleteResult, options);
+  return client.call('KANBAN_ROLE_DELETE_URL', (kanban) => kanban.role.delete(input), isRoleDeleteResult, options);
 }

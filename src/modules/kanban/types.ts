@@ -87,11 +87,11 @@ export interface UserProfile {
   profilThumbImageUrl: string | null;
 }
 
-export interface ChecklistItem {
+export type ChecklistItem = {
   id: string;
   label: string;
   done: boolean;
-}
+};
 
 /**
  * Lien porte par une carte — objet de valeur imbrique, d'ou `id` et non `_id`.

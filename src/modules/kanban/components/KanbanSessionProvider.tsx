@@ -14,13 +14,14 @@ import { createSdkKanbanClient } from "@/modules/kanban/transport/sdkKanbanClien
  * le même squelette.
  */
 export function KanbanSessionProvider({ children }: { children: ReactNode }) {
-  const { me, apiClient } = useCocolight();
+  const { me, api } = useCocolight();
   const hydrated = useHydrated();
   const userId = hydrated ? (me?.id ?? null) : null;
 
   // `useMemo` : le transport et la valeur du contexte gardent leur identité d'un rendu à
-  // l'autre. Sans lui, chaque rendu de la page referait rendre tous les consommateurs.
-  const client = useMemo(() => createSdkKanbanClient(() => apiClient), [apiClient]);
+  // l'autre. Sans lui, chaque rendu de la page referait rendre tous les consommateurs. L'`Api`
+  // du site (sa façade `api.kanban`) change d'identité à la connexion et à la déconnexion.
+  const client = useMemo(() => createSdkKanbanClient(() => api), [api]);
   const serverData = me?.serverData;
   const session = useMemo<KanbanSession>(
     () => ({ hydrated, userId, profile: sessionProfile(userId, serverData), client }),

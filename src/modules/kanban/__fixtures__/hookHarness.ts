@@ -4,9 +4,9 @@
  * la même interface (`signIn`, `stubKanbanFetch`, `hookWrapper`…) pour que ses tests se
  * reprennent tels quels.
  *
- * Différence : co-kanban remplaçait `fetch`. Ici, le backend simulé est le client principal du
- * SDK (`FakeSdk`), servi par le vrai transport (`createSdkKanbanClient`) : chaque test traverse
- * donc la traduction d'erreurs et le dépliage d'enveloppe du module.
+ * Différence : co-kanban remplaçait `fetch`. Ici, le backend simulé est la façade `api.kanban`
+ * de l'`Api` du site (`FakeSdk`), servie par le vrai transport (`createSdkKanbanClient`) : chaque
+ * test traverse donc la traduction d'erreurs et la garde de type du module.
  */
 import "@/modules/kanban/i18n";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

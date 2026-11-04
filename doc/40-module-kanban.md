@@ -66,30 +66,34 @@ est refusé ou si l'appel échoue.
 ## 3. Accès aux données : le SDK
 
 Les **20 routes** du module sont dans le registre du SDK depuis `@communecter/cocolight-api-client`
-**1.0.205** (constantes `KANBAN_*_URL`, décrites dans la [doc 41](41-module-kanban-sdk.md)). Le module les
-appelle par le client principal du site :
+**1.0.205** (constantes `KANBAN_*_URL`, décrites dans la [doc 41](41-module-kanban-sdk.md)), et servies par
+sa façade typée `api.kanban.*`. Le module l'appelle par l'`Api` du site :
 
 ```
-api/*.ts ──► KanbanClient.post(constante, corps, garde)        transport/kanbanClient.ts
+api/*.ts ──► KanbanClient.call(constante, (kanban) => kanban.card.update(corps), garde)   transport/kanbanClient.ts
                 │
                 ▼
-     createSdkKanbanClient(() => apiClient)                      transport/sdkKanbanClient.ts
-        ├─ apiClient.callEndpoint(constante, corps, false, false)   le client principal (useCocolight)
-        ├─ ApiClientError → KanbanApiError (code, raison, classe d'échec)
-        └─ déplie {result, data} et valide data par la garde
+     createSdkKanbanClient(() => api)                                 transport/sdkKanbanClient.ts
+        ├─ invoke(api.kanban)      la façade du SDK (useCocolight().api), qui déplie {result, data}
+        ├─ erreurs du SDK → KanbanApiError / KanbanAuthError (code, raison, classe d'échec)
+        └─ garde de type du module sur data
 ```
 
-- **Pas de `fetch` brut, pas de SDK modifié.** Jeton Bearer, rafraîchissement sur 401, disjoncteur,
-  erreurs typées : ceux du SDK. `false, false` : ni `_transformData` (normalisations des entités legacy,
-  sans objet sur des dates en secondes et des `_id` en chaîne), ni validation AJV de la réponse.
-- **Pas de schéma `request` dans le registre du SDK** pour ces 20 routes : avec un schéma, le SDK retire
-  tous les `null` du payload (`stripNullsInPlace`), et `null` veut dire « effacer » dans ce contrat
-  (`dueDate`, `milestoneId`…). La forme des payloads est tenue par les types de `api/*.ts`, celle des
-  réponses par les gardes de `types.ts`. Vérifié par `transport/kanbanRoutes.test.ts` contre le registre
-  du SDK installé.
-- **`transport/kanbanRoutes.ts`** garde la table constante → chemin : pour le type `KanbanEndpoint` (le
-  SDK type `callEndpoint(constant: string)` et n'exporte pas d'union utilisable en type) et pour le chemin
-  porté par `KanbanApiError.url` (diagnostic). Ce n'est plus un registre.
+- **Pas de `fetch` brut, pas de SDK modifié, pas de transport parallèle.** Jeton Bearer, rafraîchissement
+  sur 401, disjoncteur, validation du corps envoyé (schémas `request`) et de la réponse (`responses.200`),
+  enveloppe dépliée : ceux du SDK. Les 20 entrées du registre portent `keepNulls: true` (le corps garde ses
+  `null`, qui veulent dire « effacer » : `dueDate`, `milestoneId`…) et `rawResponse: true` (pas de
+  `_transformData`, sans objet sur des dates en secondes et des `_id` en chaîne).
+- **Ce que le module garde** : ses types d'entrée (`api/*.ts`, documentés depuis le blueprint — des alias de
+  type, pas des interfaces, pour accepter la signature d'index des `*UrlData` du SDK), ses gardes de réponse
+  (`types.ts`, la règle unique de co-kanban : rien d'à moitié vide n'atteint l'écran), et sa traduction
+  d'erreurs. La façade lève `ApiAuthenticationError` hors connexion, `ApiResponseError` sur un `{result:false}`
+  en 200, `ApiValidationError` sur une réponse hors schéma, `ApiClientError` sinon : `kanbanErrorFromSdk` les
+  ramène toutes à `KanbanApiError`.
+- **`transport/kanbanRoutes.ts`** dérive le chemin d'une route de sa constante (`KANBAN_CARD_MOVE_URL` →
+  `/costum/kanban-card/move`) pour `KanbanApiError.url` et pour le faux SDK des tests ; le type
+  `KanbanEndpoint` est `KanbanEndpointConstant` du SDK. Plus de table : `transport/kanbanRoutes.test.ts`
+  vérifie la dérivation et les marqueurs contre le registre du SDK installé.
 - **Session morte** : un jeton refusé, ou un rafraîchissement raté (le SDK remet alors la session du site
   à zéro), remonte en `KanbanAuthError` ; le polling se suspend (`useBoardSync`), comme sur un accès perdu
   ou une route absente du serveur (404).
@@ -128,8 +132,8 @@ Vérifié sur le backend local : préflight `ssbe.00.re` → origine reflétée 
 src/modules/kanban/
   module.config.ts · routes.tsx · schema.ts · index.ts · i18n.ts · i18n/{fr,en}.json
   types.ts                 types et gardes de réponse de co-kanban
-  transport/               KanbanClient, transport SDK (client principal), table constante → chemin
-  api/                     les 20 fonctions d'appel (constante + garde)
+  transport/               KanbanClient, transport sur la façade api.kanban du SDK, chemin dérivé de la constante
+  api/                     les 20 fonctions d'appel (méthode de la façade + garde)
   constants/queryKeys.ts   KANBAN_QUERY_KEYS
   hooks/                   useContextBoard (board/create idempotent), useBoard, useBoardSync,
                            useBoardMutations, useCardDetail, useCardComments, useMilestones,
@@ -160,7 +164,7 @@ src/modules/kanban/
     reporte dans les trois.
   - Hooks (polling delta, mutations optimistes, rôles) sur le harnais `__fixtures__/hookHarness.ts` :
     le backend simulé est le client principal du SDK (`FakeSdk`), servi par le vrai transport.
-  - Transport : table des routes vérifiée contre le registre du SDK installé, traduction de chaque erreur
+  - Transport : dérivation des chemins vérifiée contre le registre du SDK installé, traduction de chaque erreur
     du SDK (dont le rafraîchissement raté), enveloppe, annulation.
   - Écran de liste : les six états du §2.
 - Préflight : `i18n-files` (parité fr/en, aucune valeur vide, pas de placeholder répété),

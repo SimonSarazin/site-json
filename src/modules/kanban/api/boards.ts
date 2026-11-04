@@ -41,7 +41,7 @@ export async function getBoard(
 ): Promise<BoardSnapshot> {
   const { lang, ...transport } = options;
   const body = lang === undefined ? { boardId } : { boardId, lang };
-  const payload = await client.post('KANBAN_BOARD_GET_URL', body, isBoardSnapshot, transport);
+  const payload = await client.call('KANBAN_BOARD_GET_URL', (kanban) => kanban.board.get(body), isBoardSnapshot, transport);
   const snapshot = toBoardSnapshot(payload);
   // La langue demandee est celle des libelles recus : on la retient sur
   // l'instantane (cf. `BoardSnapshot.servedLanguage`).
@@ -49,13 +49,13 @@ export async function getBoard(
 }
 
 /** Board-lien sur un projet ou une organisation Communecter existants (§11.6 D11-D12, §12 D19). */
-export interface CreateLinkedBoardInput {
+export type CreateLinkedBoardInput = {
   source: 'communecter';
   parentType: ParentType;
   parentId: string;
   /** Langue des libelles personnalises des six colonnes renvoyees (§11.3). */
   lang?: InterfaceLanguage;
-}
+};
 
 /**
  * Tableau relie a l'element : IDEMPOTENT, renvoie le lien existant avec `created: false` ;
@@ -67,7 +67,7 @@ export function createBoard(
   input: CreateLinkedBoardInput,
   options?: KanbanRequestOptions,
 ): Promise<BoardCreateResult> {
-  return client.post('KANBAN_BOARD_CREATE_URL', input, isBoardCreateResult, options);
+  return client.call('KANBAN_BOARD_CREATE_URL', (kanban) => kanban.board.create(input), isBoardCreateResult, options);
 }
 
 /**
@@ -81,5 +81,5 @@ export function syncBoard(
   input: { boardId: string; sinceRev: number },
   options?: KanbanRequestOptions,
 ): Promise<SyncResult> {
-  return client.post('KANBAN_BOARD_SYNC_URL', input, isSyncResult, options);
+  return client.call('KANBAN_BOARD_SYNC_URL', (kanban) => kanban.board.sync(input), isSyncResult, options);
 }
