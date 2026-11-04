@@ -3,12 +3,12 @@ import {
   levelSatisfies,
   resolveAdminAccessLevel,
   isAdminEntryVisible,
-  isKanbanEntryVisible,
   isRocketChatEntryVisible,
+  resolveKanbanEntry,
 } from "./adminEntry";
 
 type Config = Parameters<typeof isAdminEntryVisible>[0];
-type KanbanConfig = Parameters<typeof isKanbanEntryVisible>[0];
+type KanbanConfig = Parameters<typeof resolveKanbanEntry>[0];
 type RocketChatConfig = Parameters<typeof isRocketChatEntryVisible>[0];
 
 /** Config minimale — cast : enabled/access sont posés par les défauts zod à la validation. */
@@ -111,34 +111,71 @@ describe("isAdminEntryVisible — même gate que la page /admin", () => {
 });
 
 /** Config kanban minimale — typée telle quelle (tous les champs d'AuthConfig sont optionnels). */
-function kanbanCfg(kanban?: boolean): KanbanConfig {
-  return { auth: { menu: { kanban } } };
+function kanbanCfg(kanban?: boolean, module = false): KanbanConfig {
+  return { auth: { menu: { kanban } }, ...(module ? { kanban: {} } : {}) };
 }
 
-describe("isKanbanEntryVisible — opt-in auth.menu.kanban, admins du costum, jamais sans slug", () => {
-  it("opt-in absent ou false → invisible même pour un superAdmin", () => {
-    expect(isKanbanEntryVisible(kanbanCfg(undefined), superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
-    expect(isKanbanEntryVisible(kanbanCfg(false), superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
-    expect(isKanbanEntryVisible({}, superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
-    expect(isKanbanEntryVisible(null, superAdmin, carrierAdmin, "tiersLieux")).toBe(false);
+const SERVER = "https://www.communecter.org/";
+const PLATFORM = { kind: "platform", href: "https://www.communecter.org/#@tiersLieux.view.actions" };
+const MODULE = { kind: "module", to: "/kanban" };
+const context = (contextType: string | null, costumSlug: string | null = "tiersLieux") => ({ costumSlug, contextType, serverUrl: SERVER });
+
+const orgMember = { isAdmin: () => false, isMember: () => true };
+const projectContributor = { isAdmin: () => false, isContributor: () => true };
+const outsider = { isAdmin: () => false, isMember: () => false, isContributor: () => false };
+
+describe("resolveKanbanEntry — sans le module : l’ancien lien vers la plateforme, admins du costum", () => {
+  it("opt-in absent ou false → aucune entrée, même pour un superAdmin", () => {
+    expect(resolveKanbanEntry(kanbanCfg(undefined), superAdmin, carrierAdmin, context("projects"))).toBeNull();
+    expect(resolveKanbanEntry(kanbanCfg(false), superAdmin, carrierAdmin, context("projects"))).toBeNull();
+    expect(resolveKanbanEntry(kanbanCfg(false, true), superAdmin, carrierAdmin, context("projects"))).toBeNull();
+    expect(resolveKanbanEntry({}, superAdmin, carrierAdmin, context("projects"))).toBeNull();
+    expect(resolveKanbanEntry(null, superAdmin, carrierAdmin, context("projects"))).toBeNull();
   });
 
-  it("indépendant du back-office : visible sans aucun bloc `admin` en config", () => {
-    expect(isKanbanEntryVisible(kanbanCfg(true), lambda, carrierAdmin, "tiersLieux")).toBe(true);
+  it("indépendant du back-office : le lien de la plateforme sans aucun bloc `admin` en config", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true), lambda, carrierAdmin, context("organizations"))).toEqual(PLATFORM);
   });
 
-  it("sans slug de carrier résolu → invisible (jamais de lien cassé)", () => {
-    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, carrierAdmin, "")).toBe(false);
-    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, carrierAdmin, null)).toBe(false);
-    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, carrierAdmin, undefined)).toBe(false);
+  it("sans slug de carrier résolu → aucune entrée (jamais de lien cassé)", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true), superAdmin, carrierAdmin, context("projects", ""))).toBeNull();
+    expect(resolveKanbanEntry(kanbanCfg(true), superAdmin, carrierAdmin, context("projects", null))).toBeNull();
   });
 
-  it("niveau requis siteAdmin : admin du carrier et superAdmin visibles, lambda non", () => {
-    expect(isKanbanEntryVisible(kanbanCfg(true), lambda, carrierAdmin, "s")).toBe(true);
-    expect(isKanbanEntryVisible(kanbanCfg(true), superAdmin, null, "s")).toBe(true);
-    expect(isKanbanEntryVisible(kanbanCfg(true), adminPlatform, null, "s")).toBe(true);
-    expect(isKanbanEntryVisible(kanbanCfg(true), lambda, carrierNotAdmin, "s")).toBe(false);
-    expect(isKanbanEntryVisible(kanbanCfg(true), null, null, "s")).toBe(false);
+  it("niveau requis siteAdmin : admin du carrier et superAdmin, ni membre ni lambda", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true), superAdmin, null, context("projects"))).toEqual(PLATFORM);
+    expect(resolveKanbanEntry(kanbanCfg(true), adminPlatform, null, context("projects"))).toEqual(PLATFORM);
+    expect(resolveKanbanEntry(kanbanCfg(true), lambda, orgMember, context("organizations"))).toBeNull();
+    expect(resolveKanbanEntry(kanbanCfg(true), lambda, carrierNotAdmin, context("projects"))).toBeNull();
+    expect(resolveKanbanEntry(kanbanCfg(true), null, null, context("projects"))).toBeNull();
+  });
+});
+
+describe("resolveKanbanEntry — module `kanban` actif : la page /kanban du site, en remplacement", () => {
+  it("membre d’une organisation, contributeur d’un projet, admin ou superAdmin : /kanban", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true, true), lambda, orgMember, context("organizations"))).toEqual(MODULE);
+    expect(resolveKanbanEntry(kanbanCfg(true, true), lambda, projectContributor, context("projects"))).toEqual(MODULE);
+    expect(resolveKanbanEntry(kanbanCfg(true, true), lambda, carrierAdmin, context("projects"))).toEqual(MODULE);
+    expect(resolveKanbanEntry(kanbanCfg(true, true), superAdmin, null, context("organizations"))).toEqual(MODULE);
+  });
+
+  it("le lien de la plateforme n’est plus proposé, même à un admin", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true, true), superAdmin, carrierAdmin, context("projects"))).not.toEqual(PLATFORM);
+  });
+
+  it("ni membre, ni contributeur, ni admin → aucune entrée (la page le refuserait)", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true, true), lambda, outsider, context("organizations"))).toBeNull();
+    // La règle du TYPE : un membre d'organisation n'est pas contributeur d'un projet.
+    expect(resolveKanbanEntry(kanbanCfg(true, true), lambda, orgMember, context("projects"))).toBeNull();
+  });
+
+  it("porteur sans kanban (ni organisation ni projet) → aucune entrée", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true, true), superAdmin, carrierAdmin, context("citoyens"))).toBeNull();
+    expect(resolveKanbanEntry(kanbanCfg(true, true), superAdmin, carrierAdmin, context(null))).toBeNull();
+  });
+
+  it("le slug du carrier ne compte plus : la page est sur le site", () => {
+    expect(resolveKanbanEntry(kanbanCfg(true, true), lambda, orgMember, context("organizations", null))).toEqual(MODULE);
   });
 });
 
