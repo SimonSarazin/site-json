@@ -3,11 +3,13 @@ import {
   levelSatisfies,
   resolveAdminAccessLevel,
   isAdminEntryVisible,
+  isRocketChatEntryVisible,
   resolveKanbanEntry,
 } from "./adminEntry";
 
 type Config = Parameters<typeof isAdminEntryVisible>[0];
 type KanbanConfig = Parameters<typeof resolveKanbanEntry>[0];
+type RocketChatConfig = Parameters<typeof isRocketChatEntryVisible>[0];
 
 /** Config minimale — cast : enabled/access sont posés par les défauts zod à la validation. */
 function cfg(admin: Record<string, unknown> | undefined): Config {
@@ -174,5 +176,43 @@ describe("resolveKanbanEntry — module `kanban` actif : la page /kanban du site
 
   it("le slug du carrier ne compte plus : la page est sur le site", () => {
     expect(resolveKanbanEntry(kanbanCfg(true, true), lambda, orgMember, context("organizations", null))).toEqual(MODULE);
+  });
+});
+
+/** Config rocketChat minimale — typée telle quelle (tous les champs d'AuthConfig sont optionnels). */
+function rocketChatCfg(rocketChat?: boolean): RocketChatConfig {
+  return { auth: { menu: { rocketChat } } };
+}
+
+describe("isRocketChatEntryVisible — ACTIF PAR DÉFAUT (contrairement à kanban), admins du costum", () => {
+  it("opt-in absent ou config absente → visible par défaut pour un admin", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible({}, lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible(null, lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible(undefined, lambda, carrierAdmin)).toBe(true);
+  });
+
+  it("false explicite → invisible même pour un superAdmin", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(false), superAdmin, carrierAdmin)).toBe(false);
+  });
+
+  it("indépendant du back-office : visible même si admin.enabled est explicitement false", () => {
+    // `isRocketChatEntryVisible` type son paramètre `Pick<SiteConfig, "auth">` : un bloc `admin` ne
+    // passerait pas la vérif TS. On le force ici (cast) pour prouver au RUNTIME que l'implémentation
+    // ne lit bien QUE `auth.menu.rocketChat`, pas une lecture qu'un simple typage suffirait à garantir.
+    const cfg = { ...rocketChatCfg(undefined), admin: { enabled: false } } as unknown as RocketChatConfig;
+    expect(isRocketChatEntryVisible(cfg, lambda, carrierAdmin)).toBe(true);
+  });
+
+  it("aucun slug de carrier requis (lien générique, pas de salon par costum)", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), superAdmin, null)).toBe(true);
+  });
+
+  it("niveau requis siteAdmin : admin du carrier et superAdmin visibles, lambda non", () => {
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierAdmin)).toBe(true);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), superAdmin, null)).toBe(true);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), adminPlatform, null)).toBe(true);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), lambda, carrierNotAdmin)).toBe(false);
+    expect(isRocketChatEntryVisible(rocketChatCfg(undefined), null, null)).toBe(false);
   });
 });

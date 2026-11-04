@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router";
-import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban } from "lucide-react";
+import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban, MessageCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +13,10 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import type { LocalizedString } from "@/types/site-schema";
-import { getServerUrl } from "@/lib/constant/common";
+import { getServerUrl, getRocketChatUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { isAdminEntryVisible, resolveKanbanEntry } from "@/modules/admin/lib/adminEntry";
+import { isAdminEntryVisible, isRocketChatEntryVisible, resolveKanbanEntry } from "@/modules/admin/lib/adminEntry";
+import { platformRocketChatUrl } from "@/modules/admin/lib/platformRocketChatUrl";
 import { useAuthActions } from "../hooks/useAuthActions";
 import { CurrentUserAvatar } from "./CurrentUserAvatar";
 import { LoginButton } from "./LoginButton";
@@ -82,12 +83,19 @@ export function AuthMenu({
   // Rendu sous ClientOnly (les droits ne sont connus qu'hydraté) → pas de flash SSR.
   const { me, entity, contextType } = useCocolight();
   const showAdmin = isConnected && isAdminEntryVisible(config, me, entity);
+  const rocketChatUrl =
+    isConnected && isRocketChatEntryVisible(config, me, entity)
+      ? platformRocketChatUrl(getRocketChatUrl())
+      : null;
   const kanbanEntry = isConnected ? resolveKanbanEntry(config, me, entity, { costumSlug: entity?.slug, contextType, serverUrl: getServerUrl() }) : null;
-  // Lien kanban UNIQUE, habillé en asChild par les deux layouts (stack mobile / dropdown
-  // desktop) : toute évolution (rel, aria, tracking) reste mono-source. Module actif : la page
-  // `/kanban` du site, dans le même onglet. Sinon, l'ancien lien vers la plateforme : le span
+  // Liens kanban/chat UNIQUES, habillés en asChild par les deux layouts (stack mobile / dropdown
+  // desktop) : toute évolution (rel, aria, tracking) reste mono-source. Kanban, module actif : la
+  // page `/kanban` du site, dans le même onglet. Sinon, l'ancien lien vers la plateforme : le span
   // sr-only annonce la sortie — l'icône est aria-hidden et, dans le dropdown, Radix pose
-  // role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux lecteurs d'écran.
+  // role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux lecteurs d'écran. Chat :
+  // nouvel onglet, PAS un modal/iframe — le SDK n'expose pas de jeton de connexion pour
+  // authentifier une iframe Rocket.Chat ; sans lui, l'iframe montre au mieux l'écran de connexion
+  // complet, au pire une page refusée par l'instance.
   const kanbanLink =
     kanbanEntry?.kind === "module" ? (
       <Link to={kanbanEntry.to}>
@@ -102,6 +110,14 @@ export function AuthMenu({
         <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
       </a>
     ) : null;
+  const rocketChatLink = rocketChatUrl ? (
+    <a href={rocketChatUrl} target="_blank" rel="noopener noreferrer">
+      <MessageCircle className="mr-2 h-4 w-4" />
+      {t("Chat")}
+      <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
+      <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
+    </a>
+  ) : null;
 
   // Précédence : config (bascule tous les headers) > prop (défaut du header) > défaut.
   const menuCfg = config.auth?.menu;
@@ -164,6 +180,11 @@ export function AuthMenu({
                 >
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
+                </Button>
+              )}
+              {rocketChatLink && (
+                <Button asChild variant="ghost" className="w-full justify-start" onClick={onAction}>
+                  {rocketChatLink}
                 </Button>
               )}
               {kanbanLink && (
@@ -249,6 +270,9 @@ export function AuthMenu({
                   <ShieldCheck className="mr-2 h-4 w-4" />
                   {t("Administration")}
                 </DropdownMenuItem>
+              )}
+              {rocketChatLink && (
+                <DropdownMenuItem asChild>{rocketChatLink}</DropdownMenuItem>
               )}
               {kanbanLink && (
                 <DropdownMenuItem asChild>{kanbanLink}</DropdownMenuItem>

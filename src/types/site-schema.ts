@@ -2070,6 +2070,11 @@ export const Header = z.object({
   // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
   // header ne dépend d'aucune logique de site sans cette option.
   entityLogoOverride: z.boolean().optional(),
+  // Taille du texte de la nav de premier niveau du header `type: "stacked"` — "lg" = défaut
+  // historique (text-2xl, text-xl une fois `stuck`), "md"/"sm" la réduisent (HeaderStacked.tsx) ;
+  // opt-in, ignorée par les autres variantes de header. Sert à faire rentrer une barre pleine
+  // (budget de largeur) sans raccourcir les libellés.
+  navFontSize: z.enum(["sm", "md", "lg"]).optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   navVisibleOnlyForListedPages: z.boolean().optional(),
@@ -2467,6 +2472,8 @@ export const SiteConfig = z.object({
   // Contexte costum du déploiement. Le SLUG du costum vient de l'entité porteuse
   // (useCocolight().entity = VITE_SLUG, constant) ; costumId/costumType viennent du registry de la lib
   // via `me.costum(slug)`. Ce bloc ne sert donc plus qu'aux TAGS observatoire (mainTag/compagnon).
+  // Un champ de profil citoyen réservé à un seul costum se déclare en backend (`costum.typeObj.<clé>.
+  // dynFormCostum`) + un costumForm dédié (`profiles.citoyens.editModals`), PAS ici — cf. editProfile.tsx.
   costum: z.object({
     mainTag: z.string().optional(),
     compagnon: z.string().optional(),

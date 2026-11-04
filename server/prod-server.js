@@ -228,7 +228,8 @@ app.use(['/{*all}'], async (req, res) => {
       process.env.VITE_SLUG ||
       process.env.VITE_MAPTILER_API_KEY ||
       process.env.VITE_COSTUM_FORCE_LIVE ||
-      process.env.VITE_SITE_PUBLIC_URL
+      process.env.VITE_SITE_PUBLIC_URL ||
+      process.env.VITE_ROCKETCHAT_URL
     ) {
       injectEnvScript =
         `<script>
@@ -238,7 +239,8 @@ app.use(['/{*all}'], async (req, res) => {
             VITE_SLUG: ${JSON.stringify(process.env.VITE_SLUG || "")},
             VITE_MAPTILER_API_KEY: ${JSON.stringify(process.env.VITE_MAPTILER_API_KEY || "")},
             VITE_COSTUM_FORCE_LIVE: ${JSON.stringify(process.env.VITE_COSTUM_FORCE_LIVE || "")},
-            VITE_SITE_PUBLIC_URL: ${JSON.stringify(process.env.VITE_SITE_PUBLIC_URL || "")}
+            VITE_SITE_PUBLIC_URL: ${JSON.stringify(process.env.VITE_SITE_PUBLIC_URL || "")},
+            VITE_ROCKETCHAT_URL: ${JSON.stringify(process.env.VITE_ROCKETCHAT_URL || "")}
           };
         </script>
       `;

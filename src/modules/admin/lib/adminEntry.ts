@@ -96,3 +96,19 @@ export function resolveKanbanEntry(
   if (!costumSlug || !isAdmin) return null;
   return { kind: "platform", href: platformKanbanUrl(serverUrl, costumSlug) };
 }
+
+/**
+ * L'entrée « Chat » du menu avatar (lien externe, nouvel onglet, vers le chat de la plateforme)
+ * doit-elle être visible ? ACTIF PAR DÉFAUT — contrairement à `kanban`, `config.auth.menu.rocketChat`
+ * n'a besoin d'AUCUNE clé pour être visible ; seul un `false` explicite le désactive sur un site.
+ * INDÉPENDANT de `admin.enabled`/`access.min` (le back-office peut rester désactivé), réservé aux
+ * admins du costum (siteAdmin, superAdmin compris) — pas de slug de carrier requis (lien générique).
+ */
+export function isRocketChatEntryVisible(
+  config: Pick<SiteConfig, "auth"> | null | undefined,
+  me: MeLike | null | undefined,
+  entity: CarrierLike | null | undefined,
+): boolean {
+  if (config?.auth?.menu?.rocketChat === false) return false;
+  return levelSatisfies(resolveAdminAccessLevel(me, entity), "siteAdmin");
+}

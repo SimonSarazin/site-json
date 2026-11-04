@@ -12,14 +12,37 @@
 > [Module Search](../doc/07-module-search.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Système de visibilité](../doc/19-visibility-system.md) · [Module Agenda](../doc/29-module-agenda.md) ·
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
-> Mémoire : `[[project-parent62]]`
-> (`.claude/memory/project-parent62.md`) — slug corrigé le 25/07 (`parents62` avec **s** est abandonné, cf. §1).
+> Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-10-23** — 4 correctifs de relecture MR (dont 3 bloquants), moteur,
-tout le parc : doublon de bouton « Carte »/« Voir en liste » en vue carte (20 sections dans 9
-configs) et vignette `articleTeaser` changée en dur sans l'annoncer (`imageFit` rendu opt-in),
-détail §9centies ; carte acteurs disparue sur mobile (`fillParent` sans voisin de rangée sous `sm` —
-plancher `min-h-[20rem]`, détail §9nonagies) ; focus à l'ouverture d'un détail en `dialog` parti
+Dernière mise à jour : **2026-11-03** — « Ajouter un acteur » corrigé : champs `type`/`role` manquants
+au contrat `ADD_ORGANIZATION`, ajoutés en `hidden` + `subType:"acteur"` pour ne pas casser le
+discriminant de sous-type costum — détail §9sedecies. Plus tôt le même jour : retrait complet du
+concept « partenaire » (page `/annuaire`, formulaire costum, onglet admin, tag) au profit de
+l'annuaire des acteurs du soutien à la parentalité, déjà doté du filtre territoire — détail
+§9quindecenties. Plus tôt encore :
+`costum.typeObj.persons` posé en base PROD (et locale), vérification navigateur faite en local
+(login, écriture, relecture après reload) ; les deux correctifs PHP devenus inutiles
+(`Person::$dataBinding`/`Element::updateBlock`) retirés du backend.
+**2026-10-30** —
+employeur et territoire (`structureRegister`/`territoires`) migrés vers un `costumForm` citoyen
+dédié (`parent62-citoyen`), même recette que SSBE/Ekilib.re : plus de correctif backend PHP global
+ni de bricolage `readOnly`/`updateField` séparé, le champ costum passe nativement par
+`User._update()` — détail §9quattuordecenties (remplace le §9duodecenties). Précédemment,
+**2026-10-26** — entrée
+« Chat » du menu avatar (moteur, tout le parc, ACTIVE PAR DÉFAUT), lien nouvel onglet vers l'instance
+Rocket.Chat séparée de la plateforme, et libellé nav parent62 (« Contenus » → « Actualités et
+Ressources ») qui a fait déborder la barre à 1280px — corrigé par une nouvelle option de design
+`header.navFontSize` (moteur, opt-in) plutôt qu'en reformulant les libellés ; 4 échecs e2e préexistants,
+sans rapport avec ce lot — détail §9tredecenties. Même jour, plus tôt : employeur et territoire
+d'abord rendus éditables depuis le profil générique (mécanisme depuis remplacé, voir ci-dessus) ; deux
+correctifs backend préalables
+PLUS une 3e porte de validation côté SDK (`[DraftProxy]`), corrigée par `readOnly` + écriture séparée
+(`entity.updateField`) — détail §9duodecenties, vérification navigateur réelle non faite (pas de
+session authentifiée disponible). Précédemment, le 23/10 : 4 correctifs de relecture MR (dont
+3 bloquants), moteur, tout le parc : doublon de bouton « Carte »/« Voir en liste » en vue carte (20
+sections dans 9 configs) et vignette `articleTeaser` changée en dur sans l'annoncer (`imageFit` rendu
+opt-in), détail §9centies ; carte acteurs disparue sur mobile (`fillParent` sans voisin de rangée sous
+`sm` — plancher `min-h-[20rem]`, détail §9nonagies) ; focus à l'ouverture d'un détail en `dialog` parti
 nulle part (`onOpenAutoFocus`/`preventDefault` désarme le repli de focus de Radix — corrigé,
 couverture de test rouverte, détail §9octogies). Précédemment : **2026-10-22** — section « Les communes du territoire » reprend la couleur
 pleine du bandeau hero (`--page-accent`, déjà réglé par territoire), « Les actions sur le
@@ -150,9 +173,8 @@ décision produit actée avec l'utilisateur). Revue de code passée (`/code-revi
 réels trouvés et corrigés (virgule littérale cassant le round-trip URL ; retour arrière navigateur
 ne vidant pas un filtre appliqué — décision d'hydratation extraite en fonction pure testée,
 `resolveFilterHydration`) ; 3 points identifiés et documentés sans code (impact site entier sur les
-facettes hors nav, highlighting actif mobile, Ctrl+K). Détail complet : §9decies. Document de spec
-séparé (racine du monorepo) : `Document de spécification — Menu dynamique costum.lists dans le
-header.md`. Gates : typecheck/lint propres, `config:validate` **46 pages/160 sections**,
+facettes hors nav, highlighting actif mobile, Ctrl+K). Détail complet : §9decies.
+Gates : typecheck/lint propres, `config:validate` **46 pages/160 sections**,
 `audit:config` RAS, `test:unit` **2909/2909** ✅ (+17 tests). `test:e2e` non rejoué (pas de
 `.env.test` dans cet environnement) — à faire avant fusion `main`. Non commité à ce stade.
 Précédemment (même jour) : **2026-08-25** (section admin générique « Listes » — édition de
@@ -918,15 +940,12 @@ reste **à confirmer**, comme les autres lignes « 0 donnée » de ce document (
 1. **Matching récurrent par jour de semaine (mode CALENDRIER)** : `searchEventsCostum` (avec
    `startDateUTC`/`endDateUTC`) ne comparait que le jour de semaine de `startDateUTC` **lui-même** à
    `openingHours`, sans balayer toute la plage demandée — un événement récurrent n'apparaissait que
-   les jours où « aujourd'hui » tombait pile sur son jour configuré. Documenté dans `Document de
-   spécification — Agenda événements récurrents invisibles (AgendaAction.php).md` (racine du
-   monorepo, 14/08). **Corrigé** (vérifié : 418 occurrences hebdomadaires correctement dépliées sur
-   une fenêtre de 12 mois après le fix).
+   les jours où « aujourd'hui » tombait pile sur son jour configuré (14/08). **Corrigé** (vérifié :
+   418 occurrences hebdomadaires correctement dépliées sur une fenêtre de 12 mois après le fix).
 2. **Mode LISTE excluant les récurrents** : `searchEventsCostum` sans dates (flux paginé) ne
-   renvoyait que les événements ponctuels. Évolution proposée puis **implémentée** : le mode LISTE
-   inclut désormais les récurrents, une ligne chacun (leur prochaine occurrence,
-   `startDateSort`/`startDateSortFormat`). Documenté dans `Document de spécification — Pagination
-   des événements récurrents dans l'agenda (AgendaAction.php).md` (racine du monorepo, 19/08).
+   renvoyait que les événements ponctuels. Évolution proposée puis **implémentée** (19/08) : le mode
+   LISTE inclut désormais les récurrents, une ligne chacun (leur prochaine occurrence,
+   `startDateSort`/`startDateSortFormat`).
 3. **« Prochaine occurrence » sautant le créneau du jour en cours** : la première version de
    l'évolution ci-dessus calculait toujours le prochain **futur** début, jamais « aujourd'hui, déjà
    commencé » — un récurrent activement dans son créneau ne remontait jamais daté du jour même, donc
@@ -1165,10 +1184,7 @@ valider avant de considérer ces trois opérations fiables sur les listes réell
 > à l'entrée « Thèmes » du header de parent62 — seul site du parc à l'utiliser à ce jour. Fait suite
 > au constat (`useDynamicFilterOptions`/`optionsKey` déjà câblés sur 22 blocs de filtres via
 > `costum.lists.themes`, §9septies) que le menu de nav, lui, restait une copie figée à 8 entrées,
-> découplée de la vraie liste (18 valeurs). Document de spec dédié (racine du monorepo) :
-> `Document de spécification — Menu dynamique costum.lists dans le header.md` (historique complet
-> du chantier, y compris les itérations intermédiaires — ce paragraphe ne documente que l'état
-> final retenu).
+> découplée de la vraie liste (18 valeurs). Ce paragraphe documente l'état final retenu.
 
 ### 9decies.1 Ce qui a changé côté moteur (générique, tout site)
 
@@ -4214,9 +4230,8 @@ seule source de vérité pour les boutons et leurs bornes (`goToPage`). Vérifi�
 
 ## 9quinquadragies. SDK 1.0.196 : rôles de membre modifiables, export PDF de l'agenda via le SDK
 
-**Contexte** : le SDK publié le jour même (`@communecter/cocolight-api-client@1.0.196`) livre exactement
-ce que décrivaient `Document de spécification — Rôles de membre sur les liens` et `Document de
-spécification — Endpoint SDK PDF imprimable agenda` : `User.setRoles(roles)` (endpoint `LINK_SET_ROLES`,
+**Contexte** : le SDK publié le jour même (`@communecter/cocolight-api-client@1.0.196`) livre
+`User.setRoles(roles)` (endpoint `LINK_SET_ROLES`,
 remplacement intégral), `sendRequestToJoinParent({ admin, roles })`, et `endpointApi.agendaGetPdf(data)`
 (réponse binaire `arraybuffer`, gérée nativement par `ApiClient.callEndpoint`). Mise à jour :
 `cocolight-api-client` (dépôt local, fast-forward sur `origin/master`) puis `site-json` (`package.json`/lock,
@@ -4244,13 +4259,12 @@ supplémentaire, le backend n'exposant toujours pas d'endpoint de suggestions au
 reste possible.
 
 **⚠️ Limite connue, non corrigée (hors périmètre SDK/site-json)** : `Costumize::connectElement`
-(backend PHP, `Document de spécification — Rôles attribués au mauvais membre`) écrit encore le rôle sur
-le lien de l'ADMIN qui invite, pas sur celui de l'invité, pour toute invitation **CRÉANT** un lien neuf
-(chemin `CONNECT`) sur un costum routé par `Costumize` — le cas de parent62. Ce bug est **indépendant**
-du lot ci-dessus : **« Gérer les rôles »** passe par `removerole`/`Link::removeRole`, jamais par
-`Costumize::connectElement` — non affecté. Seul « poser un rôle à l'invitation » (onglets « users » et
-« emails ») en hérite. Non re-testé en conditions réelles (pas de session admin dans cette session) :
-à vérifier au premier usage réel.
+(backend PHP) écrit encore le rôle sur le lien de l'ADMIN qui invite, pas sur celui de l'invité, pour
+toute invitation **CRÉANT** un lien neuf (chemin `CONNECT`) sur un costum routé par `Costumize` — le cas
+de parent62. Ce bug est **indépendant** du lot ci-dessus : **« Gérer les rôles »** passe par
+`removerole`/`Link::removeRole`, jamais par `Costumize::connectElement` — non affecté. Seul « poser un
+rôle à l'invitation » (onglets « users » et « emails ») en hérite. Non re-testé en conditions réelles
+(pas de session admin disponible) : à vérifier au premier usage réel.
 
 **Export PDF de l'agenda** — nouvelle prop opt-in `agenda.showPdfExport` (défaut `false`), hook
 `useAgendaPdfExport` (`endpointApi.agendaGetPdf`, scope le costum PORTEUR entier via
@@ -4258,8 +4272,7 @@ du lot ci-dessus : **« Gérer les rôles »** passe par `removerole`/`Link::rem
 `Blob` + `<a download>` transitoire (aucun pattern de blob-download réutilisable trouvé — `downloadCsv.ts`
 est CSV-only, non généralisé pour un seul 2ᵉ usage). **Non activé sur `/agenda`** : la prop reste à son
 défaut `false`, conformément à la convention moteur (nouveauté = option, jamais un nouveau défaut pour
-un site en marche) — vérifié en direct dans cette session avec l'option forcée à `true`, qui a ensuite
-été retirée du config.
+un site en marche).
 
 ### 9quinquadragies.1 Vérifications
 
@@ -4268,9 +4281,9 @@ un site en marche) — vérifié en direct dans cette session avec l'option forc
 | `validate-config` | ✅ 51 pages · 182 sections |
 | `typecheck` · `lint` (fichiers touchés) | ✅ 0 erreur |
 | `test:unit` | ✅ suite complète (5528/5531, 2 échecs non liés à ce lot — snapshot archétype `agenda` resynchronisé, budget `bundle-size` pré-existant) ; `rolesExistantsDeLEntite` testé (9 cas, `memberRoles.test.ts`) — les mutations elles-mêmes restent sans test (React Query + mock SDK absents de ce module), le PDF n'a pas de test automatisé non plus |
-| Export PDF | ✅ **vérifié en direct, vrai navigateur (Playwright/Chromium), contre le backend réel** : clic → requête `AGENDA_GET_PDF` → fichier `agenda-parent62.pdf` de 150 519 octets, magic header `%PDF-` confirmé. Le blocage CORS documenté dans la spec est bien levé |
+| Export PDF | ✅ **vérifié en direct, vrai navigateur (Playwright/Chromium), contre le backend réel** : clic → requête `AGENDA_GET_PDF` → fichier `agenda-parent62.pdf` de 150 519 octets, magic header `%PDF-` confirmé. Le blocage CORS est bien levé |
 | Mobile 390 px / sombre (`/agenda`) | ✅ bouton PDF en icône seule, aucun débordement horizontal, lisible en sombre |
-| Gestion des rôles | 🟡 **non vérifiée en conditions réelles** — aucune session admin disponible dans cette session ; typecheck/lint seuls |
+| Gestion des rôles | 🟡 **non vérifiée en conditions réelles** — aucune session admin disponible ; typecheck/lint seuls |
 
 ## 9sexquadragies. Footer : « Appels à projets »/« Offres d'emploi » retirés
 
@@ -4497,8 +4510,8 @@ l'utilisait déjà.
 - `doc/08-module-profil.md` : table des sections de profil ne listait pas `profile-parent62-about`
   et le compteur était resté à 21 au lieu de 22. Ajoutés.
 - `TYPE_LABELS` (doublon de l'enum du formulaire) signalé en relecture : déjà absent du code, retiré
-  dans un lot antérieur de cette session (sélecteur « Type de structure » supprimé avec le reste de
-  la carte, §9septquadragies.3) — rien à faire.
+  dans un lot antérieur (sélecteur « Type de structure » supprimé avec le reste de la carte,
+  §9septquadragies.3) — rien à faire.
 
 | Gate | Résultat |
 |---|---|
@@ -4681,8 +4694,8 @@ lots côté production.
 |---|---|
 | `config:validate` / `audit:config` | ✅ RAS |
 | `tests/preflight/effective-config.test.ts` | ✅ (fixture `__effective__/parent62.json` régénérée : 1 ligne, `"territoires"` dans `defaultFields`) |
-| `tests/preflight/` (suite complète) | ✅ sauf `bundle-size.test.ts` / `lazy-entry-facades.test.ts`, confirmés PRÉEXISTANTS et sans rapport (bundle `dist/` non reconstruit cette session, vérifié par `git stash`) |
-| `npm run typecheck` | 7 erreurs PRÉEXISTANTES dans `src/modules/auth/` (`mode`/`fields` absents du type `register()` du SDK), confirmées sans rapport avec ce lot ni avec aucun fichier modifié cette session (`git stash` + `typecheck` propre reproduit les mêmes 7 erreurs) — à traiter séparément |
+| `tests/preflight/` (suite complète) | ✅ sauf `bundle-size.test.ts` / `lazy-entry-facades.test.ts`, confirmés PRÉEXISTANTS et sans rapport (bundle `dist/` non reconstruit) |
+| `npm run typecheck` | 7 erreurs PRÉEXISTANTES dans `src/modules/auth/` (`mode`/`fields` absents du type `register()` du SDK), confirmées sans rapport avec ce lot ni avec aucun fichier modifié ici — à traiter séparément |
 
 ## 9sexagies. Acteurs du territoire à côté de l'agenda (9 pages `/territoire/*`)
 
@@ -5047,6 +5060,333 @@ Deux derniers constats de la même relecture :
 | `config:validate` / `audit:config` | ✅ RAS |
 | `tests/preflight/` (suite complète) | ✅ sauf les 2 fichiers préexistants déjà connus |
 
+## 9duodecenties. Employeur et territoire éditables depuis le profil
+
+Demande client : pouvoir renseigner, depuis son propre profil, son employeur et son territoire, et les
+voir sur la carte de chaque coordinateur·rice de `/equipe`. Correctif backend PRÉALABLE
+(`Person.php`/`Element.php`) : le formulaire de profil générique
+passe par `POST /co2/element/updateblock/` → `Element::updateBlock()` (bloc `info`), qui n'accepte
+qu'une séquence codée en dur de champs (`if(isset($params["<champ>"])) … updateField(...)`, un par
+champ, sur le modèle des lignes `fixe`/`mobile` voisines) — ni `structureRegister` ni `territoires` n'y
+figuraient, donc silencieusement ignorés même soumis. Deux lignes ajoutées à ce dispatch pour les deux
+champs ; `territoires` en plus ajouté à `Person::$dataBinding` (liste blanche validée par
+`updateField()`, où `structureRegister` était déjà présent via le costum `nutritionMarmay`).
+
+**Les deux champs (`structureRegister` et `territoires`) sont RÉSERVÉS à parent62**, retirés du
+descripteur partagé. Aucun mécanisme n'existait pour qu'un champ du formulaire d'édition CITOYEN (contrairement à
+l'affichage de fiche, qui en a un via `ProfileSectionRenderer`) soit visible seulement sur un site —
+construit ici, RÉUTILISABLE pour tout futur champ du même genre :
+- `userProfileSchema` (`schemaForm.ts`) : les deux champs `z.string().optional()` — zod ne distingue
+  pas par site, c'est la vue (widget) qui porte la restriction, pas le schéma.
+- `PROFIL_DESCRIPTORS.citoyens.fields` (`editProfilePayload.ts`) : descripteur read/write GÉNÉRIQUE
+  pour les deux, posé une fois pour toutes, mais **`readOnly: true`** (cf. 3e porte ci-dessous) — exclu
+  du payload `element/save`, toujours seedé/affiché/éditable dans le form.
+- `editCitoyenDescriptor` (`editProfile.descriptor.ts`) : NE déclare NI l'un ni l'autre (exprès) → via
+  `mergeRenderPipeline`, les deux champs PIPELINE sans pendant de rendu atterrissent `widget:"hidden"`
+  dans le descripteur fusionné, jamais rendus ni soumis par défaut.
+- **Nouveau fichier `editProfileExtraCitizenFields.ts`** : `withExtraCitizenFields(descriptor,
+  fieldNames)` pose `widget:"select"` + les 9 options (`src/data/territoires62.ts`) sur `territoires`,
+  `widget:"text"` sur `structureRegister`, et insère les champs DEMANDÉS dans l'onglet « Contact » —
+  SANS toucher read/write (inchangés, donc `buildDefaults`/`buildSpec` n'ont pas besoin d'être
+  conditionnés, seule la VUE change). Gère aussi le cas où un seul champ est demandé ou n'existe pas
+  dans le pipeline.
+- **`editProfileConfig.descriptor`** (`editProfile.tsx`) : applique cette fonction avec la liste lue sur
+  `config.costum.citizenProfileFields` (`site-schema.ts`, bloc `costum`) — **PAS un slug en dur**,
+  gate par paramètre de config, comme toute option par site. `config.prod.parent62.json` déclare
+  `costum.citizenProfileFields: ["territoires", "structureRegister"]` ; tout autre site, n'ayant pas
+  cette clé, reçoit le descripteur et le comportement inchangés, byte pour byte.
+- `CardTeamMember.tsx` : `structureRegister` affiché dans le bloc contacts (icône `Building2`), lu
+  directement sur `donnees: sd` de `vueMembre()` — inchangé par ce revirement (l'affichage ne dépend
+  pas de qui peut éditer).
+
+**Une TROISIÈME porte de validation, découverte APRÈS les deux correctifs backend (navigateur,
+23/10/2026)** : le SDK (`cocolight-api-client`) valide aussi côté CLIENT, indépendamment du backend.
+Chaque clé assignée au payload `element/save` passe par un `DraftProxy` (`BaseEntity.ts`) qui la
+vérifie contre un schéma JSON bundlé (`UPDATE_BLOCK_INFO`) — rejet immédiat (avant tout appel réseau)
+pour un champ absent de ce schéma :
+```
+Uncaught (in promise) ApiValidationError: [DraftProxy] Le champ "structureRegister" n'est pas autorisé.
+```
+Le mécanisme costum/`typeObj` qui élargit normalement ce schéma pour les fiches (organisations/POI/
+projets/événements) **ne couvre pas `citoyens`** — `SCOPE_COLLECTIONS` (`runtime.ts:68`) =
+`["poi", "organizations", "projects", "events"]`, confirmé par lecture directe du SDK (registre bundlé
+ET cache live) : aucune déclaration backend n'aurait pu combler ce trou, une spec `typeObj` dans ce sens
+aurait été inutile — vérifié AVANT d'en écrire une. Correctif retenu, 100 % site-json : les deux champs
+sont `readOnly: true` dans le pipeline (exclus du payload schéma-validé) et écrits SÉPARÉMENT, après le
+save principal, via `entity.updateField(path, value)` — méthode publique de `BaseEntity`, confirmée par
+lecture complète : ne passe PAS par le `DraftProxy`, seulement par l'autorisation backend (même garde
+que `updateBlock`). Un hook `afterSubmit` dédié (`writeExtraCitizenFields`) fait cette écriture, car un
+stamp `channel:"pathValue"` classique ne peut PAS lire une valeur déjà exclue du payload construit.
+
+**Corrigé le 27/10/2026 (relecture) : le toast de succès et l'invalidation du cache partaient AVANT
+cette écriture, et un échec restait muet.** `EntityFormModal.commit()` appelait `afterSubmit` APRÈS
+`mutateAsync`, dont le `onSuccess` avait déjà posé le toast « Profil mis à jour » et invalidé le cache
+— un échec d'écriture de `territoires`/`structureRegister` (ex. backend pas encore corrigé) restait
+avalé dans un simple `console.warn`, pendant que l'utilisateur lisait un succès. `commit()` attend
+maintenant la promesse d'`afterSubmit`, réinvalide le cache une fois l'écriture terminée, et affiche un
+`toast.error` dédié si elle échoue ; `writeExtraCitizenFields` tente toujours chaque champ (best-effort)
+mais rejette si au moins un a échoué, au lieu de ne faire qu'avertir.
+
+- 14 tests dédiés (`editProfileExtraCitizenFields.test.ts`) : 7 sur `withExtraCitizenFields`
+  (options/widget, read/readOnly inchangés, insertion dans le bon groupe, liste vide → inchangé, un
+  seul champ activé, garde-fou champ absent du pipeline) + 7 sur `writeExtraCitizenFields` (écriture des
+  champs listés avec trim, liste restreinte n'écrit que ces champs-là, valeur vide → effacement, champ
+  absent ignoré, entité sans `updateField`, échec isolé non bloquant).
+
+**Config** : `"structureRegister"` ajouté aux `fields` des 12 sections `member` qui projetaient déjà
+`territoires` (remplacement textuel identique, pas de `json.dump`) — `territoires` y figurait déjà.
+`costum.citizenProfileFields: ["territoires", "structureRegister"]` ajouté (bloc `costum`, vide
+jusque-là) pour le gate par config du formulaire d'édition (26/10/2026).
+
+**Régression attendue et corrigée** : `seedProfileFormValues.test.ts` vérifiait l'objet COMPLET en
+égalité stricte (10 champs) — mis à jour à 12 champs, valeurs `structureRegister`/`territoires`
+ajoutées à la fixture et à l'attendu.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur |
+| `npx vitest run src/modules/profil` | ✅ 969 tests, 94 fichiers, tous verts, 1 skip |
+| `config:validate` / `audit:config` | ✅ RAS sur `config.prod.parent62.json` |
+| `tests/preflight/` (suite complète) | ✅ sauf 2 échecs préexistants, sans rapport (bundle `dist/client` périmé, aucun fichier de ce lot) |
+| `test:integration` (`SITE_CONFIG_PATH=config.prod.parent62.json`) | ✅ 1069 tests, 57 fichiers (26/10) |
+| `config:validate` des 19 configs du parc (brique partagée `editProfile*`/`site-schema.ts` touchée) | ✅ les 19 valident (26/10) |
+| Vérification navigateur en conditions réelles (login + édition profil, réseau local) | ⏳ **non faite** — confirmé seulement par lecture directe du SDK (`updateField` ne touche pas le `DraftProxy`) + tests unitaires des fonctions ; pas de session authentifiée disponible pour un aller-retour réel contre le backend local |
+
+## 9quattuordecenties. Employeur et territoire : migration vers un costumForm citoyen (remplace le §9duodecenties)
+
+**Le mécanisme du §9duodecenties (correctifs backend PHP globaux + `readOnly`/`updateField` séparé)
+est abandonné et remplacé.** `SCOPE_COLLECTIONS` (`cocolight-api-client/src/costum/runtime.ts:99`)
+inclut en réalité `"citoyens"` depuis le SDK `1.0.19x` (commit `3a4d7e1`, déjà présent dans la
+version `1.0.203` que site-json avait épinglée AVANT le §9duodecenties) — l'affirmation du
+§9duodecenties (« `SCOPE_COLLECTIONS` ne couvre pas `citoyens` ») provenait d'une confusion avec
+`ScopeCollection` (`runtime.ts:554`, périmètre de CRÉATION par costum seulement, lui effectivement
+sans `citoyens`). `User._update()` (`cocolight-api-client/src/api/User.ts`) sait nativement séparer
+les clés costum d'un `element/save` standard et les envoyer en un seul appel `SAVE_CITOYEN`, validé
+côté backend AVEC le costum posté — donc jamais rejeté par le `DraftProxy`, sans toucher
+`Person::$dataBinding` ni `Element::updateBlock()`.
+
+**Nouvelle recette, identique à `sport-sante-bienetre-citoyen`/`maison-sport-sante-la-tampon`
+(commit `2fe9e545`)** : un `costumForm` dédié `parent62-citoyen` (`entityType:"citoyens"`), routé par
+`profiles.citoyens.editModals` (`userContext:"own"`) — remplace ENTIÈREMENT le formulaire d'édition
+générique pour les citoyens de parent62 (identité, territoire & employeur, coordonnées + adresse,
+réseaux sociaux).
+
+**Correctif en cours de lot (28/10) : le `when` calqué sur SSBE (`sourceKeys`/`reference.costum`
+contient `parent62`) ne matchait pour PERSONNE** — constaté : l'onglet « Territoire & employeur »
+n'apparaissait jamais à l'édition. Cause : `source.key`/`reference.costum` d'un CITOYEN ne sont
+estampillés QUE par `UserApi.register({costumSlug})` à l'inscription, jamais rétroactivement — aucun
+coordinateur·rice déjà inscrit n'a ce marqueur. Remplacé par un prédicat d'ADHÉSION réelle :
+`links.memberOf.<id organisation « Réseau Parentalité 62 »>` (`6a450f0ac34c7070327d2a64`) existe ET
+`.toBeValidated` est faux (même garde que `useProfilMembersQuery.tsx`) — l'édition de ses propres
+champs réseau/employeur est ainsi réservée aux membres VALIDÉS de l'organisation porteuse, pas à
+n'importe quel citoyen connecté sur le site. `tests/preflight/edit-modal-scope.test.ts` (garde
+« route costum non bornée ») passe sans entrée `DETTE_CONNUE` grâce à ce `when` réel.
+
+**Retiré côté site-json** : `editProfileExtraCitizenFields.ts`/`.test.ts` (supprimés),
+`costum.citizenProfileFields` (`site-schema.ts`, bloc `costum`), les deux champs `readOnly` de
+`PROFIL_DESCRIPTORS.citoyens.fields` (`editProfilePayload.ts`), les deux champs optionnels de
+`userProfileSchema` (`schemaForm.ts`), les clés i18n `ProfileEdit.fields.{territoires,
+structureRegister}.*` (devenues orphelines, le costumForm porte ses propres libellés inline comme
+SSBE). `editProfile.tsx`/`EntityFormModal.commit()` retrouvent leur forme d'avant le §9duodecenties
+— le mécanisme générique `afterSubmit`/réinvalidation/`toast.error` ajouté dans `EntityFormModal.tsx`
+reste en place (utile à tout `afterSubmit` futur), mais n'est plus sollicité par ce cas précis.
+
+**Déclaration backend, posée en base LOCALE le 03/11 (relecture MR) ET en PROD** :
+`costum.typeObj.persons` du costum `parent62` (`sameAs:"person"`, résolu vers la collection
+`citoyens` — `cocolight-api-client/src/costum/liveDigest.ts` `TYPEKEY_TO_COLL`), sous
+`dynFormCostum.beforeBuild.properties` — même forme que pour une organisation/un POI costum,
+donnée de costum, pas du code :
+```json
+"persons": {
+  "name": "Réseau Parentalité 62",
+  "sameAs": "person",
+  "dynFormCostum": {
+    "beforeBuild": {
+      "properties": {
+        "territoires": { "inputType": "select", "label": "Territoire" },
+        "structureRegister": { "inputType": "text", "label": "Employeur" }
+      }
+    }
+  }
+}
+```
+`costum.typeObj` de `parent62` en PROD (`www.communecter.org`) porte désormais `persons` en plus
+des clés déjà présentes (`article`, `affiche`, `recoveryCenter`, `event`, `doc`, `intervenant`,
+`meeting`, `organizations`, `acteur`) — posé avec le même outil que pour sport-santé/Ekilib.re
+(`add-persons-node`). Sans cette déclaration, `_costumCtx` ne porterait aucun champ costum pour un
+citoyen parent62 et `[DraftProxy] Le champ "…" n'est pas autorisé` réapparaîtrait.
+
+**Les deux correctifs PHP du §9duodecenties, retirés le 03/11** : les deux lignes du dispatch
+`Element::updateBlock()` (`structureRegister`/`territoires`) et l'entrée `territoires` de
+`Person::$dataBinding` sont retirées (`structureRegister`, lui, précède ce lot et reste dans
+`$dataBinding` pour le costum `nutritionMarmay`, qui en dépend toujours par son propre chemin).
+Confirmé sans effet sur le flux `element/save` costum ci-dessus.
+
+✅ **Vérification navigateur faite en local (03/11)**, nœud `persons` posé en base locale : connecté
+avec un compte membre validé de Parent 62, « Modifier le profil » ouvre bien `edit-parent62-citoyen`
+(4 onglets, 9 territoires proposés) ; après « Enregistrer », un seul `co2/element/save` part avec
+`territoires`, `structureRegister` et le contexte costum, réponse 200, toast de succès ; après
+rechargement complet, le formulaire relit bien les valeurs saisies et la base locale les porte. Les
+réseaux sociaux déjà renseignés (lecture seule dans ce formulaire) n'ont pas été touchés.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur (23 avertissements pré-existants) |
+| `npx vitest run src/modules/profil tests/preflight` | ✅ 1848 tests, 0 échec |
+| `config:validate` / `audit:config` | ✅ RAS sur `config.prod.parent62.json` |
+| `tests/preflight/effective-config.test.ts` | ✅ (snapshot `__effective__/parent62.json` régénéré : nouvelle route `editModals.citoyens`) |
+| Vérification navigateur réelle (login, édition, écriture, relecture après reload) | ✅ faite en local le 03/11, `costum.typeObj.persons` posé en base locale |
+
+## 9tredecenties. Entrée « Chat » du menu avatar (moteur, tout le parc) + libellés nav
+
+**Chat** : nouvelle entrée « Chat » du menu avatar (`AuthMenu`), juste sous « Administration »,
+réservée aux admins du costum, **ACTIVE PAR DÉFAUT sur tout le parc** — décision pour le réseau
+entier, contraire à la convention habituelle opt-in/défaut false. Lien **nouvel onglet** (même
+pattern que Kanban) vers `getRocketChatUrl()` (`VITE_ROCKETCHAT_URL`, défaut
+`https://chat.communecter.org` — une instance Rocket.Chat SÉPARÉE de communecter :
+`<serverUrl>/co2/rocketchat` rouvre communecter, pas le chat). Lien externe, PAS un modal/iframe :
+le SDK cocolight n'expose pas de jeton de connexion pour authentifier une iframe Rocket.Chat — sans
+lui, l'iframe montrerait au mieux l'écran de connexion complet, au pire une page refusée par
+l'instance. Fichiers :
+`src/modules/admin/lib/{adminEntry.ts,platformRocketChatUrl.ts}`,
+`src/modules/auth/components/AuthMenu.tsx`, `src/modules/auth/schema.ts`, `src/lib/constant/common.ts`,
+`src/types/site-schema.ts`. Gate par **code** (générique moteur), pas par config — le flag
+`auth.menu.rocketChat` ne sert qu'à DÉSACTIVER sur un site qui ne le voudrait pas (`false` explicite).
+
+**Libellé nav** : « Contenus » → « Actualités et Ressources ». A fait déborder la barre à 1280px de
+~220px (zéro marge dès l'origine). Premier correctif (raccourcir ce libellé ET « Le Réseau
+parentalité ») **écarté** : les deux libellés restent EXACTEMENT comme voulus ; correctif retenu =
+**nouvelle option `header.navFontSize`**
+(`"sm"|"md"|"lg"`, défaut `"lg"` historique — `src/types/site-schema.ts`,
+`src/components/layout/header/HeaderStacked.tsx`), posée à `"sm"` pour parent62 (texte de nav réduit
+d'~25%, seul palier qui passe les deux gates de largeur) ; mesuré itérativement par script Playwright
+puis confirmé par l'e2e réel. Opt-in, aucun autre site du parc n'a cette clé.
+
+**4 échecs e2e rencontrés pendant cette passe, TOUS confirmés préexistants** (reproduits à l'identique
+sur la config d'ORIGINE, avant tout changement de ce lot, via `git stash`) :
+- centrage du menu sous le logo à 1440px (écart 70px sur la config d'origine) ;
+- teinte des communes sur `/territoire/boulonnais` ;
+- `/territoire/arrageois` (coordination inattendue) et `/equipe` (semis local absent) — dépendent du
+  "semis local" documenté §9septvicies.6, volatil par nature.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` (JSON, fichiers du lot) | ✅ 0 erreur |
+| `npx vitest run src/modules/admin src/modules/auth` | ✅ 268 tests |
+| `tests/preflight/` (suite complète) | ✅ sauf 2 échecs préexistants (bundle périmé) — `prop-descriptions`/`runtime-env` cassés puis corrigés dans cette même passe (description >220 car., `VITE_ROCKETCHAT_URL` non injecté par `prod-server.js`/`dev-server.js`) |
+| `e2e/parent62.spec.ts` (suite complète, chromium) | ✅ 24/29, 4 échecs confirmés préexistants (ci-dessus), 1 skip |
+| `config:validate` des 19 configs du parc | ✅ les 19 valident |
+
+## 9quindecenties. Retrait complet du concept « partenaire » (annuaire dédié, formulaire, onglet admin)
+
+**Demande client (03/11)** : supprimer l'annuaire des partenaires et faire passer les structures
+qu'il listait par l'annuaire des acteurs du soutien à la parentalité, dont le filtre « Territoire »
+existait déjà (§9quinquagies). **Motif** : l'import des données Gogocarto a créé un DOUBLON entre les
+deux annuaires (mêmes structures listées dans `/annuaire` ET `/annuaire-acteurs-parentalite`) — d'où
+la décision de n'en garder qu'un seul plutôt que de réconcilier les deux listes. Le périmètre retenu
+est le retrait COMPLET du concept « partenaire » (formulaire, onglet admin, tag), pas seulement de la
+page publique — aucune organisation ne portait le tag `"Partenaires"` au moment du retrait (vérifié),
+donc aucune fiche existante n'est concernée par la bascule.
+
+**Retiré** :
+- La page `/annuaire` (« Annuaire des partenaires ») et son entrée de nav sous « Le Réseau
+  parentalité ».
+- Le `costumForm` `parent62-partenaire` (`organizations`), son onglet admin « Partenaires », l'entrée
+  « Ajouter un partenaire » du menu profil citoyen (`addConfig.custom`), et la route d'édition
+  `edit-parent62-partenaire` — toutes les organisations parent62 passent désormais par
+  `edit-parent62-acteur`/`add-parent62-acteur` (déjà doté d'un chrome `add`, réutilisable tel quel).
+- Le filtre `tags: {$nin: ["Partenaires"]}`, posé SUR `/annuaire-acteurs-parentalite` ET sur les 9
+  pages `/territoire/*` (§9sexagies) pour exclure les partenaires des listes « acteurs » — 10
+  occurrences retirées, ces listes ne discriminent plus par ce tag.
+- `hideTags: ["Partenaires"]` d'un `profile-tags` d'organisation — ce tag n'a plus de raison d'être
+  masqué publiquement.
+- Le stamp `mutation.stamps.parent62-partenaire` (tag `Partenaires` posé automatiquement à la
+  création) — disparu avec le `costumForm` qui le portait.
+
+**Retiré aussi (confirmé : aucune organisation ne portait le tag `"Partenaires"` à la livraison)** :
+le branchement `isPartenaire` de `ProfileParent62About.tsx` qui aurait affiché `publics`/`themes` à la
+place de `categoryThematic`/`typeAction`/`publicCible` — supprimé plutôt que gardé « au cas où »,
+aucune fiche réelle ne l'aurait jamais emprunté. `territoires` reste affiché (carte dédiée, 4ᵉ bloc à
+côté de `categoryThematic`/`typeAction`/`publicCible`) : ce champ n'est pas propre au partenariat, il
+sert aussi au filtre territoire de `/annuaire-acteurs-parentalite` — **ajouté à la section
+« Catégorisation » du formulaire `parent62-acteur`** (widget `multiselect`, 9 territoires, copié du
+même champ déjà déclaré sur `parent62-article`) pour qu'un acteur puisse désormais le renseigner à la
+création/édition, ce qu'aucun formulaire `organizations` ne permettait jusqu'ici.
+
+✅ **Dépendance backend posée en LOCAL et en PROD (03/11)** : `territoires` déclaré directement sur
+`typeObj.acteur` (`dynFormCostum.beforeBuild.properties.territoires`, `inputType:"selectMultiple"`,
+liste `territoires`), pas sur la racine `typeObj.organizations` — suffisant : la liste blanche du
+`DraftProxy` pour le sous-type `acteur` est l'UNION de la racine et du sous-type lui-même
+(`pickCostumOverlay`, `cocolight-api-client/src/costum/runtime.ts:539`), déclarer sur le sous-type
+seul couvre déjà le formulaire `parent62-acteur` sans toucher aux autres sous-types `organizations`
+du costum. ✅ Vérifié en navigateur le 04/11 (relecture MR, base locale portant `typeObj.acteur.territoires`) : « Ajouter un acteur » avec un territoire → document créé avec `territoires: ["Arrageois"]`, fiche « Territoires : Arrageois », valeur relue à l'édition.
+
+**Tuile d'accueil « Rejoindre le réseau »** (page `/pro`) : pointait vers `/annuaire`, redirigée vers
+`/annuaire-acteurs-parentalite`.
+
+**Nouveau bouton « Ajouter un acteur »** ajouté sur `/annuaire-acteurs-parentalite` (section
+`searchHeader`, absente de cette page jusqu'ici) — reprend le patron de l'ancien bouton
+`/annuaire` (`requiresAdmin:false`, modale costum), pointé sur `add-parent62-acteur`.
+
+**Nettoyage de gates associés** : `tests/preflight/stamps.test.ts` (inventaire des stamps du parc,
+entrée `parent62/parent62-partenaire` retirée), snapshot `.claude/skills/config-assistant/examples/
+admin.json` régénéré (`config:example -- admin --write`, il sourçait l'onglet « Partenaires »
+supprimé), snapshot `__effective__/parent62.json` régénéré. Trois commentaires de code (`schema.ts`,
+`ProfileParent62About.tsx`, `profileParent62Social.ts`) mentionnant encore `parent62-partenaire`
+mis à jour pour décrire l'état actuel (formulaire disparu, fiches historiques seules concernées).
+
+**Checklist** : la ligne « [AVANT MERGE] Partenaires déjà en prod sans tag "Partenaires" » (§10) est
+devenue SANS OBJET — elle décrivait un risque de bascule de routage entre `/annuaire` et
+`/annuaire-acteurs-parentalite` selon ce tag ; les deux n'existent plus en tant que routes distinctes,
+toute organisation parent62 s'édite désormais par le même formulaire quel que soit son tag.
+
+| Gate | Résultat |
+|---|---|
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur (23 avertissements pré-existants) |
+| `config:validate` / `audit:config` | ✅ 51 pages/182 sections, RAS (aucun lien mort) |
+| `tests/preflight/` (suite complète) | ✅ 906 tests, 0 échec |
+| `npx vitest run src/modules/profil` | ✅ 960/961 tests (1 flaky sous charge, confirmé propre isolément) |
+
+## 9sedecies. « Ajouter un acteur » : champs `type`/`role` manquants au contrat `ADD_ORGANIZATION`
+
+**Bug (03/11, remonté en navigateur par le client)** : la création via « Ajouter un acteur »
+(§9quindecenties) échouait côté client avec `ApiValidationError` — `"The root value is missing the
+required field 'type'."` et `"...'role'."` — le formulaire `parent62-acteur` ne déclarait ni l'un ni
+l'autre, alors que le contrat SDK `ADD_ORGANIZATION` les exige tous les deux (précédent générique :
+`addOrganization.descriptor.ts`, utilisé hors costum).
+
+**Piège évité** : `type` n'est pas qu'un champ du contrat de base — pour parent62 c'est AUSSI le
+discriminant de sous-type costum (`serverData.type === "acteur"` → résout `costum.typeObj.acteur`, cf.
+le commentaire de `ProfileParent62About.tsx`). Un précédent existe dans le parc
+(`rezo-sante-acteur`, `config.prod.rezo-sante-reunion.json`) où `type`/`role` sont des SELECTS
+VISIBLES — mais ce costum n'a pas de `typeObj` à discriminer ; recopier ce patron tel quel sur
+parent62 aurait écrit n'importe quelle valeur choisie par l'utilisateur (NGO/Association/…) dans
+`serverData.type`, cassant la résolution de `typeObj.acteur` à l'édition (les champs costum
+`territoires`/`categoryThematic`/… seraient devenus invisibles sur toute fiche créée ainsi).
+
+**Fix retenu** : `mutation.inject.extraFields: {type:"acteur", role:"admin"}` — le patron DÉJÀ en
+usage dans le parc pour ce besoin exact (`federationDesCae`/`cae` : `extraFields.type:"Cooperative"`,
+`role:"admin"`, aux côtés de son propre `subType`). `useEntityMutation.tsx` (`Object.assign(payload,
+spec.inject.extraFields)`) l'applique UNIQUEMENT dans la branche CRÉATION, après construction du
+payload depuis les valeurs du formulaire — aucun faux champ `fields`/section n'est nécessaire, et rien
+n'est injecté à l'édition (où `type`/`role` ne sont pas requis par `UPDATE_ORGANIZATION`). `type:
+"acteur"` fixe la valeur du discriminant de sous-type ; `role:"admin"` (la personne qui dépose la
+fiche doit pouvoir la modifier ensuite ; pas de cas d'usage « member » identifié à la création d'un
+acteur). `subType:"acteur"` reste posé au niveau du formulaire (orthogonal : il cible la variante
+costum `typeObj.acteur` pour la validation/les presets, indépendamment de la valeur réelle écrite dans
+le champ `type` — même double usage que `cae`).
+
+✅ Vérifié en navigateur le 04/11 (relecture MR, backend local) : « Ajouter un acteur » → `co2/element/save` en 200,
+document créé avec `type: "acteur"`, `role: "admin"`, `source.keys: ["parent62"]`, lien admin au créateur ; « Modifier le
+profil » rouvre « Modifier la fiche acteur » (le discriminant résout `typeObj.acteur`). Reste la confirmation du client
+sur le flux réel.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 51 pages/182 sections |
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur |
+| `tests/preflight/` (suite complète) | ✅ 906 tests, 0 échec |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -5074,7 +5414,7 @@ Deux derniers constats de la même relecture :
 | 2.4 | Impression de l'agenda | ✅ *(code prêt, non activé)* | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` (défaut `false`, vérifié en direct avec l'option forcée à `true` puis retirée — §9quinquadragies) — à activer sur `/agenda` quand souhaité |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
-| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies) |
+| 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies). **03/11** : page `/annuaire`, formulaire `parent62-partenaire` et onglet admin « Partenaires » **RETIRÉS** — toute organisation passe désormais par `parent62-acteur`, bouton « Ajouter un acteur » posé sur `/annuaire-acteurs-parentalite` (§9quindecenties) |
 
 ### Partie 3 (2 000 €) — statuts revus par l'audit du 24/07
 
@@ -5212,10 +5552,11 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 | **Votes « utile » + contributeurs** des ressources (3.3) — câbler `ADD_VOTE`/`links` + UI card | Peterson / Thomas |
 | **Transcription / sous-titres des paroles** (1.6) — champ dédié à ajouter au form + affichage | Peterson / réseau |
 | **Masquage public des events *pending*** (2.6) — `searchEventsCostum` applique-t-il un gate `toBeValidated` ? sinon à faire côté backend | Thomas |
-| **`typeObj` de production** (2.7) — déclarer sur le costum parent62 de production `typeObj.organizations` (`territoires`, `publics`, `themes`) comme en base locale (§9octotricies) | Thomas / backend |
+| ~~**`typeObj` de production (2.7)**~~ — **FAIT le 03/11, mais pas comme prévu à l'origine** : `publics`/`themes` étaient spécifiques au formulaire `parent62-partenaire` retiré, sans objet désormais. `territoires`, lui, sert maintenant à `parent62-acteur` (§9quindecenties) — déclaré sur `typeObj.acteur` directement (pas la racine `typeObj.organizations` envisagée initialement), en LOCAL et en PROD. **Vérifié en navigateur par le client (03/11)** : `territoires` accepté sans erreur à la soumission — le blocage rencontré était `type`/`role` manquants au contrat `ADD_ORGANIZATION`, sans rapport avec `territoires`, corrigé depuis (§9sedecies). Succès de bout en bout (création effective) reste à reconfirmer après ce correctif | — |
 | **`typeObj.acteur` de production** — créé et appliqué en LOCAL uniquement (cf. §9septquadragies.3) ; reste à reporter sur la base de PRODUCTION (même opération) avant toute édition réelle en prod | Thomas / backend |
 | **Republication SDK (`costum-extensions.json`)** — aucune entrée `organizations` pour `parent62` dans l'artefact vendu (généré 03/09, périmé) ; le scanner backend qui le produit (`tools/parity/scripts/costum-fields.mjs`) est hors d'atteinte depuis ce poste. Nécessaire pour que l'édition des champs costum de `parent62-acteur` soit fiable en PRODUCTION (sans dépendre de `VITE_COSTUM_FORCE_LIVE`, local uniquement) | backend / Thomas |
-| **[AVANT MERGE] Partenaires déjà en prod sans tag `"Partenaires"`** — le découpage `/annuaire` vs `/annuaire-acteurs-parentalite` (§9septquadragies.6/.12) repose entièrement sur ce tag ; toute organisation référencée via `/annuaire` AVANT ce lot en est dépourvue et basculerait sur le formulaire acteur (sans auto-réparation). Aucune vérification possible sur les données de PRODUCTION depuis ce poste — à confirmer (aucune organisation réelle dans ce cas) ou prévoir un passage unique en base avant merge | Thomas / réseau |
+| ~~**[AVANT MERGE] Partenaires déjà en prod sans tag `"Partenaires"`**~~ — **SANS OBJET depuis le 03/11 : `/annuaire` et son routage par tag ont été retirés** (§9quindecenties). Le risque décrit (bascule de routage selon le tag) ne s'applique plus : toute organisation parent62 s'édite désormais par le même formulaire `parent62-acteur`, tag présent ou non. _(libellé d'origine ci-dessous, conservé pour l'historique)_ | — |
+| **[25/08, formulation d'origine]** le découpage `/annuaire` vs `/annuaire-acteurs-parentalite` (§9septquadragies.6/.12) reposait entièrement sur le tag `"Partenaires"` ; toute organisation référencée via `/annuaire` AVANT ce lot en était dépourvue et aurait basculé sur le formulaire acteur (sans auto-réparation). Aucune vérification possible sur les données de PRODUCTION depuis ce poste — à confirmer (aucune organisation réelle dans ce cas) ou prévoir un passage unique en base avant merge | Thomas / réseau |
 | **Données P2/P3** — relevé du 25/07 : 3 paroles, 4 ressources ; events et organisations à confirmer. Volumétrie réelle à créer/importer | réseau / Thomas |
 | **Géolocalisation** — aucune donnée ne porte de coordonnées : la vue carte de `/recherche` est vide et le `colorBy` par territoire est invérifiable | réseau / Thomas |
 | Borne de fin des dates (`$lt`/`$lte`) dans `SearchNew::getQueries` | Thomas / backend |

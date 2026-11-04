@@ -1,8 +1,8 @@
 /**
  * Réseaux sociaux d'une organisation parent62 : deux formes coexistent en base — FLAT
  * (`serverData.facebook`, orgs importées/« normales », cf. `ProfileTiersLieuxInfo.tsx`) et IMBRIQUÉE
- * (`serverData.socialNetwork.facebook`, écrite par `parent62-acteur`/`parent62-partenaire` via le codec
- * `social:write`). On lit la flat en priorité puis on retombe sur l'imbriquée, pour afficher les liens
+ * (`serverData.socialNetwork.facebook`, écrite par `parent62-acteur` via le codec `social:write`). On
+ * lit la flat en priorité puis on retombe sur l'imbriquée, pour afficher les liens
  * quelle que soit la voie d'écriture — même patron que `ProfileTiersLieuxInfo.tsx:82`.
  */
 export function toSocialLinks(flat: {
