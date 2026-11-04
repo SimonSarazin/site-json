@@ -1,14 +1,19 @@
-import {useState, useMemo, Suspense} from "react";
+import {useState, useMemo, useCallback, Suspense} from "react";
 import {lazy} from "vite-preload";
-import {CreditCard, Layers, UserCheck, ChevronDown, ChevronRight} from "lucide-react";
+import {CreditCard, Layers, UserCheck, ChevronDown, ChevronRight, Trash2} from "lucide-react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Pledge} from "@/modules/cagnotte/types";
 import {useT} from "@/hooks/useT";
 import {useLoadNamespace} from "@/hooks/useLoadNamespace";
 import {cn} from "@/lib/utils";
-import { montantARegler, totalARegler } from "@/modules/cagnotte/utils/commande";
+import { cleDepense, montantARegler, totalARegler } from "@/modules/cagnotte/utils/commande";
 import { CagnottePaymentsPanel } from "./parts/CagnottePaymentsPanel";
+import { RetractPledgeDialog, type RetractPledgeRequest } from "./parts/RetractPledgeDialog";
+import { usePledgeRetractionEnabled } from "@/modules/cagnotte/hooks/usePledgeRetractionEnabled";
+import { usePledgeSelectionHold, type PledgeHoldRefusal } from "@/modules/cagnotte/hooks/usePledgeSelectionHold";
+import { usePledgesInProgress } from "@/modules/cagnotte/hooks/usePledgesInProgress";
+import { readPledgesLockedForSelection } from "@/modules/cagnotte/utils/pledgeRetraction";
 
 // Lazy-load : PledgePaymentPage tire @stripe/stripe-js + @stripe/react-stripe-js
 // par import statique. En lazy, Stripe n'est téléchargé qu'au passage réel
@@ -20,25 +25,55 @@ interface PromessesDialogProps {
     onOpenChange: (open: boolean) => void;
     onOpenCagnotte?: () => void;
     pledges: Pledge[];
+    /** Après le retrait d'une promesse : l'hôte relit ce que les caches du financement ne couvrent pas. */
+    onRetracted?: () => void;
 }
 
 type GroupMode = "resource" | "financer";
 type DialogStep = "list" | "payment";
 type ListTab = "pledges" | "payments";
 
+/** Pastille d'une promesse verrouillée, par raison : libellé et infobulle. */
+const LOCK_BADGES: Record<PledgeHoldRefusal, { label: string; hint?: string }> = {
+    heldByOther: { label: "PledgeRetract.inProgress", hint: "PledgeRetract.inProgressHint" },
+    paymentInProgress: { label: "PledgeRetract.inProgress", hint: "PledgeRetract.inProgressHint" },
+    retracted: { label: "PledgeRetract.retracted" },
+    notAllowed: { label: "PledgeRetract.notAllowed", hint: "PledgeRetract.notAllowedHint" },
+};
+
 export function PromessesDialog({
                                     open,
                                     onOpenChange,
                                     onOpenCagnotte,
-                                    pledges,
+                                    pledges: allPledges,
+                                    onRetracted,
                                 }: PromessesDialogProps) {
     useLoadNamespace("modules/cagnotte");
     const t = useT("modules/cagnotte");                               
+    const retractionEnabled = usePledgeRetractionEnabled();
+    // Promesses retirées depuis l'ouverture : l'hôte peut garder une liste figée.
+    const [retractedIds, setRetractedIds] = useState<Set<string>>(new Set());
+    const [retractRequest, setRetractRequest] = useState<(RetractPledgeRequest & { pledgeId: string }) | null>(null);
+    const pledges = useMemo(() => allPledges.filter((p) => !retractedIds.has(p.id)), [allPledges, retractedIds]);
     const [step, setStep] = useState<DialogStep>("list");
     // Sans promesse à régler, la modale s'ouvre sur les paiements.
     const [listTab, setListTab] = useState<ListTab>(() => (pledges.length > 0 ? "pledges" : "payments"));
     const [groupMode, setGroupMode] = useState<GroupMode>("resource");
     const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(new Set());
+    // Promesses dont la réservation a été refusée (paiement d'un autre, promesse retirée), par `finkey`.
+    const [refusedFinkeys, setRefusedFinkeys] = useState<Map<string, PledgeHoldRefusal>>(new Map());
+    // Paiements en cours relus pendant que la modale est ouverte ; sans réponse, ceux que l'hôte a lus.
+    const pledgeAnswerIds = useMemo(() => pledges.map((p) => p.resourceId ?? ""), [pledges]);
+    const liveInProgress = usePledgesInProgress(pledgeAnswerIds, { enabled: open });
+    const isLockedLive = useMemo(() => (liveInProgress ? readPledgesLockedForSelection(liveInProgress) : null), [liveInProgress]);
+    /** Ce qui empêche de cocher une promesse, ou `null`. */
+    const lockOf = useCallback((pledge: Pledge): PledgeHoldRefusal | null => {
+        if (!retractionEnabled) return null;
+        const inProgress = isLockedLive
+            ? !!pledge.resourceId && isLockedLive(pledge.resourceId, pledge.finkey ?? "")
+            : !!pledge.paymentInProgress;
+        return refusedFinkeys.get(pledge.finkey ?? "") ?? (inProgress ? "paymentInProgress" : null);
+    }, [retractionEnabled, isLockedLive, refusedFinkeys]);
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const groupedData = useMemo(() => {
         return pledges.reduce((acc, pledge) => {
@@ -60,9 +95,15 @@ export function PromessesDialog({
         }, {} as Record<string, { name: string; items: Pledge[] }>);
     }, [pledges, groupMode]);
 
-    const selectedPledgesList = useMemo(() => {
-        return pledges.filter((p) => localSelectedIds.has(p.id));
-    }, [pledges, localSelectedIds]);
+    const selectedPledgesList = useMemo(
+        () => pledges.filter((p) => localSelectedIds.has(p.id) && !lockOf(p)),
+        [pledges, localSelectedIds, lockOf],
+    );
+
+    const handleRefused = useCallback((refusals: Map<string, PledgeHoldRefusal>) => {
+        setRefusedFinkeys((prev) => new Map([...prev, ...refusals]));
+    }, []);
+    const { flush: flushSelection } = usePledgeSelectionHold({ enabled: retractionEnabled, open, selected: selectedPledgesList, onRefused: handleRefused });
 
     const totalSelectedAmount = useMemo(() => totalARegler(selectedPledgesList), [selectedPledgesList]);
 
@@ -78,7 +119,7 @@ export function PromessesDialog({
     const handleToggleGroup = (groupItems: Pledge[]) => {
         setLocalSelectedIds((prev) => {
             const next = new Set(prev);
-            const allGroupIds = groupItems.map((i) => i.id);
+            const allGroupIds = groupItems.filter((i) => !lockOf(i)).map((i) => i.id);
             const isAllGroupChecked = allGroupIds.length > 0 && allGroupIds.every((id) => next.has(id));
 
             if (isAllGroupChecked) {
@@ -88,6 +129,32 @@ export function PromessesDialog({
             }
             return next;
         });
+    };
+
+    // Une décoche encore en attente est d'abord envoyée : la confirmation relit l'état de la promesse.
+    const requestRetract = async (pledge: Pledge) => {
+        if (!pledge.resourceId || !pledge.finkey) return;
+        await flushSelection();
+        setRetractRequest({
+            pledgeId: pledge.id,
+            answerId: pledge.resourceId,
+            depenseKey: cleDepense(pledge),
+            financerId: pledge.financerId,
+            finkey: pledge.finkey,
+            financerName: pledge.financerName ?? "",
+            amount: pledge.fundingAmount,
+            depenseName: pledge.depenseName,
+        });
+    };
+
+    const handleRetracted = (pledgeId: string) => {
+        setRetractedIds((prev) => new Set(prev).add(pledgeId));
+        setLocalSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(pledgeId);
+            return next;
+        });
+        onRetracted?.();
     };
 
     const handleToggleExpand = (groupId: string) => {
@@ -105,7 +172,10 @@ export function PromessesDialog({
     return (
         <Dialog open={open} onOpenChange={(val) => {
             onOpenChange(val);
-            if (!val) setStep("list");
+            if (!val) {
+                setStep("list");
+                setRefusedFinkeys(new Map());
+            }
         }}>
             <DialogContent
                 aria-describedby={undefined}
@@ -175,7 +245,8 @@ export function PromessesDialog({
                                     </p>
                                 ) : (
                                     Object.entries(groupedData).map(([groupId, group]) => {
-                                        const isAllGroupChecked = group.items.length > 0 && group.items.every((i) => localSelectedIds.has(i.id));
+                                        const selectableItems = group.items.filter((i) => !lockOf(i));
+                                        const isAllGroupChecked = selectableItems.length > 0 && selectableItems.every((i) => localSelectedIds.has(i.id));
                                         const isExpanded = expandedGroups.has(groupId);
 
                                         return (
@@ -217,16 +288,20 @@ export function PromessesDialog({
 
                                                 {isExpanded && (
                                                     <div className="divide-y divide-border/30">
-                                                        {group.items.map((pledge) => (
+                                                        {group.items.map((pledge) => {
+                                                            const lock = lockOf(pledge);
+                                                            const badge = lock ? LOCK_BADGES[lock] : null;
+                                                            return (
                                                             <div key={pledge.id}
                                                                  className="flex items-center justify-between p-3 pl-8 hover:bg-secondary/20 transition-colors">
                                                                 <label
-                                                                    className="flex items-center gap-3 cursor-pointer flex-1">
+                                                                    className={cn("flex items-center gap-3 flex-1", lock ? "cursor-not-allowed" : "cursor-pointer")}>
                                                                     <input
                                                                         type="checkbox"
-                                                                        checked={localSelectedIds.has(pledge.id)}
+                                                                        checked={!lock && localSelectedIds.has(pledge.id)}
+                                                                        disabled={lock !== null}
                                                                         onChange={() => handleToggleItem(pledge.id)}
-                                                                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
+                                                                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer disabled:cursor-not-allowed"
                                                                     />
                                                                     <div className="flex flex-col">
                                                                         <span
@@ -241,8 +316,27 @@ export function PromessesDialog({
                                                                 <span className="font-mono text-sm font-semibold pr-2">
                                                                     {montantARegler(pledge).toLocaleString("fr-FR")} €
                                                                 </span>
+                                                                {badge ? (
+                                                                    <span
+                                                                        title={badge.hint ? String(t(badge.hint)) : undefined}
+                                                                        className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground"
+                                                                    >
+                                                                        {String(t(badge.label))}
+                                                                    </span>
+                                                                ) : retractionEnabled && !localSelectedIds.has(pledge.id) && pledge.retractable && pledge.finkey && pledge.resourceId ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => void requestRetract(pledge)}
+                                                                        aria-label={String(t("PledgeRetract.aria", undefined, { financer: pledge.financerName ?? "" }))}
+                                                                        title={String(t("PledgeRetract.action"))}
+                                                                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" aria-hidden="true"/>
+                                                                    </button>
+                                                                ) : null}
                                                             </div>
-                                                        ))}
+                                                            );
+                                                        })}
                                                     </div>
                                                 )}
                                             </div>
@@ -290,12 +384,20 @@ export function PromessesDialog({
                                 onBack={() => setStep("list")}
                                 onClose={() => {
                                     setStep("list");
+                                    setRefusedFinkeys(new Map());
                                     onOpenChange(false);
                                 }}
                             />
                         </Suspense>
                     </div>
                 )}
+                <RetractPledgeDialog
+                    request={retractRequest}
+                    onClose={() => setRetractRequest(null)}
+                    onRetracted={() => {
+                        if (retractRequest) handleRetracted(retractRequest.pledgeId);
+                    }}
+                />
             </DialogContent>
         </Dialog>
     );

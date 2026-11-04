@@ -146,6 +146,10 @@
       "cofinancersCount_other": "{{count}} co-funders",
       "remainingToFund": "{{amount}} left to fund",
       "expensesTotal": "Total:",
+      "closedToggle": {
+        "show": "Show closed expenses ({{count}})",
+        "hide": "Hide closed expenses ({{count}})"
+      },
       "support": "Support this project",
       "selectOrganization": "Select an organization",
       "noOrganizationFound": "No organization found."
@@ -184,6 +188,10 @@
       "archivedMilestones": "{{count}} archived milestone(s)",
       "closedBadge": "Closed",
       "closedBadgeHint": "Closed milestone: excluded from the amounts and cofinancers counted in the card.",
+      "closedToggle": {
+        "show": "Show closed milestones ({{count}})",
+        "hide": "Hide closed milestones ({{count}})"
+      },
       "milestoneField": {
         "saveFirst": "Save this commun first to add and manage its milestones.",
         "history": "Amount history",
@@ -223,7 +231,8 @@
       "empty": "No upcoming events.",
       "emptyPast": "No past events.",
       "error": "The project's events could not be loaded.",
-      "more": "Show more"
+      "more": "Show more",
+      "addCta": "Add an event"
     },
     "prose": {
       "empty": "No information available."
@@ -320,6 +329,7 @@
       "title": "This common cannot be deleted",
       "description": "It has already received {{count}} contribution(s), totalling {{amount}}. Deleting it would erase the counterpart of funds that were actually committed.",
       "hint": "To remove it from the directory without destroying anything, use “Remove from directory”.",
+      "paymentInProgress": "A payment is in progress on this commun: it cannot be deleted until it completes.",
       "close": "Close"
     },
     "withProject": {
@@ -375,7 +385,7 @@
         "label": "Project sections",
         "fiche": "Overview",
         "action": "Taking action",
-        "argent": "Money and transparency",
+        "argent": "Funding",
         "communaute": "Community",
         "vie": "News and agenda",
         "maturation": "Maturation",
@@ -388,6 +398,10 @@
       "actions": "Actions",
       "actionsIntro": "Each milestone's tasks, who is on them and how far they have got.",
       "noMilestones": "No milestones yet.",
+      "closedToggle": {
+        "show": "Show closed milestones ({{count}})",
+        "hide": "Hide closed milestones ({{count}})"
+      },
       "filterByMilestone": "Show this milestone's actions",
       "milestoneFilter": "Milestone: {{name}}",
       "showAllActions": "All actions",

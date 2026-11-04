@@ -19,6 +19,8 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
 import type { CoFormAnswer } from "@/modules/coform/types";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import { hasPaymentInProgress } from "@/modules/cagnotte/utils/pledgeRetraction";
+import { usePledgesInProgress } from "@/modules/cagnotte/hooks/usePledgesInProgress";
 import { useCagnotteType } from "@/modules/cagnotte/hooks/useCagnotteType";
 import { useOrganizationProjectsWithAnswers } from "@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers";
 import { useCagnotteAdapter, useOrphanDepenseRepair } from "@/modules/cagnotte/hooks/useCagnotteAdapter";
@@ -58,6 +60,8 @@ export function useAacFundingResource(
    * anonyme, où `isPending` resterait vrai à jamais.
    */
   isLoading: boolean;
+  /** Un paiement est en cours sur le commun (relecture de la fiche, à défaut l'enveloppe). */
+  paymentInProgress: boolean;
 } {
   const { entity } = useCocolight();
   const { data: fundingData, isLoading: isEnvelopeLoading } = useFundingEnvelope(answerId, {
@@ -126,5 +130,9 @@ export function useAacFundingResource(
 
   const isLoading = !!options?.isHostLoading || isEnvelopeLoading || isProjectsLoading;
 
-  return { targetResource, projectSlug, isLoading };
+  // Cache de la relecture de la fiche (`useCommunPledgeRetraction`), sans nouvel appel ; à défaut, l'enveloppe.
+  const liveInProgress = usePledgesInProgress(answerId ? [answerId] : [], { subscribeOnly: true });
+  const paymentInProgress = !!answerId && hasPaymentInProgress(liveInProgress ?? fundingData?.rawEnvelope, answerId);
+
+  return { targetResource, projectSlug, isLoading, paymentInProgress };
 }

@@ -185,6 +185,7 @@ src/modules/profil/
 │   ├── usePoiEquipementMatches.ts  // Détection doublons POI (useSearchQuery + debounce)
 │   ├── useCommentVotes.tsx         // Votes sur commentaires
 │   ├── useConfirmationDialog.tsx   // Dialog de confirmation
+│   ├── useCostumAddModal.ts        // Modale d'ajout d'un type : form costum du site (costumCreateKey) ou add-<type>
 │   ├── useEntityLabels.tsx         // Labels d'entité
 │   ├── useFormatProfileEntity.tsx  // Formatage des données du profil
 │   ├── useFriendsQuery.tsx         // Query amis
@@ -706,8 +707,9 @@ par ce précédent).
 
 Sur la section `profile-header` : `addConfig` gouverne le menu « Créer ». Un builtin
 (`organization|project|event|poi`) non désactivé ouvre le **form costum du site** quand il en
-existe exactement UN pour ce type (`costumCreateKey`, `components/add/addModals.ts` — même règle
-que `create: "inherit"` de l'admin : la règle commune `siteCostumAddModal`) ; ≥ 2 forms → modale
+existe exactement UN pour ce type (`costumCreateKey`, `components/add/addModals.ts`, lu par
+`useCostumAddModal` — même règle que `create: "inherit"` de l'admin : la règle commune
+`siteCostumAddModal`) ; ≥ 2 forms → modale
 standard conservée, le site déclare l'entrée voulue via `addConfig.custom`. Le bouton « Ajouter »
 d'un finder coform ne suit PAS cette règle : un formulaire costum n'y sert que déclaré
 (`coform.finderAddNew`, cf. [21-module-coform](21-module-coform.md)) :
@@ -1180,6 +1182,7 @@ Le module profil expose de nombreux hooks specialises :
 | `useProfileEntity` | `hooks/useProfileEntity.tsx` | Accès à l'entité typée depuis le contexte |
 | `useFormatProfileEntity` | `hooks/useFormatProfileEntity.tsx` | Formatage des données pour l'affichage |
 | `useProfilPermissions` | `hooks/useProfilPermissions.ts` | Permissions du profil courant |
+| `useCostumAddModal` | `hooks/useCostumAddModal.ts` | Modale d'ajout d'un type : le form costum du site s'il y en a un seul (`costumCreateKey`), sinon `add-<type>` — `AddEntityDropdown`, agenda d'un commun AAC |
 | `useEntityMutation` | `hooks/useEntityMutation.tsx` | Mutations CRUD **génériques** (create/edit) — remplace `useAddPoi`/`useUpdatePoi`/`useAddTiersLieu`/`useEditTiersLieu`/`useOrganizationMutations`/`useProjectMutations` |
 | `usePoiEquipementMatches` | `hooks/usePoiEquipementMatches.ts` | Détection doublons POI par adresse/type (debounce 400 ms) |
 | `useMembershipQuery` | `hooks/useMembershipQuery.tsx` | Query membership |

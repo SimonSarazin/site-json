@@ -213,7 +213,7 @@ export function useCommunDetailController(): CommunDetailVM {
     const { hostEntity: fundingHost, isLoading: isFundingHostLoading } =
         useCommunFundingHost(fundingContext);
 
-    const { targetResource, projectSlug, isLoading: isFundingLoading } = useAacFundingResource(answerId, {
+    const { targetResource, projectSlug, isLoading: isFundingLoading, paymentInProgress } = useAacFundingResource(answerId, {
         hostEntity: fundingHost,
         isHostLoading: isFundingHostLoading,
         // Repli : la réponse porte déjà son projet et ses dépenses.
@@ -486,6 +486,7 @@ export function useCommunDetailController(): CommunDetailVM {
                 // L'enveloppe dit s'il y a eu des versements et ce que la cascade emporterait.
                 resource: targetResource,
                 isResourceLoading: isFundingLoading,
+                paymentInProgress,
                 // Retour à l'annuaire ; le document est déjà retiré du cache.
                 onDeleted: () => void navigate("/aac"),
             },

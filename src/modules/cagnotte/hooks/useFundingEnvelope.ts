@@ -3,6 +3,7 @@ import type { Action, ActionItemNormalized, EntityTypes } from '@communecter/coc
 import { useCocolight } from '@/hooks/useCocolight';
 import { CAGNOTTE_QUERY_KEYS } from '@/modules/cagnotte/constants/queryKeys';
 import { getProfileSlugFromLocation } from '@/lib/fundingProjectUtils';
+import { getPledgeHolder } from '@/modules/cagnotte/utils/pledgeHolder';
 import { readFinancerPaymentState, toDisplayPaymentStatus } from '@/modules/cagnotte/utils/financerPayment';
 import {
   asRecord,
@@ -586,8 +587,10 @@ export function useFundingEnvelope(
               financerId: me.id,
               financerType: 'citoyens',
               action: 'getFormData',
-              // `answerId` : cette seule réponse, sans `nopropProject`.
-              params: formAnswerId ? { answerId: formAnswerId } : { project: 'all' },
+              // `answerId` : cette seule réponse, sans `nopropProject`. `holder` : marque `mine` les réservations de cet onglet.
+              params: formAnswerId
+                ? { answerId: formAnswerId, holder: getPledgeHolder() }
+                : { project: 'all', holder: getPledgeHolder() },
             });
             mergedEnvelope = mergeEnvelopePayloads(rawEnvelope, rawFormData);
           } catch (formError) {

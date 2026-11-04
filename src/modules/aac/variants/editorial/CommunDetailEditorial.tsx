@@ -22,7 +22,7 @@ import { CommunCofinancersTable } from "../../components/pageDetail/CommunCofina
 import { CommunProse } from "../../components/pageDetail/CommunProse.tsx";
 import { GallerySection } from "../../components/pageDetail/CommunContentSections.tsx";
 import { SectionBodySkeleton } from "../../components/pageDetail/CommunSkeletons.tsx";
-import { CommunSectionNavContext, tabbedSectionNav } from "../../hooks/useCommunSectionNav";
+import { CommunSectionNavContext, revealSection, tabbedSectionNav } from "../../hooks/useCommunSectionNav";
 import type { CommunDetailViewProps } from "../../components/pageDetail/variants/registry";
 import type { CommunObjectivesVM } from "../../hooks/useCommunDetailController";
 import { EditorialSection } from "./EditorialSection";
@@ -63,6 +63,11 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
   const [tab, setTab] = useState<TabKey>("fiche");
   // Palier dont on ne montre que les actions (onglet « Passage à l'action »).
   const [milestoneFilter, setMilestoneFilter] = useState<string | null>(null);
+  // Filtrer sur un palier fait apparaître ses actions.
+  const selectMilestone = (itemId: string | null) => {
+    setMilestoneFilter(itemId);
+    if (itemId !== null) revealSection("actions");
+  };
   const showSection = tabbedSectionNav<TabKey>(
     setTab,
     (id) => SECTION_TAB[id] ?? (vm.prose.some((block) => block.id === id) ? "fiche" : null),
@@ -235,16 +240,17 @@ export default function CommunDetailEditorial({ vm }: CommunDetailViewProps) {
                   <CommunMilestonesList
                     {...project.actions}
                     selectedMilestoneId={milestoneFilter}
-                    onSelectMilestone={setMilestoneFilter}
+                    onSelectMilestone={selectMilestone}
                   />
                 )}
               </ProjectPhaseSection>
+              {/* À partir de `lg`, carte collée sous l'en-tête, à défilement interne. */}
               <ProjectPhaseSection
                 objectives={objectives}
                 id="actions"
                 title={String(t("editorial.detail.actions"))}
                 intro={String(t("editorial.detail.actionsIntro"))}
-                className="min-w-0"
+                className="min-w-0 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain"
               >
                 {(project) => (
                   <CommunActionsFeed

@@ -80,6 +80,7 @@ src/modules/cagnotte/
 │   │   ├── CagnotteSuccessScreen.tsx
 │   │   ├── PaymentMethodPicker.tsx     # Choix du moyen parmi ceux de l'entité
 │   │   ├── CagnottePaymentsPanel.tsx   # Onglet « Paiements » : à rapprocher, historique, reprise
+│   │   ├── RetractPledgeDialog.tsx     # Confirmation du retrait d'une promesse (fiche commun, « Mes promesses »)
 │   │   ├── HelloAssoWaitingScreen.tsx  # Attente du checkout HelloAsso
 │   │   ├── HelloAssoInfo.tsx           # Rappel du déroulé HelloAsso
 │   │   └── PaymentRecordingScreen.tsx  # Paiement sans issue confirmée : reprise de l'enregistrement ou rejeu du débit
@@ -126,6 +127,10 @@ src/modules/cagnotte/
 │   ├── useCagnotteBills.ts             # Query : factures de la cagnotte (`cagnotteBills`), toutes ou les siennes
 │   ├── usePaymentChoice.ts             # Moyen de paiement retenu (choix ou moyen unique)
 │   ├── useSaveCagnotteContribution.ts  # Promesse (`answer.addFinancer`)
+│   ├── useRetractPledge.ts             # Retrait d'une promesse (`answer.deleteFinancer`)
+│   ├── usePledgeSelectionHold.ts       # Réservation des promesses cochées (`pledgeSelection`), au nom de l'onglet
+│   ├── usePledgesInProgress.ts         # Query : paiements en cours de réponses (`pledgesInProgress`), relus toutes les 60 s page visible
+│   ├── usePledgeRetractionEnabled.ts   # Clé `cagnotteModuleConfig.pledgeRetraction`
 │   └── useUserAdminOrganizations.ts    # Query : orgs admin du user (filtre MongoDB)
 │
 ├── lib/
@@ -161,15 +166,21 @@ src/modules/cagnotte/
 │
 └── utils/
     ├── coerce.ts                       # SOCLE sans dépendance : asRecord, toNumber, toString, toId, toArrayOrValues (ré-exportés par dataTransform)
-    ├── commande.ts                     # Lignes de commande : cibleDepense, montantARegler, promessesReglables, totalARegler, ligneReglement
+    ├── commande.ts                     # Lignes de commande : cibleDepense, cleDepense, montantARegler, promessesReglables, totalARegler, ligneReglement
     ├── commande.test.ts                # Tests unitaires commande
     ├── dataTransform.ts                # getServerData, getEntityId, toArray, toSafeInt, normalizeIdOrNull, getNonEmptyRecord, readEntityPreferences, normalizeEntityType (+ ré-exports de coerce)
     ├── dataTransform.test.ts           # Tests unitaires de tous les helpers dataTransform
     ├── financerPayment.ts              # readFinancerPaymentState, unpaidAmountOf, dueAmountOf, toDisplayPaymentStatus — LA lecture du bloc `payment`
     ├── financerPayment.test.ts         # Tests unitaires financerPayment
+    ├── pledgeRetraction.ts             # isRetractablePledgeLine, isOwnPledgeLine, findPledgeLine, readPledgesInProgress, readPledgesLockedForSelection, readDepensesInProgress, hasPaymentInProgress, retractErrorKind — retrait d'une promesse, paiements en cours
+    ├── pledgeRetraction.test.ts        # Tests unitaires pledgeRetraction
+    ├── pledgeChanges.ts                # notifyPledgeChange, onPledgeChange — un onglet prévient les autres d'un changement (`BroadcastChannel`)
+    ├── pledgeChanges.test.ts           # Tests unitaires pledgeChanges
+    ├── pledgeHolder.ts                 # getPledgeHolder — identifiant de l'onglet qui réserve (`sessionStorage`, onglet dupliqué détecté par `BroadcastChannel`)
+    ├── pledgeHolder.test.ts            # Tests unitaires pledgeHolder
     ├── depenseKey.ts                   # resolveDepenseKey — la CLÉ d'une dépense, ≠ sa position
     ├── depenseKey.test.ts              # Tests unitaires depenseKey
-    ├── format.ts                       # formatCurrency (Intl.NumberFormat), formatNumber, roundToCents, formatDate, initials
+    ├── format.ts                       # formatCurrency (Intl.NumberFormat), formatNumber, roundToCents, formatDate, formatTime, initials
     ├── format.test.ts                  # Tests unitaires format
     ├── paymentMethods.ts               # availablePaymentChoices — moyens proposés au contributeur
     ├── actionDateHelpers.ts            # parseFrenchDateToIso, frenchDate↔pickerValue, timestampToFrenchDate
@@ -406,6 +417,7 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 | `useOrganizationProjectsWithAnswers(entityId?)` | `() => UseQueryResult<{ projects, answers }>` | Liste projets de l'org + réponses CoForm — utilisé par `PaymentConfigPage` et `CagnotteDialog` |
 | `useProjectModalCagnotte(entityId, projectModalId)` | `() => UseQueryResult<ProjectModalCagnotteData>` | Stats financières du projet "principal" sélectionné (header) |
 | `useUserAdminOrganizations(currentUser, params?)` | `() => UseQueryResult<AdminOrganization[]>` | Orgs où l'user est admin (filtre serveur strict) |
+| `usePledgesInProgress(answerIds, { enabled?, subscribeOnly? })` | `() => PledgesInProgressData \| undefined` | Paiements en cours de ces réponses (`pledgesInProgress`), clé `pledgeRetraction` ; `undefined` sans réponse ou relecture coupée (repli sur l'enveloppe) ; cf. [Permissions](#permissions) |
 
 `useFundingEnvelope.ts` exporte également trois fonctions utilitaires consommées par `prefetchFundingEnvelope` :
 - `normalizeFundingEnvelope(rawEnvelope, _contextEntityId?, _contextType?, forcedProjectId?, forcedProfileSlug?)` — normalisation pure, appelable côté SSR
@@ -416,15 +428,16 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 
 | Hook | Rôle |
 |---|---|
-| `useSaveCagnotteContribution()` | Enregistre une **promesse** : un `answer.addFinancer` par dépense allouée (`/co2/aap/coremuoperation/`, `finkey` générée par le serveur), sans versement. Les versements payés ne passent jamais par ce hook (cf. [Services de paiement](#services-de-paiement)). Les helpers purs de commande vivent dans `utils/commande.ts` : `cibleDepense`, `montantARegler` (solde au centime : `computePledgesFromResources` le calcule avec `dueAmountOf`, hors versements en attente de validation, déjà faits), `promessesReglables`, `totalARegler` (total à régler, affiché par le bouton d'en-tête, le toast et la liste des promesses comme par la page de règlement), `ligneReglement` |
+| `useSaveCagnotteContribution()` | Enregistre une **promesse** : un `answer.addFinancer` par dépense allouée (`/co2/aap/coremuoperation/`, `finkey` générée par le serveur), sans versement. Les versements payés ne passent jamais par ce hook (cf. [Services de paiement](#services-de-paiement)). Les helpers purs de commande vivent dans `utils/commande.ts` : `cibleDepense`, `montantARegler` (solde au centime : `computePledgesFromResources` le calcule avec `dueAmountOf`, hors versements en attente de validation, déjà faits), `promessesReglables`, `totalARegler` (total à régler, affiché par le bouton d'en-tête, le toast et la liste des promesses comme par la page de règlement), `ligneReglement`, `cleDepense` (clé de la dépense d'une promesse, à défaut sa position) |
+| `useRetractPledge({ extraInvalidate, onRetracted })` | `retract({ answerId, depenseKey, financerId, finkey })` retire une **promesse** par `answer.deleteFinancer` (`/co2/aap/coremuoperation/`), ligne visée par sa `finkey` et la clé de sa dépense, jamais par `finIndex`. Un second retrait de la même `finkey` en vol est ignoré. Les caches du financement (enveloppe, projets de l'organisation, projet par défaut, dépenses brutes du commun) et ceux de l'hôte (`extraInvalidate`) sont relus après chaque tentative, refus compris. Refus traduits par statut (`retractErrorKind`) : 409 versement enregistré ou en cours, 404 promesse introuvable, 403 droits, session expirée |
 | `useResourceModalPreference(entity)` | Persiste le `projectModalId` côté DB via `entity.updateField("preferences", merged)` + appel non-bloquant `entity.get()` pour resynchroniser. Retourne `{ save(projectId): Promise<boolean>, isSaving }` |
 
 ### Paiement
 
 | Hook | Rôle |
 |---|---|
-| `useFundingEnvelopeAction()` | Rend `submit(action, payload)` : envoie une action de paiement `fundingEnvelope` (`stripePay`, `helloassoPay`, `helloassoStatus`, `cagnotteSettle`) depuis l'entité du site et rend la réponse, ou lève l'erreur serveur avec son statut HTTP (`readFundingEnvelopeResponse`, `readFundingEnvelopeError`). Le SDK impose le contexte de cette entité (cf. [Piège 2bis](#2bis-lenveloppe-est-scopée-à-lentité-appelante--pas-au-corps-de-la-requête)) : c'est son compte qui encaisse ; le payload n'en porte aucun |
-| `useHelloAssoCheckout({ submit, onSettled })` | `start(amount, order, snapshot)` ouvre la popup pendant le clic, crée le checkout avec la commande, puis interroge `helloassoStatus` (toutes les 5 s, au retour sur la page et au message de la popup) jusqu'à l'enregistrement serveur. Phases `idle → opening → waiting → checking` ; tout arrêt (« Annuler », échec signalé par la popup, attente max 20 min) passe par une dernière vérification (`checking`), bornée à 150 s et qu'on peut cesser d'attendre (« Ne plus attendre ») : l'arrêt affiche alors la référence du checkout, le serveur enregistrera le paiement s'il a eu lieu. Une vérification sans réponse en 15 s compte comme une erreur sans bloquer les suivantes. Un `start` pendant un suivi est ignoré |
+| `useFundingEnvelopeAction()` | Rend `submit(action, payload)` : envoie une action de paiement `fundingEnvelope` (`FundingEnvelopeAction` : `stripePay`, `helloassoPay`, `helloassoStatus`, `cagnotteSettle`, `cagnotteBills`, `cagnotteCancel`, `pledgeSelection`, `pledgeStatus`, `pledgesInProgress`) depuis l'entité du site et rend la réponse, ou lève l'erreur serveur avec son statut HTTP (`readFundingEnvelopeResponse`, `readFundingEnvelopeError`). Le SDK impose le contexte de cette entité (cf. [Piège 2bis](#2bis-lenveloppe-est-scopée-à-lentité-appelante--pas-au-corps-de-la-requête)) : c'est son compte qui encaisse ; le payload n'en porte aucun |
+| `useHelloAssoCheckout({ submit, onSettled })` | `start(amount, order, snapshot)` ouvre la popup pendant le clic, crée le checkout avec la commande, puis interroge `helloassoStatus` jusqu'à l'enregistrement serveur : toutes les 5 s pendant 2 min, puis toutes les 15 s, aucun minuteur page masquée (`useDocumentHidden`) ; le retour sur la page et le message de la popup vérifient aussitôt. Phases `idle → opening → waiting → checking` ; tout arrêt (« Annuler », échec signalé par la popup, attente max 20 min) passe par une dernière vérification (`checking`), bornée à 150 s et qu'on peut cesser d'attendre (« Ne plus attendre ») : l'arrêt affiche alors la référence du checkout, le serveur enregistrera le paiement s'il a eu lieu. Une vérification sans réponse en 15 s compte comme une erreur sans bloquer les suivantes. Un `start` pendant un suivi est ignoré |
 | `usePaymentSettlement({ submit, onRecorded })` | `settled(résultat, snapshot)` : succès (`onRecorded`) si le serveur a enregistré, échec sinon ; `retry()` rejoue `cagnotteSettle` sur la même facture, jamais un nouveau paiement ; un enregistrement déjà en cours est signalé (`inProgress`), la référence du paiement conservée |
 | `useStripeCharge({ submit, stripe, storageKey, onSettled })` | `charge(payload, snapshot)` envoie `stripePay` avec une clé de tentative (`key`, 32 caractères hexadécimaux) ; sans réponse ou sur un 5xx, phase `unconfirmed` : plus de formulaire, `verify()` rejoue la même requête à l'identique et le serveur ne débite pas deux fois sous la même clé. Une authentification forte (`requires_action`) est menée par `stripe.handleNextAction` (`stripe` = le Stripe.js de l'entité), puis la même requête règle le paiement ; un refus d'authentification est un refus, une erreur de Stripe.js une issue inconnue. Un refus (4xx, ou erreur rendue par le serveur) rend la main ; la tentative suivante a une nouvelle clé. Débit confirmé : `onSettled(résultat, snapshot)`. Avec `storageKey` (par utilisateur et par ressource), une tentative sans issue connue est gardée dans `localStorage` 24 h (fenêtre d'idempotence Stripe) et revient en « non confirmé » à la réouverture |
 | `useCagnotteBills(filter)` | Factures de la cagnotte de l'entité du site (`cagnotteBills`, `filter` `attention` ou `all`) et leur portée (`scope`) : toutes pour un admin de l'entité, celles de l'utilisateur sinon ; onglet « Paiements » de `PromessesDialog`. Clé par utilisateur |
@@ -646,6 +659,37 @@ Comportement du bouton lui-même :
 
 La modale s'ouvre sur les paiements quand il n'y a rien à régler.
 
+Avec `cagnotteModuleConfig.pledgeRetraction: true`, une promesse **sans aucun versement** porte un
+bouton « Retirer » (`Pledge.retractable`, posé par `computePledgesFromResources` avec
+`isRetractablePledgeLine`). La confirmation (`RetractPledgeDialog`) vise la ligne par sa `finkey` et la
+clé de sa dépense (`cleDepense` : `depenseKey`, à défaut la position `depenseIndex`, qui vaut clé dans l'enveloppe). Une
+promesse retirée quitte la liste et la sélection aussitôt ; `onRetracted` laisse l'hôte relire ses
+propres données (`CagnotteDialog` y branche son `onRefresh`).
+
+**Réservation dès la sélection** (même clé). Cocher une promesse la réserve côté serveur
+(`usePledgeSelectionHold` → action `pledgeSelection`), au nom de l'onglet (`getPledgeHolder`). Partout
+ailleurs — autres onglets, autres comptes, fiche commun —, elle s'affiche « Paiement en cours », et son
+retrait est refusé à tous, payeur compris. Dans la modale qui l'a cochée, la ligne reste cochée, sans
+« Retirer » ; avant d'ouvrir une confirmation de retrait, la modale envoie la sélection en attente
+(`flush`), pour qu'une décoche récente soit levée côté serveur.
+
+La sélection complète de l'onglet part à chaque changement (300 ms), même si la page est masquée juste
+après, et se vide à la fermeture. Rien ne part tant qu'elle reste celle déjà envoyée : ouvrir et fermer la
+modale sans rien cocher n'envoie rien. Les envois de l'onglet partent l'un après l'autre : une levée ne
+peut pas être doublée par une sélection encore en vol. Elle est renouvelée toutes les 5 min tant que la modale est ouverte et la
+page visible ; masquée, plus aucun minuteur, et la sélection repart une fois au retour. Une réservation non
+renouvelée expire au bout de 15 min ; Mongo la purge une heure plus tard (index TTL sur `purgeAt`).
+Un onglet ne lève que ses propres réservations : un second onglet du même compte ne touche pas à la
+sélection du premier, et une promesse déjà réservée par un autre onglet lui est refusée. Une promesse
+refusée (`heldByOther`, `paymentInProgress`, `retracted`, `notAllowed` ; une raison inconnue compte comme
+`paymentInProgress`) est décochée, sa case désactivée, avec la pastille « Paiement en cours », « Promesse retirée »
+ou « Non autorisée ».
+
+Une promesse déjà en paiement arrive désactivée et sort du « tout cocher ». L'hôte la lit dans
+l'enveloppe (`Pledge.paymentInProgress`, par `readPledgesLockedForSelection`), puis la modale relit les
+paiements en cours tant qu'elle est ouverte (`usePledgesInProgress`). Chaque changement de sélection les fait
+relire dans l'onglet, et prévient les autres onglets du navigateur (`notifyPledgeChange`).
+
 Les promesses viennent de l'enveloppe de l'entité du site. En type `aac`, `getFormData` y lit le
 formulaire de l'annuaire (`useSiteEnvelopeForm` : `config.aac.formId`), pas le premier de l'hôte. Les
 projets de l'organisation (`useOrganizationProjectsWithAnswers`) ne sont chargés qu'en type `standard`
@@ -703,6 +747,74 @@ des trois droits est acquis — `canEditMilestone`, `canDeleteMilestone` ou `can
 passent `canRestore = canRestoreMilestone(status)`. Conséquence directe de la table ci-dessus :
 un palier **clos ET financé** n'est ni éditable ni supprimable, mais reste **restaurable**.
 
+**Retrait d'une promesse** (hors calculateur, clé `cagnotteModuleConfig.pledgeRetraction`). Le serveur
+(`Aap::deleteFinancerEngagement`) fait foi :
+- **qui** : le financeur (lui-même, admin de l'organisation financeuse, super-admin), le porteur du
+  commun (auteur de la réponse) ou un admin du projet lié ou de son organisation parente ;
+- **quoi** : une ligne qui ne porte aucun argent — ni versement (même partiel ou en attente de
+  validation), ni marqueur legacy (`fundingType: prepaid`, `status` autre que `pending`,
+  `payment_method`, `method`, `transactionId`, `bill`, `ref`) —, qui n'est pas doublée par un
+  cofinancement (`iscofinancementftl`, `tlid`), et sans paiement en cours, celui du demandeur compris
+  (`CagnottePayment::pledgeLock`) : réservation active, ou facture ouverte (en attente, en règlement
+  ou à rapprocher ; le serveur règle d'abord celles qui peuvent l'être). Le payeur décoche sa promesse
+  avant de la retirer ;
+- **comment** : par sa `finkey` et son financeur, sans repli sur une autre ligne.
+
+`isRetractablePledgeLine` reprend la règle sur les données pour n'afficher le bouton que là où le
+serveur l'accepterait.
+
+**Paiement en cours.** `getFormData` annonce EXACTEMENT ce qui bloque un retrait :
+`paymentsInProgress: { <answerId>: { pledges: [{ finkey, kind: hold|bill, mine, until }], depenses } }`
+(`CagnottePayment::paymentsInProgress`). Les réservations actives et les factures ouvertes y figurent,
+sauf une facture HelloAsso vérifiée sans paiement après l'expiration de son lien (15 min) : elle ne
+bloque plus, mais garde sa fenêtre de règlement. Avant la lecture, au plus 2 factures en attente
+périmées sont vérifiées chez le prestataire (HelloAsso dès 15 min, Stripe dès 1 h) : une facture
+abandonnée cesse de bloquer. `mine` vaut pour une facture de l'utilisateur, et pour une réservation de
+l'utilisateur et de cet onglet (`params.holder`). `readPledgesInProgress` lit l'annonce : toute
+réservation et toute facture comptent. `readPledgesLockedForSelection`, pour la liste de « Mes
+promesses », écarte seulement les réservations de cet onglet, qui sont sa propre sélection.
+
+L'action légère `pledgesInProgress` rend la même annonce pour des réponses données. La fiche commun et
+« Mes promesses » la relisent (`usePledgesInProgress`), avec repli sur l'enveloppe tant qu'elle n'a pas
+répondu, ou quand la relecture est coupée :
+- toutes les 60 s tant que la page est visible ; page masquée, aucun minuteur ;
+- au retour sur l'onglet, si la dernière lecture date de plus de 10 s ;
+- aussitôt qu'un autre onglet du navigateur signale un changement (`onPledgeChange`, `BroadcastChannel`) :
+  réservation prise ou levée, promesse retirée. Un onglet masqué marque seulement sa donnée périmée, et la
+  relit au retour.
+
+Pas de nouvelle tentative après un échec : la lecture suivante a lieu 5 min plus tard. La fiche ne relit
+que pour qui peut voir le signal : admin du commun, ou financeur d'une promesse retirable. L'action vérifie,
+comme `getFormData`, au plus 2 factures périmées ; une même facture n'est revérifiée qu'après 2 min.
+
+À l'ouverture de la confirmation, `RetractPledgeDialog` relit l'état de la promesse (`pledgeStatus`) :
+si elle est réservée ou facturée, même par le demandeur, il avertit (« jusqu'à HH:MM », sans heure si l'échéance
+est passée : facture à rapprocher) et désactive la confirmation. Un 3-D Secure Stripe abandonné annule l'intention
+(`cagnotteCancel`, appelé par `useStripeCharge`) : la promesse est libérée tout de suite. Le serveur
+garde le dernier mot (409).
+
+`depenses` liste les dépenses visées par une **contribution** en cours, par leur jalon, à défaut par la
+clé de la dépense (`readDepensesInProgress`). Une contribution n'a pas de ligne avant son
+enregistrement : sa dépense ne doit pas disparaître entre-temps. Un palier visé ne se supprime pas, et
+un commun avec un paiement en cours non plus (`hasPaymentInProgress`, `doc/34` §3.3 et §6).
+
+**Écrans legacy et écrivains PHP.** Les écrans du module survey écrivent `financer` par la route
+générique (`/co2/element/updatepathvalue`). Sur une réponse, `Element::updatePathValue` simule d'abord
+l'écriture (`Aap::guardAnswerWrite`). Elle est refusée (`{result: false, msg}`) si elle :
+- modifie ou efface une ligne qui porte de l'argent ou un paiement en cours (son `status` reste
+  modifiable) ;
+- supprime une dépense qui porte une telle ligne, ou que vise une contribution en cours ;
+- rétablit une promesse retirée (`retractedFinkeys`, posé par le retrait).
+
+Acceptée, elle s'écrit sous les révisions lues (`financerRev`) : un versement enregistré entre la
+lecture et l'écriture la fait refuser (« Données modifiées entre-temps : rechargez la page »). Les
+opérations PHP qui réécrivent des dépenses (`doublonnement`, `changefintype`, `deletefingroup`, et dans
+`FundingAction` `delete`, `camp_bank_payment`, `camp_double`) passent par `Aap::updateFinancers` :
+relecture, mêmes contrôles, écriture en CAS, lignes protégées conservées (`kept`).
+`generateproposition` et `createMilestoneDepense` (costum) ajoutent les dépenses de jalon une à une,
+sans réécrire le tableau. Les droits que ces écrans affichent (`canPay`, `canValidate`, `canDelete`)
+viennent d'`Aap::financerLineFlags`, partagé avec le tableau de bord compact.
+
 **Note sur `canContribute`** : `canContribute` requiert que `me` soit connecté (`isConnected`). Si l'utilisateur n'est pas connecté ou si `entity` est absent, le calculateur fait un early-return vers `DEFAULT_CAGNOTTE_PERMISSIONS` (`canContribute: false`). La condition complète est : connecté + `projectId` non vide + `hasActiveMilestones === true`.
 
 **Usage** :
@@ -731,6 +843,13 @@ propre engagement (référence `<facture>:<ligne>`). Le versement, vérifié che
 **validé** (`validatedBy` = `stripe` ou `helloasso`) : il n'attend pas la validation du porteur. La
 référence du paiement est gardée sur la facture dès sa vérification : une reprise n'interroge plus
 le prestataire.
+
+**Une seule facture ouverte par promesse.** Une promesse déjà en paiement n'est pas facturée une
+seconde fois : refus « Un paiement est déjà en cours pour cette promesse, jusqu'à HH:MM ». Exception :
+la même commande HelloAsso du même payeur, au lien encore valide (15 min), rouvre le même checkout
+(`helloassoRedirectUrl` gardé sur la facture). Deux créations simultanées se départagent après insertion,
+et la plus récente est annulée avant tout débit. Un versement **manuel** (`payFinancerEngagement` sans
+vérification de prestataire) est refusé pendant un paiement en ligne et au-delà du reste dû.
 
 Payer exige d'être connecté et une commande (`stripePay`, `helloassoPay`) : refus « Connectez-vous
 pour payer » ou « Commande manquante ». Une promesse déjà réglée, ou un montant supérieur à son reste
@@ -768,9 +887,13 @@ donc être le montant affiché (`roundToCents`, `montantARegler`). Un montant nu
 |---|---|---|
 | `stripePay` | `payment_method_id`, `amount`, `email`, `order`, `key` | `intent_id`, `bill`, `recorded`, `recordError` : débit puis enregistrement dans la même requête. Authentification forte demandée : `requires_action`, `client_secret`, `bill` (le front la mène avec Stripe.js puis rejoue). Rejouée avec la même `key` : même facture, même clé d'idempotence Stripe — refus rendu tel quel (400), débit déjà fait réglé sans nouveau débit (réponse de `cagnotteSettle` + `bill`) |
 | `helloassoPay` | `amount`, `order` | `content: { id, redirectUrl }`, `bill` |
-| `helloassoStatus` | `checkoutIntentId` | `paid`, `recorded`, `inProgress`, `orderId`, `recordError` : règle la facture dès que HelloAsso a joint une commande au checkout ; checkout sans facture → « Paiement introuvable » |
+| `helloassoStatus` | `checkoutIntentId` | `paid`, `recorded`, `inProgress`, `orderId`, `recordError` : règle la facture dès que HelloAsso a joint une commande au checkout, en interrogeant HelloAsso au plus une fois toutes les 4 s par facture (`settleThrottled`) ; checkout sans facture → « Paiement introuvable » |
 | `cagnotteSettle` | `bill` | comme `helloassoStatus` ; reprise après un enregistrement en échec (« Réessayer ») |
 | `cagnotteBills` | `filter` (`attention` \| `all`) | `bills` : factures de la cagnotte, plus récentes d'abord ; `scope` : `all` (admin de l'entité, toute la cagnotte) ou `mine` (factures de l'utilisateur). Non connecté → refus |
+| `cagnotteCancel` | `bill` | Abandon d'un 3-D Secure par son payeur : intention Stripe encore en attente annulée, facture `cancelled` (`cancelled: true`) ; intention déjà débitée → réglée (réponse de `cagnotteSettle`) |
+| `pledgeSelection` | `selection: [{ answerId, depenseKey, financerId, finkey }]`, `holder` | Sélection COMPLÈTE de l'onglet `holder` : chaque promesse réservée 15 min (ou renouvelée), les autres réservations de l'onglet dans le contexte levées ; une promesse réservée par un autre onglet, même du même compte, est refusée ; `held: [finkey]`, `refused: [{ finkey, reason: heldByOther \| paymentInProgress \| retracted \| notAllowed }]`. Non connecté → refus |
+| `pledgesInProgress` | `answerIds` (100 au plus), `holder` | `paymentsInProgress` de ces réponses, de même forme que `getFormData` (`mine` d'une réservation : celle de cet onglet). Non connecté → refus |
+| `pledgeStatus` | `answerId`, `depenseKey`, `financerId`, `finkey` | `lock` (`null` \| `hold` \| `bill`), `mine`, `until` : état frais pour la confirmation de retrait. Non connecté → refus |
 
 `inProgress` : un autre appel règle la facture (verrou abandonné au bout de 120 s). Un prestataire
 injoignable rend `success: 0`.
@@ -796,7 +919,7 @@ PaymentConfigPage (contributeur + moyen)       PledgePaymentPage (moyen)
   │               rejoue la même requête, sans double débit
   │
   └─ HelloAsso → useHelloAssoCheckout.start() : popup + helloassoPay { order }
-               └─ helloassoStatus toutes les 5 s, au retour sur la page, au message de la popup
+               └─ helloassoStatus toutes les 5 s (2 min) puis 15 s, page visible ; au retour sur la page ; au message de la popup
                   └─ payé : le serveur enregistre → usePaymentSettlement.settled()
   ↓
 Enregistré → succès (onPaymentSuccess, confettis, invalidation FUNDING_ENVELOPE_PREFIX)
@@ -836,8 +959,16 @@ n'écrit plus rien.
 - **Factures bloquées** : après 5 échecs d'enregistrement ou 24 h, `settleDue` ne les reprend plus ;
   elles restent dans « À rapprocher » (onglet « Paiements » de « Mes promesses »), avec leur erreur.
 - **Écritures concurrentes** : les écritures de `depense.<k>.financer` passent par une révision
-  (`financerRev`) dans `Aap` ; les écritures faites ailleurs (éditeur de formulaire, actions de
-  validation dédiées) ne la portent pas.
+  (`financerRev`), dans `Aap` comme par la route générique ; celles qui n'empruntent ni l'un ni l'autre
+  ne la portent pas.
+- **Retrait d'une promesse** : une facture ou une réservation créée pendant un retrait vise à coup sûr une
+  ligne encore là, ou est annulée avant tout débit (`CagnottePayment::create` et `setSelection` marquent
+  la dépense). Une page legacy périmée qui réécrit toute une liste `financer` peut encore effacer une
+  promesse **sans argent** ajoutée entre-temps : seules les lignes protégées sont garanties.
+- **Réservations et onglets** : un onglet dupliqué reçoit l'identifiant de l'original (copie du
+  `sessionStorage`) ; il l'annonce sur un `BroadcastChannel` et en change dès qu'un onglet ouvert le
+  porte (navigateur sans `BroadcastChannel` : les deux onglets le partagent). Un onglet fermé sans
+  fermer la modale laisse sa réservation jusqu'à son expiration (15 min au plus).
 - **Paiement non confirmé puis navigateur changé** : la tentative est gardée dans le `localStorage`
   du navigateur ; depuis un autre navigateur, un nouveau paiement repart avec une nouvelle clé.
 
@@ -845,7 +976,7 @@ n'écrit plus rien.
 
 ## React Query
 
-10 clés (dont 5 préfixes pour invalidations) dans `constants/queryKeys.ts` :
+13 clés (dont 6 préfixes pour invalidations) dans `constants/queryKeys.ts` :
 
 | Key | Forme |
 |---|---|
@@ -859,6 +990,9 @@ n'écrit plus rien.
 | `COMMUN_RAW_DEPENSES_PREFIX(answerId)` | `["aac-milestone-list-depenses", answerId]` (l'étape, 3ᵉ segment, est couverte par le préfixe) |
 | `CAGNOTTE_BILLS(entityId, userId, filter)` | `["cagnotte-bills", entityId, userId, filter]` (la liste dépend de l'utilisateur) |
 | `CAGNOTTE_BILLS_PREFIX()` | `["cagnotte-bills"]` (invalidé après une reprise) |
+| `PLEDGE_STATUS(answerId, finkey)` | `["cagnotte-pledge-status", answerId, finkey]` (relu à chaque ouverture de `RetractPledgeDialog`) |
+| `PLEDGES_IN_PROGRESS(answerIds, userId)` | `["cagnotte-pledges-in-progress", userId, answerIds.join(",")]` |
+| `PLEDGES_IN_PROGRESS_PREFIX()` | `["cagnotte-pledges-in-progress"]` (invalidé par `usePledgeSelectionHold` et `useRetractPledge`) |
 
 **`COMMUN_RAW_DEPENSES`** est le `answers.<step>.depense` d'une réponse **tel que le document le
 porte** — la seconde entrée de cache (staleTime 60 s) par laquelle la fiche commun et
@@ -918,6 +1052,7 @@ Sections dans `i18n/fr.json` et `i18n/en.json` :
 - `CagnotteDialog.*` — dialog principale (labels, toasts, success screen, celebration)
 - `PaymentConfigPage.*` — pages de paiement (moyens, Stripe, HelloAsso, promesse, attente `waiting.*`, reprise `recordingFailed.*`, toasts, erreurs, `helloAssoConfigErrors.*`)
 - `StripePaymentForm.*` — formulaire Stripe Elements (erreurs, `stripeErrors`, actions, toasts)
+- `PledgeRetract.*` — retrait d'une promesse (bouton, « Paiement en cours », « Non autorisée », confirmation, toasts, erreurs par statut)
 - `common.*` — labels partagés (loading, addMilestone, progress, supportProject)
 - `a11y.*` — labels accessibilité (back)
 
@@ -1104,6 +1239,20 @@ liée (`serverData.answer` vide), ces onglets sont retirés d'office (`isTabAvai
   ]
 }
 ```
+
+Clés du module, à la racine de la config du site :
+
+```json
+{
+  "cagnotteModuleConfig": {
+    "defaultType": "aac",
+    "pledgeRetraction": true
+  }
+}
+```
+
+`defaultType` : `standard` (défaut) ou `aac`. `pledgeRetraction` : bouton « Retirer » d'une promesse
+sans versement, sur la fiche commun et dans « Mes promesses » (désactivé par défaut).
 
 Section autonome dans la sidebar d'une autre page :
 ```json
