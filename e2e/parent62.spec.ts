@@ -569,25 +569,28 @@ test.describe("Parent62 — Partie 1 (lecture seule)", () => {
     expect(fonds.filtres, "les filtres d'actualités sont teintés").toBe(fonds.agenda);
   });
 
-  test("/annuaire : bouton d'ajout, filtres, et liste qui ne montre que les fiches validées", async ({ page }) => {
-    await page.goto("/annuaire", { waitUntil: "domcontentloaded" });
+  test("/annuaire-acteurs-parentalite : bouton d'ajout, filtre territoire, et liste qui ne montre que les fiches validées", async ({ page }) => {
+    // `/annuaire` (partenaires) a disparu le 03/11/2026 avec tout le concept « partenaire » : l'annuaire des
+    // acteurs est désormais le seul, et il porte le bouton d'ajout et le filtre territoire.
+    await page.goto("/annuaire-acteurs-parentalite", { waitUntil: "domcontentloaded" });
     await waitForHydration(page);
 
-    await expect(page.getByRole("heading", { name: "Annuaire des partenaires" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Ajouter un partenaire/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Annuaire des acteurs du soutien à la parentalité" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Ajouter un acteur/ })).toBeVisible();
     const filtres = page.locator('[data-section-type="filters"]');
-    for (const groupe of ["Territoire", "Type de structure", "Public", "Thèmes"]) {
+    for (const groupe of ["Territoire", "Catégorie thématique"]) {
       await expect(filtres.getByText(groupe, { exact: true }).first()).toBeVisible();
     }
 
     // Une fiche proposée porte `toBeValidated` : sans `costumSlug`, la liste n'envoie pas la porte de
-    // validation et la fiche s'afficherait dès sa création, avant tout contrôle.
+    // validation et la fiche s'afficherait dès sa création, avant tout contrôle. Le territoire part en
+    // égalité stricte sur le label de `territoires62.ts` (même valeur que l'enum du costumForm acteur).
     const recherche = page.waitForRequest(
-      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[type]"),
+      (r) => r.url().includes("globalautocomplete") && decodeURIComponent(r.postData() ?? "").includes("filters[territoires]"),
     );
-    await filtres.getByText("Association", { exact: true }).click();
+    await filtres.getByText("Arrageois", { exact: true }).click();
     const corps = decodeURIComponent((await recherche).postData() ?? "");
-    expect(corps).toContain("filters[type][$in][]=NGO");
+    expect(corps).toContain("filters[territoires][$in][]=Arrageois");
     expect(corps).toContain("filters[preferences.toBeValidated.parent62][$exists]=false");
     expect(corps).toContain("searchType[]=organizations");
   });

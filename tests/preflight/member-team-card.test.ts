@@ -104,24 +104,27 @@ describe("preflight — section member, carte « équipe »", () => {
     }
   });
 
-  describe("parent62 — l'enum `territoires` du costumForm citoyen ⊆ territoires62.ts", () => {
-    // Même référentiel que le filtre serveur ci-dessus, de l'autre côté de la saisie : une faute
-    // de frappe dans l'`enum` du formulaire d'édition ferait sortir le coordonnateur de sa carte
-    // `/equipe` sans qu'aucun gate ne le signale (le filtre Mongo est une égalité stricte).
-    const fichier = path.join(ROOT, "config.prod.parent62.json");
-    const cfg = JSON.parse(fs.readFileSync(fichier, "utf8")) as {
-      costumForms?: Record<string, { fields?: Record<string, { enum?: { value?: unknown }[] }> }>;
-    };
-    const champ = cfg.costumForms?.["parent62-citoyen"]?.fields?.territoires;
+  // Même référentiel que le filtre serveur ci-dessus, de l'autre côté de la saisie : une faute de
+  // frappe dans l'`enum` d'un formulaire ferait sortir le coordonnateur de sa carte `/equipe`
+  // (`parent62-citoyen`) ou un acteur du filtre territoire de `/annuaire-acteurs-parentalite`
+  // (`parent62-acteur`) sans qu'aucun gate ne le signale (le filtre Mongo est une égalité stricte).
+  const fichier = path.join(ROOT, "config.prod.parent62.json");
+  const cfg = JSON.parse(fs.readFileSync(fichier, "utf8")) as {
+    costumForms?: Record<string, { fields?: Record<string, { enum?: { value?: unknown }[] }> }>;
+  };
+  for (const form of ["parent62-citoyen", "parent62-acteur"]) {
+    describe(`parent62 — l'enum \`territoires\` du costumForm ${form} ⊆ territoires62.ts`, () => {
+      const champ = cfg.costumForms?.[form]?.fields?.territoires;
 
-    it("sentinelle : le champ `territoires` du costumForm existe et porte un enum", () => {
-      expect(champ?.enum, "costumForms.parent62-citoyen.fields.territoires.enum introuvable").toBeDefined();
-    });
-
-    for (const option of champ?.enum ?? []) {
-      it(`enum "${String(option.value)}" est un label de territoires62.ts`, () => {
-        expect(LABELS_62.has(String(option.value)), `valeur inconnue : ${JSON.stringify(option.value)}`).toBe(true);
+      it("sentinelle : le champ `territoires` du costumForm existe et porte un enum", () => {
+        expect(champ?.enum, `costumForms.${form}.fields.territoires.enum introuvable`).toBeDefined();
       });
-    }
-  });
+
+      for (const option of champ?.enum ?? []) {
+        it(`enum "${String(option.value)}" est un label de territoires62.ts`, () => {
+          expect(LABELS_62.has(String(option.value)), `valeur inconnue : ${JSON.stringify(option.value)}`).toBe(true);
+        });
+      }
+    });
+  }
 });

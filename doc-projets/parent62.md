@@ -5319,7 +5319,7 @@ liste `territoires`), pas sur la racine `typeObj.organizations` — suffisant : 
 `DraftProxy` pour le sous-type `acteur` est l'UNION de la racine et du sous-type lui-même
 (`pickCostumOverlay`, `cocolight-api-client/src/costum/runtime.ts:539`), déclarer sur le sous-type
 seul couvre déjà le formulaire `parent62-acteur` sans toucher aux autres sous-types `organizations`
-du costum. Non vérifié en navigateur depuis cet environnement (pas de session authentifiée).
+du costum. ✅ Vérifié en navigateur le 04/11 (relecture MR, base locale portant `typeObj.acteur.territoires`) : « Ajouter un acteur » avec un territoire → document créé avec `territoires: ["Arrageois"]`, fiche « Territoires : Arrageois », valeur relue à l'édition.
 
 **Tuile d'accueil « Rejoindre le réseau »** (page `/pro`) : pointait vers `/annuaire`, redirigée vers
 `/annuaire-acteurs-parentalite`.
@@ -5376,8 +5376,10 @@ acteur). `subType:"acteur"` reste posé au niveau du formulaire (orthogonal : il
 costum `typeObj.acteur` pour la validation/les presets, indépendamment de la valeur réelle écrite dans
 le champ `type` — même double usage que `cae`).
 
-Non vérifié en navigateur depuis cet environnement (pas de session authentifiée) — à confirmer par le
-client sur le flux réel « Ajouter un acteur ».
+✅ Vérifié en navigateur le 04/11 (relecture MR, backend local) : « Ajouter un acteur » → `co2/element/save` en 200,
+document créé avec `type: "acteur"`, `role: "admin"`, `source.keys: ["parent62"]`, lien admin au créateur ; « Modifier le
+profil » rouvre « Modifier la fiche acteur » (le discriminant résout `typeObj.acteur`). Reste la confirmation du client
+sur le flux réel.
 
 | Gate | Résultat |
 |---|---|
