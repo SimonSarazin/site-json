@@ -20,11 +20,19 @@ const mocks = vi.hoisted(() => ({
   useCommunProjectEntity: vi.fn(),
   canCreateMilestone: false,
   projectEntity: null as unknown,
+  live: undefined as unknown,
+  liveArgs: null as null | { ids: string[]; opts?: { subscribeOnly?: boolean } },
 }));
 
 vi.mock("@/hooks/useCocolight", () => ({ useCocolight: () => ({ entity: null, me: null, api: null }) }));
 vi.mock("@/hooks/useSite", () => ({ useSite: () => ({ config: {} }) }));
 vi.mock("@/modules/cagnotte/hooks/useFundingEnvelope", () => ({ useFundingEnvelope: () => ({ data: undefined }) }));
+vi.mock("@/modules/cagnotte/hooks/usePledgesInProgress", () => ({
+  usePledgesInProgress: (ids: string[], opts?: { subscribeOnly?: boolean }) => {
+    mocks.liveArgs = { ids: [...ids], opts };
+    return mocks.live;
+  },
+}));
 vi.mock("@/modules/cagnotte/hooks/useCagnotteType", () => ({ useCagnotteType: () => ({ config: { selectorType: "proposition" } }) }));
 vi.mock("@/modules/cagnotte/hooks/useOrganizationProjectsWithAnswers", () => ({
   useOrganizationProjectsWithAnswers: () => ({ projects: [] }),
@@ -134,5 +142,25 @@ describe("useAacFundingResource — projet lié d'un commun absent de l'envelopp
     const { result } = renderHook(() => useAacFundingResource("answer-1", { answer: REPONSE }));
 
     expect(result.current.projectSlug).toBe("sportsPei");
+  });
+});
+
+describe("useAacFundingResource — paiement en cours", () => {
+  afterEach(() => {
+    mocks.live = undefined;
+  });
+
+  it("lit la relecture de la fiche sans l'interroger, et y voit la réservation", () => {
+    mocks.live = { paymentsInProgress: { "answer-1": { pledges: [{ finkey: "a-1", kind: "hold", mine: true }], depenses: [] } } };
+    const { result } = renderHook(() => useAacFundingResource("answer-1"));
+
+    expect(mocks.liveArgs).toEqual({ ids: ["answer-1"], opts: { subscribeOnly: true } });
+    expect(result.current.paymentInProgress).toBe(true);
+  });
+
+  it("sans relecture ni annonce de l'enveloppe : rien en cours", () => {
+    const { result } = renderHook(() => useAacFundingResource("answer-1"));
+
+    expect(result.current.paymentInProgress).toBe(false);
   });
 });

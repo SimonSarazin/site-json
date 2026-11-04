@@ -1720,6 +1720,7 @@ import {
   AacDirectorySectionSchema,
   AacHighlightSectionSchema,
 } from "@/modules/aac/schema";
+import { KanbanConfigSchema } from "@/modules/kanban/schema";
 import {
   LoginFormSectionSchema,
   RegisterFormSectionSchema,
@@ -2069,6 +2070,11 @@ export const Header = z.object({
   // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
   // header ne dépend d'aucune logique de site sans cette option.
   entityLogoOverride: z.boolean().optional(),
+  // Taille du texte de la nav de premier niveau du header `type: "stacked"` — "lg" = défaut
+  // historique (text-2xl, text-xl une fois `stuck`), "md"/"sm" la réduisent (HeaderStacked.tsx) ;
+  // opt-in, ignorée par les autres variantes de header. Sert à faire rentrer une barre pleine
+  // (budget de largeur) sans raccourcir les libellés.
+  navFontSize: z.enum(["sm", "md", "lg"]).optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   navVisibleOnlyForListedPages: z.boolean().optional(),
@@ -2407,6 +2413,8 @@ const CagnotteModuleConfig = z.object({
     defaultType: z.enum(["standard", "aac"]).optional().default("standard"),
     predefinedAmounts: z.array(z.number()).optional(),
     context: z.string().optional(),
+    // Bouton « Retirer » d'une promesse sans versement (fiche commun, « Mes promesses ») ; OFF par défaut.
+    pledgeRetraction: z.boolean().optional(),
 });
 
 export type CagnotteModuleConfig = z.infer<typeof CagnotteModuleConfig>;
@@ -2466,6 +2474,8 @@ export const SiteConfig = z.object({
   // Contexte costum du déploiement. Le SLUG du costum vient de l'entité porteuse
   // (useCocolight().entity = VITE_SLUG, constant) ; costumId/costumType viennent du registry de la lib
   // via `me.costum(slug)`. Ce bloc ne sert donc plus qu'aux TAGS observatoire (mainTag/compagnon).
+  // Un champ de profil citoyen réservé à un seul costum se déclare en backend (`costum.typeObj.<clé>.
+  // dynFormCostum`) + un costumForm dédié (`profiles.citoyens.editModals`), PAS ici — cf. editProfile.tsx.
   costum: z.object({
     mainTag: z.string().optional(),
     compagnon: z.string().optional(),
@@ -2503,6 +2513,9 @@ export const SiteConfig = z.object({
   // les sections `aac-directory`/`aac-highlight` et les routes `/aac` le lisent
   // depuis ici (les routes ne sont montées que si ce bloc existe). cf. modules/aac.
   aac: AacConfigSchema.optional(),
+  // Module kanban (le kanban de co-kanban sur l'élément porteur du site) : sa présence monte `/kanban`,
+  // `/kanban/actions` et `/kanban/roles` ; `boards` restreint et ordonne les kanbans proposés. cf. modules/kanban.
+  kanban: KanbanConfigSchema.optional(),
   // Config site-level des formulaires coform. `finderAddNew` : la modale d'AJOUT qu'ouvre le bouton
   // « Ajouter » d'un finder (réglage `addNew` du legacy). Clé = la QUESTION (`finder<étape><id>`) ou le
   // TYPE cherché (`organizations`…) ; valeur = une modale du ModalRegistry (`add-organization`,

@@ -14,6 +14,11 @@ export function cibleDepense(funding: DepenseFunding): { milestoneId?: string; d
   return { depenseKey: String(funding.depenseIndex) };
 }
 
+/** Clé de la dépense d'une promesse ; à défaut sa position, qui vaut clé dans l'enveloppe. */
+export function cleDepense(pledge: Pledge): string {
+  return pledge.depenseKey ?? String(pledge.depenseIndex);
+}
+
 /** Montant versé pour régler une promesse : son solde au centime, pas le montant engagé. */
 export function montantARegler(pledge: Pledge): number {
   return roundToCents(pledge.remainingAmount ?? pledge.fundingAmount);
@@ -36,7 +41,7 @@ export function totalARegler(pledges: Pledge[]): number {
 export function ligneReglement(pledge: Pledge & { resourceId: string }) {
   return {
     answerId: pledge.resourceId,
-    depenseKey: pledge.depenseKey ?? String(pledge.depenseIndex),
+    depenseKey: cleDepense(pledge),
     financerId: pledge.financerId,
     finkey: pledge.finkey,
     finIndex: pledge.finkey ? undefined : pledge.fundingIndex,

@@ -11,6 +11,7 @@ export interface RuntimeEnv {
   VITE_MAPTILER_API_KEY?: string;
   VITE_COSTUM_FORCE_LIVE?: string;
   VITE_SITE_PUBLIC_URL?:       string;
+  VITE_ROCKETCHAT_URL?:    string;
 }
 
 /** Déclare window.__ENV__ pour le compilateur */
@@ -51,6 +52,12 @@ export const getSlug      = () => readEnv("VITE_SLUG",              "default");
 export const getServerUrl = () => readEnv("VITE_SERVER_URL",        "http://localhost:3000");
 export const getMonApiKey = () => readEnv("VITE_MON_API_KEY",       "default-api-key");
 export const getMonDomain = () => readEnv("VITE_MON_DOMAIN",        "default-domain.com");
+/**
+ * URL du Rocket.Chat de la plateforme — instance SÉPARÉE de `getServerUrl()` (domaine propre,
+ * `chat.communecter.org`, PAS `<serverUrl>/co2/rocketchat` : ce chemin ouvrait communecter, pas le
+ * chat — mesuré en navigateur, 26/10/2026). Même sur tout le parc ; pas de salon par costum.
+ */
+export const getRocketChatUrl = () => readEnv("VITE_ROCKETCHAT_URL", "https://chat.communecter.org");
 /**
  * FORCE-LIVE costum : la lib ignore ses schémas costum BUNDLÉS et ne résout que par `getcostumjson`.
  * À activer quand la config costum évolue en base plus vite que les artefacts publiés — sans quoi un

@@ -210,7 +210,8 @@
     }
   },
   "cagnotteModuleConfig": {
-    "defaultType": "aac"
+    "defaultType": "aac",
+    "pledgeRetraction": true
   },
   "header": {
     "type": "standard",
