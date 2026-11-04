@@ -30,6 +30,7 @@
   },
   "header": {
     "type": "stacked",
+    "navFontSize": "sm",
     "path": "/",
     "logo": "/images/parent62/Logo-Aquarelle.png",
     "textColor": "var(--p62-marine)",
@@ -127,18 +128,6 @@
             "description": {
               "fr": "Les archives des éditions.",
               "en": "Archive of past editions."
-            }
-          },
-          {
-            "label": {
-              "fr": "Annuaire des partenaires",
-              "en": "Partner directory"
-            },
-            "path": "/annuaire",
-            "icon": "handshake",
-            "description": {
-              "fr": "Les partenaires, par territoire et thème.",
-              "en": "Partners, by territory and topic."
             }
           },
           {
@@ -329,8 +318,8 @@
       },
       {
         "label": {
-          "fr": "Contenus",
-          "en": "Content"
+          "fr": "Actualités et Ressources",
+          "en": "News and Resources"
         },
         "path": "/blog",
         "children": [
@@ -1655,7 +1644,7 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
             "card": {
               "type": "team",
               "detailsMode": "link",
@@ -1685,7 +1674,7 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
             "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }, "maxColumns": 3 }
           }
         },
@@ -1714,7 +1703,7 @@
             "showTabs": false,
             "showTitle": false,
             "showInvite": false,
-            "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+            "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
             "card": {
               "type": "team",
               "detailsMode": "link",
@@ -11119,7 +11108,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Arrageois" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Socioculturel d'Achicourt, rue de Roubaix, 62217 Achicourt",
@@ -11264,7 +11253,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Arrageois"
@@ -11994,7 +11982,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Artois" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social La Maison pour Tous, place des FFI, 62190 Lillers",
@@ -12139,7 +12127,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Artois"
@@ -12869,7 +12856,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Audomarois" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social Inter-Générations, rue Brueghel, Longuenesse",
@@ -13014,7 +13001,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Audomarois"
@@ -13744,7 +13730,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Boulonnais" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social Espace Carnot, 46 rue du Général San Martin, 62480 Le Portel",
@@ -13889,7 +13875,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Boulonnais"
@@ -14619,7 +14604,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Calaisis" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre social et culturel Marie-Jeanne Bassot, 1578 chemin Départemental 940, 62231 Sangatte",
@@ -14764,7 +14749,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Calaisis"
@@ -15494,7 +15478,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Entre Mer et Terres" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Socioculturel Intercommunal d'Hucqueliers, 9 bis rue de la Longeville, 62650 Hucqueliers",
@@ -15639,7 +15623,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Entre Mer et Terres"
@@ -16369,7 +16352,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Familles en sol mineur Hénin Carvin" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social, rue du Maréchal Leclerc, Noyelles-sous-Lens",
@@ -16514,7 +16497,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Familles en sol mineur Hénin Carvin"
@@ -17244,7 +17226,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Familles en sol mineur Lens Liévin" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
               "cardText": {
                 "fr": "Centre Social des Brebis, place de la Marne, 62670 Mazingarbe",
@@ -17389,7 +17371,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Familles en sol mineur Lens Liévin"
@@ -18119,7 +18100,7 @@
                     "Coordonnatrice"
                   ],
                   "filters": { "territoires": "Ternois Bruaysis" },
-                  "fields": ["territoires", "telephone", "phone", "mobile", "email"],
+                  "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
                   "hideWhenEmpty": true,
                   "showRole": true,
                   "showManagement": false,
@@ -18260,7 +18241,6 @@
                     ],
                     "costumSlug": "parent62",
                     "defaultFilters": {
-                      "tags": { "$nin": ["Partenaires"] },
                       "territoires": {
                         "$in": [
                           "Ternois Bruaysis"
@@ -19055,7 +19035,7 @@
                   "fr": "Structures et professionnel·les",
                   "en": "Organisations and professionals"
                 },
-                "href": "/annuaire",
+                "href": "/annuaire-acteurs-parentalite",
                 "color": "accent"
               },
               {
@@ -19944,607 +19924,6 @@
       ]
     },
     {
-      "path": "/annuaire",
-      "title": {
-        "fr": "Annuaire des partenaires",
-        "en": "Partner directory"
-      },
-      "layout": "fullwidth",
-      "seo": {
-        "title": {
-          "fr": "Annuaire des partenaires — Parent62",
-          "en": "Partner directory — Parent62"
-        },
-        "description": {
-          "fr": "Les associations, collectivités, établissements et entreprises partenaires du Réseau Parentalité 62, par territoire, public et thème.",
-          "en": "The associations, local authorities, facilities and companies partnering with the Parenting Network 62, by territory, audience and topic."
-        },
-        "ogType": "website",
-        "twitterCard": "summary_large_image",
-        "ogImage": "/images/parent62/hero-carte.png"
-      },
-      "sections": [
-        {
-          "type": "searchHeader",
-          "id": "annuaire-header",
-          "props": {
-            "headline": {
-              "fr": "Annuaire des partenaires",
-              "en": "Partner directory"
-            },
-            "subhead": {
-              "fr": "Associations, collectivités, établissements et entreprises qui accompagnent les familles du Pas-de-Calais.",
-              "en": "Associations, local authorities, facilities and companies supporting families in the Pas-de-Calais."
-            },
-            "buttons": [
-              {
-                "label": { "fr": "Ajouter un partenaire", "en": "Add a partner" },
-                "icon": "handshake",
-                "modal": "add-parent62-partenaire",
-                "variant": "primary",
-                "requiresAdmin": false
-              }
-            ]
-          }
-        },
-        {
-          "type": "gridLayout",
-          "id": "annuaire-grid",
-          "props": {
-            "leftColumns": 1,
-            "rightColumns": 3,
-            "gap": 4,
-            "leftSection": {
-              "type": "filters",
-              "props": {
-                "title": {
-                  "fr": "Filtres",
-                  "en": "Filters"
-                },
-                "defaultOpenGroups": [
-                  "territoire",
-                  "type"
-                ],
-                "className": "lg:sticky lg:top-20",
-                "filterGroups": [
-                  {
-                    "id": "territoire",
-                    "label": {
-                      "fr": "Territoire",
-                      "en": "Territory"
-                    },
-                    "field": "territoires",
-                    "options": [
-                      {
-                        "id": "arrageois",
-                        "label": {
-                          "fr": "Arrageois",
-                          "en": "Arrageois"
-                        },
-                        "name": "Arrageois",
-                        "color": "var(--territoire-arrageois)"
-                      },
-                      {
-                        "id": "artois",
-                        "label": {
-                          "fr": "Artois",
-                          "en": "Artois"
-                        },
-                        "name": "Artois",
-                        "color": "var(--territoire-artois)"
-                      },
-                      {
-                        "id": "audomarois",
-                        "label": {
-                          "fr": "Audomarois",
-                          "en": "Audomarois"
-                        },
-                        "name": "Audomarois",
-                        "color": "var(--territoire-audomarois)"
-                      },
-                      {
-                        "id": "boulonnais",
-                        "label": {
-                          "fr": "Boulonnais",
-                          "en": "Boulonnais"
-                        },
-                        "name": "Boulonnais",
-                        "color": "var(--territoire-boulonnais)"
-                      },
-                      {
-                        "id": "calaisis",
-                        "label": {
-                          "fr": "Calaisis",
-                          "en": "Calaisis"
-                        },
-                        "name": "Calaisis",
-                        "color": "var(--territoire-calaisis)"
-                      },
-                      {
-                        "id": "entre-mer-et-terres",
-                        "label": {
-                          "fr": "Entre Mer et Terres",
-                          "en": "Entre Mer et Terres"
-                        },
-                        "name": "Entre Mer et Terres",
-                        "color": "var(--territoire-entre-mer-et-terres)"
-                      },
-                      {
-                        "id": "fsm-henin-carvin",
-                        "label": {
-                          "fr": "Familles en sol mineur Hénin Carvin",
-                          "en": "Familles en sol mineur Hénin Carvin"
-                        },
-                        "name": "Familles en sol mineur Hénin Carvin",
-                        "color": "var(--territoire-fsm-henin-carvin)"
-                      },
-                      {
-                        "id": "fsm-lens-lievin",
-                        "label": {
-                          "fr": "Familles en sol mineur Lens Liévin",
-                          "en": "Familles en sol mineur Lens Liévin"
-                        },
-                        "name": "Familles en sol mineur Lens Liévin",
-                        "color": "var(--territoire-fsm-lens-lievin)"
-                      },
-                      {
-                        "id": "ternois-bruaysis",
-                        "label": {
-                          "fr": "Ternois Bruaysis",
-                          "en": "Ternois Bruaysis"
-                        },
-                        "name": "Ternois Bruaysis",
-                        "color": "var(--territoire-ternois-bruaysis)"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "type",
-                    "label": {
-                      "fr": "Type de structure",
-                      "en": "Type of organisation"
-                    },
-                    "field": "type",
-                    "options": [
-                      {
-                        "id": "NGO",
-                        "label": {
-                          "fr": "Association",
-                          "en": "Association"
-                        },
-                        "name": "NGO"
-                      },
-                      {
-                        "id": "GovernmentOrganization",
-                        "label": {
-                          "fr": "Collectivité / service public",
-                          "en": "Local authority / public service"
-                        },
-                        "name": "GovernmentOrganization"
-                      },
-                      {
-                        "id": "Group",
-                        "label": {
-                          "fr": "Établissement (crèche, école, centre social…)",
-                          "en": "Facility (nursery, school, social centre…)"
-                        },
-                        "name": "Group"
-                      },
-                      {
-                        "id": "LocalBusiness",
-                        "label": {
-                          "fr": "Entreprise",
-                          "en": "Company"
-                        },
-                        "name": "LocalBusiness"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "public",
-                    "label": {
-                      "fr": "Public",
-                      "en": "Audience"
-                    },
-                    "field": "publics",
-                    "options": [
-                      {
-                        "id": "adolescence",
-                        "label": {
-                          "fr": "Adolescence",
-                          "en": "Adolescence"
-                        },
-                        "name": "Adolescence"
-                      },
-                      {
-                        "id": "benevoles",
-                        "label": {
-                          "fr": "Bénévoles",
-                          "en": "Volunteers"
-                        },
-                        "name": "Bénévoles"
-                      },
-                      {
-                        "id": "en-famille",
-                        "label": {
-                          "fr": "En famille",
-                          "en": "As a family"
-                        },
-                        "name": "En famille"
-                      },
-                      {
-                        "id": "enfance",
-                        "label": {
-                          "fr": "Enfance",
-                          "en": "Childhood"
-                        },
-                        "name": "Enfance"
-                      },
-                      {
-                        "id": "futurs-parents",
-                        "label": {
-                          "fr": "Futurs parents",
-                          "en": "Parents-to-be"
-                        },
-                        "name": "Futurs parents"
-                      },
-                      {
-                        "id": "parents",
-                        "label": {
-                          "fr": "Parents",
-                          "en": "Parents"
-                        },
-                        "name": "Parents"
-                      },
-                      {
-                        "id": "parents-enfants",
-                        "label": {
-                          "fr": "Parents-enfants",
-                          "en": "Parents & children"
-                        },
-                        "name": "Parents-enfants"
-                      },
-                      {
-                        "id": "petite-enfance",
-                        "label": {
-                          "fr": "Petite enfance",
-                          "en": "Early childhood"
-                        },
-                        "name": "Petite enfance"
-                      },
-                      {
-                        "id": "professionnels",
-                        "label": {
-                          "fr": "Professionnels",
-                          "en": "Professionals"
-                        },
-                        "name": "Professionnels"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "themes",
-                    "optionsFrom": {
-                      "list": [
-                        "themes",
-                        "themesPoi",
-                        "themesEvents"
-                      ],
-                      "withDeclared": true
-                    },
-                    "label": {
-                      "fr": "Thèmes",
-                      "en": "Topics"
-                    },
-                    "field": "themes",
-                    "options": [
-                      {
-                        "id": "la-citoyennete",
-                        "label": {
-                          "fr": "La citoyenneté",
-                          "en": "La citoyenneté"
-                        },
-                        "name": "La citoyenneté"
-                      },
-                      {
-                        "id": "la-communication",
-                        "label": {
-                          "fr": "La communication",
-                          "en": "La communication"
-                        },
-                        "name": "La communication"
-                      },
-                      {
-                        "id": "la-culture",
-                        "label": {
-                          "fr": "La culture",
-                          "en": "La culture"
-                        },
-                        "name": "La culture"
-                      },
-                      {
-                        "id": "la-petite-enfance",
-                        "label": {
-                          "fr": "La petite enfance",
-                          "en": "La petite enfance"
-                        },
-                        "name": "La petite enfance"
-                      },
-                      {
-                        "id": "la-sante",
-                        "label": {
-                          "fr": "La santé",
-                          "en": "La santé"
-                        },
-                        "name": "La santé"
-                      },
-                      {
-                        "id": "l-adolescence",
-                        "label": {
-                          "fr": "L’adolescence",
-                          "en": "L’adolescence"
-                        },
-                        "name": "L’adolescence"
-                      },
-                      {
-                        "id": "l-arrivee-d-un-enfant",
-                        "label": {
-                          "fr": "L’arrivée d’un enfant",
-                          "en": "L’arrivée d’un enfant"
-                        },
-                        "name": "L’arrivée d’un enfant"
-                      },
-                      {
-                        "id": "le-deuil",
-                        "label": {
-                          "fr": "Le deuil",
-                          "en": "Le deuil"
-                        },
-                        "name": "Le deuil"
-                      },
-                      {
-                        "id": "le-handicap",
-                        "label": {
-                          "fr": "Le handicap",
-                          "en": "Le handicap"
-                        },
-                        "name": "Le handicap"
-                      },
-                      {
-                        "id": "le-repit",
-                        "label": {
-                          "fr": "Le répit",
-                          "en": "Le répit"
-                        },
-                        "name": "Le répit"
-                      },
-                      {
-                        "id": "l-ecole",
-                        "label": {
-                          "fr": "L’école",
-                          "en": "L’école"
-                        },
-                        "name": "L’école"
-                      },
-                      {
-                        "id": "l-education",
-                        "label": {
-                          "fr": "L’éducation",
-                          "en": "L’éducation"
-                        },
-                        "name": "L’éducation"
-                      },
-                      {
-                        "id": "les-activites-supports-a-la-relation",
-                        "label": {
-                          "fr": "Les activités supports à la relation",
-                          "en": "Les activités supports à la relation"
-                        },
-                        "name": "Les activités supports à la relation"
-                      },
-                      {
-                        "id": "les-ecrans-le-numerique",
-                        "label": {
-                          "fr": "Les écrans – Le numérique",
-                          "en": "Les écrans – Le numérique"
-                        },
-                        "name": "Les écrans – Le numérique"
-                      },
-                      {
-                        "id": "les-emotions",
-                        "label": {
-                          "fr": "Les émotions",
-                          "en": "Les émotions"
-                        },
-                        "name": "Les émotions"
-                      },
-                      {
-                        "id": "les-jeux",
-                        "label": {
-                          "fr": "Les jeux",
-                          "en": "Les jeux"
-                        },
-                        "name": "Les jeux"
-                      },
-                      {
-                        "id": "les-situations-de-separation",
-                        "label": {
-                          "fr": "Les situations de séparation",
-                          "en": "Les situations de séparation"
-                        },
-                        "name": "Les situations de séparation"
-                      },
-                      {
-                        "id": "les-violences",
-                        "label": {
-                          "fr": "Les violences",
-                          "en": "Les violences"
-                        },
-                        "name": "Les violences"
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            "rightSection": {
-              "type": "searchProStatic",
-              "id": "annuaire-list",
-              "props": {
-                "customHeader": {
-                  "title": {
-                    "fr": "Les partenaires",
-                    "en": "Partners"
-                  }
-                },
-                "useFilter": true,
-                "showMap": false,
-                "enableMap": true,
-                "showActiveFiltersTags": true,
-                "baseParams": {
-                  "defaultTypes": [
-                    "organizations"
-                  ],
-                  "sourceKey": [
-                    "parent62"
-                  ],
-                  "costumSlug": "parent62",
-                  "defaultFilters": {
-                    "tags": { "$in": ["Partenaires"] }
-                  },
-                  "defaultFields": [
-                    "name",
-                    "slug",
-                    "type",
-                    "collection",
-                    "source",
-                    "reference",
-                    "shortDescription",
-                    "description",
-                    "email",
-                    "telephone",
-                    "url",
-                    "address",
-                    "geo",
-                    "geoPosition",
-                    "territoires",
-                    "publics",
-                    "themes",
-                    "profilThumbImageUrl",
-                    "profilMediumImageUrl",
-                    "profilImageUrl"
-                  ],
-                  "searchBy": [
-                    "name",
-                    "shortDescription",
-                    "description"
-                  ],
-                  "defaultSortBy": {
-                    "name": 1
-                  },
-                  "indexStepList": 24
-                },
-                "map": {
-                  "layout": "split",
-                  "cluster": true,
-                  "itemAction": {
-                    "kind": "preview"
-                  },
-                  "marker": {
-                    "style": "pin",
-                    "colorBy": {
-                      "path": "territoires",
-                      "mapping": {
-                        "Arrageois": "var(--territoire-arrageois)",
-                        "Artois": "var(--territoire-artois)",
-                        "Audomarois": "var(--territoire-audomarois)",
-                        "Boulonnais": "var(--territoire-boulonnais)",
-                        "Calaisis": "var(--territoire-calaisis)",
-                        "Entre Mer et Terres": "var(--territoire-entre-mer-et-terres)",
-                        "Familles en sol mineur Hénin Carvin": "var(--territoire-fsm-henin-carvin)",
-                        "Familles en sol mineur Lens Liévin": "var(--territoire-fsm-lens-lievin)",
-                        "Ternois Bruaysis": "var(--territoire-ternois-bruaysis)"
-                      }
-                    }
-                  }
-                },
-                "list": {
-                  "columns": {
-                    "sm": 1,
-                    "md": 2,
-                    "lg": 2,
-                    "xl": 3
-                  },
-                  "card": {
-                    "type": "profile",
-                    "variant": "profile",
-                    "showStats": false,
-                    "showDescription": true,
-                    "showAddress": true,
-                    "detailsMode": "drawer"
-                  },
-                  "preview": {
-                    "type": "facets",
-                    "width": "3xl",
-                    "facets": [
-                      {
-                        "field": "territoires",
-                        "label": {
-                          "fr": "Territoires",
-                          "en": "Territories"
-                        },
-                        "icon": "map"
-                      },
-                      {
-                        "field": "publics",
-                        "label": {
-                          "fr": "Publics",
-                          "en": "Audiences"
-                        },
-                        "icon": "users"
-                      },
-                      {
-                        "field": "themes",
-                        "label": {
-                          "fr": "Thèmes",
-                          "en": "Topics"
-                        },
-                        "icon": "tags"
-                      },
-                      {
-                        "field": "email",
-                        "label": {
-                          "fr": "E-mail",
-                          "en": "Email"
-                        },
-                        "icon": "at-sign"
-                      },
-                      {
-                        "field": "telephone",
-                        "label": {
-                          "fr": "Téléphone",
-                          "en": "Phone"
-                        },
-                        "icon": "phone"
-                      },
-                      {
-                        "field": "url",
-                        "label": {
-                          "fr": "Site internet",
-                          "en": "Website"
-                        },
-                        "icon": "globe"
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
       "path": "/annuaire-acteurs-parentalite",
       "title": {
         "fr": "Annuaire des acteurs du soutien à la parentalité — Parent62",
@@ -20565,6 +19944,32 @@
         "ogImage": "/images/parent62/hero-carte.png"
       },
       "sections": [
+        {
+          "type": "searchHeader",
+          "id": "annuaire-acteurs-parentalite-header",
+          "props": {
+            "headline": {
+              "fr": "Annuaire des acteurs du soutien à la parentalité",
+              "en": "Directory of parenting support actors"
+            },
+            "subhead": {
+              "fr": "Les associations, collectivités, établissements et entreprises qui accompagnent les familles du Pas-de-Calais.",
+              "en": "Associations, local authorities, facilities and companies supporting families in the Pas-de-Calais."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Ajouter un acteur",
+                  "en": "Add an organisation"
+                },
+                "icon": "building-2",
+                "modal": "add-parent62-acteur",
+                "variant": "primary",
+                "requiresAdmin": false
+              }
+            ]
+          }
+        },
         {
           "type": "gridLayout",
           "id": "annuaire-acteurs-parentalite-grid",
@@ -20718,9 +20123,6 @@
                     "parent62"
                   ],
                   "costumSlug": "parent62",
-                  "defaultFilters": {
-                    "tags": { "$nin": ["Partenaires"] }
-                  },
                   "defaultFields": [
                     "name",
                     "slug",
@@ -21550,6 +20952,24 @@
       "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
+      "editModals": [
+        {
+          "editModal": "edit-parent62-citoyen",
+          "userContext": "own",
+          "when": {
+            "and": [
+              {
+                "field": "links.memberOf.6a450f0ac34c7070327d2a64",
+                "op": "truthy"
+              },
+              {
+                "field": "links.memberOf.6a450f0ac34c7070327d2a64.toBeValidated",
+                "op": "falsy"
+              }
+            ]
+          }
+        }
+      ],
       "sections": [
         {
           "type": "profile-header",
@@ -21559,21 +20979,7 @@
             "organization": false,
             "project": true,
             "event": true,
-            "poi": true,
-            "custom": [
-              {
-                "modalKey": "add-parent62-partenaire",
-                "label": {
-                  "fr": "Ajouter un partenaire",
-                  "en": "Add a partner"
-                },
-                "icon": "handshake",
-                "condition": {
-                  "auth": "required",
-                  "userContext": "own"
-                }
-              }
-            ]
+            "poi": true
           }
         },
         {
@@ -21624,6 +21030,22 @@
                   "showOpeningDate": true,
                   "showDates": true,
                   "showOrganizer": true
+                },
+                {
+                  "type": "profile-fields",
+                  "variant": "plain",
+                  "fields": [
+                    {
+                      "field": "territoires",
+                      "label": { "fr": "Territoire", "en": "Territory" },
+                      "icon": "map-pin"
+                    },
+                    {
+                      "field": "structureRegister",
+                      "label": { "fr": "Employeur", "en": "Employer" },
+                      "icon": "building-2"
+                    }
+                  ]
                 }
               ]
             }
@@ -21724,8 +21146,7 @@
                   "type": "profile-badges"
                 },
                 {
-                  "type": "profile-tags",
-                  "hideTags": ["Partenaires"]
+                  "type": "profile-tags"
                 }
               ],
               "rightSections": [
@@ -21898,34 +21319,6 @@
       "editModals": [
         {
           "editModal": "edit-parent62-acteur",
-          "when": {
-            "and": [
-              {
-                "not": {
-                  "field": "tags",
-                  "op": "contains",
-                  "value": "Partenaires"
-                }
-              },
-              {
-                "or": [
-                  {
-                    "field": "sourceKeys",
-                    "op": "contains",
-                    "value": "parent62"
-                  },
-                  {
-                    "field": "reference.costum",
-                    "op": "contains",
-                    "value": "parent62"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "editModal": "edit-parent62-partenaire",
           "when": {
             "or": [
               {
@@ -25832,12 +25225,13 @@
         }
       }
     },
-    "parent62-partenaire": {
-      "id": "parent62-partenaire",
+    "parent62-acteur": {
+      "id": "parent62-acteur",
       "entityType": "organizations",
       "collection": "organizations",
       "costumSlug": "parent62",
-      "icon": "handshake",
+      "subType": "acteur",
+      "icon": "building-2",
       "layout": {
         "kind": "tabs"
       },
@@ -25846,6 +25240,11 @@
           "serverKey": "address",
           "read": "address:read",
           "write": "address:write"
+        },
+        "telephone": {
+          "serverKey": "telephone",
+          "read": "telephone:read",
+          "write": "telephone:write"
         }
       },
       "sections": [
@@ -25861,7 +25260,6 @@
               "columns": 1,
               "fields": [
                 "name",
-                "type",
                 "profil_avatar",
                 "shortDescription",
                 "description"
@@ -25870,10 +25268,10 @@
           ]
         },
         {
-          "id": "taxo",
+          "id": "categorisation",
           "label": {
-            "fr": "Territoire, public & thèmes",
-            "en": "Territory, audience & topics"
+            "fr": "Catégorisation",
+            "en": "Categorisation"
           },
           "icon": "tags",
           "groups": [
@@ -25881,8 +25279,9 @@
               "columns": 1,
               "fields": [
                 "territoires",
-                "publics",
-                "themes"
+                "categoryThematic",
+                "typeAction",
+                "publicCible"
               ]
             }
           ]
@@ -25900,7 +25299,9 @@
               "fields": [
                 "email",
                 "telephone",
-                "url"
+                "url",
+                "socialNetwork",
+                "contact"
               ]
             }
           ]
@@ -25908,15 +25309,36 @@
         {
           "id": "lieu",
           "label": {
-            "fr": "Lieu",
-            "en": "Place"
+            "fr": "Lieu & horaires",
+            "en": "Place & hours"
           },
           "icon": "map-pin",
           "groups": [
             {
               "columns": 1,
               "fields": [
-                "address"
+                "address",
+                "openingHours"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "complement",
+          "label": {
+            "fr": "Compléments",
+            "en": "Additional information"
+          },
+          "icon": "file-text",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "accessibility",
+                "provisionResources",
+                "note",
+                "documents",
+                "galeriePresentation"
               ]
             }
           ]
@@ -25929,76 +25351,6 @@
           "label": {
             "fr": "Nom de la structure",
             "en": "Organisation name"
-          }
-        },
-        "type": {
-          "widget": "select",
-          "required": true,
-          "label": {
-            "fr": "Type de structure",
-            "en": "Type of organisation"
-          },
-          "enum": [
-            {
-              "value": "NGO",
-              "label": {
-                "fr": "Association",
-                "en": "Association"
-              }
-            },
-            {
-              "value": "GovernmentOrganization",
-              "label": {
-                "fr": "Collectivité / service public",
-                "en": "Local authority / public service"
-              }
-            },
-            {
-              "value": "Group",
-              "label": {
-                "fr": "Établissement (crèche, école, centre social…)",
-                "en": "Facility (nursery, school, social centre…)"
-              }
-            },
-            {
-              "value": "LocalBusiness",
-              "label": {
-                "fr": "Entreprise",
-                "en": "Company"
-              }
-            }
-          ]
-        },
-        "profil_avatar": {
-          "widget": "image",
-          "widgetProps": {
-            "allowOriginal": true
-          },
-          "label": {
-            "fr": "Logo",
-            "en": "Logo"
-          }
-        },
-        "shortDescription": {
-          "widget": "textarea",
-          "label": {
-            "fr": "Présentation courte",
-            "en": "Short presentation"
-          },
-          "info": {
-            "fr": "Une ou deux phrases, affichées sur la carte de l'annuaire.",
-            "en": "One or two sentences, shown on the directory card."
-          }
-        },
-        "description": {
-          "widget": "markdown",
-          "label": {
-            "fr": "Présentation",
-            "en": "Presentation"
-          },
-          "widgetProps": {
-            "height": 240,
-            "preview": "edit"
           }
         },
         "territoires": {
@@ -26081,518 +25433,6 @@
               }
             }
           ]
-        },
-        "publics": {
-          "widget": "multiselect",
-          "multiple": true,
-          "label": {
-            "fr": "Publics",
-            "en": "Audiences"
-          },
-          "placeholder": {
-            "fr": "Sélectionner…",
-            "en": "Select…"
-          },
-          "placeholderSearch": {
-            "fr": "Rechercher…",
-            "en": "Search…"
-          },
-          "enum": [
-            {
-              "value": "Adolescence",
-              "label": {
-                "fr": "Adolescence",
-                "en": "Adolescence"
-              }
-            },
-            {
-              "value": "Bénévoles",
-              "label": {
-                "fr": "Bénévoles",
-                "en": "Bénévoles"
-              }
-            },
-            {
-              "value": "En famille",
-              "label": {
-                "fr": "En famille",
-                "en": "En famille"
-              }
-            },
-            {
-              "value": "Enfance",
-              "label": {
-                "fr": "Enfance",
-                "en": "Enfance"
-              }
-            },
-            {
-              "value": "Futurs parents",
-              "label": {
-                "fr": "Futurs parents",
-                "en": "Futurs parents"
-              }
-            },
-            {
-              "value": "Parents",
-              "label": {
-                "fr": "Parents",
-                "en": "Parents"
-              }
-            },
-            {
-              "value": "Parents-enfants",
-              "label": {
-                "fr": "Parents-enfants",
-                "en": "Parents-enfants"
-              }
-            },
-            {
-              "value": "Petite enfance",
-              "label": {
-                "fr": "Petite enfance",
-                "en": "Early childhood"
-              }
-            },
-            {
-              "value": "Professionnels",
-              "label": {
-                "fr": "Professionnels",
-                "en": "Professionnels"
-              }
-            }
-          ]
-        },
-        "themes": {
-          "widget": "valueSelect",
-          "widgetProps": {
-            "list": [
-              "themes",
-              "themesPoi",
-              "themesEvents"
-            ]
-          },
-          "label": {
-            "fr": "Thèmes",
-            "en": "Topics"
-          },
-          "placeholder": {
-            "fr": "Sélectionner…",
-            "en": "Select…"
-          },
-          "placeholderSearch": {
-            "fr": "Rechercher…",
-            "en": "Search…"
-          },
-          "enum": [
-            {
-              "value": "La citoyenneté",
-              "label": {
-                "fr": "La citoyenneté",
-                "en": "La citoyenneté"
-              }
-            },
-            {
-              "value": "La communication",
-              "label": {
-                "fr": "La communication",
-                "en": "La communication"
-              }
-            },
-            {
-              "value": "La culture",
-              "label": {
-                "fr": "La culture",
-                "en": "La culture"
-              }
-            },
-            {
-              "value": "La petite enfance",
-              "label": {
-                "fr": "La petite enfance",
-                "en": "La petite enfance"
-              }
-            },
-            {
-              "value": "La santé",
-              "label": {
-                "fr": "La santé",
-                "en": "La santé"
-              }
-            },
-            {
-              "value": "L’adolescence",
-              "label": {
-                "fr": "L’adolescence",
-                "en": "L’adolescence"
-              }
-            },
-            {
-              "value": "L’arrivée d’un enfant",
-              "label": {
-                "fr": "L’arrivée d’un enfant",
-                "en": "L’arrivée d’un enfant"
-              }
-            },
-            {
-              "value": "Le deuil",
-              "label": {
-                "fr": "Le deuil",
-                "en": "Le deuil"
-              }
-            },
-            {
-              "value": "Le handicap",
-              "label": {
-                "fr": "Le handicap",
-                "en": "Le handicap"
-              }
-            },
-            {
-              "value": "Le répit",
-              "label": {
-                "fr": "Le répit",
-                "en": "Le répit"
-              }
-            },
-            {
-              "value": "L’école",
-              "label": {
-                "fr": "L’école",
-                "en": "L’école"
-              }
-            },
-            {
-              "value": "L’éducation",
-              "label": {
-                "fr": "L’éducation",
-                "en": "L’éducation"
-              }
-            },
-            {
-              "value": "Les activités supports à la relation",
-              "label": {
-                "fr": "Les activités supports à la relation",
-                "en": "Les activités supports à la relation"
-              }
-            },
-            {
-              "value": "Les écrans – Le numérique",
-              "label": {
-                "fr": "Les écrans – Le numérique",
-                "en": "Les écrans – Le numérique"
-              }
-            },
-            {
-              "value": "Les émotions",
-              "label": {
-                "fr": "Les émotions",
-                "en": "Les émotions"
-              }
-            },
-            {
-              "value": "Les jeux",
-              "label": {
-                "fr": "Les jeux",
-                "en": "Les jeux"
-              }
-            },
-            {
-              "value": "Les situations de séparation",
-              "label": {
-                "fr": "Les situations de séparation",
-                "en": "Les situations de séparation"
-              }
-            },
-            {
-              "value": "Les violences",
-              "label": {
-                "fr": "Les violences",
-                "en": "Les violences"
-              }
-            }
-          ]
-        },
-        "email": {
-          "widget": "email",
-          "write": "omitEmpty",
-          "label": {
-            "fr": "E-mail",
-            "en": "Email"
-          }
-        },
-        "telephone": {
-          "widget": "tel",
-          "label": {
-            "fr": "Téléphone",
-            "en": "Phone"
-          }
-        },
-        "url": {
-          "widget": "text",
-          "label": {
-            "fr": "Site internet",
-            "en": "Website"
-          },
-          "placeholder": {
-            "fr": "https://…",
-            "en": "https://…"
-          },
-          "rules": {
-            "url": true
-          }
-        },
-        "address": {
-          "widget": "location",
-          "label": {
-            "fr": "Adresse",
-            "en": "Address"
-          },
-          "info": {
-            "fr": "Place la structure sur la carte de l'annuaire.",
-            "en": "Places the organisation on the directory map."
-          }
-        },
-        "addressCountry": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "addressLocality": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "postalCode": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "streetAddress": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "localityId": {
-          "widget": "hidden",
-          "group": "address"
-        },
-        "geo": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geo:write"
-        },
-        "geoPosition": {
-          "widget": "hidden",
-          "type": "object",
-          "writeOnly": true,
-          "write": "geoPosition:write"
-        }
-      },
-      "chrome": {
-        "title": {
-          "add": { "fr": "Ajouter un partenaire", "en": "Add a partner" },
-          "edit": {
-            "fr": "Modifier la fiche partenaire",
-            "en": "Edit partner listing"
-          }
-        },
-        "description": {
-          "add": { "fr": "La fiche rejoint l'annuaire des partenaires du réseau après validation par l'équipe.", "en": "The listing joins the network's partner directory once approved by the team." },
-          "edit": {
-            "fr": "Mettez à jour les informations publiées dans l'annuaire.",
-            "en": "Update the information published in the directory."
-          }
-        },
-        "submitLabel": {
-          "add": {
-            "fr": "Envoyer",
-            "en": "Submit"
-          },
-          "edit": {
-            "fr": "Enregistrer",
-            "en": "Save"
-          }
-        },
-        "authPrompt": {
-          "title": {
-            "fr": "Un compte est nécessaire",
-            "en": "An account is required"
-          },
-          "description": { "fr": "La fiche reste rattachée à votre compte : vous pourrez la corriger et la compléter à tout moment.", "en": "The listing stays tied to your account: you can correct and complete it at any time." }
-        }
-      },
-      "image": {
-        "field": "profil_avatar",
-        "existingUrlFrom": "image:profilUrl"
-      },
-      "mutation": {
-        "entityType": "organizations",
-        "navigateOnSuccess": false,
-        "inject": {
-          "extraFields": {
-            "role": "admin"
-          },
-          "extraFieldsUnlessCostumAdmin": {
-            "preferences": {
-              "toBeValidated": true
-            }
-          }
-        },
-        "stamps": [
-          {
-            "field": "tags",
-            "value": "Partenaires",
-            "op": "append",
-            "on": "both"
-          }
-        ],
-        "successKey": {
-          "add": "toast.add.organizationSuccess",
-          "edit": "toast.profile.updateSuccess"
-        },
-        "errorKey": {
-          "add": "toast.add.organizationError",
-          "edit": "toast.profile.updateError"
-        },
-        "errorContext": {
-          "add": "EntityFormModal · ADD_PARENT62_PARTENAIRE",
-          "edit": "EntityFormModal · UPDATE_PARENT62_PARTENAIRE"
-        },
-        "invalidateFn": {
-          "fn": "invalidate:standard",
-          "params": {
-            "userList": "organizations",
-            "searchKeys": [
-              "searchCostumStatic",
-              "admin-organizations"
-            ]
-          }
-        }
-      }
-    },
-    "parent62-acteur": {
-      "id": "parent62-acteur",
-      "entityType": "organizations",
-      "collection": "organizations",
-      "costumSlug": "parent62",
-      "icon": "building-2",
-      "layout": {
-        "kind": "tabs"
-      },
-      "serializeGroups": {
-        "address": {
-          "serverKey": "address",
-          "read": "address:read",
-          "write": "address:write"
-        },
-        "telephone": {
-          "serverKey": "telephone",
-          "read": "telephone:read",
-          "write": "telephone:write"
-        }
-      },
-      "sections": [
-        {
-          "id": "structure",
-          "label": {
-            "fr": "Structure",
-            "en": "Organisation"
-          },
-          "icon": "building-2",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "name",
-                "profil_avatar",
-                "shortDescription",
-                "description"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "categorisation",
-          "label": {
-            "fr": "Catégorisation",
-            "en": "Categorisation"
-          },
-          "icon": "tags",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "categoryThematic",
-                "typeAction",
-                "publicCible"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "contact",
-          "label": {
-            "fr": "Contact",
-            "en": "Contact"
-          },
-          "icon": "mail",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "email",
-                "telephone",
-                "url",
-                "socialNetwork",
-                "contact"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "lieu",
-          "label": {
-            "fr": "Lieu & horaires",
-            "en": "Place & hours"
-          },
-          "icon": "map-pin",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "address",
-                "openingHours"
-              ]
-            }
-          ]
-        },
-        {
-          "id": "complement",
-          "label": {
-            "fr": "Compléments",
-            "en": "Additional information"
-          },
-          "icon": "file-text",
-          "groups": [
-            {
-              "columns": 1,
-              "fields": [
-                "accessibility",
-                "provisionResources",
-                "note",
-                "documents",
-                "galeriePresentation"
-              ]
-            }
-          ]
-        }
-      ],
-      "fields": {
-        "name": {
-          "widget": "text",
-          "required": true,
-          "label": {
-            "fr": "Nom de la structure",
-            "en": "Organisation name"
-          }
         },
         "profil_avatar": {
           "widget": "image",
@@ -26961,6 +25801,12 @@
       "mutation": {
         "entityType": "organizations",
         "navigateOnSuccess": false,
+        "inject": {
+          "extraFields": {
+            "type": "acteur",
+            "role": "admin"
+          }
+        },
         "successKey": {
           "add": "toast.add.organizationSuccess",
           "edit": "toast.profile.updateSuccess"
@@ -26982,6 +25828,395 @@
               "admin-organizations"
             ]
           }
+        }
+      }
+    },
+    "parent62-citoyen": {
+      "id": "parent62-citoyen",
+      "entityType": "citoyens",
+      "collection": "citoyens",
+      "costumSlug": "parent62",
+      "icon": "user",
+      "layout": {
+        "kind": "tabs"
+      },
+      "serializeGroups": {
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        },
+        "social": {
+          "serverKey": "socialNetwork",
+          "read": "social:readFlat",
+          "write": "coerce:orEmpty",
+          "groupReadOnly": true
+        }
+      },
+      "chrome": {
+        "title": {
+          "edit": {
+            "fr": "Modifier mon profil",
+            "en": "Edit my profile"
+          }
+        },
+        "submitLabel": {
+          "edit": {
+            "fr": "Enregistrer",
+            "en": "Save"
+          }
+        }
+      },
+      "sections": [
+        {
+          "id": "identity",
+          "label": {
+            "fr": "Identité",
+            "en": "Identity"
+          },
+          "icon": "user",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "slug",
+                "birthDate",
+                "shortDescription",
+                "description",
+                "tags"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "territoire",
+          "label": {
+            "fr": "Territoire & employeur",
+            "en": "Territory & employer"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "territoires",
+                "structureRegister"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Coordonnées",
+            "en": "Contact details"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "email",
+                "mobile",
+                "fixe",
+                "url"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "address",
+                "addressCountry",
+                "addressLocality",
+                "postalCode",
+                "streetAddress"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          },
+          "icon": "share-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "_social",
+                "github",
+                "gitlab",
+                "facebook",
+                "twitter",
+                "instagram",
+                "diaspora",
+                "mastodon",
+                "telegram",
+                "signal"
+              ]
+            }
+          ]
+        }
+      ],
+      "fields": {
+        "name": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom complet",
+            "en": "Full name"
+          }
+        },
+        "slug": {
+          "widget": "text",
+          "required": true,
+          "label": {
+            "fr": "Nom d'utilisateur",
+            "en": "Username"
+          },
+          "info": {
+            "fr": "Identifiant de votre page de profil (lettres, chiffres, sans espace).",
+            "en": "Your profile page identifier (letters, digits, no spaces)."
+          }
+        },
+        "birthDate": {
+          "widget": "date",
+          "read": "coerce:dateYMDutc",
+          "label": {
+            "fr": "Date de naissance",
+            "en": "Birth date"
+          }
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "widgetProps": {
+            "rows": 2
+          },
+          "label": {
+            "fr": "En quelques mots",
+            "en": "In a few words"
+          }
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Présentation",
+            "en": "About you"
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Keywords"
+          }
+        },
+        "territoires": {
+          "widget": "select",
+          "label": {
+            "fr": "Territoire",
+            "en": "Territory"
+          },
+          "placeholder": {
+            "fr": "Sélectionnez votre territoire",
+            "en": "Select your territory"
+          },
+          "info": {
+            "fr": "Le territoire du réseau auquel vous êtes rattaché·e",
+            "en": "The network territory you belong to"
+          },
+          "enum": [
+            { "value": "Arrageois", "label": { "fr": "Arrageois", "en": "Arrageois" } },
+            { "value": "Artois", "label": { "fr": "Artois", "en": "Artois" } },
+            { "value": "Audomarois", "label": { "fr": "Audomarois", "en": "Audomarois" } },
+            { "value": "Boulonnais", "label": { "fr": "Boulonnais", "en": "Boulonnais" } },
+            { "value": "Calaisis", "label": { "fr": "Calaisis", "en": "Calaisis" } },
+            { "value": "Entre Mer et Terres", "label": { "fr": "Entre Mer et Terres", "en": "Entre Mer et Terres" } },
+            { "value": "Familles en sol mineur Hénin Carvin", "label": { "fr": "Familles en sol mineur Hénin Carvin", "en": "Familles en sol mineur Hénin Carvin" } },
+            { "value": "Familles en sol mineur Lens Liévin", "label": { "fr": "Familles en sol mineur Lens Liévin", "en": "Familles en sol mineur Lens Liévin" } },
+            { "value": "Ternois Bruaysis", "label": { "fr": "Ternois Bruaysis", "en": "Ternois Bruaysis" } }
+          ]
+        },
+        "structureRegister": {
+          "widget": "text",
+          "label": {
+            "fr": "Employeur",
+            "en": "Employer"
+          },
+          "placeholder": {
+            "fr": "Nom et adresse de votre structure",
+            "en": "Name and address of your organisation"
+          },
+          "info": {
+            "fr": "La structure qui vous emploie",
+            "en": "The organisation that employs you"
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Adresse e-mail",
+            "en": "Email address"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          }
+        },
+        "mobile": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone mobile",
+            "en": "Mobile phone"
+          }
+        },
+        "fixe": {
+          "widget": "tel",
+          "label": {
+            "fr": "Téléphone fixe",
+            "en": "Landline"
+          }
+        },
+        "url": {
+          "widget": "text",
+          "label": {
+            "fr": "Site web",
+            "en": "Website"
+          },
+          "widgetProps": {
+            "inputType": "url"
+          }
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          }
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "_social": {
+          "type": "object",
+          "widget": "editSocial",
+          "label": "",
+          "renderOnly": true
+        },
+        "github": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "github",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "gitlab": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "gitlab",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "facebook": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "facebook",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "twitter": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "twitter",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "instagram": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "instagram",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "diaspora": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "diaspora",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "mastodon": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "mastodon",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "telegram": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "telegram",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        },
+        "signal": {
+          "type": "string",
+          "widget": "hidden",
+          "label": "signal",
+          "write": "coerce:orEmpty",
+          "group": "social"
+        }
+      },
+      "afterSubmit": "afterSubmit:reloadOnSlugChange",
+      "mutation": {
+        "entityType": "citoyens",
+        "payloadEmitEmptyOnEdit": true,
+        "navigateOnSuccess": false,
+        "successKey": {
+          "add": "toast.profile.updateSuccess",
+          "edit": "toast.profile.updateSuccess"
+        },
+        "errorKey": {
+          "add": "toast.profile.updateError",
+          "edit": "toast.profile.updateError"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_CITOYEN",
+          "edit": "EntityFormModal · EDIT_CITOYEN"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard"
         }
       }
     }
@@ -27624,75 +26859,6 @@
               "delete"
             ],
             "create": "add-parent62-reunion",
-            "edit": "inherit"
-          }
-        ]
-      },
-      {
-        "id": "partenaires",
-        "label": {
-          "fr": "Partenaires",
-          "en": "Partners"
-        },
-        "access": "siteAdmin",
-        "sections": [
-          {
-            "type": "resource",
-            "entityType": "organizations",
-            "label": {
-              "fr": "Partenaires",
-              "en": "Partners"
-            },
-            "source": {
-              "defaultSortBy": {
-                "created": -1
-              },
-              "costumSlug": "parent62",
-              "sourceKey": [
-                "parent62"
-              ]
-            },
-            "columns": [
-              {
-                "path": "name",
-                "label": {
-                  "fr": "Structure",
-                  "en": "Organisation"
-                }
-              },
-              {
-                "path": "type",
-                "label": {
-                  "fr": "Type",
-                  "en": "Type"
-                }
-              },
-              {
-                "path": "address.addressLocality",
-                "label": {
-                  "fr": "Commune",
-                  "en": "Town"
-                }
-              },
-              {
-                "path": "created",
-                "label": {
-                  "fr": "Proposé le",
-                  "en": "Submitted"
-                }
-              }
-            ],
-            "rowActions": [
-              "edit",
-              "delete",
-              "validate"
-            ],
-            "bulkActions": [
-              "validate",
-              "export",
-              "delete"
-            ],
-            "create": "add-parent62-partenaire",
             "edit": "inherit"
           }
         ]

@@ -83,12 +83,9 @@ function TextCard({ icon, title, value }: { icon: React.ElementType; title: stri
 /**
  * Fiche « À propos » d'une organisation parent62 — remplace `profile-about-ssbe` (conçu pour
  * sport-sante-bien-etre : SIREN, représentant légal… des champs que ce formulaire ne collecte pas,
- * affichés vides sur toute fiche parent62). Couvre les DEUX formulaires `organizations` du costum
- * (`parent62-partenaire` et `parent62-acteur`, cf. §9septquadragies.3 de `doc-projets/parent62.md`) —
- * distingués par le même tag `"Partenaires"` que `/annuaire` vs `/annuaire-acteurs-parentalite` et le
- * routage d'édition, PAS par `type` (discriminant de sous-type costum côté acteur, nature juridique côté
- * partenaire — deux sémantiques incompatibles) ni par `source.key` (non fiable sur les fiches importées).
- * `profile-info` (sidebar) porte déjà e-mail/téléphone/site/adresse, `profile-tags` les mots-clés dérivés.
+ * affichés vides sur toute fiche parent62). Couvre le `costumForm` `organizations` `parent62-acteur`
+ * (`territoires`/`categoryThematic`/`typeAction`/`publicCible`). `profile-info` (sidebar) porte déjà
+ * e-mail/téléphone/site/adresse, `profile-tags` les mots-clés dérivés.
  * `profile-opening-hours` (horaires) vit À CÔTÉ, dans `rightSections` — seul bloc généré par CE
  * composant qui en dépend ailleurs. Les documents, eux, sont rendus ICI (pas via la section générique
  * `profile-documents`) pour rester adjacents à « Interlocuteur privilégié » (demande explicite).
@@ -97,24 +94,18 @@ function TextCard({ icon, title, value }: { icon: React.ElementType; title: stri
  * les cartes neutres de la section générique.
  *
  * Pas de carte « Type de structure » : `type` est le DISCRIMINANT de sous-type costum lu par le SDK en
- * édition (`serverData.type === "acteur"` → résout `costum.typeObj.acteur`) côté acteur — sa valeur n'a
- * rien d'affichable ; côté partenaire il porte la nature juridique (NGO/Group/…), non montrée ici non
- * plus (champ jamais renseigné en pratique sur les fiches réelles).
+ * édition (`serverData.type === "acteur"` → résout `costum.typeObj.acteur`) — sa valeur n'a rien
+ * d'affichable.
  */
 export default function ProfileParent62About({ section }: ProfileParent62AboutProps) {
   const t = useT("modules/profil");
   const { entity } = useProfileSetup();
   const { shortDescription, description } = useFormatProfileEntity(entity);
 
-  const tags = toStringArray(useReactiveProperty(entity.serverData, "tags"));
-  const isPartenaire = tags.includes("Partenaires");
-
   const categoryThematic = toStringArray(useReactiveProperty(entity.serverData, "categoryThematic"));
   const typeAction = toStringArray(useReactiveProperty(entity.serverData, "typeAction"));
   const publicCible = toStringArray(useReactiveProperty(entity.serverData, "publicCible"));
   const territoires = toStringArray(useReactiveProperty(entity.serverData, "territoires"));
-  const publics = toStringArray(useReactiveProperty(entity.serverData, "publics"));
-  const themes = toStringArray(useReactiveProperty(entity.serverData, "themes"));
   const accessibility = toText(useReactiveProperty(entity.serverData, "accessibility"));
   const provisionResources = toText(useReactiveProperty(entity.serverData, "provisionResources"));
   const contact = toText(useReactiveProperty(entity.serverData, "contact"));
@@ -152,35 +143,23 @@ export default function ProfileParent62About({ section }: ProfileParent62AboutPr
         </SectionCard>
       )}
 
-      {isPartenaire ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <SectionCard icon={Tags} title={t("ProfileParent62About.territoires")}>
-            <PillGroup values={territoires} notProvided={t("ProfileParent62About.notProvided")} />
-          </SectionCard>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <SectionCard icon={Tags} title={t("ProfileParent62About.territoires")}>
+          <PillGroup values={territoires} notProvided={t("ProfileParent62About.notProvided")} />
+        </SectionCard>
 
-          <SectionCard icon={Users} title={t("ProfileParent62About.publics")}>
-            <PillGroup values={publics} notProvided={t("ProfileParent62About.notProvided")} />
-          </SectionCard>
+        <SectionCard icon={Tags} title={t("ProfileParent62About.categoryThematic")}>
+          <PillGroup values={categoryThematic} notProvided={t("ProfileParent62About.notProvided")} />
+        </SectionCard>
 
-          <SectionCard icon={ListChecks} title={t("ProfileParent62About.themes")}>
-            <PillGroup values={themes} notProvided={t("ProfileParent62About.notProvided")} />
-          </SectionCard>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <SectionCard icon={Tags} title={t("ProfileParent62About.categoryThematic")}>
-            <PillGroup values={categoryThematic} notProvided={t("ProfileParent62About.notProvided")} />
-          </SectionCard>
+        <SectionCard icon={ListChecks} title={t("ProfileParent62About.typeAction")}>
+          <PillGroup values={typeAction} notProvided={t("ProfileParent62About.notProvided")} />
+        </SectionCard>
 
-          <SectionCard icon={ListChecks} title={t("ProfileParent62About.typeAction")}>
-            <PillGroup values={typeAction} notProvided={t("ProfileParent62About.notProvided")} />
-          </SectionCard>
-
-          <SectionCard icon={Users} title={t("ProfileParent62About.publicCible")}>
-            <PillGroup values={publicCible} notProvided={t("ProfileParent62About.notProvided")} />
-          </SectionCard>
-        </div>
-      )}
+        <SectionCard icon={Users} title={t("ProfileParent62About.publicCible")}>
+          <PillGroup values={publicCible} notProvided={t("ProfileParent62About.notProvided")} />
+        </SectionCard>
+      </div>
 
       {socialLinks.length > 0 && (
         <SectionCard icon={Globe} title={t("ProfileParent62About.socialNetworks")}>

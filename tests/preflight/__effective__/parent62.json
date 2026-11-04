@@ -7,10 +7,7 @@
         "project": "add-project",
         "event": "add-event",
         "poi": "add-poi"
-      },
-      "customs": [
-        "add-parent62-partenaire"
-      ]
+      }
     },
     "organizations": {
       "builtins": {
@@ -32,16 +29,22 @@
     "poi": "add-poi"
   },
   "editModals": {
+    "citoyens": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-parent62-citoyen",
+          "native": "edit-profile",
+          "horsPerimetre": "edit-profile",
+          "nativeVuParUnTiers": "edit-profile"
+        }
+      ]
+    },
     "organizations": {
       "vierge": "edit-profile",
       "routes": [
         {
           "declare": "edit-parent62-acteur",
-          "native": "edit-parent62-acteur",
-          "horsPerimetre": "edit-profile"
-        },
-        {
-          "declare": "edit-parent62-partenaire",
           "native": "edit-parent62-acteur",
           "horsPerimetre": "edit-profile"
         }
@@ -281,22 +284,6 @@
         "enabled": true,
         "modalName": null
       }
-    },
-    "partenaires/organizations": {
-      "source": {
-        "defaultSortBy": {
-          "created": -1
-        },
-        "costumSlug": "parent62",
-        "sourceKey": [
-          "parent62"
-        ]
-      },
-      "create": "add-parent62-partenaire",
-      "edit": {
-        "enabled": true,
-        "modalName": null
-      }
     }
   },
   "pages": {
@@ -508,11 +495,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Arrageois"
@@ -657,11 +639,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Artois"
@@ -806,11 +783,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Audomarois"
@@ -955,11 +927,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Boulonnais"
@@ -1104,11 +1071,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Calaisis"
@@ -1253,11 +1215,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Entre Mer et Terres"
@@ -1402,11 +1359,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Familles en sol mineur Hénin Carvin"
@@ -1551,11 +1503,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Familles en sol mineur Lens Liévin"
@@ -1700,11 +1647,6 @@
         ],
         "costumSlug": "parent62",
         "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          },
           "territoires": {
             "$in": [
               "Ternois Bruaysis"
@@ -1857,55 +1799,6 @@
         "costumSlug": "parent62"
       }
     },
-    "/annuaire/searchProStatic": {
-      "baseParams": {
-        "defaultTypes": [
-          "organizations"
-        ],
-        "sourceKey": [
-          "parent62"
-        ],
-        "costumSlug": "parent62",
-        "defaultFilters": {
-          "tags": {
-            "$in": [
-              "Partenaires"
-            ]
-          }
-        },
-        "defaultFields": [
-          "name",
-          "slug",
-          "type",
-          "collection",
-          "source",
-          "reference",
-          "shortDescription",
-          "description",
-          "email",
-          "telephone",
-          "url",
-          "address",
-          "geo",
-          "geoPosition",
-          "territoires",
-          "publics",
-          "themes",
-          "profilThumbImageUrl",
-          "profilMediumImageUrl",
-          "profilImageUrl"
-        ],
-        "searchBy": [
-          "name",
-          "shortDescription",
-          "description"
-        ],
-        "defaultSortBy": {
-          "name": 1
-        },
-        "indexStepList": 24
-      }
-    },
     "/annuaire-acteurs-parentalite/searchProStatic": {
       "baseParams": {
         "defaultTypes": [
@@ -1915,13 +1808,6 @@
           "parent62"
         ],
         "costumSlug": "parent62",
-        "defaultFilters": {
-          "tags": {
-            "$nin": [
-              "Partenaires"
-            ]
-          }
-        },
         "defaultFields": [
           "name",
           "slug",
@@ -1956,17 +1842,6 @@
         "indexStepList": 200
       }
     }
-  },
-  "stamps": {
-    "parent62-partenaire": [
-      {
-        "field": "tags",
-        "value": "Partenaires",
-        "op": "append",
-        "on": "both",
-        "channel": "payload"
-      }
-    ]
   },
   "referencement": {},
   "membership": {

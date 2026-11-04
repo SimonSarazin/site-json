@@ -182,10 +182,11 @@ export const ProfileSsbeAboutSectionSchema = z.object({
   hidden: z.boolean().optional().default(false),
 });
 
-/** Fiche « À propos » d'une organisation parent62 — couvre les deux `costumForms` `organizations` du
- *  costum (`parent62-acteur` : `categoryThematic`/`typeAction`/`publicCible` ; `parent62-partenaire` :
- *  `territoires`/`publics`/`themes`), distingués au rendu par le tag `"Partenaires"`. Aucun de ces
- *  champs n'est couvert par `profile-info` (contact) ni `profile-tags`. */
+/** Fiche « À propos » d'une organisation parent62 — couvre le `costumForm` `organizations`
+ *  `parent62-acteur` (`territoires`/`categoryThematic`/`typeAction`/`publicCible`), le seul formulaire
+ *  d'organisation du costum depuis le retrait du concept « partenaire » le 03/11/2026 (aucune fiche ne
+ *  portait le tag `"Partenaires"` ; `publics`/`themes` ne sont plus lus). Aucun de ces champs n'est
+ *  couvert par `profile-info` (contact) ni `profile-tags`. */
 export const ProfileParent62AboutSectionSchema = z.object({
   type: z.literal("profile-parent62-about"),
   hidden: z.boolean().optional().default(false),
