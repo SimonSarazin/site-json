@@ -95,4 +95,17 @@ describe("HeroSearch — lancement de la recherche", () => {
     fireEvent.keyDown(champ, { key: "Enter" });
     expect(screen.getByTestId("lieu").textContent).toBe("/services?resource=r1");
   });
+  it("suggestions de services : flèche bas puis flèche haut revient à « aucune sélection », Entrée lance la recherche", () => {
+    services.enabled = true;
+    services.suggestions = [
+      { id: "r1", title: "Salle Majorelle", subtitle: "La Coroutine · Lille", href: "/services?resource=r1" },
+    ];
+    hero({ searchHref: "/services", serviceSuggestions: { page: "/services", sectionId: "x" } });
+    const champ = screen.getByPlaceholderText("Ville");
+    fireEvent.change(champ, { target: { value: "Lille" } });
+    fireEvent.keyDown(champ, { key: "ArrowDown" });
+    fireEvent.keyDown(champ, { key: "ArrowUp" });
+    fireEvent.keyDown(champ, { key: "Enter" });
+    expect(screen.getByTestId("lieu").textContent).toBe("/services?typologies=Coworking&search=Lille");
+  });
 });

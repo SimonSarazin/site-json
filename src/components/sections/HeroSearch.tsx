@@ -248,7 +248,9 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
         break;
       case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+        // Mode services : remonter au-dessus de la 1re ligne rend « aucune sélection » (-1), où Entrée
+        // lance la recherche au lieu d'ouvrir le 1er service.
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : serviceMode ? -1 : 0));
         break;
       case "Enter":
         e.preventDefault();

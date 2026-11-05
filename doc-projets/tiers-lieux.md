@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -216,6 +216,23 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 04/11 — `/services` et hero : suites de la revue de la MR 119
+
+- **Pas de squelette à chaque page de ressources** : la requête des lieux porteurs
+  (`useResourceParentsQuery`) change de clé à chaque page chargée ; elle garde désormais les lieux déjà
+  lus pendant le rechargement (`placeholderData: keepPreviousData`). Sans cela, au-delà de 500
+  ressources, la liste repassait en squelette avec une facette lieu active, et la sentinelle du scroll
+  infini, restée visible, enchaînait les pages jusqu'à la dernière.
+- **Hero en mode services** : flèche haut depuis la 1re suggestion revient à « aucune sélection » ;
+  Entrée lance alors la recherche au lieu d'ouvrir le 1er service. Test ajouté dans
+  `HeroSearch.test.tsx`, vérifié en échec sans le correctif.
+- **Popup de la carte** : l'adresse copiée sur la réponse reste en repli quand le lieu résolu n'a ni
+  rue ni commune en base.
+
+**Vérifié.** `test:unit` ✅ hors les 3 tests du module kanban, qui attendent le SDK 1.0.205 (le SDK
+local est en 1.0.204) · `typecheck` ✅ hors ce même module · `eslint` ✅ · `test:preflight` ✅. Le cas
+des 500 ressources n'est pas reproductible en local (62 ressources).
 
 ### 28/10bis — fiche événement : onglet « Participants », onglet « Lieu » et « Autres événements » retirés
 

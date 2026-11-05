@@ -436,8 +436,8 @@ function ResourceDirectoryList({
         serverData: {
           name: parentName,
           // Adresse du lieu RÉSOLU (`useResourceParentsQuery`) ; la copie que pose `getRessourceTL` sur la
-          // réponse ne sert que de repli, lieu non (encore) chargé.
-          address: parent
+          // réponse sert de repli, lieu non (encore) chargé OU lieu sans rue ni commune en base.
+          address: parent && (parent.streetAddress || parent.addressLocality)
             ? { streetAddress: parent.streetAddress, postalCode: parent.postalCode, addressLocality: parent.addressLocality }
             : premier.serverData.address,
           geo: { latitude: groupe.lat, longitude: groupe.lng },
