@@ -16,7 +16,7 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-11-05** (onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
+Dernière mise à jour : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
 cf. §10 29/10). Précédent : **2026-10-28** (module `admin` activé : onglets Membres, Annuaire et
 Référencement des CAE, cf. §10 28/10). Précédent : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et
 poussées : la tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans
@@ -294,6 +294,17 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 05/11bis — entrée « Kanban » dans le menu du compte
+
+**Config seule** : `"auth": { "menu": { "kanban": true } }`, comme tiers-lieux. Le module `kanban`
+n'est pas activé (pas de bloc `"kanban"`) : l'entrée mène donc, dans un nouvel onglet, à la vue
+actions de la plateforme (`https://www.communecter.org/#@federationDesCae.view.actions`), pour les
+admins du costum.
+
+**Vérifié au navigateur** (serveur dev, backend local, admin connecté) : le menu du compte affiche
+Profil · Administration · Chat · **Kanban** · Se déconnecter. `config:validate` ✅ · `audit:config` ✅
+RAS · `test:preflight` ✅.
 
 ### 05/11 — admin : les trois onglets vus par un admin connecté
 
