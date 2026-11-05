@@ -533,6 +533,8 @@ npm run deploy -- monSlug --yes
 
 L'etape 2 **refuse** si le domaine ne resout pas encore vers le serveur : le declarer trop tot ferait echouer Let's Encrypt en HTTP-01 sur cet hote. Le sous-domaine d'amorce continue de servir pendant toute la bascule.
 
+**Apex nu et `www`.** Un site qui prend `www.monsite.fr` declare aussi `monsite.fr` en alias (le certificat de l'apex en depend), et c'est le **serveur** qui redirige l'hote jumeau vers l'hote canonique : `server/lib/canonicalHost.js` repond 301 quand la requete arrive sur l'apex nu d'une `VITE_SITE_PUBLIC_URL` (= `aliases[0]`) en `www.`, ou sur le `www.` d'une URL publique nue — GET/HEAD hors `/api/`, chemin et query conserves, l'amorce `*.00.re` jamais touchee. La regle est deduite une fois au demarrage et loguee. Ne **pas** activer le reglage « Redirect to www » de Coolify : il s'applique a chaque domaine declare sans `www.`, **amorce comprise**, qui partirait vers un `www.monsite.00.re` sans DNS ni certificat. Et ne pas retirer l'amorce pour contourner : `domain` est le pivot de l'outil (`deployableSites`, `deploy:alias`, `deploy:dns`, preflight `deploy-targets`).
+
 ### Creer un site
 
 ```bash

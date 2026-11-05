@@ -10,6 +10,7 @@ import { findSiteBySlug, knownSlugs } from "./utils/sites.js";
 import { registerSeoRoutes } from "./lib/sitemap.js";
 import { realtimeFluxHandler, realtimePushHandler } from "./api/realtime.js";
 import { helloassoCallbackRedirect } from "./api/helloasso-callback.js";
+import { canonicalHostRedirect, regleHoteCanonique } from "./lib/canonicalHost.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -115,6 +116,14 @@ const configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJS
 console.log(`Config chargée depuis ${configOrigin} :`, cachedConfig?.meta?.title?.fr || "Config OK");
 
 const app = express();
+
+// HÔTE CANONIQUE — monte EN PREMIER : l'hôte jumeau de l'URL publique (apex nu d'une canonique en
+// `www.`, ex. parent62.org → www.parent62.org ; ou le `www.` d'une canonique nue), déduit UNE fois de
+// VITE_SITE_PUBLIC_URL, part en 301 avant toute autre réponse. GET/HEAD hors /api/ seulement ;
+// l'amorce `*.00.re` et l'hôte canonique passent. Cf. server/lib/canonicalHost.js.
+const regleHote = regleHoteCanonique(process.env.VITE_SITE_PUBLIC_URL);
+console.log(regleHote ? `Hôte canonique : ${regleHote.de} → ${regleHote.vers} (301)` : "Hôte canonique : aucune règle (VITE_SITE_PUBLIC_URL absente ou invalide)");
+app.use(canonicalHostRedirect(process.env.VITE_SITE_PUBLIC_URL));
 
 // Compression gzip avec options optimisées
 // TEMPS REEL — monte AVANT `compression()` DELIBEREMENT : sur un flux SSE le test de seuil
