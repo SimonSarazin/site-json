@@ -1679,6 +1679,11 @@ const ContentSectionSchema = z.object({
       label: LocalizedString,
       href: z.string(),
     })).optional(),
+    button: z.object({
+      label: LocalizedString,
+      href: z.string(),
+      variant: z.enum(["default", "secondary", "outline", "ghost"]).default("default"),
+    }).optional(),
     iconCard: z.object({
       svg: z.string(),
     }).optional(),

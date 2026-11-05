@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import NavLink from "@/components/layout/NavLink";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 /**
  * Même parseur que `MarkdownSection`, initialisé une seule fois. La description accepte donc du
@@ -33,6 +35,7 @@ export function ContentSection({
     imageHref,
     imagePosition = "right",
     links,
+    button,
     iconCard,
     infoText,
     decorativeElements,
@@ -126,7 +129,7 @@ export function ContentSection({
             )}
 
             {/* Icon Card and/or Links */}
-            {(iconCard || (links && links.length > 0)) && (
+            {(iconCard || (links && links.length > 0) || button) && (
               <div className={cn("flex items-start gap-4 mb-6", estCentre && "justify-center")}>
                 {/* Icon */}
                 {iconCard && (
@@ -135,10 +138,13 @@ export function ContentSection({
                   </div>
                 )}
 
-                {/* Links Card */}
-                {links && links.length > 0 && (
-                <div className="bg-card rounded-2xl shadow-lg p-6 border border-border flex-1">
-                  <div className="space-y-4">
+                {/* Links card with a separate CTA below it */}
+                {((links && links.length > 0) || button) && (
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col items-center gap-4">
+                    {links && links.length > 0 && (
+                      <div className="w-fit max-w-full bg-card rounded-2xl shadow-lg p-6 border border-border">
+                        <div className="space-y-4">
                     {links.map((link, idx) => (
                       <div key={idx} className="flex items-center space-x-3">
                         <svg className="w-3 h-3 text-foreground" fill="currentColor" viewBox="0 0 20 20">
@@ -156,6 +162,17 @@ export function ContentSection({
                         </NavLink>
                       </div>
                     ))}
+                        </div>
+                      </div>
+                    )}
+                    {button && (
+                      <Button asChild size="sm" variant={button.variant}>
+                        <NavLink to={button.href}>
+                          <T k={button.label} />
+                          <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                        </NavLink>
+                      </Button>
+                    )}
                   </div>
                 </div>
                 )}

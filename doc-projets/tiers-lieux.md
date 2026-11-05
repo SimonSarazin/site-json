@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-05** (`/a-propos` : bouton de diagnostic Licoop placé sous le bandeau du lien SPG, cf. §9). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -216,6 +216,40 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 05/11 — `/cooperer` : page de regroupement des entrées du menu
+
+**Fait** : création de `/cooperer` avec une grille reprenant les entrées du menu « Coopérer »,
+leurs descriptions et leurs destinations. L'entrée « Décider ensemble » reste non cliquable avec son
+contenu « Bientôt ». La plateforme d'aiguillage est désormais uniquement dans le menu « Outils »,
+juste après Grist, et n'apparaît plus dans les cartes de `/cooperer`. Le parent « Coopérer » du menu
+et la mention de cette rubrique dans `/a-propos` pointent vers la nouvelle page.
+
+**Vérifié** : `npm run config:validate -- config.prod.tiers-lieux.json` — 20 pages et 47 sections
+validées.
+
+### 05/11 — `/a-propos` : titres rapprochés
+
+**Fait** : les sections de contenu de `/a-propos` passent de `py-16` à `py-10` via leur `className`
+de configuration ; l'espacement des sections de contenu des autres pages ne change pas. Le texte des
+missions précise que l'entraide passe par la mutualisation des outils. Le passage sur la qualification
+Licoop précise qu'elle s'inspire du SPG, s'obtient en deux étapes et nomme la validation par les pairs
+« Seconde étape » ; la formulation indique qu'un lieu « obtient la mention Licoop » au niveau 2. Le lien
+de contact vers le forum ouvre le formulaire de nouveau message adressé à Tiers-lieux.org, et le lien
+vers le chat ouvre directement le salon avec le relais `via=tiers-lieux.org`. Le texte d'introduction
+présente les rubriques Service, Lieux, Outils, Communs et Coopérer, avec des liens vers les pages
+internes de services, lieux, outils et communs. La liste des services mentionne désormais les salles
+de réunion, hébergements, espaces de coworking « etc. » sans la réserve « à ce stade ». L'accroche
+« Mais qu’est-ce qui fait l’originalité de Tiers-Lieux.org ? On vous dit tout ci-dessous ! » suit
+désormais la description de la rubrique Coopérer, à la fin de la liste des services.
+Le paragraphe sur le financement public est reformulé : il met l'accent sur les pratiques
+démocratiques, la coopération et la mutualisation comme moyens de dépasser les obstacles, dont le
+faible financement public des communs. La mention Licoop est attribuée à partir du niveau 2, sous
+réserve que le lieu vise le niveau 3 sur la plupart des questions. Sous le bandeau du lien vers le
+SPG, à l'extérieur de celui-ci, un bouton compact dirige vers le diagnostic CoForm Licoop.
+
+**Vérifié** : `config:validate` ; contrôle visuel non concluant, la préversion locale est restée sur
+son écran de chargement.
 
 ### 04/11 — `/services` et hero : suites de la revue de la MR 119
 
