@@ -2074,7 +2074,8 @@ export interface SearchMapProps<T extends SearchListEntity = SearchEntity> {
 
 export interface MapPopupProps<T extends SearchListEntity = SearchEntity> {
   item: T;
-  t: (key: string) => string;
+  /** Le `useT("modules/search")` de SearchMap : interpolation et pluriel (`{ count }`) compris. */
+  t: (key: string, fallback?: string, params?: Record<string, unknown>) => string;
   /** Libellé/intention du bouton d'action (cf. MapConf.itemAction). */
   actionKind?: "profil" | "preview";
   /** Handler du bouton d'action — fourni par SearchMap (popup react-map-gl). */

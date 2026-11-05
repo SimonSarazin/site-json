@@ -4,6 +4,7 @@ import {
   defaultOpenFilterGroups,
   matchesCapacity,
   matchesTypologies,
+  judgesOnParentPlace,
   matchesZones,
   narrowResourceTypes,
   parentIdsFilter,
@@ -93,6 +94,19 @@ describe("matchesTypologies", () => {
     expect(matchesTypologies(tags, ["Tiers-lieu culturel", "Ateliers artisanaux partagés"])).toBe(true);
     expect(matchesTypologies(tags, ["Tiers-lieu culturel"])).toBe(false);
     expect(matchesTypologies(undefined, ["Tiers-lieu culturel"])).toBe(false);
+  });
+});
+
+describe("judgesOnParentPlace", () => {
+  const rien = { zones: [], typologies: [], query: "" };
+  it("aucune facette sur le lieu porteur (texte blanc compris) : false", () => {
+    expect(judgesOnParentPlace(rien)).toBe(false);
+    expect(judgesOnParentPlace({ ...rien, query: "   " })).toBe(false);
+  });
+  it("zone, typologie ou texte saisi : true", () => {
+    expect(judgesOnParentPlace({ ...rien, zones: ["Z"] })).toBe(true);
+    expect(judgesOnParentPlace({ ...rien, typologies: ["Tiers-lieu culturel"] })).toBe(true);
+    expect(judgesOnParentPlace({ ...rien, query: "lille" })).toBe(true);
   });
 });
 
