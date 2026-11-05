@@ -4,7 +4,7 @@ import { buildResourceDetails, readTagList, readText } from "./resourceDetails";
 const label = (k: string) => `L:${k}`;
 
 describe("buildResourceDetails", () => {
-  it("listes puis textes, dans l'ordre de la fiche, blocs vides omis", () => {
+  it("listes et textes, textes dans l'ordre de la fiche, blocs vides omis", () => {
     const values: Record<string, unknown> = {
       tip: "Un jardin",
       equipments: ["Wifi", " Paperboard "],
@@ -18,8 +18,8 @@ describe("buildResourceDetails", () => {
         { label: "L:catering", values: ["Micro-ondes"] },
       ],
       notes: [
-        { label: "L:moreInfo", value: "Accès PMR" },
         { label: "L:tip", value: "Un jardin" },
+        { label: "L:moreInfo", value: "Accès PMR" },
       ],
     });
   });
