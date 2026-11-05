@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { ChevronDown, Plus, Pencil, Trash2, UserPlus, Loader2 } from "lucide-react";
 import type { CoFormData } from "@/modules/coform/types";
 import type { AacResolvedConfig } from "../../types";
@@ -25,6 +25,7 @@ import {
   fundableItemToMilestoneRef,
   actionRights,
   actionCreatedLabel,
+  splitOpenAndClosedMilestones,
   type MilestoneCardPermissions,
 } from "@/modules/aac/lib/objectiveHelpers";
 
@@ -137,6 +138,49 @@ export function AddMilestoneButton({ ctrl }: { ctrl: CommunObjectivesController 
 }
 
 /**
+ * Paliers clos, masqués par défaut derrière un bouton Afficher / Masquer ; `labelKey` : préfixe des libellés
+ * `show` / `hide` (`{{count}}`).
+ */
+export function ClosedMilestonesGroup({
+    count,
+    labelKey,
+    className,
+    children,
+}: {
+    count: number;
+    labelKey: string;
+    className?: string;
+    /** Le conteneur des paliers clos : grille de cartes, `ul` ou `ol`. */
+    children: ReactNode;
+}) {
+    const c = useT("modules/aac");
+    const [expanded, setExpanded] = useState(false);
+    const panelId = useId();
+
+    if (count === 0) return null;
+
+    return (
+        <div className={className}>
+            <button
+                type="button"
+                onClick={() => setExpanded((e) => !e)}
+                aria-expanded={expanded}
+                aria-controls={panelId}
+                className="w-full flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted-foreground px-1 hover:text-foreground transition-colors cursor-pointer"
+            >
+                {String(c(`${labelKey}.${expanded ? "hide" : "show"}`, undefined, { count }))}
+                <ChevronDown className={`size-3.5 transition-transform ${expanded ? "rotate-180" : ""}`} aria-hidden="true" />
+            </button>
+            {expanded ? (
+                <div id={panelId} className="mt-4">
+                    {children}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+/**
  * Barre de gestion d'un palier, dépliée au survol ou au focus du parent `group` :
  * modifier / clore / supprimer / restaurer, puis « Ajouter une action ».
  */
@@ -149,6 +193,7 @@ export function MilestoneManageBar({
     onMilestoneDelete,
     onMilestoneRestore,
     onActionCreate,
+    paymentInProgress = false,
     className = "mb-3",
 }: {
     item: CagnotteFundableItem;
@@ -159,6 +204,8 @@ export function MilestoneManageBar({
     onMilestoneDelete: (itemId: string, milestone: Milestone) => void;
     onMilestoneRestore: (itemId: string, milestone: Milestone) => void;
     onActionCreate: (milestoneId: string, milestoneTitle: string) => void;
+    /** Une contribution est en cours de paiement sur ce palier : il ne se supprime pas avant son issue. */
+    paymentInProgress?: boolean;
     /** Marges du contenu déplié. */
     className?: string;
 }) {
@@ -168,7 +215,7 @@ export function MilestoneManageBar({
     const canEditThisMilestone = permissions.canEditMilestone({ status: milestoneStatus });
     const canDeleteThisMilestone = permissions.canDeleteMilestone({
         status: milestoneStatus,
-        hasTransactions: toSafeInt(item.currentFunding) > 0,
+        hasTransactions: toSafeInt(item.currentFunding) > 0 || paymentInProgress,
     });
     // « Restaurer » a sa propre règle : un palier clos et financé reste restaurable.
     const canRestoreThisMilestone = permissions.canRestoreMilestone({ status: milestoneStatus });
@@ -214,6 +261,7 @@ export function MilestoneManageBar({
 
 function ActionsMilestoneCard({
     index,
+    defaultOpen,
     item,
     openEditMilestoneModal,
     onActionCreate,
@@ -226,8 +274,12 @@ function ActionsMilestoneCard({
     onMilestoneRestore,
     permissions,
     loadingIds,
+    paymentInProgress,
 }: {
+    /** Position dans la liste complète : le numéro « Palier n ». */
     index: number;
+    /** Carte dépliée au premier rendu. */
+    defaultOpen: boolean;
     item: CagnotteFundableItem;
     openEditMilestoneModal: (milestone: Milestone) => void;
     onActionCreate: (milestoneId: string, milestoneTitle: string) => void;
@@ -247,8 +299,9 @@ function ActionsMilestoneCard({
         closingItemId: string;
         restoringItemId: string;
     };
+    paymentInProgress: boolean;
 }) {
-    const [open, setOpen] = useState(index === 0);
+    const [open, setOpen] = useState(defaultOpen);
     const panelId = `palier-actions-${index}-panel`;
 
     useLoadNamespace("modules/aac");
@@ -367,6 +420,7 @@ function ActionsMilestoneCard({
                 onMilestoneDelete={onMilestoneDelete}
                 onMilestoneRestore={onMilestoneRestore}
                 onActionCreate={onActionCreate}
+                paymentInProgress={paymentInProgress}
             />
         </div>
     );
@@ -380,28 +434,37 @@ export function CommunActionsSection({ funding, ctrl }: CommunActionsSectionProp
         return null;
     }
 
+    const { open, closed } = splitOpenAndClosedMilestones(funding?.items ?? []);
+    const card = ({ item, index }: { item: CagnotteFundableItem; index: number }, defaultOpen: boolean) => (
+        <ActionsMilestoneCard
+            key={item.itemId || index}
+            index={index}
+            defaultOpen={defaultOpen}
+            item={item}
+            openEditMilestoneModal={ctrl.openEditMilestoneModal}
+            onMilestoneClose={ctrl.handleCloseMilestone}
+            onMilestoneRestore={ctrl.handleRestoreMilestone}
+            onMilestoneDelete={ctrl.handleDeleteMilestone}
+            onActionCreate={ctrl.handleCreateAction}
+            onActionEdit={ctrl.handleActionEdit}
+            onActionDelete={ctrl.handleActionDelete}
+            onActionCandidate={ctrl.handleActionCandidate}
+            onActionDone={ctrl.handleActionDone}
+            permissions={ctrl.cagnottePerms}
+            loadingIds={ctrl.loadingIds}
+            paymentInProgress={ctrl.pledgeRetraction.depenseInProgress(item)}
+        />
+    );
+
     return (
         <div className="grid gap-4">
             <AddMilestoneButton ctrl={ctrl} />
             {ctrl.isLoadingData && !funding?.items?.length ? <MilestoneCardsSkeleton /> : null}
-            {funding?.items?.map((o: CagnotteFundableItem, i: number) => (
-                <ActionsMilestoneCard
-                    key={i}
-                    index={i}
-                    item={o}
-                    openEditMilestoneModal={ctrl.openEditMilestoneModal}
-                    onMilestoneClose={ctrl.handleCloseMilestone}
-                    onMilestoneRestore={ctrl.handleRestoreMilestone}
-                    onMilestoneDelete={ctrl.handleDeleteMilestone}
-                    onActionCreate={ctrl.handleCreateAction}
-                    onActionEdit={ctrl.handleActionEdit}
-                    onActionDelete={ctrl.handleActionDelete}
-                    onActionCandidate={ctrl.handleActionCandidate}
-                    onActionDone={ctrl.handleActionDone}
-                    permissions={ctrl.cagnottePerms}
-                    loadingIds={ctrl.loadingIds}
-                />
-            ))}
+            {/* La première carte en cours est dépliée. */}
+            {open.map((entry, i) => card(entry, i === 0))}
+            <ClosedMilestonesGroup count={closed.length} labelKey="detail.objectives.closedToggle" className="pt-2">
+                <div className="grid gap-4">{closed.map((entry) => card(entry, false))}</div>
+            </ClosedMilestonesGroup>
         </div>
     );
 }

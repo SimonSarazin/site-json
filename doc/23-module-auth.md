@@ -382,7 +382,7 @@ restent utilisées comme défaut si le bloc `menu` est absent.
 | `showName` | `boolean` | Afficher le nom de l'utilisateur à côté de l'avatar |
 | `showDropdownHeader` | `boolean` | Afficher un en-tête nom + email dans le dropdown |
 | `loginLabel` | `LocalizedString` | Libellé du bouton « Se connecter » — surchargé par la prop `loginLabel` du header |
-| `kanban` | `boolean` | Opt-in : entrée « Kanban » (nouvel onglet vers la vue actions de la plateforme), réservée aux admins du costum — gate `isKanbanEntryVisible` (modules/admin), détails dans [doc/30-module-admin.md](30-module-admin.md) |
+| `kanban` | `boolean` | Opt-in : entrée « Kanban ». Module `kanban` actif : la page `/kanban` du site (admins, membres, contributeurs du porteur) ; sinon, nouvel onglet vers la vue actions de la plateforme (admins du costum) — règle `resolveKanbanEntry` (modules/admin), détails dans [doc/30-module-admin.md](30-module-admin.md) |
 | `rocketChat` | `boolean` | Entrée « Chat » (lien nouvel onglet, comme Kanban, vers l'instance Rocket.Chat séparée — `getRocketChatUrl()`/`VITE_ROCKETCHAT_URL`, défaut `chat.communecter.org`), réservée aux admins du costum, **ACTIVE PAR DÉFAUT** sur tout le parc — `false` explicite pour la désactiver sur un site ; gate `isRocketChatEntryVisible` (modules/admin). Pas de modal/iframe : le SDK n'expose pas de jeton de connexion pour authentifier une iframe Rocket.Chat — sans lui, l'iframe montre au mieux l'écran de connexion complet, au pire une page refusée par l'instance. |
 
 Le `tone` (défaut / onColor) et le `loginVariant` (ghost / solid / outline)

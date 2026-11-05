@@ -52,15 +52,27 @@ function makeConfig(depenseStepKey: string | null): AacResolvedConfig {
   };
 }
 
+let retractStateFor: (fund: { finkey?: string }, depenseName: string) => unknown = () => null;
+const openRetract = vi.fn();
+let depenseInProgress: (item: { milestoneId?: string }) => boolean = () => false;
+let showDepenseProgress = false;
+let canDeleteMilestone: (args: { hasTransactions?: boolean }) => boolean = () => false;
+
 /** Le strict nécessaire du contrôleur pour rendre la liste — aucun droit de gestion. */
 function makeCtrl(): CommunObjectivesController {
   return {
     resolvedAnswerId: "a1",
+    pledgeRetraction: {
+      stateFor: (fund: { finkey?: string }, depenseName: string) => retractStateFor(fund, depenseName),
+      open: openRetract,
+      depenseInProgress: (item: { milestoneId?: string }) => depenseInProgress(item),
+      showDepenseProgress,
+    },
     cagnottePerms: {
       canCreateMilestone: false,
       canEditMilestone: () => false,
       canCloseMilestone: () => false,
-      canDeleteMilestone: () => false,
+      canDeleteMilestone: (args: { hasTransactions?: boolean }) => canDeleteMilestone(args),
       // Restauration d'un palier clos (lot 2, G6/H7) : le composant la consulte aussi.
       canRestoreMilestone: () => false,
     },
@@ -90,6 +102,11 @@ function renderSection(over: Partial<Parameters<typeof CommunFinancingSection>[0
 beforeEach(() => {
   depenses = [];
   useCommunRawDepenses.mockClear();
+  retractStateFor = () => null;
+  openRetract.mockClear();
+  depenseInProgress = () => false;
+  showDepenseProgress = false;
+  canDeleteMilestone = () => false;
 });
 
 describe("CommunFinancingSection — l'étape des dépenses est celle que la page a résolue (M13)", () => {
@@ -113,7 +130,10 @@ describe("CommunFinancingSection — un palier clos est marqué comme tel (M17)"
     ];
     renderSection();
 
+    // Le palier clos est rangé sous les paliers en cours, masqué jusqu'au clic.
     expect(screen.getByText("Ouvert")).toBeTruthy();
+    expect(screen.queryByText("Clos")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "detail.objectives.closedToggle.show" }));
     expect(screen.getByText("Clos")).toBeTruthy();
     const badges = screen.getAllByText("detail.objectives.closedBadge");
     expect(badges).toHaveLength(1);
@@ -161,12 +181,35 @@ describe("CommunFinancingSection — rendu `list` (interface editorial)", () => 
       { poste: "Clos", priceInt: 900, include: false },
     ];
     renderSection({ layout: "list" });
+    fireEvent.click(screen.getByRole("button", { name: "detail.financing.closedToggle.show" }));
 
     const badges = screen.getAllByText("detail.objectives.closedBadge");
     expect(badges).toHaveLength(1);
     expect(badges[0].closest("button")?.textContent).toContain("Clos");
     const total = screen.getByText("detail.financing.expensesTotal").closest("p");
     expect(total?.textContent).toMatch(/350/);
+  });
+
+  it("dépenses closes masquées par défaut, sous le total ; le bouton les affiche", () => {
+    depenses = [
+      { poste: "Ouvert", priceInt: 100 },
+      { poste: "Clos", priceInt: 900, include: false },
+    ];
+    renderSection({ layout: "list" });
+
+    expect(screen.queryByText("Clos")).toBeNull();
+    const total = screen.getByText("detail.financing.expensesTotal").closest("p")!;
+    expect(total.textContent).toMatch(/100/);
+
+    const bascule = screen.getByRole("button", { name: "detail.financing.closedToggle.show" });
+    expect(bascule.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(bascule);
+
+    expect(bascule.getAttribute("aria-expanded")).toBe("true");
+    expect(bascule.textContent).toBe("detail.financing.closedToggle.hide");
+    const clos = screen.getByText("Clos");
+    expect(total.compareDocumentPosition(clos) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(total.textContent).toMatch(/100/);
   });
 });
 
@@ -351,5 +394,97 @@ describe("CommunFinancingSection — le bouton de discussion d'un palier", () =>
       expect(emplacement.childNodes).toHaveLength(0);
       expect(emplacement.className).toContain("empty:hidden");
     }
+  });
+});
+
+describe("CommunFinancingSection — retrait d'une promesse", () => {
+  const demande = { answerId: "a1", depenseKey: "0", financerId: "u1", finkey: "a-1", financerName: "Alice", amount: 200, depenseName: "Local" };
+  const retirer = () => screen.queryAllByRole("button", { name: "PledgeRetract.aria" });
+
+  beforeEach(() => {
+    depenses = [{
+      poste: "Local",
+      priceInt: 1000,
+      financer: [
+        { id: "u1", name: "Alice", amount: 200, finkey: "a-1", payment: { logs: [] } },
+        { id: "r1", name: "Région", amount: 300, finkey: "a-2", payment: { logs: [{ amount: 300, confirmation: "validated" }] } },
+      ],
+    }];
+  });
+
+  it("rendu `cards` : « Retirer » sur la seule ligne que le contrôleur accepte, qui ouvre la confirmation", () => {
+    const vus: Array<[string | undefined, string]> = [];
+    retractStateFor = (fund, depenseName) => {
+      vus.push([fund.finkey, depenseName]);
+      return fund.finkey === "a-1" ? { request: demande, paymentInProgress: false } : null;
+    };
+    renderSection();
+    fireEvent.click(screen.getByRole("button", { name: /Local/ }));
+
+    expect(vus).toEqual(expect.arrayContaining([["a-1", "Local"], ["a-2", "Local"]]));
+    expect(retirer()).toHaveLength(1);
+    fireEvent.click(retirer()[0]);
+    expect(openRetract).toHaveBeenCalledWith(demande);
+  });
+
+  it("rendu `list` : même bouton, à côté du montant", () => {
+    retractStateFor = (fund) => (fund.finkey === "a-1" ? { request: demande, paymentInProgress: false } : null);
+    renderSection({ layout: "list" });
+    fireEvent.click(screen.getByRole("button", { name: /Local/ }));
+
+    expect(retirer()).toHaveLength(1);
+    fireEvent.click(retirer()[0]);
+    expect(openRetract).toHaveBeenCalledWith(demande);
+  });
+
+  it("aucune ligne retirable : aucun bouton", () => {
+    renderSection();
+    fireEvent.click(screen.getByRole("button", { name: /Local/ }));
+
+    expect(screen.getByText("Alice")).toBeTruthy();
+    expect(retirer()).toHaveLength(0);
+  });
+
+  it.each(["cards", "list"] as const)("paiement en cours (rendu `%s`) : signalé à la place du statut, sans bouton", (layout) => {
+    retractStateFor = (fund) => (fund.finkey === "a-1" ? { request: demande, paymentInProgress: true } : null);
+    renderSection({ layout });
+    fireEvent.click(screen.getByRole("button", { name: /Local/ }));
+
+    expect(screen.getByText("PledgeRetract.inProgress")).toBeTruthy();
+    expect(screen.queryAllByText("detail.objectives.pledged")).toHaveLength(0);
+    expect(retirer()).toHaveLength(0);
+  });
+});
+
+describe("CommunFinancingSection — contribution en cours sur un palier", () => {
+  const supprimer = () => screen.queryAllByRole("button", { name: /MilestoneManageActions\.delete/ });
+
+  beforeEach(() => {
+    depenses = [
+      { poste: "Local", priceInt: 1000, milestone: "m1" },
+      { poste: "Matériel", priceInt: 500, milestone: "m2" },
+    ];
+    depenseInProgress = (item) => item.milestoneId === "m1";
+  });
+
+  it.each(["cards", "list"] as const)("rendu `%s` : le palier visé porte « Paiement en cours » dans son en-tête", (layout) => {
+    showDepenseProgress = true;
+    renderSection({ layout });
+
+    expect(screen.getAllByText("PledgeRetract.inProgress")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: /Local/ }).textContent).toContain("PledgeRetract.inProgress");
+  });
+
+  it("clé du site inactive : rien n'est signalé", () => {
+    renderSection();
+
+    expect(screen.queryAllByText("PledgeRetract.inProgress")).toHaveLength(0);
+  });
+
+  it.each(["cards", "list"] as const)("rendu `%s` : « Supprimer » disparaît du palier visé, même clé inactive", (layout) => {
+    canDeleteMilestone = ({ hasTransactions }) => hasTransactions !== true;
+    renderSection({ layout });
+
+    expect(supprimer()).toHaveLength(1);
   });
 });

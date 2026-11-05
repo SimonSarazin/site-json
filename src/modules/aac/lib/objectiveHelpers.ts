@@ -30,6 +30,23 @@ export function toMilestoneStatus(status: string | undefined): CagnotteMilestone
   return status === "close" || status === "done" ? status : "open";
 }
 
+/** Palier clos ou terminé : rangé sous les paliers en cours, dans le groupe « clos ». */
+export function isClosedMilestone(item: Pick<CagnotteFundableItem, "status">): boolean {
+  return toMilestoneStatus(item.status) !== "open";
+}
+
+type IndexedMilestone = { item: CagnotteFundableItem; index: number };
+
+/** Paliers en cours puis clos, dans l'ordre ; `index` est la position dans la liste complète (le numéro « Palier n »). */
+export function splitOpenAndClosedMilestones(
+  items: CagnotteFundableItem[],
+): { open: IndexedMilestone[]; closed: IndexedMilestone[] } {
+  const open: IndexedMilestone[] = [];
+  const closed: IndexedMilestone[] = [];
+  items.forEach((item, index) => (isClosedMilestone(item) ? closed : open).push({ item, index }));
+  return { open, closed };
+}
+
 /**
  * L'index de la dépense dans la réponse, quand il y en a un.
  *

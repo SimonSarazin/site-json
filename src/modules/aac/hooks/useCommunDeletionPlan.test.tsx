@@ -104,6 +104,17 @@ describe("useCommunDeletionPlan", () => {
     expect(result.current.plan).toMatchObject({ isBlocked: true, paymentAmount: 500 });
   });
 
+  it("bloque sur un paiement en cours annoncé par l'enveloppe, sans versement au document", async () => {
+    const libre = communPaye("form-etranger");
+    libre.serverData.answers.aapStep1.depense[0].financer = [];
+    api.answer.mockResolvedValue(libre);
+    envelopeResult.data = { rawEnvelope: { paymentsInProgress: { a1: { pledges: [], depenses: [{ milestoneId: "m1" }] } } } };
+    const { result } = render("a1");
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.plan).toMatchObject({ isBlocked: true, paymentCount: 0, paymentInProgress: true });
+  });
+
   it("reste en attente si le document est illisible", async () => {
     api.answer.mockRejectedValue(new Error("403"));
     const { result } = render("a1");

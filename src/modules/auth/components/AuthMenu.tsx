@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronDown, ExternalLink, User, LogOut, ShieldCheck, SquareKanban, MessageCircle } from "lucide-react";
 import {
   DropdownMenu,
@@ -15,8 +15,7 @@ import { cn } from "@/lib/utils";
 import type { LocalizedString } from "@/types/site-schema";
 import { getServerUrl, getRocketChatUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { isAdminEntryVisible, isKanbanEntryVisible, isRocketChatEntryVisible } from "@/modules/admin/lib/adminEntry";
-import { platformKanbanUrl } from "@/modules/admin/lib/platformKanbanUrl";
+import { isAdminEntryVisible, isRocketChatEntryVisible, resolveKanbanEntry } from "@/modules/admin/lib/adminEntry";
 import { platformRocketChatUrl } from "@/modules/admin/lib/platformRocketChatUrl";
 import { useAuthActions } from "../hooks/useAuthActions";
 import { CurrentUserAvatar } from "./CurrentUserAvatar";
@@ -82,32 +81,35 @@ export function AuthMenu({
   // (contrats épinglés par adminEntry.test.ts). Court-circuit isConnected : un anonyme n'a aucun
   // droit, et entity.isAdmin() paierait un throw/catch d'ApiError interne pour rien.
   // Rendu sous ClientOnly (les droits ne sont connus qu'hydraté) → pas de flash SSR.
-  const { me, entity } = useCocolight();
+  const { me, entity, contextType } = useCocolight();
   const showAdmin = isConnected && isAdminEntryVisible(config, me, entity);
-  const costumSlug = entity?.slug;
-  const kanbanUrl =
-    isConnected && costumSlug && isKanbanEntryVisible(config, me, entity, costumSlug)
-      ? platformKanbanUrl(getServerUrl(), costumSlug)
-      : null;
   const rocketChatUrl =
     isConnected && isRocketChatEntryVisible(config, me, entity)
       ? platformRocketChatUrl(getRocketChatUrl())
       : null;
-  // Ancres kanban/chat UNIQUES, habillées en asChild par les deux layouts (stack mobile /
-  // dropdown desktop) : toute évolution (rel, aria, tracking) reste mono-source. Le span
-  // sr-only annonce la sortie vers la plateforme — l'icône est aria-hidden et, dans le
-  // dropdown, Radix pose role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux
-  // lecteurs d'écran. Nouvel onglet, PAS un modal/iframe : le SDK n'expose pas de jeton de
-  // connexion pour authentifier une iframe Rocket.Chat — sans lui, l'iframe montre au mieux
-  // l'écran de connexion complet, au pire une page refusée par l'instance.
-  const kanbanLink = kanbanUrl ? (
-    <a href={kanbanUrl} target="_blank" rel="noopener noreferrer">
-      <SquareKanban className="mr-2 h-4 w-4" />
-      {t("Kanban")}
-      <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
-      <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
-    </a>
-  ) : null;
+  const kanbanEntry = isConnected ? resolveKanbanEntry(config, me, entity, { costumSlug: entity?.slug, contextType, serverUrl: getServerUrl() }) : null;
+  // Liens kanban/chat UNIQUES, habillés en asChild par les deux layouts (stack mobile / dropdown
+  // desktop) : toute évolution (rel, aria, tracking) reste mono-source. Kanban, module actif : la
+  // page `/kanban` du site, dans le même onglet. Sinon, l'ancien lien vers la plateforme : le span
+  // sr-only annonce la sortie — l'icône est aria-hidden et, dans le dropdown, Radix pose
+  // role="menuitem" sur l'ancre, ce qui masque son rôle de lien aux lecteurs d'écran. Chat :
+  // nouvel onglet, PAS un modal/iframe — le SDK n'expose pas de jeton de connexion pour
+  // authentifier une iframe Rocket.Chat ; sans lui, l'iframe montre au mieux l'écran de connexion
+  // complet, au pire une page refusée par l'instance.
+  const kanbanLink =
+    kanbanEntry?.kind === "module" ? (
+      <Link to={kanbanEntry.to}>
+        <SquareKanban className="mr-2 h-4 w-4" />
+        {t("Kanban")}
+      </Link>
+    ) : kanbanEntry?.kind === "platform" ? (
+      <a href={kanbanEntry.href} target="_blank" rel="noopener noreferrer">
+        <SquareKanban className="mr-2 h-4 w-4" />
+        {t("Kanban")}
+        <span className="sr-only">{t("(nouvel onglet, sur la plateforme)")}</span>
+        <ExternalLink className="ml-auto size-3 opacity-60" aria-hidden="true" />
+      </a>
+    ) : null;
   const rocketChatLink = rocketChatUrl ? (
     <a href={rocketChatUrl} target="_blank" rel="noopener noreferrer">
       <MessageCircle className="mr-2 h-4 w-4" />

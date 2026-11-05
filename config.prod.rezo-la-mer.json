@@ -25,6 +25,7 @@
       "environnement"
     ]
   },
+  "ampli":true,
   "header": {
     "type": "transparent-scroll",
     "path": "/",
