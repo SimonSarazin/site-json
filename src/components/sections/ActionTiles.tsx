@@ -138,7 +138,7 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
     // affectées, et réciproquement.
     if (props.tileLayout === "pillRow") {
         return (
-            <section id={id} className={compact ? "" : `px-4 ${sectionBg} py-16`}>
+            <section id={id} className={compact ? "" : `px-4 ${sectionBg} pt-8 pb-0 -mb-16 relative z-20`}>
                 <div className={compact ? "" : `container mx-auto ${containerWidth}`}>
                     <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                         {props.headline && (
@@ -151,14 +151,14 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                                     <Badge
                                         variant={props.accentColor ? undefined : "secondary"}
                                         style={sectionHeadlineStyle(props.headlineStyle, props.accentColor, undefined)}
-                                        className={classePastille}
+                                        className={props.size === "md" ? `${classePastille.replace("text-3xl md:text-4xl", "text-xl sm:text-2xl md:text-3xl")} text-foreground/80` : classePastille}
                                     >
                                         {t(props.headline)}
                                     </Badge>
                                 ) : (
                                     // Même rendu « nu » que centered/inline sans headlineStyle — pas de
                                     // pastille par défaut (cf. JSDoc du schéma, `plain` = titre nu).
-                                    <span className="text-3xl md:text-4xl font-bold text-foreground">
+                                    <span className={`${props.size === "md" ? "text-xl sm:text-2xl md:text-3xl" : "text-2xl md:text-3xl"} font-bold text-foreground`}>
                                         {t(props.headline)}
                                     </span>
                                 )}
@@ -173,9 +173,9 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
                                     <Button
                                         size="lg"
                                         style={solid}
-                                        className={`h-auto rounded-full py-4 pl-4 pr-6 gap-3 text-lg font-bold whitespace-normal border transition-all ${lift} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
+                                        className={`h-auto cursor-pointer rounded-full ${props.size === "md" ? "py-2 pl-3 pr-4 gap-2 text-base" : "py-4 pl-4 pr-6 gap-3 text-lg"} font-bold whitespace-normal border transition-all ${lift} ${solid ? "hover:brightness-95" : getButtonClasses(action.color)}`}
                                     >
-                                        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-current/15">
+                                        <span className={`grid ${props.size === "md" ? "size-8" : "size-10"} shrink-0 place-items-center rounded-full bg-current/15`}>
                                             {renderIcon(action.icon, solid ? "" : getIconColorClass(action.color), "size-5")}
                                         </span>
                                         <span>{t(action.title)}</span>
