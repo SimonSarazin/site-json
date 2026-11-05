@@ -1866,8 +1866,12 @@
     }
   },
   "admin": {
+    "enabled": true,
     "title": {
       "fr": "Administration"
+    },
+    "access": {
+      "min": "siteAdmin"
     },
     "tabs": [
       {

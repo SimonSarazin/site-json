@@ -16,7 +16,7 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
+Dernière mise à jour : **2026-11-05** (onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
 cf. §10 29/10). Précédent : **2026-10-28** (module `admin` activé : onglets Membres, Annuaire et
 Référencement des CAE, cf. §10 28/10). Précédent : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et
 poussées : la tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans
@@ -279,7 +279,7 @@ taguées dépasse largement le périmètre costum. L'annuaire lit ce dernier ens
 | 18 | « Rejoindre une autre CAE » — demande d'adhésion / de droits admin | ✅ | 30/09 — réparée (`d99f1997`) ; vérifiée au navigateur avec un serveur **simulé** (requête et contenu exacts, rien écrit) — la vraie écriture n'a pas été jouée (cf. §10 30/09) |
 | 19 | Ajouter une CAE depuis le finder « Partenaires du commun » (dépôt) | ✅ | 06/10 — revérifié au navigateur sur `jdev` fusionné (SDK 1.0.196), **création réelle avec horaires** puis base restaurée : mots-clés, téléphone et horaires stockés dans la forme du legacy (cf. §10 06/10). Commité le 01/10 (`259164b5`) |
 | 20 | Modale de recherche des finders sans saut pendant la frappe | ✅ | 01/10 — mesuré : 3 sauts de 84 px avant, 0 après. Commité le 01/10 (`259164b5`) |
-| 21 | Admin — onglets Membres, Annuaire et Référencement | 🟡 | 28/10 — module `admin` activé pour la première fois sur ce site ; rendu vérifié anonyme (accès bloqué). **Actions d'un admin connecté non vérifiées** (valider un membre, éditer/supprimer une CAE, rechercher et référencer depuis le réseau), aucun compte de test disponible, cf. §10 28/10 |
+| 21 | Admin — onglets Membres, Annuaire et Référencement | ✅ | 28/10 — module `admin` activé pour la première fois sur ce site ; rendu vérifié anonyme (accès bloqué). **Actions d'un admin connecté non vérifiées** (valider un membre, éditer/supprimer une CAE, rechercher et référencer depuis le réseau), aucun compte de test disponible, cf. §10 28/10. **05/11 — rendu des trois onglets et actions vérifiés par un admin connecté** (backend local) : valider un membre, éditer/supprimer une CAE, référencer, cf. §10 05/11 |
 
 **Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
 préexistants) · `test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅
@@ -294,6 +294,29 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 05/11 — admin : les trois onglets vus par un admin connecté
+
+**Vérifié au navigateur** (serveur dev, backend local, compte admin du site, Playwright) :
+
+| Onglet | Rendu |
+|---|---|
+| Membres | « Gestion de l'organisation » sur l'entité de la Fédération : membres, admins, demandes en attente, bouton « Inviter » |
+| Annuaire | table « CAE » — colonnes Nom, Commune, Tags, Contact, Mise à jour, Statut ; bouton « Créer », filtre de statut |
+| Référencement | « Référencer une CAE existante » : recherche sur tout le réseau, onglets « Rechercher & référencer » / « Référencés », bouton « Référencer » par ligne |
+
+Aucune erreur applicative dans la console. Accès anonyme toujours bloqué (« Accès réservé aux
+administrateurs. »).
+
+**Actions vérifiées avec succès** par un admin connecté (backend local) : valider un membre,
+éditer et supprimer une CAE, référencer une organisation depuis le réseau.
+
+### 04/11 — admin : `enabled` et `access` écrits en config
+
+Le bloc `admin` reçoit `"enabled": true` et `"access": { "min": "siteAdmin" }`, comme les autres
+configs du parc qui ont un admin. Comportement inchangé : sans ces clés, le code retombait déjà sur
+`enabled !== false` et `siteAdmin` (les `.default()` du schéma ne s'appliquent pas au runtime) ; la
+config dit maintenant explicitement qui a accès. `config:validate` ✅ · `test:preflight` ✅.
 
 ### 29/10 — bouton « Ajouter une organisation » retiré de `/annuaire`
 
