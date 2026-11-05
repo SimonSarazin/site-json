@@ -20,7 +20,11 @@
   "MembersSection": {
     "invite": "Invite",
     "invitedTab": "Invited ({{count}})",
-    "noCarrier": "No carrier entity: member management requires a carrier costum."
+    "noCarrier": "No carrier entity: member management requires a carrier costum.",
+    "mail": "Send an email",
+    "selectHint": "Tick the recipient members, then click “Send an email”.",
+    "selectedCount": "{{count}} selected",
+    "cancelSelection": "Clear selection"
   },
   "AdminResourceTable": {
     "preview": "Preview",
@@ -72,7 +76,9 @@
     "statusUnset": "Not set",
     "statusSuccess": "Status updated: {{state}}",
     "statusError": "Status update failed",
-    "bulkTransfer": "Transfer ownership"
+    "bulkTransfer": "Transfer ownership",
+    "bulkMail": "Send an email",
+    "bulkMailNoEmail": "{{count}} item(s) without an email address will not receive the message."
   },
   "AdminExportSection": {
     "title": "CSV export",
@@ -308,5 +314,23 @@
     "error": "Failed to copy “{{name}}”",
     "noApi": "API not initialised",
     "badResponse": "Unexpected server response"
+  },
+  "AdminMailing": {
+    "title": "Send an email",
+    "subtitle": "The message is sent separately to each selected recipient.",
+    "recipients": "Recipients",
+    "noRecipient": "No recipient selected",
+    "remove": "Remove {{name}}",
+    "tooMany": "At most {{max}} recipients per send.",
+    "subject": "Subject",
+    "subjectPlaceholder": "Email subject",
+    "message": "Message",
+    "unsubscribeNote": "An “unsubscribe” link is automatically added at the bottom of the message.",
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending…",
+    "sent": "Your email was sent to {{count}} recipient(s)",
+    "error": "Could not send",
+    "failed": "Something went wrong, the email was not sent."
   }
 }

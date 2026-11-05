@@ -1,10 +1,12 @@
-import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Eye, Link2, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Eye, Link2, Mail, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Suspense, useMemo, useState } from "react";
 import { lazy } from "vite-preload";
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AdminMailingDialog } from "../components/AdminMailingDialog";
+import { recipientFromEntity, uniqueRecipients } from "../lib/mailing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -266,6 +268,20 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   // toujours `source`, on ne peut pas le dériver des fiches de façon fiable.
   const [bulkTransferOpen, setBulkTransferOpen] = useState(false);
   const canBulkTransfer = bulkActions.includes("transfer") && !!resource.transferFrom;
+  // bulkAction `mail` : « Envoyer un e-mail » aux fiches cochées (ADMIN_MAILING_SEND, backend docs/36).
+  // Citoyens → par _id (e-mail résolu serveur) ; autres fiches → champ `email` ; sans e-mail → ignorée + avertissement.
+  const [bulkMailOpen, setBulkMailOpen] = useState(false);
+  const mailRecipients = uniqueRecipients(
+    [...selected.values()]
+      .map((item) => recipientFromEntity(resource.entityType, item as { id?: unknown; serverData?: Record<string, unknown> }))
+      .filter((r): r is NonNullable<typeof r> => r !== null),
+  );
+  const openBulkMail = () => {
+    const sansEmail = selected.size - mailRecipients.length;
+    if (mailRecipients.length === 0) { toast.warning(tAdmin("AdminMailing.noRecipient")); return; }
+    if (sansEmail > 0) toast.warning(tAdmin("AdminResourceTable.bulkMailNoEmail", undefined, { count: String(sansEmail) }));
+    setBulkMailOpen(true);
+  };
   const invalidateAdmin = () =>
     queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("admin-") });
   const toggleSelect = (id: string, item: unknown) =>
@@ -513,6 +529,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
             {canBulkTransfer && (
               <Button size="sm" variant="outline" disabled={bulkBusy} onClick={() => setBulkTransferOpen(true)}>
                 <ArrowLeftRight className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminResourceTable.bulkTransfer")}
+              </Button>
+            )}
+            {bulkActions.includes("mail") && (
+              <Button size="sm" variant="outline" disabled={bulkBusy} onClick={openBulkMail} data-testid="bulk-mail">
+                <Mail className="mr-1.5 h-3.5 w-3.5" /> {tAdmin("AdminResourceTable.bulkMail")}
               </Button>
             )}
             {bulkActions.includes("delete") && (
@@ -927,6 +948,15 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
         isPending={del.isPending}
       />
 
+      {bulkActions.includes("mail") && (
+        <AdminMailingDialog
+          open={bulkMailOpen}
+          onOpenChange={setBulkMailOpen}
+          recipients={mailRecipients}
+          onRemove={(key) => setSelected((m) => { const n = new Map(m); n.delete(key); return n; })}
+          onSent={() => setSelected(new Map())}
+        />
+      )}
       {/* bulkAction `transfer` : le dialog partagé de migration d'appropriation, en mode ids[] sur
           la sélection. `open &&` remonte la sélection au moment de l'ouverture (le dialog relance
           son analyse à chaque ouverture) ; apply/rollback réussi → invalidation + désélection. */}
