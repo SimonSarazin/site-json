@@ -1492,6 +1492,7 @@ export const ListConfSchema = z.object({
 * **`preview.type`** : contenu du détail rendu dans le conteneur `detailsMode` (axe indépendant de `card.type`) — `default`, `poi-amenities`, `coform-answer`, `event`, `facets`, `news` (→ `PreviewNews`), `testimonial` (→ `PreviewTestimonial`), `resource` (→ `PreviewResource`). Voir [Details de `PreviewConfSchema`](#details-de-previewconfschema).
 * **`preview.width`** : largeur MAX du conteneur de détail en mode `dialog` (échelle `sm`..`5xl`|`full`, défaut code `5xl`) — sans effet en mode `drawer`.
 * **`preview.showDetailLink`** : booléen (défaut : affiché) ; `false` masque le lien « Voir en page » (permalien) — lu par `PreviewNews`.
+* **`preview.equipmentDetails`** : booléen (opt-in) ; fiche `poi-amenities` des sites d'équipements sportifs (type, catégorie, particularité et sports cliquables, SIRET/UAI) — absent : fiche historique. Voir [Details de `PreviewConfSchema`](#details-de-previewconfschema).
 * **`testimonial`** : contrat générique config-driven du design `testimonial` (card + preview). Voir [Details de `TestimonialConfSchema`](#details-de-testimonialconfschema).
 * **`resource`** : contrat générique config-driven du design `resource` (card + preview). Voir [Details de `ResourceConfSchema`](#details-de-resourceconfschema).
 * **`previewParam`** : nom du paramètre URL synchronisant l'item ouvert en preview (défaut `preview`) — utile quand plusieurs listings coexistent sur une même page.
@@ -1572,6 +1573,7 @@ export const PreviewConfSchema = z.object({
   type: z.enum(["default", "poi-amenities", "coform-answer", "event", "facets", "news", "testimonial", "resource"]).default("default"),
   fields: z.record(z.string(), z.string()).optional(),
   facets: z.array(PreviewFacetSchema).optional(),
+  equipmentDetails: z.boolean().optional(),
   showDetailLink: z.boolean().optional(),
   width: z.enum(["sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "full"]).optional(),
 }).partial();
@@ -1580,6 +1582,7 @@ export const PreviewConfSchema = z.object({
 * **`type`** : `default`, `poi-amenities`, `coform-answer`, `event`, `facets`, `news` (→ `PreviewNews`), `testimonial` (→ `PreviewTestimonial`), `resource` (→ `PreviewResource`).
 * **`fields`** : mapping `rôle → suffixe de champ CoForm` (pour `type: "coform-answer"`) — surcharge la table par défaut du composant, découple les IDs de champs.
 * **`facets`** : facettes data-driven du preview générique (`type: "facets"`). Chaque facette (`PreviewFacetSchema` : `field`, `label?`, `icon?`) affiche une valeur `serverData` (dot-path supporté) et, si indexée par un dropdownFilter, devient cliquable pour filtrer le listing.
+* **`equipmentDetails`** : booléen (opt-in, testé `=== true`) — fiche `poi-amenities` des sites d'équipements sportifs : « Type d'équipement » (`equip_type_name`), « Catégorie » (`categorie`), « Type de particularité » (`inst_part_type`) et sports (`aps_name`) en valeurs cliquables, SIRET et UAI sous la fiche nationale. Absent : la fiche historique (« Catégorie » sur `equip_type_name`, sport en texte, « Partenariat ») — lu par `PreviewPoiAmenities`.
 * **`showDetailLink`** : booléen (défaut : affiché, testé `!== false`) ; `false` masque le lien « Voir en page » (permalien vers le détail/profil) dans l'en-tête de la modal de détail — lu par `PreviewNews`.
 * **`width`** : largeur MAX du conteneur de détail en mode `dialog` (échelle Tailwind `max-w-*` : `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `5xl`, `full` = `95vw`). **Défaut code : `5xl`** (fallback dans `DetailsModeDialog`, pas via Zod). Sans effet en mode `drawer`.
 
@@ -1725,6 +1728,7 @@ export const SearchProStaticSectionSchema = z.object({
 - **Defaults differents** : `useFilter: false`, `showActiveFiltersTypes: false`, `showActiveFiltersTags: false`
 - **Placeholder optionnel** : contrairement a `searchPro` ou il est obligatoire
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
+- **`reservationUsers`** (`ReservationUsersConfSchema`) : périmètre CALCULÉ — organisations usagères d'au moins une réservation sur un équipement du site (`reservations` + `poiFilters` + `sourceKey?`), plus, avec `includeCostumOrganizations?`, les organisations rattachées au costum du site ; préchargé au SSR. Cf. `doc/07-module-search.md`, « Annuaire des organisations usagères »
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
 - **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.
 - **Alignement de l'en-tête** : titre et boutons sont alignés sur les bords de la grille de résultats (ni `container` ni marge latérale, `mb-3`) — pas de réglage. Avant 09/2026, l'en-tête était rentré dans un `container` avec `px-*` : il ne commençait pas au même bord que les cartes.
@@ -1805,7 +1809,7 @@ export const HeroSearchSchema = z.object({
 | `ctaButtons[].href` | `string?` | Navigue (ex. « + » → page de recherche complete) |
 | `scrollTarget` | `string?` | Id de la section vers laquelle defiler au lancement d'une recherche (ex. le `searchProStatic` de la page). Absent = pas de defilement |
 | `searchHref` | `string?` | Page de recherche complète (ex. `/lieux`). Renseignée, « Rechercher » / Entrée y mènent avec le texte (`?search=`) et les filtres actifs de la page (`buildViewAllHref`, comme le lien « voir tous » des listes) — même champ vide — au lieu de filtrer la liste de la page et d'y défiler. Les boutons de catégorie filtrent toujours la page. Absent = comportement historique |
-| `serviceSuggestions` | `{ page, sectionId }?` | Suggestions de **services** pendant la saisie, au lieu des fiches : l'annuaire `coform-resource-directory` désigné par sa page et son id (sa config est reprise via `findSectionByRef`, rien n'est recopié ; chargé à la 1ʳᵉ saisie de 2 caractères, cache partagé avec l'annuaire). Mêmes champs que la recherche de l'annuaire (service, lieu porteur, ville, code postal) ; une suggestion ouvre le détail du service (`<page>?resource=<id>`). Absent = suggestions de fiches |
+| `serviceSuggestions` | `{ page, sectionId }?` | Suggestions de **services** pendant la saisie, au lieu des fiches : l'annuaire `coform-resource-directory` désigné par sa page et son id (sa config est reprise via `findSectionByRef`, rien n'est recopié ; chargé à la 1ʳᵉ saisie de 2 caractères, cache partagé avec l'annuaire). Mêmes champs que la recherche de l'annuaire (service, lieu porteur, ville, code postal) ; une suggestion ouvre le détail du service (`<page>?resource=<id>`). Au clavier, aucune ligne n'est présélectionnée : Entrée lance la recherche (comme « Rechercher ») tant que la sélection n'a pas été déplacée (flèches, survol). Absent = suggestions de fiches |
 | `placeholder` | `LocalizedString?` | Placeholder du champ de recherche |
 | `searchButtonText` | `LocalizedString?` | Texte du bouton de recherche |
 | `searchVariant` | `"default" \| "navigator-tl"` | Variant SDK de l'endpoint backend pour l'autocompletion |
@@ -2252,6 +2256,7 @@ const SearchHeaderProps = z.object({
     })
   ).optional(),
   dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
+  slotFilter: SlotFilterSchema.optional(),
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),
@@ -2275,7 +2280,8 @@ export const SearchHeaderSectionSchema = z.object({
 | `subheadClassName` | `string?`         | Override de la classe couleur du sous-titre (def. `text-foreground`) ; `""` pour ne rien forcer |
 | `filtersClassName` | `string?`         | Override du conteneur flex de la rangee de filtres (def. `flex flex-col lg:flex-row lg:items-center`) |
 | `types`            | `array?`          | Types de filtre (id, label)            |
-| `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `allLabel?`, `options[]`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
+| `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `match?` — `exact` \| `token`, `allLabel?`, `options[]` — dont `values?`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
+| `slotFilter`       | `object?`         | Filtre « créneau » (disponibilité) : une plage horaire, des jours de la semaine (aucun = les 7) et une période facultative ; retire les ressources réservées sur ce créneau hebdomadaire (`id`, `label`, `reservations` — même bloc que `list.preview.reservations`, `amplitude?` — `{startHour?, endHour?}`, défaut 8 → 22). Combiné en ET aux dropdowns, même URL, pastilles et réinitialisation — cf. `doc/07-module-search.md`, « Filtre créneau » |
 | `buttons`          | `ActionButton[]?` | Boutons d'action. Un bouton de modale (`action: "add-*"` ou `modal`) est réservé aux admins du site sauf `requiresAdmin: false` (un visiteur non connecté passe alors par la connexion, puis la modale s'ouvre). `createDefaults` sème des valeurs dans la modale d'ajout (ex. `{ "type": "Cooperative" }`) ; une clé que le formulaire ne déclare pas est ignorée |
 | `showSearch`       | `boolean?`        | Afficher le champ de recherche         |
 | `searchPlaceholder` | `LocalizedString?` | Placeholder de la recherche          |

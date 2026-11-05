@@ -6,6 +6,7 @@ import {
   resolveDropdownOption,
   dropdownFilterToParam,
   dropdownFilterToState,
+  dropdownOptionEntry,
   resolveServerDataPath,
   toFacetTokens,
   keyFor,
@@ -15,6 +16,7 @@ import {
   findFilterByField,
   type DropdownFilterConfig,
 } from "./dropdownFilters";
+import { TOKEN_MATCH_TYPE } from "./tokenMatch";
 
 const filter = (partial: Partial<DropdownFilterConfig> & { options: DropdownFilterConfig["options"] }) =>
   ({ id: "f", label: { fr: "F" }, ...partial }) as DropdownFilterConfig;
@@ -215,5 +217,62 @@ describe("getAllDropdownFilters / getDropdownFilterOwner / findFilterByField", (
     expect(findFilterByField(config, "themes")?.pathname).toBe("/theme");
     expect(findFilterByField(config, "themes", "/blog")?.pathname).toBe("/blog");
     expect(findFilterByField(config, "inconnu")).toBeNull();
+  });
+});
+
+describe("resolveDropdownOption — option à plusieurs `values`", () => {
+  // Une commune et ses codes postaux (ESS974) : la facette « 97490 » et l'ancien lien
+  // `?poi-postalCode=97490` désignent la commune.
+  const communes = filter({
+    options: [
+      { id: "saint-denis", label: { fr: "Saint-Denis (97400, 97490)" }, values: ["97400", "97490"] },
+      { id: "saint-paul", label: { fr: "Saint-Paul (97411)" }, values: ["97411"] },
+    ],
+  });
+
+  it("un jeton égal à l'une des `values` désigne l'option", () => {
+    expect(resolveDropdownOption(communes, "97490")?.id).toBe("saint-denis");
+    expect(resolveDropdownOption(communes, "97411")?.id).toBe("saint-paul");
+    expect(resolveDropdownOption(communes, "97460")).toBeNull();
+  });
+
+  it("en DERNIER : l'id, la value et le libellé gardent la priorité (rien de ce qui se résolvait ne change)", () => {
+    const f = filter({ options: [{ id: "a", label: { fr: "A" }, values: ["b"] }, opt("b")] });
+    expect(resolveDropdownOption(f, "b")?.id).toBe("b");
+  });
+});
+
+describe("dropdownOptionEntry — entrée searchByFields d'une option cochée", () => {
+  it("sans values ni match : exactement l'entrée historique (pas de clé type)", () => {
+    expect(dropdownOptionEntry({}, "equip_type_name", opt("foot", "Terrain de football"))).toEqual({
+      field: "equip_type_name",
+      value: ["Terrain de football"],
+    });
+    expect(dropdownOptionEntry({}, "f", opt("sans-valeur"))).toEqual({ field: "f", value: ["sans-valeur"] });
+    expect(dropdownOptionEntry({}, "f", opt("o", "v", undefined, "autre"))).toEqual({ field: "autre", value: ["v"] });
+  });
+
+  it("variants (source dynamique) : interrogées quand l'appelant les passe, comme avant", () => {
+    expect(dropdownOptionEntry({}, "f", opt("le-port", "Le Port"), ["Le Port", "LE PORT"])).toEqual({
+      field: "f",
+      value: ["Le Port", "LE PORT"],
+    });
+  });
+
+  it("values (config) : priment sur value ET sur variants", () => {
+    const commune = { ...opt("saint-denis", "ignorée"), values: ["97400", "97490"] };
+    expect(dropdownOptionEntry({}, "address.postalCode", commune, ["autre"])).toEqual({
+      field: "address.postalCode",
+      value: ["97400", "97490"],
+    });
+  });
+
+  it("match token : marque l'entrée (cf. tokenMatch.ts) ; match exact = entrée historique", () => {
+    expect(dropdownOptionEntry({ match: "token" }, "inst_part_type", opt("piscine", "Piscine"))).toEqual({
+      field: "inst_part_type",
+      type: TOKEN_MATCH_TYPE,
+      value: ["Piscine"],
+    });
+    expect(dropdownOptionEntry({ match: "exact" }, "f", opt("o", "v"))).toEqual({ field: "f", value: ["v"] });
   });
 });

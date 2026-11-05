@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { ResourceParentInfo } from "../contexts/resourceDirectory";
@@ -99,6 +99,10 @@ export function useResourceParentsQuery(ids: string[], opts: UseResourceParentsO
     },
     enabled: (opts.enabled ?? true) && !!entity && sortedIds.length > 0,
     staleTime: 30 * 60 * 1000,
+    // La clé change à chaque page de ressources (nouveaux ids) : sans les lieux déjà lus pendant le
+    // rechargement, `isLoading` repasse à vrai, la liste redevient un squelette et la sentinelle du
+    // scroll infini, restée visible, enchaîne les pages jusqu'à la dernière.
+    placeholderData: keepPreviousData,
   });
 
   return {

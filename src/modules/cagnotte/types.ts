@@ -268,6 +268,10 @@ export interface Pledge {
    * surfacture une promesse partiellement réglée.
    */
   remainingAmount?: number,
+  /** La ligne peut être retirée : finkey présente, aucun argent ni cofinancement (`isRetractablePledgeLine`). */
+  retractable?: boolean,
+  /** Paiement en cours (réservation d'un autre onglet, facture ouverte) : ni paiement ni retrait pour l'instant. */
+  paymentInProgress?: boolean,
 }
 
 export interface Objective {

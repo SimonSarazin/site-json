@@ -66,7 +66,9 @@
           "geoPosition",
           "parent",
           "source",
-          "reference"
+          "reference",
+          "inst_siret",
+          "inst_uai"
         ]
       },
       "dimensions": {
@@ -851,6 +853,7 @@
         "detailsMode": "dialog",
         "preview": {
           "type": "poi-amenities",
+          "equipmentDetails": true,
           "reservations": {
             "form": "6a4e4e4105e5972f7b4b1823",
             "step": "equipementsSportifs974872026_1619_0",
@@ -864,11 +867,13 @@
               "periodEnd": "mrc4259ir2xnu4vp2fq",
               "bookingType": "mrc3zgl902y2fpfcby3y"
             },
+            "periods": true,
             "booking": {
               "startHour": 8,
               "endHour": 22,
               "slotMinutes": 60,
-              "adminOnly": true
+              "adminOnly": true,
+              "editHours": true
             },
             "orgaLink": {
               "path": "/annuaire"

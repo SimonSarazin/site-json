@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   actionCreatedLabel,
   canManageObjectiveActions,
@@ -6,6 +6,8 @@ import {
   resolveCommunOwnerIds,
   fundableItemToMilestone,
   fundableItemToMilestoneRef,
+  isClosedMilestone,
+  splitOpenAndClosedMilestones,
   toMilestoneStatus,
   uniqueActionRows,
 } from "./objectiveHelpers";
@@ -139,6 +141,38 @@ describe("toMilestoneStatus", () => {
   });
 });
 
+describe("isClosedMilestone", () => {
+  it("clos ou terminé : fermé ; ouvert ou inconnu : en cours", () => {
+    expect(isClosedMilestone({ status: "close" })).toBe(true);
+    expect(isClosedMilestone({ status: "done" })).toBe(true);
+    expect(isClosedMilestone({ status: "open" })).toBe(false);
+    expect(isClosedMilestone({ status: "archivé" })).toBe(false);
+  });
+});
+
+describe("splitOpenAndClosedMilestones", () => {
+  const item = (itemId: string, status: string) => ({ itemId, status }) as unknown as CagnotteFundableItem;
+
+  it("en cours puis clos, chacun dans son ordre, avec sa position dans la liste complète", () => {
+    const { open, closed } = splitOpenAndClosedMilestones([
+      item("a", "close"),
+      item("b", "open"),
+      item("c", "done"),
+      item("d", "open"),
+    ]);
+    expect(open.map(({ item: it, index }) => `${it.itemId}:${index}`)).toEqual(["b:1", "d:3"]);
+    expect(closed.map(({ item: it, index }) => `${it.itemId}:${index}`)).toEqual(["a:0", "c:2"]);
+  });
+
+  it("liste vide : deux groupes vides", () => {
+    expect(splitOpenAndClosedMilestones([])).toEqual({ open: [], closed: [] });
+  });
+});
+
+// La langue active, lue par `actionCreatedLabel`.
+const { mockI18n } = vi.hoisted(() => ({ mockI18n: { language: "fr" } }));
+vi.mock("@/i18n", () => ({ default: mockI18n }));
+
 describe("actionCreatedLabel", () => {
   const label = (created?: string | number) =>
     actionCreatedLabel({ id: "a1", name: "Atelier", credits: 0, status: "todo", tags: [], contributors: [], created });
@@ -155,6 +189,15 @@ describe("actionCreatedLabel", () => {
     expect(label(undefined)).toBe("");
     expect(label("")).toBe("");
     expect(label("pas une date")).toBe("");
+  });
+
+  it("suit la langue active", () => {
+    mockI18n.language = "en";
+    try {
+      expect(label(1700049600)).toBe("11/15/2023");
+    } finally {
+      mockI18n.language = "fr";
+    }
   });
 });
 

@@ -2,6 +2,7 @@ import { PiggyBank } from "lucide-react";
 import CagnotteDialog from "./CagnotteDialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useFundingEnvelope } from "../hooks/useFundingEnvelope";
+import { useSiteEnvelopeForm } from "../hooks/useSiteEnvelopeForm";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { useT } from "@/hooks/useT";
@@ -41,7 +42,9 @@ export function PiggyBankHeaderButton() {
   const preferencesData = useReactiveProperty<Record<string, unknown>>(entity?.serverData, 'preferences');
   const projectModalId = (preferencesData?.projectModalId as string | undefined) || null;
 
-  const { data: envelope, refetch } = useFundingEnvelope(projectModalId || undefined);
+  // Même formulaire que « Mes promesses » : les deux boutons partagent l'enveloppe.
+  const envelopeForm = useSiteEnvelopeForm();
+  const { data: envelope, refetch } = useFundingEnvelope(projectModalId || undefined, { form: envelopeForm });
 
   // La cagnotte est un feature member-only : on ne fetche pas tant que `me` n'est pas
   // chargé (cf. `useFundingEnvelope` enabled) et on n'affiche pas le bouton non plus,
@@ -64,6 +67,7 @@ export function PiggyBankHeaderButton() {
         totalAmount={piggyAmount}
         defaultResourceId={projectModalId || targetProject?.id || undefined}
         onRefresh={refresh}
+        openContext={envelopeForm ? { envelopeForm } : undefined}
       >
         <TooltipTrigger asChild>
           <button

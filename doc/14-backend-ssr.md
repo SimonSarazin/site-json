@@ -294,6 +294,7 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
 4. **Routes API, RSS et SEO** (montées avant les statiques et le SSR)
 
    ```js
+   app.use(canonicalHostRedirect(process.env.VITE_SITE_PUBLIC_URL)); // EN PREMIER : hôte jumeau → canonique (301), cf. ci-dessous
    app.get("/api/realtime/flux", realtimeFluxHandler); // avant compression() : flux SSE
    app.use(express.json());
    app.all("/api/realtime/push/*splat", realtimePushHandler);
@@ -307,6 +308,15 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    Seule subsiste, temporairement, la redirection de l'ancienne route de retour HelloAsso
    (`server/api/helloasso-callback.js`) vers `${VITE_BASE_URL_BACKEND}/co2/helloAsso/callback`, query
    conservée.
+
+   **Hôte canonique** (`server/lib/canonicalHost.js`, testé dans `server/__tests__/canonical-host.test.ts`) :
+   la règle se déduit **une fois au montage** de `VITE_SITE_PUBLIC_URL` (loguée au démarrage) : l'hôte
+   **jumeau** de la canonique — l'apex nu si elle est en `www.` (`parent62.org` → `www.parent62.org`), le
+   `www.` si elle est nue — reçoit, sur GET/HEAD hors `/api/` (casse ignorée, comme le routage Express),
+   un 301 vers l'URL publique, chemin et query conservés. L'hôte est lu par `req.hostname` (port, IPv6 et
+   proxy gérés par Express), point final d'un FQDN absolu retiré. Tout autre hôte passe, en particulier le
+   sous-domaine d'amorce `*.00.re`. Aucune configuration. Pourquoi pas le réglage
+   « Redirect to www » de Coolify : voir [Déploiement Docker](16-deploiement-docker.md#ajouter-un-vrai-domaine-a-un-site-existant).
 
 5. **Route SSR universelle**
 

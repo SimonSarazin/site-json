@@ -6,6 +6,7 @@
   "loadingProgress": "{{loaded}} / {{total}} items loaded",
   "cappedNotice": "Loading cap reached ({{loaded}} / {{total}}) — displayed data is incomplete.",
   "emptyFiltered": "No result matches the filters or search.",
+  "kpiComputing": "Computing…",
   "filters": {
     "title": "Filters",
     "reset": "Reset",

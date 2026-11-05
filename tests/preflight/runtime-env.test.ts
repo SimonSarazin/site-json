@@ -104,15 +104,17 @@ describe("variables VITE_* runtime ⇄ injection window.__ENV__ (anti-dérive)",
     ).toEqual([]);
   });
 
-  test("VITE_COSTUM_FORCE_LIVE est déployable par site", () => {
-    const src = lire("scripts/lib/deploy-config.ts");
-    // `variablesAttendues` ne consulte `site.env[clé]` que pour les clés de
-    // CONSTANTES ou SECRETES : hors de ces listes, pas de surcharge par site.
-    expect(
-      /VITE_COSTUM_FORCE_LIVE/.test(src),
-      "VITE_COSTUM_FORCE_LIVE doit figurer dans CONSTANTES (ou SECRETES) de " +
-        "deploy-config.ts, sinon `deploy:env` ne la posera jamais et le champ " +
-        "`env` de sites.json restera sans effet sur elle.",
-    ).toBe(true);
-  });
+  // `variablesAttendues` ne consulte `site.env[clé]` que pour les clés de
+  // CONSTANTES ou SECRETES : hors de ces listes, pas de surcharge par site.
+  for (const cle of ["VITE_COSTUM_FORCE_LIVE", "VITE_ROCKETCHAT_URL"]) {
+    test(`${cle} est déployable par site`, () => {
+      const src = lire("scripts/lib/deploy-config.ts");
+      expect(
+        new RegExp(cle).test(src),
+        `${cle} doit figurer dans CONSTANTES (ou SECRETES) de ` +
+          "deploy-config.ts, sinon `deploy:env` ne la posera jamais et le champ " +
+          "`env` de sites.json restera sans effet sur elle.",
+      ).toBe(true);
+    });
+  }
 });

@@ -439,12 +439,46 @@ l'étape de dépôt n'est pas la première, les paliers s'affichent quand même.
 réaction appellent `useAuthModal().openLogin()` et **rejouent l'intention** une fois la connexion
 faite (patron décrit dans [`doc/23`](23-module-auth.md)) — pas de bouton grisé ni de `toast.error`.
 
-**Paliers clos.** « Besoins financiers » **liste** les paliers clôturés, avec un badge « Clos »
-(`detail.objectives.closedBadge` / `…Hint`) et la restauration possible ; ils sont **exclus des
-totaux** de la carte et des cofinanceurs comptés. Les deux cartes de palier (« Besoins financiers »
+**Paliers clos.** Les quatre listes de paliers — « Besoins financiers » (rendus `cards` et `list`),
+« Suivi des actions » et « Jalons » (interface `editorial`) — montrent d'abord les paliers en cours.
+Les paliers clos (`close`, ou `done` côté projet : `isClosedMilestone`, `lib/objectiveHelpers.ts`)
+sont rangés dessous, **masqués par défaut**. Le bouton « Afficher les paliers clos (n) »
+(`ClosedMilestonesGroup`, exporté par `CommunActionsSection.tsx`) les affiche ; son état est propre à
+chaque liste, et il dit « jalons » ou « dépenses » dans l'interface `editorial`. Un palier garde son
+numéro « Palier n », sa position dans la liste complète ; dans « Suivi des actions », la première carte
+**en cours** est dépliée. « Besoins financiers » marque les paliers clôturés d'un badge « Clos »
+(`detail.objectives.closedBadge` / `…Hint`), et on les restaure depuis le groupe déplié ; ils sont
+**exclus des totaux** de la carte et des cofinanceurs comptés (en rendu `list`, le total, au-dessus du
+bouton, est celui de la carte : hors dépenses `close`). Les deux cartes de palier (« Besoins financiers »
 et « Suivi des actions ») affichent leur barre de gestion dès qu'**UN** des trois droits est acquis
 — édition, suppression ou restauration — et passent `canRestore = canRestoreMilestone(status)` :
 un palier **clos ET financé** reste donc restaurable, alors qu'il n'est plus supprimable.
+
+**Retirer une promesse** (clé `cagnotteModuleConfig.pledgeRetraction`). Dans « Besoins financiers »
+(rendus `cards` et `list`), une ligne de financement porte « Retirer » quand
+`useCommunPledgeRetraction` (porté par le contrôleur des paliers) l'accepte :
+- la ligne est relue dans le document brut (`findPledgeLine` : sa `finkey`, son financeur, la CLÉ de
+  sa dépense) ;
+- elle ne porte aucun argent (`isRetractablePledgeLine`) ;
+- l'utilisateur en est le financeur (lui-même ou une organisation qu'il administre) ou admin du commun
+  (`cagnottePerms.isAdmin` : admin du projet lié ou déposant ; ou admin de son organisation parente,
+  `isProjectAdmin(…, { checkHierarchy: true })`) ;
+- l'étape résolue est `aapStep1`, la seule que lise le serveur.
+
+Une ligne en cours de paiement affiche « Paiement en cours » à la place de son statut, sans bouton :
+promesse cochée dans « Mes promesses », par n'importe qui, payeur compris, ou facture ouverte. La fiche
+relit ces paiements (`usePledgesInProgress` dans `useCommunPledgeRetraction`) seulement pour qui peut voir
+ce signal, admin du commun ou financeur d'une promesse retirable : toutes les 60 s page visible, au retour
+sur l'onglet, et aussitôt qu'un autre onglet du navigateur signale un changement. Sinon, et tant que la
+relecture n'a pas répondu, elle lit `paymentsInProgress` de l'enveloppe du commun. La
+confirmation est montée une fois par page (`CommunMilestoneDialogs`). Après le retrait, la page relit dépenses, enveloppe, réponse du commun
+et annuaire. Règle serveur et refus : `doc/18` §Permissions.
+
+**Contribution en cours sur un palier** (`paymentsInProgress.depenses`, `depenseInProgress` de
+`useCommunPledgeRetraction`, même relecture). La suppression du palier disparaît, quelle que soit la clé du site, dans
+« Besoins financiers » comme dans la barre de gestion de « Suivi des actions » (`hasTransactions`) : le
+serveur la refuse aussi (`doc/18` §Permissions, écrans legacy). Avec la clé, l'en-tête du palier
+affiche « Paiement en cours ».
 
 **Cofinanceurs : une seule agrégation.** `lib/cofinancers.ts` (`aggregateCofinancers`) agrège les
 lignes `allFunding` des paliers **ouverts** par `id` → à défaut par `nom` → à défaut en ligne
@@ -550,13 +584,18 @@ ligne d'un site réel** : un visiteur y lirait des dons et des chiffres qui n'ex
 
 **Jalons et actions** (onglet « Passage à l'action » de l'interface `editorial`). Deux colonnes à
 partir de `lg`, sur le même contrôleur et les mêmes droits que `CommunActionsSection` (interface par
-défaut) : `CommunMilestonesList` (frise des paliers, gestion au survol, « Ajouter un palier ») et
+défaut) : `CommunMilestonesList` (frise des paliers, gestion au survol, « Ajouter un palier », jalons
+clos masqués sous « Afficher les jalons clos (n) », cf. §3.3) et
 `CommunActionsFeed` (toutes les actions à plat, commandes en ligne), dans
 `components/pageDetail/CommunActionsLists.tsx`. Les dialogues d'action (`CommunActionDialogs`) sont
 montés une fois par la page (`AacCommunDetailPage`), à côté de `CommunMilestoneDialogs`, pour toutes
 les interfaces : une vue ne les monte pas. La liste ne montre chaque action qu'une fois
 (`uniqueActionRows`, `lib/objectiveHelpers.ts`). Un clic sur un palier filtre la liste des actions sur
-ce palier, un second clic ou « Toutes les actions » retire le filtre. L'état vit dans l'interface
+ce palier, un second clic ou « Toutes les actions » retire le filtre. Pour qu'une longue liste de
+jalons ne cache pas les actions filtrées, la carte « Actions » reste collée sous l'en-tête à partir de
+`lg` (`sticky top-24`, défilement interne si elle dépasse l'écran). Sur mobile, où les actions suivent
+les jalons, choisir un palier fait défiler la page jusqu'à elles quand elles sont hors de vue
+(`revealSection`, `hooks/useCommunSectionNav.ts`). L'état vit dans l'interface
 (`selectedMilestoneId`/`onSelectMilestone`, `milestoneFilter`/`onClearMilestoneFilter`) ; sans ces
 props, les deux listes restent sans filtre. Les actions terminées sont masquées par défaut :
 l'interrupteur « Masquer les terminées (n) », état local de `CommunActionsFeed`, les réaffiche.
@@ -570,7 +609,10 @@ l'interrupteur « Masquer les terminées (n) », état local de `CommunActionsFe
 - `CommunAgendaSection` liste les événements dont le projet est organisateur ou participant
   (`project.getEvents`, `useCommunProjectEvents`), en deux flux bornés côté serveur : à venir
   (`from` = maintenant, `asc`) et passés (`to` = maintenant, `desc`, sans récurrents), paginés par
-  « Voir plus ».
+  « Voir plus ». « Ajouter un événement », pour un admin du projet ou de son parent
+  (`isProjectAdmin(project, { checkHierarchy: true })`, le droit de « Ajouter > Événement » du profil),
+  ouvre la modale d'ajout d'événement organisé par le projet, ou le formulaire costum du site
+  (`costumCreateKey`) ; les deux flux sont relus après la création (`COMMUN_EVENTS_PREFIX`).
 
 ---
 
@@ -713,7 +755,7 @@ src/modules/aac/
   lib/filterCommuns.ts      # filtrage + tri CLIENT du chemin balayage (usageSubKey / parseUsageSubKey)
   lib/associateExistingProject.ts # rattacher un commun à un projet DÉJÀ existant (§9 piège n°11)
   lib/communDeletion.ts     # resolveCommunDeletionPlan : ce qu'une suppression emporterait, et
-                            #   quand elle est INTERDITE (dès qu'un versement existe, §6)
+                            #   quand elle est INTERDITE (versement ou paiement en cours, §6)
   hooks/useAacConfig.ts     # résolveur câblé (api.form ×2, 0 nouvel endpoint)
   hooks/useCommunFundingContext.ts # où vit un commun : l'appel où il a été DÉPOSÉ
   hooks/useCommunFundingHost.ts    # l'entité de ce contexte — celle qui détient l'enveloppe
@@ -800,8 +842,10 @@ financière.
   backend, §13.5.
 - **Compte temporaire** : un answer peut avoir pour auteur un **compte temporaire (email seul,
   sans `userId`)** → tout calcul ancré sur `userId` doit tolérer son absence.
-- **Manquant, à ajouter au moment du financement** : la **garde d'immuabilité `paid`**
-  (aucun garde en lecture seule n'existe aujourd'hui sur un financement payé).
+- **Garde d'immuabilité `paid`** : une ligne qui porte de l'argent (versement, même en attente,
+  marqueur legacy, facture ouverte) ne se retire pas (`Aap::deleteFinancerEngagement`, front §3.3).
+  Les écrans legacy ne peuvent ni la modifier ni l'effacer (garde de la route générique), et le commun
+  qui la porte ne se supprime pas (§6). `doc/18` §Permissions.
 
 **Paliers et actions d'un commun** — droits calculés par le namespace `cagnotte`, pas `aac` :
 `useCommunObjectivesController` passe l'entité **du projet lié SEULE** (jamais de repli sur l'org du
@@ -819,6 +863,7 @@ ci-dessous.
 | Sélectionner / valider un commun | admin de l'appel | `aac` (`canSelectCommun`) |
 | **Générer / Associer un projet** | admin de l'appel **ou** déposant | `project.canManage` de `CommunActionBar` (entrées de « ⋯ ») |
 | **Ajouter / éditer palier et action** | admin du **projet lié** **ou** déposant | `cagnotte` + `ownerIds` |
+| **Retirer une promesse sans versement** | financeur (soi, admin de l'organisation financeuse) **ou** admin du projet lié ou de son organisation parente **ou** déposant | `useCommunPledgeRetraction` ; serveur `Aap::canDeleteFinancerLine` |
 | **Supprimer DÉFINITIVEMENT un commun** | auteur **ou** admin | `aac` (`canDeleteCommun`) |
 | **Gérer les contributeurs à l'édition** | bouton : auteur **ou** admin ; par la question « Référent » reliée : tout éditeur (parité legacy) | `aac` (`canManageEditors`) |
 
@@ -838,8 +883,10 @@ Deux garde-fous s'ajoutent au droit, côté front :
 - **L'argent bloque.** `resolveCommunDeletionPlan` ([`lib/communDeletion.ts`](../src/modules/aac/lib/communDeletion.ts))
   refuse la suppression dès qu'un versement existe — compté sur `items[].allFunding`, **jamais** sur
   `resourceFinancedAmount`, qui ne somme que les paliers OUVERTS : un commun financé puis clôturé
-  afficherait 0 € et redeviendrait supprimable. Le retrait de l'annuaire
-  (« Retirer de l'annuaire », `useCommunSelectionAction`) reste la voie non destructive.
+  afficherait 0 € et redeviendrait supprimable. Un paiement en cours bloque aussi (`paymentInProgress`,
+  lu par `hasPaymentInProgress` dans l'enveloppe : promesse réservée ou facturée, contribution), avec
+  son propre motif. Le retrait de l'annuaire (« Retirer de l'annuaire », `useCommunSelectionAction`)
+  reste la voie non destructive.
 - **La cascade est EXPLICITE et sur demande** : le backend n'en fait aucune (`Element::deleteSimple`
   retire le document, ses commentaires et ses fichiers, mais ni les actions d'un projet ni les liens
   croisés). `useDeleteCommun` supprime le commun d'abord — seul échec qui fait échouer le geste —
@@ -849,10 +896,13 @@ Deux garde-fous s'ajoutent au droit, côté front :
 
 Depuis l'annuaire, le plan vient de `useCommunDeletionPlan` : document réponse, hôte de son contexte
 (`useCommunFundingHost`), enveloppe, repli sur le document. Au repos, ni le commun ni son enveloppe ne
-sont lus ; le dialogue reste en attente tant que le plan n'est pas résolu.
+sont lus ; le dialogue reste en attente tant que le plan n'est pas résolu. Depuis la fiche,
+`useAacFundingResource` fournit la ressource et `paymentInProgress`, lu dans la relecture de la fiche
+(sans nouvel appel), à défaut dans l'enveloppe.
 
 ⚠️ Gate d'**affichage** uniquement, comme les autres : le backend reste la source de vérité
-(`Authorisation::canDeleteElement`).
+(`Authorisation::canDeleteElement`, puis `Aap::answerDeleteBlock` dans `Element::deleteSimple` : une
+réponse qui porte de l'argent ou un paiement en cours n'est pas supprimée).
 
 ## 7. Query keys
 
@@ -995,6 +1045,13 @@ mentionne pour ces deux surfaces est périmée.
    réponse illisible ailleurs dans le formulaire ne la fait plus échouer. Le contrôleur des paliers
    n'interroge l'enveloppe qu'une fois l'id de la réponse connu : sans lui, `getFormData` lirait tout
    le formulaire.
+
+   Backend : `params.answerId` est lu par `FundingEnvelopeAction` (`getFormData`, filtre `_id` de
+   `Aap::getEnvelopeFormData`) depuis citizenToolKit `a897bcae` (17/04/2026). Sans `43a52369`
+   (21/10/2026, déploiement à confirmer), une réponse dont un `financer` est stocké en objet fait
+   échouer `getFormData` sur toute lecture qui l'inclut : sa fiche, ou tout le formulaire pour les
+   boutons du header (tirelire, « Mes promesses »). L'enveloppe retombe alors sur `getEnvelopeData`,
+   sans projets, actions ni totaux.
 10. **Les `.default()` des schémas de section ne jouent PAS à l'exécution** (la config n'est jamais
    parsée par Zod au runtime — cf. `doc/05`, encadré d'en-tête). Un sous-objet de la config arrive
    donc **tel quel**, et un défaut de destructuration (`filters = {…}`) ne joue que s'il est

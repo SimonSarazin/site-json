@@ -43,6 +43,8 @@ export default function AuthModal({
   // modal quand elle est fermée (`{open && …}`), donc ce state est réinitialisé
   // au remontage — pas besoin d'un effet de reset.
   const [mode, setMode] = useState<AuthMode>(initialMode);
+  /** E-mail saisi dans LoginForm, transmis à la récupération (toast « pas encore de mot de passe », lien « Mot de passe oublié ? »). */
+  const [recoverEmail, setRecoverEmail] = useState<string | undefined>(undefined);
 
   const close = () => onOpenChange(false);
   const handleSuccess = () => {
@@ -64,7 +66,7 @@ export default function AuthModal({
           onSuccess={handleSuccess}
           hideBackButton
           onSwitchToRegister={() => setMode("register")}
-          onSwitchToRecover={() => setMode("recover")}
+          onSwitchToRecover={(email) => { setRecoverEmail(email); setMode("recover"); }}
         />
       )}
 
@@ -73,7 +75,7 @@ export default function AuthModal({
       )}
 
       {mode === "recover" && (
-        <RecoverPasswordForm onSwitchToLogin={() => setMode("login")} />
+        <RecoverPasswordForm onSwitchToLogin={() => setMode("login")} initialEmail={recoverEmail} />
       )}
     </>
   );

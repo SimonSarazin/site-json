@@ -202,6 +202,12 @@ export const DataObservatorySectionSchema = z.object({
      */
     kpiLayout: z.enum(["cards", "inline"]).optional(),
     /**
+     * Cartes KPI par ligne à partir de 1024 px (rendu `cards`). Absent = remplissage automatique
+     * (cartes d'au moins 150 px) : en pleine largeur, 9 KPI donnent 8 cartes puis une seule sur sa
+     * ligne — 5 les répartit en 5 + 4. Téléphone (2) et tablette (3) inchangés ; sans effet en `inline`.
+     */
+    kpiColumns: z.union([z.literal(3), z.literal(4), z.literal(5), z.literal(6)]).optional(),
+    /**
      * Largeur du conteneur. `8xl` (1440px, défaut) est la bonne mesure pour une
      * page dédiée : une table à colonnes multiples a besoin de place.
      *

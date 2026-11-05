@@ -57,6 +57,7 @@ function controleur(over: Record<string, unknown> = {}): CommunObjectivesControl
   return {
     cagnottePerms: DROITS_ADMIN,
     resolvedAnswerId: "ans1",
+    pledgeRetraction: { stateFor: () => null, open: vi.fn(), depenseInProgress: () => false, showDepenseProgress: false },
     loadingIds: { deletingItemId: "", closingItemId: "", restoringItemId: "" },
     openCreateMilestoneModal: vi.fn(),
     openEditMilestoneModal: vi.fn(),
@@ -81,12 +82,14 @@ beforeAll(async () => {
 
 describe("CommunFinancingSection — restauration d'un palier clos", () => {
   const restaurer = () => screen.queryByRole("button", { name: "Restaurer" });
+  const afficherClos = () => fireEvent.click(screen.getByRole("button", { name: "Afficher les paliers clos (1)" }));
 
   it("un palier clos ET financé garde son bouton « Restaurer »", () => {
     // `include: false` sur la dépense = palier clos ; le collecté vient de l'enveloppe.
     depensesBrutes = [{ id: "d1", poste: "Prototype", price: 2000, milestone: "m1", include: false }];
     const ctrl = controleur();
     poser(ctrl, [palier({ currentFunding: 2000 })]);
+    afficherClos();
 
     expect(restaurer()).toBeTruthy();
     fireEvent.click(restaurer()!);
@@ -102,7 +105,9 @@ describe("CommunFinancingSection — restauration d'un palier clos", () => {
       controleur({ cagnottePerms: { ...DROITS_ADMIN, canRestoreMilestone: () => false } }),
       [palier({ currentFunding: 0 })],
     );
+    afficherClos();
 
+    expect(screen.getByText("Prototype")).toBeTruthy();
     expect(restaurer()).toBeNull();
   });
 });

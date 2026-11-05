@@ -198,6 +198,7 @@ Ces variables sont lues par `prod-server.js` au demarrage du conteneur. Elles so
 | `VITE_SERVER_URL` | non | URL publique du serveur, injectee dans `window.__ENV__` | `""` |
 | `VITE_MAPTILER_API_KEY` | non | Cle des fonds de carte MapTiler, injectee dans `window.__ENV__`. Absente : repli sur des tuiles libres. Non versionnee (`SECRETES` de `deploy-config.ts`) mais **pas confidentielle** : comme toute `VITE_*`, elle est lisible dans la page. | `""` |
 | `VITE_COSTUM_FORCE_LIVE` | non | Drapeau de depannage costum, injecte dans `window.__ENV__`. A `"true"`, la lib ignore ses schemas costum bundles et ne resout que par `getcostumjson` — a activer quand l'artefact publie devient plus vieux que la base et masque des champs reels. Cout : plus de demarrage a froid. Se pose par site via le champ `env` de `sites.json`. | `"false"` |
+| `VITE_ROCKETCHAT_URL` | non | URL de l'instance Rocket.Chat du lien « Chat » du menu avatar, injectee dans `window.__ENV__`. Constante de `deploy-config.ts`, surchargeable par site via le champ `env` de `sites.json`. | `https://chat.communecter.org` |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | non | Domaines autorises pour le proxy d'images, separes par des virgules | localhost + hostname du backend |
 | `SSR_FACET_CACHE_TTL_MS` | non | Duree de vie, en ms, du cache serveur des facettes de filtres (zones, listes d'entites, filtres par reponses et par thematique — `src/modules/search/prefetch/facetCache.ts`). Serveur uniquement, **pas** injectee dans `window.__ENV__`. `0` (ou negatif) desactive. Contrepartie : une liste de filtres peut avoir jusqu'a une duree de vie de retard. | `300000` (5 min) |
 | `PORT` | non | Port d'ecoute du serveur. Sur Coolify, **pose automatiquement** (premier port expose) : la valeur par defaut du code ne s'applique qu'hors Coolify. | `3000` |
@@ -531,6 +532,8 @@ npm run deploy -- monSlug --yes
 ```
 
 L'etape 2 **refuse** si le domaine ne resout pas encore vers le serveur : le declarer trop tot ferait echouer Let's Encrypt en HTTP-01 sur cet hote. Le sous-domaine d'amorce continue de servir pendant toute la bascule.
+
+**Apex nu et `www`.** Un site qui prend `www.monsite.fr` declare aussi `monsite.fr` en alias (le certificat de l'apex en depend), et c'est le **serveur** qui redirige l'hote jumeau vers l'hote canonique : `server/lib/canonicalHost.js` repond 301 quand la requete arrive sur l'apex nu d'une `VITE_SITE_PUBLIC_URL` (= `aliases[0]`) en `www.`, ou sur le `www.` d'une URL publique nue — GET/HEAD hors `/api/`, chemin et query conserves, l'amorce `*.00.re` jamais touchee. La regle est deduite une fois au demarrage et loguee. Ne **pas** activer le reglage « Redirect to www » de Coolify : il s'applique a chaque domaine declare sans `www.`, **amorce comprise**, qui partirait vers un `www.monsite.00.re` sans DNS ni certificat. Et ne pas retirer l'amorce pour contourner : `domain` est le pivot de l'outil (`deployableSites`, `deploy:alias`, `deploy:dns`, preflight `deploy-targets`).
 
 ### Creer un site
 

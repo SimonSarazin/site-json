@@ -95,7 +95,14 @@ export function useStripeCharge<T>({ submit, stripe, storageKey, onSettled }: Us
     try {
       let response = await submit("stripePay", pending.payload);
       if (response.requires_action === true) {
-        await authenticate(toString(response.client_secret));
+        try {
+          await authenticate(toString(response.client_secret));
+        } catch (error) {
+          // 3-D Secure refusé ou abandonné : l'intention est annulée chez Stripe, la promesse libérée.
+          const bill = toString(response.bill);
+          if (bill && !isUnknownOutcome(error)) await submit("cagnotteCancel", { bill }).catch(() => undefined);
+          throw error;
+        }
         response = await submit("stripePay", pending.payload);
       }
       const settlement = readSettlement(response);

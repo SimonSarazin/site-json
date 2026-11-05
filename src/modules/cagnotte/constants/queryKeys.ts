@@ -66,6 +66,15 @@ export const CAGNOTTE_QUERY_KEYS = {
   CAGNOTTE_BILLS: (entityId: string | null, userId: string | null, filter: "attention" | "all") =>
     ["cagnotte-bills", entityId, userId, filter] as const,
   CAGNOTTE_BILLS_PREFIX: () => ["cagnotte-bills"] as const,
+
+  // État frais d'une promesse (réservation, facture ouverte), lu à l'ouverture du dialogue de retrait.
+  // Producteur : RetractPledgeDialog.
+  PLEDGE_STATUS: (answerId: string | null, finkey: string | null) => ["cagnotte-pledge-status", answerId, finkey] as const,
+  // Paiements en cours de ces réponses (`pledgesInProgress`), relus pendant l'affichage.
+  // Producteur : usePledgesInProgress ; consommateurs invalidants : usePledgeSelectionHold, useRetractPledge.
+  PLEDGES_IN_PROGRESS: (answerIds: readonly string[], userId: string | null) =>
+    ["cagnotte-pledges-in-progress", userId, answerIds.join(",")] as const,
+  PLEDGES_IN_PROGRESS_PREFIX: () => ["cagnotte-pledges-in-progress"] as const,
 } as const;
 
 export type CagnotteQueryKeyType = ReturnType<

@@ -16,6 +16,8 @@ export interface CostumFormRef {
   id?: string;
   entityType?: string;
   costumSlug?: string;
+  /** `false` : jamais retenu par `siteCostumAddModal` (cf. `costumFormSchema.zod.ts`). */
+  profileAdd?: boolean;
 }
 
 const STANDARD_ADD_MODALS: ReadonlySet<string> = new Set(Object.values(STANDARD_ADD_MODAL_BY_TYPE));
@@ -47,14 +49,16 @@ export function isOpenableAddModal(
  * de l'admin (`resolveCreateModal`, qui départage en plus par `identity`) : sur les écrans du site
  * lui-même, un site qui déclare un formulaire pour un type ne veut pas du formulaire standard. Le
  * bouton « Ajouter » d'un finder coform ne la suit PAS : un formulaire costum n'y sert que déclaré
- * (`coform.finderAddNew`, cf. `resolveFinderAddNewModal`).
+ * (`coform.finderAddNew`, cf. `resolveFinderAddNewModal`). Un formulaire `profileAdd: false` n'est
+ * pas candidat ici — l'« Ajouter » des profils garde alors le standard (ex. ESS974, ajout réservé au
+ * bouton admin de l'annuaire) ; `resolveCreateModal`, qui a sa propre logique, ne lit pas ce drapeau.
  */
 export function siteCostumAddModal(
   collection: string,
   costumForms: Record<string, CostumFormRef | undefined> | undefined,
   siteSlug: string | undefined,
 ): string | null {
-  const docs = Object.entries(costumForms ?? {}).filter(([, d]) => d?.entityType === collection);
+  const docs = Object.entries(costumForms ?? {}).filter(([, d]) => d?.entityType === collection && d?.profileAdd !== false);
   const duSite = docs.filter(([, d]) => siteSlug && d?.costumSlug === siteSlug);
   const retenus = duSite.length > 0 ? duSite : docs;
   if (retenus.length !== 1) return null;

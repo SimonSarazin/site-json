@@ -6,6 +6,10 @@
     "images": "parent62",
     "coolifyApp": "site-json-parent62",
     "domain": "parent62.00.re",
+    "aliases": [
+      "www.parent62.org",
+      "parent62.org"
+    ],
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
     }
@@ -223,6 +227,8 @@
     "config": "config.prod.projetsre.json",
     "css": "index-projetsre",
     "images": "projetsre",
+    "coolifyApp": "site-json-projetsre",
+    "domain": "projetsre.00.re",
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
     }

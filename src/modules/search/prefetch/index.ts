@@ -7,3 +7,4 @@ export {
   prefetchFilterEntities,
   prefetchFilterSection,
 } from "./prefetchFilters";
+export { prefetchReservationUsers } from "./prefetchReservationUsers";

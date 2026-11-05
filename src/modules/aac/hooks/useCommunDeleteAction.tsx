@@ -32,6 +32,8 @@ export interface CommunDeleteActionOptions {
   resource?: CagnotteResource | null;
   /** L'enveloppe est en vol : sans elle, on ignore si de l'argent a été versé. */
   isResourceLoading?: boolean;
+  /** Un paiement est en cours sur le commun : la suppression est refusée. */
+  paymentInProgress?: boolean;
   /** Appelé après une suppression réussie — la fiche n'a plus lieu d'être affichée. */
   onDeleted?: () => void;
 }
@@ -51,10 +53,11 @@ export function useCommunDeleteAction({
   communTitle,
   resource,
   isResourceLoading,
+  paymentInProgress = false,
   onDeleted,
 }: CommunDeleteActionOptions): CommunDeleteAction {
   const [open, setOpen] = useState(false);
-  const plan = useMemo(() => resolveCommunDeletionPlan(resource), [resource]);
+  const plan = useMemo(() => resolveCommunDeletionPlan(resource, paymentInProgress), [resource, paymentInProgress]);
   const suppression = useDeleteCommun({ api, onDeleted });
 
   // Rien à proposer sans le droit — contrairement à la sélection, dont le statut reste une

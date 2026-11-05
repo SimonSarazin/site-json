@@ -1,0 +1,213 @@
+{
+  "description": "Fusion a trois des listes de card/update sur un board-lien (BLUEPRINT §11). Vecteurs PARTAGES : lus par les tests du module PHP (tests/selftest_source.php) ET par Vitest, pour que les deux cotes appliquent exactement la meme regle. Une modale ouverte depuis un moment envoie la valeur qu'elle a vue a l'ouverture (base) et la nouvelle valeur (next) ; le serveur applique la difference base -> next sur la valeur ACTUELLE en base (current), au lieu de remplacer la liste.",
+  "rules": {
+    "sets": "assignees et tags. retires = base - next ; ajoutes = next - base (ordre de next). resultat = elements de current non retires (ordre de current), puis ajoutes absents de current. Les tags se comparent apres normalisation (trim + minuscules Unicode) : retirer « web » retire « Web » ; la graphie conservee est celle de current, ou celle de next pour un ajout. Les assignes se comparent a l'identique.",
+    "checklist": "par id. supprimes = ids de base absents de next -> retires de current s'ils y sont. modifies = ids presents dans base ET next : seuls les champs (label, done) qui different ENTRE base ET next sont appliques a l'element de current de meme id, s'il existe encore (sinon ignore : la suppression concurrente gagne). ajoutes = elements de next sans id, ou dont l'id n'est pas dans base -> ajoutes a la fin, dans l'ordre de next, avec un id genere par le serveur. L'ordre de current est conserve ; un reordonnancement fait dans la modale n'est pas applique.",
+    "noBase": "Sans base, le champ remplace la liste (compatibilite). Ces vecteurs ne couvrent que le cas avec base.",
+    "expectedNewId": "Dans expected, un id \"*\" designe un element NOUVEAU : son id est une chaine non vide, generee par le serveur, absente de current."
+  },
+  "sets": [
+    {
+      "name": "rien de change dans la modale : un ajout concurrent est conserve",
+      "field": "assignees",
+      "base": ["5534fd9da1aa14201b0041cb"],
+      "next": ["5534fd9da1aa14201b0041cb"],
+      "current": ["5534fd9da1aa14201b0041cb", "5e14a3b3690864e1328b45de"],
+      "expected": ["5534fd9da1aa14201b0041cb", "5e14a3b3690864e1328b45de"]
+    },
+    {
+      "name": "retrait dans la modale, ajout concurrent conserve",
+      "field": "assignees",
+      "base": ["5534fd9da1aa14201b0041cb", "6448f244ecf6e50e4b539677"],
+      "next": ["6448f244ecf6e50e4b539677"],
+      "current": ["5534fd9da1aa14201b0041cb", "6448f244ecf6e50e4b539677", "5e14a3b3690864e1328b45de"],
+      "expected": ["6448f244ecf6e50e4b539677", "5e14a3b3690864e1328b45de"]
+    },
+    {
+      "name": "ajout deja fait de facon concurrente : pas de doublon",
+      "field": "assignees",
+      "base": [],
+      "next": ["5e14a3b3690864e1328b45de"],
+      "current": ["5e14a3b3690864e1328b45de"],
+      "expected": ["5e14a3b3690864e1328b45de"]
+    },
+    {
+      "name": "retrait d'un assigne deja retire ailleurs : sans effet",
+      "field": "assignees",
+      "base": ["5534fd9da1aa14201b0041cb"],
+      "next": [],
+      "current": [],
+      "expected": []
+    },
+    {
+      "name": "tags : retirer « web » retire « Web », la graphie de current est gardee",
+      "field": "tags",
+      "base": ["web", "mobile"],
+      "next": ["mobile", "Backend"],
+      "current": ["Web", "mobile", "urgent client"],
+      "expected": ["mobile", "urgent client", "Backend"]
+    },
+    {
+      "name": "tags : ajout deja present avec une autre casse, pas de doublon",
+      "field": "tags",
+      "base": [],
+      "next": ["Agenda"],
+      "current": ["agenda"],
+      "expected": ["agenda"]
+    },
+    {
+      "name": "tags : ajouts dans l'ordre de next, apres current",
+      "field": "tags",
+      "base": ["web"],
+      "next": ["web", "Galerie", "Design"],
+      "current": ["Profil", "web"],
+      "expected": ["Profil", "web", "Galerie", "Design"]
+    }
+  ],
+  "checklists": [
+    {
+      "name": "rien de change dans la modale : une sous-tache ajoutee dans gestion est conservee",
+      "base": [{ "id": "t1", "label": "Maquette", "done": false }],
+      "next": [{ "id": "t1", "label": "Maquette", "done": false }],
+      "current": [
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": "t2", "label": "Recette", "done": false }
+      ],
+      "expected": [
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": "t2", "label": "Recette", "done": false }
+      ]
+    },
+    {
+      "name": "coche dans la modale, ajout concurrent conserve",
+      "base": [{ "id": "t1", "label": "Maquette", "done": false }],
+      "next": [{ "id": "t1", "label": "Maquette", "done": true }],
+      "current": [
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": "t2", "label": "Recette", "done": false }
+      ],
+      "expected": [
+        { "id": "t1", "label": "Maquette", "done": true },
+        { "id": "t2", "label": "Recette", "done": false }
+      ]
+    },
+    {
+      "name": "seul le champ modifie est applique : renommage concurrent conserve",
+      "base": [{ "id": "t1", "label": "Maquette", "done": false }],
+      "next": [{ "id": "t1", "label": "Maquette", "done": true }],
+      "current": [{ "id": "t1", "label": "Maquette v2", "done": false }],
+      "expected": [{ "id": "t1", "label": "Maquette v2", "done": true }]
+    },
+    {
+      "name": "suppression dans la modale",
+      "base": [
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": "t2", "label": "Recette", "done": true }
+      ],
+      "next": [{ "id": "t2", "label": "Recette", "done": true }],
+      "current": [
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": "t2", "label": "Recette", "done": true },
+        { "id": "t3", "label": "Mise en ligne", "done": false }
+      ],
+      "expected": [
+        { "id": "t2", "label": "Recette", "done": true },
+        { "id": "t3", "label": "Mise en ligne", "done": false }
+      ]
+    },
+    {
+      "name": "modification d'une sous-tache supprimee ailleurs : ignoree",
+      "base": [{ "id": "t1", "label": "Maquette", "done": false }],
+      "next": [{ "id": "t1", "label": "Maquette finale", "done": false }],
+      "current": [{ "id": "t2", "label": "Recette", "done": false }],
+      "expected": [{ "id": "t2", "label": "Recette", "done": false }]
+    },
+    {
+      "name": "ajouts sans id, a la fin et dans l'ordre",
+      "base": [{ "id": "t1", "label": "Maquette", "done": false }],
+      "next": [
+        { "id": null, "label": "Recette", "done": false },
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": null, "label": "Mise en ligne", "done": false }
+      ],
+      "current": [
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": "t9", "label": "Ajout gestion", "done": false }
+      ],
+      "expected": [
+        { "id": "t1", "label": "Maquette", "done": false },
+        { "id": "t9", "label": "Ajout gestion", "done": false },
+        { "id": "*", "label": "Recette", "done": false },
+        { "id": "*", "label": "Mise en ligne", "done": false }
+      ]
+    },
+    {
+      "name": "un id inconnu de la base vaut un ajout",
+      "base": [],
+      "next": [{ "id": "tmp-1", "label": "Nouvelle", "done": false }],
+      "current": [{ "id": "t1", "label": "Maquette", "done": true }],
+      "expected": [
+        { "id": "t1", "label": "Maquette", "done": true },
+        { "id": "*", "label": "Nouvelle", "done": false }
+      ]
+    },
+    {
+      "name": "reordonnancement dans la modale non applique",
+      "base": [
+        { "id": "t1", "label": "A", "done": false },
+        { "id": "t2", "label": "B", "done": false }
+      ],
+      "next": [
+        { "id": "t2", "label": "B", "done": false },
+        { "id": "t1", "label": "A", "done": false }
+      ],
+      "current": [
+        { "id": "t1", "label": "A", "done": false },
+        { "id": "t2", "label": "B", "done": false }
+      ],
+      "expected": [
+        { "id": "t1", "label": "A", "done": false },
+        { "id": "t2", "label": "B", "done": false }
+      ]
+    },
+    {
+      "name": "sous-tache heritee au libelle VIDE, inchangee : conservee a sa place",
+      "base": [
+        { "id": "t1", "label": "", "done": false },
+        { "id": "t2", "label": "Recette", "done": false }
+      ],
+      "next": [
+        { "id": "t1", "label": "", "done": false },
+        { "id": "t2", "label": "Recette", "done": true }
+      ],
+      "current": [
+        { "id": "t1", "label": "", "done": false },
+        { "id": "t2", "label": "Recette", "done": false }
+      ],
+      "expected": [
+        { "id": "t1", "label": "", "done": false },
+        { "id": "t2", "label": "Recette", "done": true }
+      ]
+    },
+    {
+      "name": "sous-tache heritee au libelle vide, supprimee dans la modale : retiree",
+      "base": [
+        { "id": "t1", "label": "", "done": false },
+        { "id": "t2", "label": "Recette", "done": false }
+      ],
+      "next": [{ "id": "t2", "label": "Recette", "done": false }],
+      "current": [
+        { "id": "t1", "label": "", "done": false },
+        { "id": "t2", "label": "Recette", "done": false }
+      ],
+      "expected": [{ "id": "t2", "label": "Recette", "done": false }]
+    },
+    {
+      "name": "sous-tache heritee au libelle vide, nommee dans la modale : renommee, sans doublon",
+      "base": [{ "id": "t1", "label": "", "done": false }],
+      "next": [{ "id": "t1", "label": "Verifier le devis", "done": false }],
+      "current": [{ "id": "t1", "label": "", "done": false }],
+      "expected": [{ "id": "t1", "label": "Verifier le devis", "done": false }]
+    }
+  ]
+}

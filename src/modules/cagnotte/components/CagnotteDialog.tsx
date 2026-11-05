@@ -52,6 +52,7 @@ import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
 import PledgeConfirmedScreen from "@/modules/cagnotte/components/PledgeConfirmedScreen.tsx";
+import { readPledgesLockedForSelection } from "@/modules/cagnotte/utils/pledgeRetraction";
 
 /**
  * Palier financier déclenchant une célébration (toast + confetti à venir).
@@ -142,6 +143,7 @@ const CagnotteDialog = ({children, ...props}: CagnotteDialogProps) => {
                                     setOpenPromesses(false); // Ferme les promesses
                                     setOpen(true);           // Réouvre la cagnotte
                                 }}
+                                onRetracted={() => void props.onRefresh?.()}
                             />
                         </Suspense>
                     )}
@@ -199,16 +201,21 @@ const CagnotteDialogContent = ({
 
     // Récupérer l'entité depuis le contexte
     const { entity, me } = useCocolight();
+    const siteConfig = useSite();
 
-    // Récupérer TOUS les projets pour le SELECT.
-    // Le content n'est monté qu'à l'ouverture du dialog → fetch démarre ici,
-    // pas en background sur le header.
+    const {config: cagnotteConfig} = useCagnotteType({
+        propsOverride: propsType,
+        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
+    });
+
+    // Projets de l'organisation pour le sélecteur, en mode `project` seulement (le seul que lit
+    // l'adaptateur). Monté à l'ouverture du dialog : le fetch ne part pas du header.
     const {
         projects: allProjects,
         isLoading: allProjectsLoading,
     } = useOrganizationProjectsWithAnswers({
         entity: entity || null,
-        enabled: !!entity,
+        enabled: !!entity && cagnotteConfig.selectorType === "project",
     });
 
     // Un seul useFundingEnvelope() : il retourne `projects[]` complet ET
@@ -218,12 +225,6 @@ const CagnotteDialogContent = ({
         selectedResourceId || undefined,
         {hostEntity: openContext?.hostEntity, form: openContext?.envelopeForm},
     );
-    const siteConfig = useSite();
-
-    const {config: cagnotteConfig} = useCagnotteType({
-        propsOverride: propsType,
-        siteConfig: siteConfig?.config?.cagnotteModuleConfig?.defaultType,
-    });
 
     //context => Pour personalisation des textes à afficher pour certain groupe d'organisation
     const context = siteConfig?.config?.cagnotteModuleConfig?.context ?? "";
@@ -259,7 +260,7 @@ const CagnotteDialogContent = ({
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
     const orgsIds =  userAdminOrganizations?.map(user => user.id);
     //computedPledges : Promesses de financement non payé
-    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
+    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds, readPledgesLockedForSelection(fundingEnvelope?.rawEnvelope)) , [resources, me?.serverData?.id, orgsIds, fundingEnvelope?.rawEnvelope]);
 
     // Permissions cagnotte calculées sur l'ORGA (entity Cocolight), pas sur le
     // projet visité. La modale CagnotteDialog est rendue dans 2 contextes :

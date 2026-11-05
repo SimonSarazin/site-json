@@ -54,6 +54,10 @@ const ROOT_BLOCKS: Record<string, { schema: () => z.ZodType; note?: string }> = 
   page: { schema: () => Page },
   meta: { schema: () => SiteConfig.shape.meta },
   auth: { schema: () => SiteConfig.shape.auth, note: "// config.auth (module auth — cf. doc/23)" },
+  costum: {
+    schema: () => SiteConfig.shape.costum,
+    note: "// config.costum (contexte costum du déploiement — tags observatoire mainTag/compagnon)",
+  },
   profiles: { schema: () => SiteConfig.shape.profiles, note: "// config.profiles (module profil — cf. doc/08)" },
   integrations: {
     schema: () => SiteConfig.shape.integrations,
