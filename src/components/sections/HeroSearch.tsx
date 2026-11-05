@@ -314,11 +314,11 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   if (!isFullStyle) {
     return (
       <section id={id} className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
-        <div className="relative z-10 flex-1 flex items-center justify-center">
+        <div className="relative z-10 flex-1 flex items-center justify-center pointer-events-none">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-6xl mx-auto">
               <div
-                className="bg-card/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-border"
+                className="bg-card/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-border pointer-events-auto"
                 style={{
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)'
@@ -447,14 +447,14 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   }
 
   return (
-    // `mb-10` : l'illustration déborde de 40 px sous la section (`-bottom-10`) ; sans cette
-    // réserve, elle recouvre le haut de la section suivante (titre de liste de la home).
-    <section id={id} className={cn("relative min-h-112.5 md:min-h-125 flex flex-col -mt-10", props.backgroundImage && "mb-10")}>
-      <div className="relative z-10 flex-1 flex items-center justify-center">
+    // L'illustration déborde de 40 px sous la section (`-bottom-10`) : la section suivante vient
+    // volontairement la chevaucher (marge négative) pour ne laisser aucun blanc sous l'image.
+    <section id={id} className={cn("relative min-h-112.5 md:min-h-125 flex flex-col -mt-10", props.backgroundImage && "-mb-16")}>
+      <div className="relative z-10 flex-1 flex items-center justify-center pointer-events-none">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">
             <div
-              className="bg-card/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-2 sm:p-3 md:p-4 border border-border"
+              className="bg-card/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-2 sm:p-3 md:p-4 border border-border pointer-events-auto"
               style={{
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)'
@@ -565,7 +565,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
       </div>
 
       {props.backgroundImage && (
-        <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden">
+        <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden pointer-events-none">
           <HeroBackgroundImage
             src={props.backgroundImage}
             position="top"

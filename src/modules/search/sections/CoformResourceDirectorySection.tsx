@@ -107,6 +107,7 @@ export default function CoformResourceDirectorySection({
     typologyFilter,
     searchFilter = false,
     showMap = false,
+    underHero = false,
   } = props;
 
   // Ce qu'il faut pour charger les ressources (`useResourceDirectoryItems`) — référence stable.
@@ -245,12 +246,12 @@ export default function CoformResourceDirectorySection({
   return (
     <section
       id={id}
-      className={cn("py-8", bg && bg !== "transparent" && `bg-${bg}`)}
+      className={cn(underHero ? "pt-0 pb-8" : "py-8", bg && bg !== "transparent" && `bg-${bg}`)}
       data-co="coform-resource-directory"
     >
       <div className="container mx-auto px-6">
         {(title || description || customHeader?.title || customHeader?.linkText) && (
-          <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <header className={cn(underHero ? "pt-10 mb-3" : "mb-6", "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between")}>
             <div className="min-w-0 space-y-1">
               {(title || customHeader?.title) && (
                 <h2 className="text-2xl font-extrabold text-foreground">
@@ -260,7 +261,7 @@ export default function CoformResourceDirectorySection({
               {description && <p className="text-sm text-muted-foreground">{t(description)}</p>}
             </div>
             {customHeader?.linkText && customHeader.linkHref && (
-              <Button asChild variant="outline" size="sm" className="shrink-0 text-foreground">
+              <Button asChild variant="outline" size="sm" className={cn("shrink-0 text-foreground", underHero && "sm:translate-y-10")}>
                 {/* Lien venu de la config : NavLink classe l'href (interne, mailto:, externe) —
                     un <Link> brut enverrait un `mailto:` dans le routeur (CLAUDE.md, liens de config). */}
                 <NavLink to={customHeader.linkHref}>

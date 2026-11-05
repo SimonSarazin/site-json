@@ -1643,6 +1643,12 @@ export const CoformResourceDirectorySectionSchema = z.object({
      * services ; « En savoir plus » filtre la liste sur ce lieu. Défaut : false.
      */
     showMap: z.boolean().optional(),
+    /**
+     * Section posée juste sous un hero dont l'illustration déborde : retire le padding haut de la
+     * section et baisse l'en-tête (titre + « voir tous ») pour qu'il dégage l'illustration.
+     * Défaut : false (padding historique).
+     */
+    underHero: z.boolean().optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });

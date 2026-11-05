@@ -451,6 +451,47 @@
       "layout": "fullwidth",
       "sections": [
         {
+          "type": "action-tiles",
+          "id": "home-audiences",
+          "props": {
+            "headline": {
+              "fr": "Vous êtes…",
+              "en": "You are…"
+            },
+            "columns": {
+              "lg": 2
+            },
+            "headlineStyle": "text",
+            "width": "wide",
+            "tileLayout": "pillRow",
+            "size": "md",
+            "hoverEffect": "lift",
+            "bg": "transparent",
+            "actions": [
+              {
+                "icon": "user-round",
+                "title": {
+                  "fr": "Visiteurs",
+                  "en": "Visitors"
+                },
+                "href": "/reservation",
+                "background": "var(--primary)",
+                "textColor": "var(--primary-foreground)"
+              },
+              {
+                "icon": "house",
+                "title": {
+                  "fr": "Tiers-lieux",
+                  "en": "Third places"
+                },
+                "href": "/lieux",
+                "background": "#ffd836",
+                "textColor": "#1a1a1a"
+              }
+            ]
+          }
+        },
+        {
           "type": "hero-search",
           "id": "hero-complet",
           "props": {
@@ -890,7 +931,8 @@
                   "moreInfo": "miq88plgleoln5tmc7b"
                 }
               }
-            ]
+            ],
+            "underHero": true
           }
         },
         {
@@ -1583,7 +1625,8 @@
                 "descriptionSuffix": "miq88plgleoln5tmc7b",
                 "servicesSuffix": "miq86g5vaw1kavrapkb"
               }
-            ]
+            ],
+            "underHero": true
           }
         },
         {
