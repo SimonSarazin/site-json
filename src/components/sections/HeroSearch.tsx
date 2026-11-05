@@ -565,7 +565,10 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
       </div>
 
       {props.backgroundImage && (
-        <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden pointer-events-none">
+        <div
+          className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden pointer-events-none"
+          style={{ transform: props.backgroundImageOffsetY ? `translateY(${props.backgroundImageOffsetY}px)` : undefined }}
+        >
           <HeroBackgroundImage
             src={props.backgroundImage}
             position="top"

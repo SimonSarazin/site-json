@@ -45,6 +45,17 @@ afterEach(() => {
 });
 
 describe("HeroSearch — lancement de la recherche", () => {
+  it("décale l'illustration de fond selon le décalage configuré", () => {
+    const { container } = hero({
+      subhead: { fr: "Sous-titre" },
+      ctaButtons: [{ label: { fr: "Catégorie" } }],
+      backgroundImage: "/illustration.png",
+      backgroundImageOffsetY: 20,
+    });
+
+    expect(container.querySelector("section > div.absolute")?.getAttribute("style")).toContain("translateY(20px)");
+  });
+
   it("avec `searchHref` : ouvre la page de recherche avec le texte et les filtres actifs", () => {
     hero({ searchHref: "/lieux" });
     fireEvent.change(screen.getByPlaceholderText("Ville"), { target: { value: " Lille " } });

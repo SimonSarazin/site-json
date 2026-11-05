@@ -173,6 +173,7 @@ export const HeroSearchSchema = z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
+    backgroundImageOffsetY: z.number().optional(),
     // Boutons de catégorie AUTO-PORTEURS : chaque bouton déclare son effet —
     // `filters` pose des query params (?param=v1,v2 — format pluriel de
     // `computeFiltersFromUrl`, identique à la sidebar /lieux), `href` navigue,

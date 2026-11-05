@@ -1390,6 +1390,7 @@
               "en": "Search"
             },
             "backgroundImage": "images/tiersLieux/BG_Illus.png",
+            "backgroundImageOffsetY": 30,
             "searchVariant": "navigator-tl",
             "baseParams": {
               "defaultTypes": [
