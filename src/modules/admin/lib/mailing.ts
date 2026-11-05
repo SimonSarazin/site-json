@@ -26,7 +26,7 @@ export interface MailingRecipient {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const HEX24_RE = /^[a-f0-9]{24}$/;
+const HEX24_RE = /^[a-fA-F0-9]{24}$/; // les deux casses : le legacy résout par ctype_xdigit (oracle F2)
 
 /**
  * Destinataire d'une ligne de table admin / de liste de membres, ou `null` si la ligne n'a rien à

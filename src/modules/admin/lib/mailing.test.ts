@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { buildMailingHtml, plainTextOf, recipientFromEntity, uniqueRecipients } from "./mailing";
 
+/**
+ * RÉFÉRENCE : oracle legacy `cocolight-backend/tools/parity/live/mailing-legacy-oracle.mjs` (faits F1…F12).
+ * L'écran legacy (userMailing.php) envoie des E-MAILS lus dans l'annuaire d'admin ; site-json envoie des _id pour
+ * les citoyens (F2 : résolus serveur, les deux casses) et l'e-mail de contact pour les fiches (F3 : recopié tel quel
+ * par le legacy — on le met en minuscules côté client pour dédoublonner, le serveur Node normalise aussi).
+ */
+
 const ID = "66f2adcfba41c614b86c0af8";
 
 describe("recipientFromEntity — qui part dans tplMail[]", () => {
@@ -11,6 +18,10 @@ describe("recipientFromEntity — qui part dans tplMail[]", () => {
   it("une fiche part par son e-mail de contact, en minuscules", () => {
     const r = recipientFromEntity("organizations", { id: ID, serverData: { name: "Asso", email: "Contact@Asso.re" } });
     expect(r).toEqual({ key: ID, label: "Asso", value: "contact@asso.re" });
+  });
+  it("un _id en MAJUSCULES est accepté tel quel (oracle legacy F2 : le serveur résout par ctype_xdigit)", () => {
+    const r = recipientFromEntity("citoyens", { id: ID.toUpperCase(), serverData: { name: "Jean" } });
+    expect(r).toEqual({ key: ID.toUpperCase(), label: "Jean", value: ID.toUpperCase() });
   });
   it("sans entityType, la collection de la fiche décide (liste de membres mixte)", () => {
     expect(recipientFromEntity(undefined, { id: ID, serverData: { collection: "citoyens", name: "J" } })?.value).toBe(ID);
