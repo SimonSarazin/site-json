@@ -13,6 +13,7 @@ import {
   matomoPageViewCommands,
   matomoScriptUrl,
   type AnalyticsConf,
+  type PaqCommand,
 } from "@/lib/analytics/matomo";
 
 /**
@@ -104,15 +105,20 @@ function startMatomo(conf: AnalyticsConf): Tracker | null {
     warn(`matomo : idSite « ${conf.id} » non numérique — mesure désactivée (placeholder à remplacer ?).`);
     return null;
   }
-  const paq = (window._paq = window._paq ?? []);
-  for (const command of matomoInitCommands(conf, base)) paq.push(command);
+  // Toujours via `window._paq` AU MOMENT de l'envoi : une fois chargé, matomo.js consomme le tableau
+  // initial et remplace `window._paq` par son proxy — une référence gardée sur le tableau d'origine
+  // perdrait toutes les commandes suivantes (vu en production : seule la première page vue partait).
+  const push = (command: PaqCommand) => {
+    (window._paq = window._paq ?? []).push(command);
+  };
+  for (const command of matomoInitCommands(conf, base)) push(command);
   appendScript(matomoScriptUrl(base, conf.scriptUrl), "matomo");
   return {
     pageView: (view) => {
-      for (const command of matomoPageViewCommands(view)) paq.push(command);
+      for (const command of matomoPageViewCommands(view)) push(command);
     },
     setEnabled: (on) => {
-      paq.push(on ? ["forgetUserOptOut"] : ["optUserOut"]);
+      push(on ? ["forgetUserOptOut"] : ["optUserOut"]);
     },
   };
 }

@@ -99,6 +99,22 @@ describe("IntegrationsLoader — Matomo", () => {
     expect(document.querySelectorAll('script[data-integration="matomo"]')).toHaveLength(1);
   });
 
+  it("matomo.js remplace window._paq par son proxy : les commandes suivantes y arrivent quand même", async () => {
+    monter("/");
+    await attendrePageVue();
+    // Simule matomo.js chargé : la file initiale est consommée, `window._paq` devient un objet à `push`.
+    const recues: unknown[][] = [];
+    (window as unknown as { _paq: unknown })._paq = { push: (c: unknown[]) => recues.push(c) };
+
+    await act(async () => navigateTo?.("/agenda"));
+    await attendrePageVue();
+    expect(recues.filter((c) => c[0] === "trackPageView")).toHaveLength(1);
+    expect(recues).toContainEqual(["setCustomUrl", `${window.location.origin}/agenda`]);
+
+    await act(async () => void writeConsent({ analytics: false }, false));
+    expect(recues).toContainEqual(["optUserOut"]);
+  });
+
   it("un retour sur la page précédente compte une nouvelle page vue (clé de navigation, pas URL)", async () => {
     monter("/");
     await attendrePageVue();
