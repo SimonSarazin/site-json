@@ -417,6 +417,7 @@ export const Footer = z.object({
   extra: z.string().optional(),
   newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
+  copyrightPosition: z.enum(["left", "right"]).optional(),
   logo: z.string().optional(),
   logoIcon: LucideIconOrSvg.optional(),
   logoTitle: LocalizedString.optional(),
@@ -456,6 +457,7 @@ Les valeurs de `type` sont des **noms de design** (pas des noms de sites) :
 | `extra`            | `string`                      | Non      | HTML ou texte complémentaire                                         |
 | `newsletter`       | `NewsletterSectionSchema`     | Non      | Formulaire d'abonnement newsletter                                   |
 | `copyright`        | `LocalizedString`             | Oui      | Texte de copyright                                                   |
+| `copyrightPosition` | `"left" \| "right"`          | Non      | Pour `minimal-centered`, `right` place le copyright avant les liens à droite ; défaut `left` |
 | `logo`             | `string`                      | Non      | URL ou chemin du logo                                                |
 | `logoIcon`         | `LucideIconOrSvg`             | Non      | Icône lucide ou SVG inline pour le logo                              |
 | `logoTitle`        | `LocalizedString`             | Non      | Titre affiché à côté du logo                                         |

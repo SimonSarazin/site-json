@@ -2201,6 +2201,7 @@ export const Footer = z.object({
   extra: z.string().optional(),
   newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
+  copyrightPosition: z.enum(["left", "right"]).optional(),
   logo: z.string().optional(),
   logoIcon: LucideIconOrSvg.optional(),
   logoTitle: LocalizedString.optional(),

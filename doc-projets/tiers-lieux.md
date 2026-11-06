@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-11-06** (illustration de l'accueil réduite, cf. §9). Précédent : **2026-11-05** (`/a-propos` : bouton de diagnostic Licoop placé sous le bandeau du lien SPG, cf. §9). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-06** (pied de page et illustration de l'accueil, cf. §9). Précédent : **2026-11-05** (`/a-propos` : bouton de diagnostic Licoop placé sous le bandeau du lien SPG, cf. §9). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -216,6 +216,13 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 06/11 — pied de page
+
+La mention « Contenu C BY-SA 4.0 » est placée avant « Logiciel libre » à droite ; le lien
+« Documentation » pointe vers les notes de Tiers-Lieux.org. Le positionnement est propre au
+footer `minimal-centered` et laisse le comportement des autres configurations inchangé.
+Configuration validée et 7 tests ciblés du pied de page réussis ; ordre et URL vérifiés en préversion.
 
 ### 06/11 — `/` : illustration du hero
 

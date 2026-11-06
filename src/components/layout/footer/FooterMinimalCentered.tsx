@@ -57,9 +57,12 @@ export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredP
 
         {/* `sm:text-sm` (au lieu de `sm:text-xs`) : même logique que la nav ci-dessus, base `text-[10px]`
             inchangée en xs. */}
-        <div className={`flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-[10px] sm:text-sm pt-6 sm:pt-8 ${bg ? "border-white/30" : "text-muted-foreground border-border"} border-t`}>
-          <p className={`text-center sm:text-left ${bg ? "" : "text-muted-foreground"}`}>{t(footer.copyright)}</p>
+        <div className={`flex flex-col sm:flex-row flex-wrap ${footer.copyrightPosition === "right" ? "sm:justify-end" : "justify-between"} items-center gap-4 text-[10px] sm:text-sm pt-6 sm:pt-8 ${bg ? "border-white/30" : "text-muted-foreground border-border"} border-t`}>
+          {footer.copyrightPosition !== "right" && (
+            <p className={`text-center sm:text-left ${bg ? "" : "text-muted-foreground"}`}>{t(footer.copyright)}</p>
+          )}
           <div className="flex gap-4 sm:gap-6 flex-wrap justify-center">
+            {footer.copyrightPosition === "right" && <p>{t(footer.copyright)}</p>}
             {bottomLinks.map((link, idx: number) => (
               <NavLink key={idx} to={link.href} className={bg ? "hover:opacity-80 transition-opacity" : "text-muted-foreground hover:text-primary transition-colors"}>
                 {t(link.label)}
