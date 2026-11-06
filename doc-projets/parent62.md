@@ -5451,13 +5451,12 @@ en bandeau global pour les sites qui en veulent un (pas parent62).
 | Clé | Valeur | Pourquoi |
 |---|---|---|
 | `integrations.analytics` | `matomo`, `url` cloud, `cookies: false`, `respectDnt: true`, `consent: "opt-out"`, `publicHostOnly: true` | mode exempté ; toutes les clés écrites (gotcha #13) |
-| `integrations.analytics.id` | **`SITE_ID_MATOMO_A_CREER`** | placeholder : le loader refuse un idSite non numérique → **aucune mesure tant qu'il n'est pas remplacé** |
+| `integrations.analytics.id` | `"29"` | idSite créé par Thomas le 06/11 dans l'instance (snippet Matomo vérifié : même tracker, même CDN). Un idSite non numérique désactiverait la mesure |
 | `/politique-cookies` | `html` (texte réel) + `cookieConsent` `inline` (`necessary` requis, `analytics` `defaultOn`) | droit d'opposition ; remplace « page en construction » |
 | `footer.bottomLinks` | + `/politique-cookies` | la page n'était reliée nulle part |
 
 **Reste à faire, côté Thomas** :
-1. créer le site parent62 dans Matomo (URL `https://www.parent62.org`) et reporter l'`idSite` dans
-   `integrations.analytics.id` ;
+1. ~~créer le site parent62 dans Matomo et reporter l'`idSite`~~ — fait le 06/11 (`29`) ;
 2. vérifier sur l'instance : *Administration → Vie privée → Anonymiser les données* (IP à 2 octets au
    moins) et la rétention des journaux — l'exemption CNIL en dépend, le code ne peut pas le régler ;
 3. `/confidentialite` est toujours un placeholder (« Contenu à compléter ») : il devra mentionner la
