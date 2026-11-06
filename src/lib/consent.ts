@@ -25,6 +25,15 @@ export interface ConsentRecord {
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
+/**
+ * Miroir mémoire du dernier choix écrit DANS CETTE PAGE : quand le stockage est indisponible ou
+ * refuse l'écriture (navigation privée stricte, quota, données de site bloquées), le choix vaut
+ * quand même pour la session courante — un refus ne doit jamais être ignoré en silence.
+ */
+let memoire: ConsentRecord | null = null;
+/** Vrai dès qu'une écriture par défaut a échoué : le stockage « lit » mais ne retient pas, la mémoire fait foi. */
+let ecritureEchouee = false;
+
 function defaultStorage(): StorageLike | null {
   if (typeof window === "undefined") return null;
   try {
@@ -50,12 +59,30 @@ export function parseConsent(raw: string | null | undefined): ConsentRecord | nu
   }
 }
 
-export function readConsent(storage: StorageLike | null = defaultStorage()): ConsentRecord | null {
-  if (!storage) return null;
+export function readConsent(storage?: StorageLike | null): ConsentRecord | null {
+  const explicite = storage !== undefined;
+  const source = explicite ? storage : defaultStorage();
+  if (explicite) {
+    try {
+      return source ? parseConsent(source.getItem(CONSENT_STORAGE_KEY)) : null;
+    } catch {
+      return null;
+    }
+  }
+  return lireDefaut(source);
+}
+
+/**
+ * Lecture par défaut : le stockage s'il est présent, lisible et a retenu les écritures ; sinon la
+ * mémoire de la page. Un stockage présent et sain qui ne contient rien = « aucun choix » (pas de
+ * fuite d'une mémoire d'une autre vie du module).
+ */
+function lireDefaut(source: StorageLike | null): ConsentRecord | null {
+  if (!source || ecritureEchouee) return memoire;
   try {
-    return parseConsent(storage.getItem(CONSENT_STORAGE_KEY));
+    return parseConsent(source.getItem(CONSENT_STORAGE_KEY));
   } catch {
-    return null;
+    return memoire;
   }
 }
 
@@ -66,13 +93,16 @@ export function readConsent(storage: StorageLike | null = defaultStorage()): Con
 export function writeConsent(
   preferences: Record<string, boolean>,
   accepted: boolean,
-  storage: StorageLike | null = defaultStorage(),
+  storage?: StorageLike | null,
 ): ConsentRecord {
   const record: ConsentRecord = { accepted, preferences: { ...preferences }, timestamp: new Date().toISOString() };
+  const explicite = storage !== undefined;
+  if (!explicite) memoire = record;
   try {
-    storage?.setItem(CONSENT_STORAGE_KEY, JSON.stringify(record));
+    (explicite ? storage : defaultStorage())?.setItem(CONSENT_STORAGE_KEY, JSON.stringify(record));
   } catch {
-    // stockage indisponible (navigation privée, quota) : le choix vaut pour la page courante
+    // stockage indisponible (navigation privée, quota) : `memoire` porte le choix pour la page courante
+    if (!explicite) ecritureEchouee = true;
   }
   if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(CONSENT_EVENT));
   return record;
@@ -80,13 +110,14 @@ export function writeConsent(
 
 /**
  * Choix pour UNE catégorie : `true`/`false` si l'utilisateur s'est prononcé, `null` sinon.
- * Un refus global (`accepted: false`) vaut refus de toute catégorie non requise, même absente
- * de `preferences` — le bandeau n'enregistre que les catégories qu'il connaissait à ce moment.
+ * Une catégorie absente de `preferences` (le bandeau ne la connaissait pas, ou n'a pas de
+ * catégories du tout) suit le choix global : « Tout accepter » l'accepte, « Refuser » la refuse —
+ * les deux boutons doivent être symétriques, sinon un opt-in sans catégories n'ouvrirait jamais.
  */
 export function consentFor(record: ConsentRecord | null, category: string): boolean | null {
   if (!record) return null;
   if (category in record.preferences) return record.preferences[category];
-  return record.accepted ? null : false;
+  return record.accepted;
 }
 
 /** Abonnement aux changements : écriture locale (`CONSENT_EVENT`) et autre onglet (`storage`). */
@@ -108,11 +139,12 @@ let cacheRaw: string | null | undefined;
 let cacheRecord: ConsentRecord | null = null;
 function snapshot(): ConsentRecord | null {
   const storage = defaultStorage();
+  if (!storage || ecritureEchouee) return memoire;
   let raw: string | null = null;
   try {
-    raw = storage?.getItem(CONSENT_STORAGE_KEY) ?? null;
+    raw = storage.getItem(CONSENT_STORAGE_KEY);
   } catch {
-    raw = null;
+    return memoire;
   }
   if (raw !== cacheRaw) {
     cacheRaw = raw;

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { useSite } from "@/hooks/useSite";
-import { getSitePublicUrl } from "@/lib/constant/common";
+import { getSitePublicUrlConfigured } from "@/lib/constant/common";
+import { isValidGa4MeasurementId } from "@/lib/analytics/ga4";
 import { ANALYTICS_CATEGORY, consentFor, readConsent, useConsent } from "@/lib/consent";
 import {
   analyticsAllowed,
@@ -88,6 +89,11 @@ function warn(message: string): void {
   if (import.meta.env.DEV) console.warn(`[analytics] ${message}`);
 }
 
+/** Avertissement visible AUSSI en production : une mesure qui ne part pas doit se diagnostiquer dans la console du site. */
+function warnAlways(message: string): void {
+  console.warn(`[analytics] ${message}`);
+}
+
 function startMatomo(conf: AnalyticsConf): Tracker | null {
   const base = matomoBaseUrl(conf.url);
   if (!base) {
@@ -113,8 +119,8 @@ function startMatomo(conf: AnalyticsConf): Tracker | null {
 
 function startGa4(conf: AnalyticsConf): Tracker | null {
   const id = conf.id.trim();
-  if (!id) {
-    warn("ga4 : identifiant de mesure vide — mesure désactivée.");
+  if (!isValidGa4MeasurementId(id)) {
+    warn(`ga4 : identifiant de mesure « ${conf.id} » invalide ou placeholder — mesure désactivée.`);
     return null;
   }
   window.dataLayer = window.dataLayer ?? [];
@@ -172,19 +178,28 @@ function useAnalytics(conf: AnalyticsConf | undefined): void {
   // l'instantané SERVEUR (null, « aucun choix ») — un refus déjà enregistré lancerait la mesure
   // un instant. L'effet relit donc le stockage lui-même.
   const choiceSignal = useConsent(ANALYTICS_CATEGORY);
-  const { pathname, search } = useLocation();
+  const { pathname, search, key } = useLocation();
   const tracker = useRef<Tracker | null>(null);
   const started = useRef(false);
   const enabled = useRef(false);
   const lastTracked = useRef<string | undefined>(undefined);
+  /** Clé de la dernière NAVIGATION comptée : un aller-retour A → B → A compte A deux fois, une ré-écriture des préférences sans naviguer zéro. */
+  const lastKey = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (!conf) return;
     if (import.meta.env.DEV) console.debug(`[analytics] effet ${pathname}${search} choix=${String(choiceSignal)}`);
 
-    const hostOk = conf.publicHostOnly === false || isPublicHost(window.location.host, getSitePublicUrl());
+    const publicUrl = getSitePublicUrlConfigured();
+    const hostOk = conf.publicHostOnly === false || isPublicHost(window.location.host, publicUrl);
     if (!hostOk) {
-      if (!started.current) warn(`hôte ${window.location.host} ≠ URL publique — mesure désactivée ici.`);
+      if (!started.current) {
+        warnAlways(
+          publicUrl
+            ? `hôte ${window.location.host} ≠ ${publicUrl} (VITE_SITE_PUBLIC_URL) — mesure désactivée sur cet hôte.`
+            : "VITE_SITE_PUBLIC_URL absente : hôte public inconnu, mesure désactivée (publicHostOnly: false pour mesurer partout).",
+        );
+      }
       started.current = true;
       return;
     }
@@ -209,8 +224,8 @@ function useAnalytics(conf: AnalyticsConf | undefined): void {
 
     // L'URL vient du routeur (vérité de la navigation client), l'origine du navigateur.
     const url = `${window.location.origin}${pathname}${search}`;
-    // Même URL déjà comptée (ex. préférences ré-enregistrées sans navigation) : pas de doublon.
-    if (url === lastTracked.current) return;
+    // Même navigation déjà comptée (ex. préférences ré-enregistrées sans naviguer) : pas de doublon.
+    if (key === lastKey.current) return;
 
     // Helmet pose le <title> après le commit : on laisse passer une frame avant de le lire.
     let timer: number | undefined;
@@ -219,11 +234,12 @@ function useAnalytics(conf: AnalyticsConf | undefined): void {
         current.pageView({ url, title: document.title, referrer: lastTracked.current });
         if (import.meta.env.DEV) console.debug(`[analytics] page vue ${url} — « ${document.title} »`);
         lastTracked.current = url;
+        lastKey.current = key;
       }, 0);
     });
     return () => {
       cancelFrame();
       if (timer !== undefined) window.clearTimeout(timer);
     };
-  }, [conf, choiceSignal, pathname, search]);
+  }, [conf, choiceSignal, pathname, search, key]);
 }

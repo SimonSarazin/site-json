@@ -17,7 +17,7 @@ import type { SiteConfig } from "@/types/site-schema";
 let integrations: SiteConfig["integrations"];
 vi.mock("@/hooks/useSite", () => ({ useSite: () => ({ config: { integrations } }) }));
 let publicUrl = "http://localhost:3000";
-vi.mock("@/lib/constant/common", () => ({ getSitePublicUrl: () => publicUrl }));
+vi.mock("@/lib/constant/common", () => ({ getSitePublicUrlConfigured: () => publicUrl }));
 
 let navigateTo: ((to: string) => void) | undefined;
 function Capture() {
@@ -99,6 +99,17 @@ describe("IntegrationsLoader — Matomo", () => {
     expect(document.querySelectorAll('script[data-integration="matomo"]')).toHaveLength(1);
   });
 
+  it("un retour sur la page précédente compte une nouvelle page vue (clé de navigation, pas URL)", async () => {
+    monter("/");
+    await attendrePageVue();
+    await act(async () => navigateTo?.("/agenda"));
+    await attendrePageVue();
+    await act(async () => navigateTo?.("/"));
+    await attendrePageVue();
+    expect(commandes("trackPageView")).toHaveLength(3);
+    expect(commandes("setCustomUrl").map((c) => c[1])).toEqual([`${window.location.origin}/`, `${window.location.origin}/agenda`, `${window.location.origin}/`]);
+  });
+
   it("opt-out (repli) : un refus enregistré coupe la mesure, une acceptation la rouvre", async () => {
     monter("/");
     await attendrePageVue();
@@ -113,7 +124,7 @@ describe("IntegrationsLoader — Matomo", () => {
 
     await act(async () => void writeConsent({ necessary: true, analytics: true }, true));
     await attendrePageVue();
-    expect(commandes("forgetUserOptOut")).toHaveLength(1);
+    expect(commandes("forgetUserOptOut")).toHaveLength(2); // init + ré-acceptation
     expect(commandes("trackPageView")).toHaveLength(2);
   });
 
@@ -166,6 +177,18 @@ describe("IntegrationsLoader — Matomo", () => {
 });
 
 describe("IntegrationsLoader — GA4", () => {
+  it("refuse le placeholder G-XXXXXXX de config.prod.json : ni script ni dataLayer", async () => {
+    integrations = { analytics: { provider: "ga4", id: "G-XXXXXXX" } };
+    delete window.dataLayer;
+    delete window.gtag;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    monter("/");
+    await attendrePageVue();
+    expect(document.querySelector('script[data-integration="ga4"]')).toBeNull();
+    expect(window.dataLayer).toBeUndefined();
+    warn.mockRestore();
+  });
+
   it("configure gtag sans page vue automatique puis émet page_view à chaque navigation", async () => {
     integrations = { analytics: { provider: "ga4", id: "G-TEST1234" } };
     delete window.dataLayer;

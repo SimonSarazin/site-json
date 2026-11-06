@@ -47,6 +47,16 @@ describe("readConsent / writeConsent", () => {
     expect(rec.accepted).toBe(false);
   });
 
+  it("stockage par défaut indisponible : le choix écrit reste lisible en mémoire pour la page", () => {
+    // jsdom absent (environnement node) → `defaultStorage()` rend null : la mémoire seule porte le choix.
+    expect(readConsent()).toBeNull();
+    const rec = writeConsent({ analytics: false }, true);
+    expect(readConsent()).toEqual(rec);
+    expect(consentFor(readConsent(), ANALYTICS_CATEGORY)).toBe(false);
+    // un stockage EXPLICITE reste pur : pas de fuite de la mémoire dans les tests
+    expect(readConsent(memoryStorage())).toBeNull();
+  });
+
   it("un stockage qui jette (quota, navigation privée) ne fait pas tomber la page", () => {
     const storage = { getItem: vi.fn(() => { throw new Error("quota"); }), setItem: vi.fn(() => { throw new Error("quota"); }), removeItem: vi.fn() };
     expect(readConsent(storage)).toBeNull();
@@ -69,7 +79,8 @@ describe("consentFor", () => {
     expect(consentFor({ accepted: false, preferences: { necessary: true }, timestamp: "" }, "analytics")).toBe(false);
   });
 
-  it("une acceptation sans la catégorie ne se prononce pas sur elle", () => {
-    expect(consentFor({ accepted: true, preferences: { necessary: true }, timestamp: "" }, "analytics")).toBeNull();
+  it("une acceptation globale vaut acceptation d'une catégorie absente (bandeau sans categories, « Tout accepter »)", () => {
+    expect(consentFor({ accepted: true, preferences: { necessary: true }, timestamp: "" }, "analytics")).toBe(true);
+    expect(consentFor({ accepted: true, preferences: {}, timestamp: "" }, "analytics")).toBe(true);
   });
 });

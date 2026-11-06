@@ -57,9 +57,16 @@ export function matomoScriptUrl(base: string, scriptUrl?: string): string {
   return `${base}matomo.js`;
 }
 
-/** Commandes `_paq` à pousser AVANT le chargement du script (une seule fois). */
+/**
+ * Commandes `_paq` à pousser AVANT le chargement du script (une seule fois). `forgetUserOptOut`
+ * d'abord : un refus en cours de session passe par `optUserOut`, qui écrit le cookie
+ * `mtm_consent_removed` (matomo.js l'écrit MÊME avec `disableCookies`) ; sans ce rappel, un
+ * visiteur qui a refusé puis ré-accepté dans une session ultérieure ne serait plus jamais compté,
+ * sans aucun signal. Le consentement fait foi côté localStorage, pas côté cookie Matomo.
+ */
 export function matomoInitCommands(conf: AnalyticsConf, base: string): PaqCommand[] {
   const commands: PaqCommand[] = [
+    ["forgetUserOptOut"],
     ["setTrackerUrl", matomoTrackerUrl(base)],
     ["setSiteId", conf.id.trim()],
   ];
@@ -100,6 +107,8 @@ export function analyticsAllowed(mode: AnalyticsConf["consent"] | undefined, cho
  * on ne mesure PAS — l'absence de configuration ne doit jamais ouvrir la mesure partout.
  */
 export function isPublicHost(locationHost: string, publicUrl: string | undefined): boolean {
+  // `publicUrl` doit être la variable TELLE QUE CONFIGURÉE (`getSitePublicUrlConfigured`), pas
+  // `getSitePublicUrl()` dont le repli sur `VITE_SERVER_URL` rendrait ce premier test inatteignable.
   if (!publicUrl) return false;
   try {
     return new URL(publicUrl).host.toLowerCase() === locationHost.toLowerCase();

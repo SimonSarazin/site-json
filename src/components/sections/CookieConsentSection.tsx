@@ -19,14 +19,15 @@ type Category = NonNullable<CookieConsentSectionProps["categories"]>[number];
 
 /**
  * Choix affiché pour chaque catégorie : requise → toujours vraie ; sinon la préférence
- * enregistrée, et à défaut `defaultOn` (catégorie en opposition) ou décochée.
+ * enregistrée, à défaut le choix global de l'enregistrement (même règle que `consentFor`),
+ * et sans enregistrement `defaultOn` (catégorie en opposition) ou décochée.
  */
 function preferencesFrom(categories: Category[], record: ConsentRecord | null): Record<string, boolean> {
   const prefs: Record<string, boolean> = {};
   for (const c of categories) {
     if (c.required) prefs[c.id] = true;
     else if (record && c.id in record.preferences) prefs[c.id] = record.preferences[c.id];
-    else prefs[c.id] = record && !record.accepted ? false : (c.defaultOn ?? false);
+    else prefs[c.id] = record ? record.accepted : (c.defaultOn ?? false);
   }
   return prefs;
 }

@@ -46,8 +46,9 @@ describe("URL Matomo", () => {
 });
 
 describe("matomoInitCommands", () => {
-  it("mode exempté par défaut : sans cookie, Do Not Track honoré", () => {
+  it("mode exempté par défaut : rappel d'un éventuel opt-out cookie, sans cookie, Do Not Track honoré", () => {
     expect(matomoInitCommands(conf(), "https://communecter.matomo.cloud/")).toEqual([
+      ["forgetUserOptOut"],
       ["setTrackerUrl", "https://communecter.matomo.cloud/matomo.php"],
       ["setSiteId", "7"],
       ["disableCookies"],
@@ -57,6 +58,7 @@ describe("matomoInitCommands", () => {
 
   it("cookies: true et respectDnt: false lèvent les deux réglages", () => {
     expect(matomoInitCommands(conf({ cookies: true, respectDnt: false, id: " 3 " }), "https://s.org/")).toEqual([
+      ["forgetUserOptOut"],
       ["setTrackerUrl", "https://s.org/matomo.php"],
       ["setSiteId", "3"],
     ]);
