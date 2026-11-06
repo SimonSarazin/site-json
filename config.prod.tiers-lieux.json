@@ -612,6 +612,7 @@
               "en": "Search"
             },
             "backgroundImage": "images/tiersLieux/BG_Illus.png",
+            "backgroundImageScale": 0.9,
             "searchVariant": "navigator-tl",
             "baseParams": {
               "defaultTypes": [

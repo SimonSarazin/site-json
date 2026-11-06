@@ -1750,6 +1750,8 @@ export const SearchProStaticSectionSchema = z.object({
 
 Hero avec recherche intégrée — autocomplete d’entités (ex-`hero-tiers-lieux`). Ce hero peut piloter un **applicateur de filtres headless** (memes schémas de filtres que la `FiltersSection` de `/lieux`) et une **autocompletion scopee réseau** — sans passer par l'URL. Le mode "sous-site" (`/s/`) ainsi que les props `headlineSubsite`/`subheadSubsite` et `header.navSubsite` ont été entièrement supprimés.
 
+`backgroundImageScale` réduit l'illustration autour de son centre supérieur (valeur entre 0 exclu et 1 inclus ; par défaut, taille inchangée).
+
 ```ts
 export const HeroSearchSchema = z.object({
   type: z.literal("hero-search"),
@@ -1758,6 +1760,8 @@ export const HeroSearchSchema = z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
+    backgroundImageOffsetY: z.number().optional(),
+    backgroundImageScale: z.number().positive().max(1).optional(),
     // Boutons de categorie AUTO-PORTEURS : chaque bouton declare son effet.
     ctaButtons: z
       .array(

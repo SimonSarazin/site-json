@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-11-05** (`/a-propos` : bouton de diagnostic Licoop placé sous le bandeau du lien SPG, cf. §9). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-06** (illustration de l'accueil réduite, cf. §9). Précédent : **2026-11-05** (`/a-propos` : bouton de diagnostic Licoop placé sous le bandeau du lien SPG, cf. §9). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -216,6 +216,12 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 06/11 — `/` : illustration du hero
+
+L'illustration de l'accueil est réduite de 10 % par `backgroundImageScale: 0.9`. La taille
+reste inchangée sans cette option ; `/reservation` conserve son décalage vertical de 30 px.
+Configuration validée (20 pages, 47 sections) et 10 tests ciblés du hero réussis.
 
 ### 05/11 — `/cooperer` : page de regroupement des entrées du menu
 

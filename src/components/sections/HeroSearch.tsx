@@ -311,6 +311,11 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
     }
   };
 
+  const backgroundImageStyle = props.backgroundImageScale === undefined ? undefined : {
+    transform: `scale(${props.backgroundImageScale})`,
+    transformOrigin: "top center",
+  };
+
   if (!isFullStyle) {
     return (
       <section id={id} className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
@@ -439,6 +444,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
               src={props.backgroundImage}
               position="top"
               className="w-full h-full object-cover"
+              style={backgroundImageStyle}
             />
           </div>
         )}
@@ -573,6 +579,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
             src={props.backgroundImage}
             position="top"
             className="w-full h-full object-cover"
+            style={backgroundImageStyle}
           />
         </div>
       )}

@@ -23,6 +23,7 @@ vi.mock("@/modules/search/contexts/pageFilters", () => ({
 }));
 
 import { HeroSearch } from "./HeroSearch";
+import { HeroSearchSchema } from "@/types/site-schema";
 
 function Lieu() {
   const l = useLocation();
@@ -45,6 +46,25 @@ afterEach(() => {
 });
 
 describe("HeroSearch — lancement de la recherche", () => {
+  it.each([false, true])("applique une réduction uniquement si elle est configurée (hero complet : %s)", (full) => {
+    const fullProps = full ? { subhead: { fr: "Sous-titre" }, ctaButtons: [{ label: { fr: "Catégorie" } }] } : {};
+    const { container, unmount } = hero({ ...fullProps, backgroundImage: "/illustration.png", backgroundImageScale: 0.9 });
+    const image = container.querySelector<HTMLImageElement>("section img");
+    expect(image?.style.transform).toBe("scale(0.9)");
+    expect(image?.style.transformOrigin).toBe("top center");
+    unmount();
+    const original = hero({ ...fullProps, backgroundImage: "/illustration.png", backgroundImageOffsetY: 30 });
+    expect(original.container.querySelector("section img")?.getAttribute("style")).not.toContain("scale");
+    if (full) expect(original.container.querySelector("section > div.absolute")?.getAttribute("style")).toContain("translateY(30px)");
+  });
+
+  it("refuse les échelles hors de l'intervalle (0, 1]", () => {
+    for (const scale of [0, -1, 1.1]) {
+      expect(HeroSearchSchema.safeParse({ type: "hero-search", props: { headline: { fr: "Titre" }, backgroundImageScale: scale } }).success).toBe(false);
+    }
+    expect(HeroSearchSchema.safeParse({ type: "hero-search", props: { headline: { fr: "Titre" }, backgroundImageScale: 1 } }).success).toBe(true);
+  });
+
   it("décale l'illustration de fond selon le décalage configuré", () => {
     const { container } = hero({
       subhead: { fr: "Sous-titre" },
