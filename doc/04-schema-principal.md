@@ -83,6 +83,7 @@ export const SiteConfig = z.object({
 | **pages**        | `Page[]`                | Oui      | Liste des pages du site avec leur configuration et leurs sections  |
 | **footer**       | `Footer`                | Oui      | Configuration du pied de page                                      |
 | **integrations** | `Integrations`          | Non      | Integrations externes (analytics, chat, etc.)                      |
+| **consent** | props de `cookieConsent` | Non | Bandeau de consentement global, monté par `SiteShell` après hydratation ; sa catégorie `analytics` pilote `integrations.analytics` |
 | **features**     | `FeatureFlag[]`         | Non      | Feature flags / tests A-B                                          |
 | **theme**        | `ThemeConfig`           | Non      | Theme et design system                                             |
 | **performance**  | `PerformanceConfig`     | Non      | Configuration de performance                                       |
@@ -547,7 +548,7 @@ export const Integrations = z.object({
 });
 ```
 
-* **analytics** (`AnalyticsIntegration`)
+* **analytics** (`AnalyticsIntegration`) — mesure d'audience chargée côté client par `IntegrationsLoader` ; providers câblés : `matomo` et `ga4` (les autres valeurs de l'enum sont ignorées). Champs : `id` (idSite Matomo numérique — un placeholder désactive la mesure — ou `G-…`), `url` (instance Matomo, slash final), `scriptUrl` (surcharge ; `*.matomo.cloud` → `cdn.matomo.cloud` automatiquement), `cookies` (repli code `false` : sans cookie, mesure exemptée CNIL si l'instance anonymise l'IP), `respectDnt` (repli `true`), `consent` (`opt-out` repli : mesure jusqu'au refus de la catégorie `analytics` ; `opt-in` : attend l'acceptation), `publicHostOnly` (repli `true` : seul l'hôte de `VITE_SITE_PUBLIC_URL` mesure — ni dev, ni amorce `*.00.re`). Une page vue est envoyée à chaque navigation client. Le consentement vient de `localStorage["cookie-consent"]` (`src/lib/consent.ts`), écrit par la section `cookieConsent` ou le bandeau global `config.consent`.
 * **chat** (`ChatIntegration`)
 * **scripts** (`ScriptTag[]`) : injections de `<script>` conditionnelles.
 * **seo** (`SEOIntegration`)

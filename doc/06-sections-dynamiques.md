@@ -346,7 +346,7 @@ de la table `lazy()` de `SectionRenderer.tsx` et de `SECTION_META`, dont
 
 | Type              | Composant              | Usage principal                         |
 | ----------------- | ---------------------- | --------------------------------------- |
-| **cookieConsent** | `CookieConsentSection` | Bandeau de consentement cookies         |
+| **cookieConsent** | `CookieConsentSection` | Consentement cookies : bandeau flottant (ou panneau de préférences dans la page avec `inline: true`) — le même composant sert de bandeau global via `config.consent` |
 | **member**        | `MemberSection`        | Affichage de membres                    |
 | **heroWithIcon**  | `HeroWithIconSection`  | Hero avec icône                         |
 | **meeteem**       | `MeeteemSection`       | Section Meeteem (module ampli)          |
