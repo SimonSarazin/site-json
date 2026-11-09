@@ -18,7 +18,12 @@ import type { DimensionsConfig } from "./schema";
  *    créneaux seulement scolaires ou non précisés, « sans planning » sans aucun créneau en cours ou à venir ;
  *  - heures et taux : la SEMAINE TYPE de chaque équipement (`weeklyReservations`, même règle que sa fiche),
  *    chevauchements fusionnés (`computeEquipmentUsage`), rapportés à la plage de référence ; un équipement
- *    sans planning compte 0 h occupée et toute la plage libre.
+ *    sans planning compte 0 h occupée et toute la plage libre (`computePoiUsage`, lu par sa fiche) ;
+ *  - observatoire : un équipement sans planning n'a ni heures libres ni taux (`usageFields`). Les KPI,
+ *    graphes, filtres et colonnes d'export qui les lisent ne portent que sur les équipements qui ont un
+ *    planning — sur un parc où la plupart n'en ont pas encore, leurs heures « disponibles » faisaient lire des
+ *    milliers d'heures libres et un taux moyen proche de zéro là où il n'y a pas de donnée (review de la MR 120,
+ *    choix de Peterson du 09/11).
  */
 
 export type UsageConf = NonNullable<ReservationsConf["usage"]>;
@@ -48,9 +53,10 @@ export interface UsageFields {
   schoolHours: number;
   clubHours: number;
   unknownHours: number;
-  freeHours: number;
+  /** Absent pour un équipement sans planning, comme `rate` et `rateBand` : rien à mesurer. */
+  freeHours?: number;
   /** En %, arrondi à l'unité. */
-  rate: number;
+  rate?: number;
   rateBand?: string;
   clubHoursBand?: string;
 }
@@ -146,8 +152,14 @@ export function bandLabel(value: number, thresholds: readonly number[], unit: st
   return labels.over(s[s.length - 1], unit);
 }
 
-/** Les champs `__usage` d'un équipement — tranches seulement si `conf.bands` est déclaré. */
+/**
+ * Les champs `__usage` d'un équipement — tranches seulement si `conf.bands` est déclaré. Sans planning, ni
+ * heures libres, ni taux, ni tranche de taux : un KPI `sum` / `avg`, une barre ou une colonne d'export qui
+ * les lit ne compte que les équipements qui ont un planning (`computeKpiValue`, `aggregateBy` ignorent une
+ * valeur absente) ; un camembert de tranches les laisse hors de ses parts.
+ */
 export function usageFields(u: PoiUsage, conf: UsageConf, labels: UsageLabels): UsageFields {
+  const measured = u.status !== "noPlanning";
   const rate = Math.round(u.rate * 100);
   const clubHours = toHours(u.clubMinutes);
   return {
@@ -158,11 +170,10 @@ export function usageFields(u: PoiUsage, conf: UsageConf, labels: UsageLabels): 
     schoolHours: toHours(u.schoolMinutes),
     clubHours,
     unknownHours: toHours(u.unknownMinutes),
-    freeHours: toHours(u.freeMinutes),
-    rate,
+    ...(measured ? { freeHours: toHours(u.freeMinutes), rate } : {}),
     ...(conf.bands
       ? {
-          rateBand: bandLabel(rate, conf.bands.rate, "%", labels.band),
+          ...(measured ? { rateBand: bandLabel(rate, conf.bands.rate, "%", labels.band) } : {}),
           clubHoursBand: bandLabel(clubHours, conf.bands.clubHours, "h", labels.band),
         }
       : {}),

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { Reservation, ReservationSlot } from "@/modules/search/lib/reservations";
 import {
   audienceOf, bandLabel, computePoiUsage, usageDimensionIds, usageFields, usagerIdsOf, withUsage,
-  type UsageConf, type UsageLabels,
+  type PoiUsage, type UsageConf, type UsageLabels,
 } from "./usage";
 import { uniqSorted } from "./utils";
 
@@ -107,17 +107,25 @@ describe("bandLabel — tranches des filtres", () => {
 
 describe("usageFields / withUsage — champs __usage des items", () => {
   it("heures au dixième, taux en % entier, tranches selon conf.bands", () => {
-    const f = usageFields(
-      { status: "open", occupiedMinutes: 90, schoolMinutes: 0, clubMinutes: 90, unknownMinutes: 0, freeMinutes: PLAGE - 90, rate: 90 / PLAGE },
-      conf,
-      labels,
-    );
-    expect(f).toEqual({
+    const ouvert: PoiUsage = {
+      status: "open", occupiedMinutes: 90, schoolMinutes: 0, clubMinutes: 90, unknownMinutes: 0, freeMinutes: PLAGE - 90, rate: 90 / PLAGE,
+    };
+    expect(usageFields(ouvert, conf, labels)).toEqual({
       status: "Ouvert", open: true, openCount: 1, occupiedHours: 1.5, schoolHours: 0, clubHours: 1.5, unknownHours: 0,
       freeHours: 96.5, rate: 2, rateBand: "0–25 %", clubHoursBand: "0–5 h",
     });
-    expect(usageFields({ ...(computePoiUsage([], ["x"], TODAY, NO_TYPES, conf).get("x")!) }, { ...conf, bands: undefined }, labels))
-      .not.toHaveProperty("rateBand");
+    const sansTranches = usageFields(ouvert, { ...conf, bands: undefined }, labels);
+    expect(sansTranches).not.toHaveProperty("rateBand");
+    expect(sansTranches).not.toHaveProperty("clubHoursBand");
+  });
+
+  it("sans planning : ni heures libres, ni taux, ni tranche de taux (rien à mesurer) ; la tranche d'heures clubs reste", () => {
+    // Ses 98 h « disponibles » et son 0 % gonflaient les heures libres et écrasaient le taux moyen du parc
+    // (review de la MR 120).
+    expect(usageFields(computePoiUsage([], ["x"], TODAY, NO_TYPES, conf).get("x")!, conf, labels)).toEqual({
+      status: "Sans planning", open: false, openCount: 0, occupiedHours: 0, schoolHours: 0, clubHours: 0, unknownHours: 0,
+      clubHoursBand: "0 h",
+    });
   });
 
   it("pose __usage par identifiant, laisse tel quel un item sans mesure", () => {
