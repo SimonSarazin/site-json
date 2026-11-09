@@ -47,10 +47,11 @@ export async function fetchUsagerTypes(entity: PoiSearchHost, ids: readonly stri
 const NO_TYPES: ReadonlyMap<string, string> = new Map();
 
 /**
- * Types des fiches des organisations usagères `ids` — une requête en cache, partagée par l'observatoire et
- * la fiche équipement. `types` est TOUJOURS une table : vide sans identifiant (aucun appel) ou pendant le
- * chargement. Les consommateurs attendent la fin du chargement avant de classer, et ne classent pas sur
- * un échec (`failed`) : sans les types, une réservation sans type d'usager serait comptée « non précisée ».
+ * Types des fiches des organisations usagères `ids` — une requête en cache, partagée par l'observatoire, la
+ * fiche équipement et le filtre de statut du bandeau, qui la lisent par `useUsageMeasure`. `types` est
+ * TOUJOURS une table : vide sans identifiant (aucun appel) ou pendant le chargement. `useUsageMeasure` fait
+ * attendre la fin du chargement avant de classer, et ne classe pas sur un échec (`failed`) : sans les types,
+ * une réservation sans type d'usager serait comptée « non précisée ».
  */
 export function useUsagerTypesQuery(ids: readonly string[], enabled = true) {
   const { entity } = useCocolight();

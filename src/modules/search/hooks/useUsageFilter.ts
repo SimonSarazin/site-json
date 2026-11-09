@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import type { UsageStatus } from "@/modules/observatoire/usage";
-import { usagerIdsOf } from "@/modules/observatoire/usage";
 import { usePageFiltersOptional } from "../contexts/pageFilters";
 import type { UsageFilterConf } from "../schema";
 import { activeSlotParam, localIsoDay, withSlotEntry } from "../lib/slotFilter";
 import { statusFromParam, usageFilterClause } from "../lib/usageFilter";
 import { useSlotReservationsQuery } from "./useSlotReservationsQuery";
-import { useUsagerTypesQuery } from "./useUsagerTypesQuery";
+import { useUsageMeasure } from "./useUsageMeasure";
 
 /**
  * Filtre « Statut d'ouverture » du bandeau : entrée `PageFilters` + param d'URL, sur le modèle de
@@ -28,13 +27,13 @@ export function useUsageFilter(conf: UsageFilterConf | undefined) {
   const requested = conf ? statusFromParam(searchParams.get(conf.id)) : null;
   const reservations = useSlotReservationsQuery(conf?.reservations, requested !== null);
   const data = reservations.data;
-  const usagerIds = useMemo(() => usagerIdsOf(data), [data]);
+  // Types des fiches usagères, lus seulement quand un statut est demandé (`useUsageMeasure`).
   const {
     types,
-    isLoading: typesLoading,
+    loading: measureLoading,
     failed: typesFailed,
     refetch: refetchTypes,
-  } = useUsagerTypesQuery(usagerIds, requested !== null && Boolean(usageConf?.schoolOrgTypes));
+  } = useUsageMeasure(data, usageConf, requested !== null);
 
   useEffect(() => {
     if (!conf || !usageConf || !setSearchByFields) return;
@@ -44,10 +43,10 @@ export function useUsageFilter(conf: UsageFilterConf | undefined) {
     }
     // Sans les types des fiches, une réservation sans type d'usager ne serait ni scolaire ni club : un
     // équipement de club passerait « non ouvert ». Rien n'est publié ; le sélecteur propose de réessayer.
-    if (!data || typesLoading || typesFailed) return;
+    if (!data || measureLoading || typesFailed) return;
     const clause = usageFilterClause(data, requested, localIsoDay(new Date()), types, usageConf);
     setSearchByFields((prev) => withSlotEntry(prev, conf.id, requested, clause.ids, clause.type));
-  }, [conf, usageConf, setSearchByFields, requested, data, types, typesLoading, typesFailed]);
+  }, [conf, usageConf, setSearchByFields, requested, data, types, measureLoading, typesFailed]);
 
   const { isError: reservationsError, refetch: refetchReservations } = reservations;
   // Nouvel essai de ce qui a échoué : les réservations, les types des fiches, ou les deux.

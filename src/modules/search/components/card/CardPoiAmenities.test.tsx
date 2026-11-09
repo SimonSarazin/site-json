@@ -16,9 +16,15 @@ vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => ({ loaded: 
 vi.mock("../../hooks/useInstallationFilter", () => ({
   useInstallationFilter: () => ({ enabled: false, toggle: vi.fn(), isActive: () => false }),
 }));
+// Compté, résultat inchangé : la commune ne doit pas se relire à chaque rendu (review de la MR 120).
+vi.mock("../../lib/dropdownFilters", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../lib/dropdownFilters")>();
+  return { ...actual, optionLabelOf: vi.fn(actual.optionLabelOf) };
+});
 
 import type React from "react";
 import { SiteContext } from "@/contexts/SiteContext";
+import { optionLabelOf } from "../../lib/dropdownFilters";
 import CardPoiAmenities from "./CardPoiAmenities";
 
 const item = {
@@ -128,5 +134,14 @@ describe("CardPoiAmenities (card.communeFrom)", () => {
     unmount();
     render(<CardPoiAmenities item={lieuDit} card={{ communeFrom: { filter: "poi-postalCode" } }} />);
     expect(screen.queryByText("CardPoiAmenities.commune")).not.toBeInTheDocument();
+  });
+
+  it("la commune se lit une fois par carte, pas à chaque rendu", () => {
+    vi.mocked(optionLabelOf).mockClear();
+    const carte = () => avecSite(<CardPoiAmenities item={lieuDit} card={{ communeFrom: { filter: "poi-postalCode" } }} />);
+    const { rerender } = render(carte());
+    rerender(carte());
+    expect(screen.getByText("CardPoiAmenities.commune")).toBeInTheDocument();
+    expect(optionLabelOf).toHaveBeenCalledTimes(1);
   });
 });

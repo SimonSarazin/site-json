@@ -19,14 +19,14 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
 import { formatHours, weeklyAmplitudeMinutes } from "@/modules/observatoire/installation";
-import { computePoiUsage, usagerIdsOf } from "@/modules/observatoire/usage";
+import { computePoiUsage } from "@/modules/observatoire/usage";
 import { KpiCard } from "@/modules/observatoire/components/KpiCard";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { useBookingChecks } from "../../hooks/useBookingChecks";
 import { usePeriodFilter } from "../../hooks/usePeriodFilter";
 import { resourcesReservations, useReservationsQuery } from "../../hooks/useReservationsQuery";
 import { useUpdateSlotHours } from "../../hooks/useUpdateSlotHours";
-import { useUsagerTypesQuery } from "../../hooks/useUsagerTypesQuery";
+import { useUsageMeasure } from "../../hooks/useUsageMeasure";
 import { DAY_KEYS, type DayKey } from "../../lib/schedules";
 import {
   buildBookingGrid,
@@ -319,15 +319,11 @@ export default function PreviewReservations({
   // Mesure d'usage (opt-in `conf.usage`) : occupé, école / clubs, libre et taux de l'équipement, sur les
   // créneaux affichés et la même date de départ que les heures — visible de tous, comme les cases libres.
   const usageConf = conf.usage;
-  const usagerIds = useMemo(() => (usageConf ? usagerIdsOf(shown) : []), [usageConf, shown]);
-  const {
-    types: usagerTypes,
-    isLoading: usagerTypesLoading,
-    failed: usagerTypesFailed,
-  } = useUsagerTypesQuery(usagerIds, Boolean(usageConf?.schoolOrgTypes));
+  const usageMeasure = useUsageMeasure(shown, usageConf);
+  const usagerTypes = usageMeasure.types;
   // Résumé montré une fois les types des fiches arrivés, jamais sans eux : la part école / clubs serait
   // fausse (réservations sans type d'usager comptées « non précisées »).
-  const usageReady = !usagerTypesLoading && !usagerTypesFailed;
+  const usageReady = !usageMeasure.loading && !usageMeasure.failed;
   const usage = useMemo(
     () =>
       usageConf

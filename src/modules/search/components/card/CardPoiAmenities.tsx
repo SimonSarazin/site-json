@@ -10,7 +10,8 @@ import {
 	DoorOpen,
 	ChevronDown,
 } from "lucide-react";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
 import getDateFnsLocale from "@/dateFns";
@@ -69,6 +70,7 @@ function getPoiImage(seed: string) {
 export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
+	const { i18n } = useTranslation();
 	// Contexte optionnel (idiome de `useSearchQuery`) : la carte se rend aussi hors `SiteProvider` — sans commune.
 	const siteConfig = useContext(SiteContext)?.config;
 	const instFilter = useInstallationFilter(card?.installationFilter);
@@ -118,9 +120,15 @@ export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: S
 		.filter(Boolean)
 		.join(" ");
 	// Commune de RATTACHEMENT (`card.communeFrom`) : l'adresse ne donne que le lieu-dit (Bois-de-Nèfles…).
-	const commune = card?.communeFrom && siteConfig
-		? optionLabelOf(siteConfig, card.communeFrom.filter, serverData.address?.postalCode, (l) => t(l))
-		: undefined;
+	// Lue une fois par carte et par langue, pas à chaque rendu : `optionLabelOf` parcourt toutes les pages de
+	// la config pour trouver le filtre, puis en relit toutes les options.
+	const communeFilter = card?.communeFrom?.filter;
+	const postalCode = serverData.address?.postalCode;
+	const commune = useMemo(
+		() => (communeFilter && siteConfig ? optionLabelOf(siteConfig, communeFilter, postalCode, (l) => t(l)) : undefined),
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : la langue suffit.
+		[siteConfig, communeFilter, postalCode, i18n.language],
+	);
 
 	// Sous-titre de la ligne REPLIÉE : même composition que les
 	// `subtitleDimensions` de la liste observatoire (valeurs vides ignorées,

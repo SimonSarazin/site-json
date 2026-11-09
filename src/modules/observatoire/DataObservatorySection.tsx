@@ -8,12 +8,12 @@ import { useT } from "@/hooks/useT";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DEFAULT_INSTALLATION_PARAM } from "@/modules/search/schema";
 import { useSlotReservationsQuery } from "@/modules/search/hooks/useSlotReservationsQuery";
-import { useUsagerTypesQuery } from "@/modules/search/hooks/useUsagerTypesQuery";
+import { useUsageMeasure } from "@/modules/search/hooks/useUsageMeasure";
 import { sumReservationHours } from "@/modules/search/lib/reservationHours";
 import { localIsoDay } from "@/modules/search/lib/slotFilter";
 import type { DataObservatorySectionProps, FilterDef } from "./schema";
 import { buildKpiCsv, computeKpiValue, kpiLabel } from "./dashboard";
-import { computePoiUsage, usageDimensionIds, usageLabelsFrom, usagerIdsOf, withUsage } from "./usage";
+import { computePoiUsage, usageDimensionIds, usageLabelsFrom, withUsage } from "./usage";
 import { downloadCsv } from "./utils";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
@@ -126,18 +126,14 @@ export default function DataObservatorySection({
     isLoading: reservationsLoading,
     isError: reservationsError,
   } = useSlotReservationsQuery(reservationsConf, wantsHours || Boolean(usageConf));
-  const usagerIds = useMemo(() => usagerIdsOf(reservations), [reservations]);
-  const {
-    types: usagerTypes,
-    isLoading: usagerTypesLoading,
-    failed: usagerTypesFailed,
-  } = useUsagerTypesQuery(usagerIds, Boolean(usageConf?.schoolOrgTypes));
+  // Types des fiches usagères : jamais de mesure sans eux (`useUsageMeasure`).
+  const usageMeasure = useUsageMeasure(reservations, usageConf);
+  const usagerTypes = usageMeasure.types;
   // Mesure d'usage EN ÉCHEC quand les réservations ou les types des fiches n'ont pas pu être lus : ses KPI
   // disent « — » au lieu d'un sablier sans fin, et elle n'est pas posée sans les types — une réservation sans
   // type d'usager y serait « non précisée » à tort. EN CALCUL tant que l'un des deux manque.
-  const usageFailed = Boolean(usageConf) && ((reservationsError && !reservations) || usagerTypesFailed);
-  const usageLoading =
-    Boolean(usageConf) && !usageFailed && (!reservations || reservationsLoading || usagerTypesLoading);
+  const usageFailed = Boolean(usageConf) && ((reservationsError && !reservations) || usageMeasure.failed);
+  const usageLoading = Boolean(usageConf) && !usageFailed && (usageMeasure.loading || reservationsLoading);
   // Mesure d'usage (opt-in) : champs `__usage.*` posés sur chaque item AVANT libellés, filtres et widgets —
   // les dimensions de la config les lisent comme n'importe quel chemin. L'index reste aligné sur `entities`.
   const entityIds = useMemo(() => entities.map((e) => (e as { id?: string }).id), [entities]);
