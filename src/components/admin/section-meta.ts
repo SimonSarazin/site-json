@@ -95,7 +95,7 @@ const SECTION_META: Record<string, SectionMeta> = {
 
   // utilitaires
   breadcrumb: { label: "Breadcrumb", desc: "Fil d'Ariane de navigation", image: "https://placehold.co/300x180/b2bec3/333?text=Breadcrumb", family: "utilitaires" },
-  cookieConsent: { label: "Cookie Consent", desc: "Bannière de consentement cookies", image: "https://placehold.co/300x180/2d3436/eee?text=Cookie", family: "utilitaires" },
+  cookieConsent: { label: "Cookie Consent", desc: "Consentement cookies : bandeau flottant, ou panneau de préférences dans la page (inline) pour le droit d'opposition", image: "https://placehold.co/300x180/2d3436/eee?text=Cookie", family: "utilitaires" },
   socialFeed: { label: "Social Feed", desc: "Flux de réseaux sociaux", image: "https://placehold.co/300x180/e84393/eee?text=Social+Feed", family: "utilitaires" },
 
   // formulaire

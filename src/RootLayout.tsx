@@ -25,6 +25,8 @@ const FloatingQRCode = lazy(() => import("@/components/layout/FloatingQRCode"));
 const FloatingActionButton = lazy(() => import("@/components/layout/FloatingActionButton"));
 const DiscourseGlobalModal = lazy(() => import("@/modules/interop/components/DiscourseGlobalModal"));
 const PendingInvitationModal = lazy(() => import("@/modules/profil/components/PendingInvitationModal"));
+// Bandeau de consentement global (`config.consent`) : même composant que la section `cookieConsent`.
+const CookieConsentBanner = lazy(() => import("@/components/sections/CookieConsentSection"));
 
 const AdminPanel = import.meta.env.DEV
   ? lazy(() => import("@/components/admin/AdminPanel"))
@@ -51,6 +53,11 @@ function SiteShell() {
         <AuthModalProvider>
         <Outlet />
         <IntegrationsLoader />
+        {config.consent && (
+          <Suspense fallback={null}>
+            <CookieConsentBanner id="site-consent" props={config.consent} />
+          </Suspense>
+        )}
         <Toaster />
         <DiscourseGlobalModal />
         <PendingInvitationModal />

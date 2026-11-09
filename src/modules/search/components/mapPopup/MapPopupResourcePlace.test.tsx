@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import i18next from "i18next";
 import MapPopupResourcePlace from "./MapPopupResourcePlace";
+import fr from "../../i18n/fr.json";
 
-const t = (k: string) =>
-  ({ "resourceDirectory.placeServices": "{{count}} service", "resourceDirectory.placeServices_other": "{{count}} services" })[k] ?? k;
+// Vrai i18next sur le vrai fr.json : c'est lui qui choisit le pluriel à partir de `count`.
+const i18n = i18next.createInstance();
+void i18n.init({ lng: "fr", resources: { fr: { translation: fr } }, initImmediate: false, interpolation: { escapeValue: false } });
+const t = (k: string, _fallback?: string, params?: Record<string, unknown>) => i18n.t(k, params);
 
 const salle = { id: "s1" };
 const coworking = { id: "s2" };

@@ -3,7 +3,9 @@ import { lazy } from "vite-preload";
 import { ArrowRight, List, Map as MapIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavLink from "@/components/layout/NavLink";
+import { useTranslation } from "react-i18next";
 import { useT } from "@/hooks/useT";
+import { useLocalization } from "@/hooks/useLocalization";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { cn } from "@/lib/utils";
 import { ClientOnly } from "@/components/layout/ClientOnly";
@@ -14,6 +16,7 @@ import type {
   CoformResourceDirectorySectionProps,
   FiltersSectionProps,
   ListConf,
+  MapConf,
 } from "../schema";
 import { PageFiltersProvider, usePageFilters } from "../contexts/pageFilters";
 import {
@@ -28,7 +31,7 @@ import {
   matchesResourceSearch,
   resolveServicePoints,
   resourceDisplayName,
-  groupServicesByPoint,
+  groupServicesByPlace,
 } from "../lib/resourceDirectorySearch";
 import { getEntryCoords } from "../lib/searchMapSelection";
 import SearchListView from "../components/SearchListView";
@@ -38,6 +41,7 @@ import {
   CAPACITY_FILTER_RANGES,
   defaultOpenFilterGroups,
   matchesCapacity,
+  judgesOnParentPlace,
   matchesTypologies,
   matchesZones,
   parentIdsFilter,
@@ -45,6 +49,7 @@ import {
   selectedZones,
   narrowResourceTypes,
   thematicParentIds,
+  RESOURCE_SEARCH_PLACEHOLDER,
 } from "../lib/resourceDirectoryFilters";
 import { PRICE_FILTER_GROUPS } from "../lib/resourceDirectory";
 import { useSearchParams } from "react-router";
@@ -53,6 +58,8 @@ import { decodeCsvParam } from "../lib/urlCsv";
 // Vue carte en lazy (vite-preload) : le chunk Leaflet/maplibre n'est chargé qu'au passage en carte.
 const SearchMapWrapper = lazy(() => import("../components/SearchMapWrapper"));
 const MAP_FILL = "absolute inset-0 z-10 rounded shadow overflow-hidden";
+// Référence stable : `SearchMap` rejoue son cadrage (`fitBounds`) quand `map` change d'identité.
+const RESOURCE_PLACE_MAP: MapConf = { popup: { type: "resource-place" } };
 
 
 /**
@@ -114,11 +121,7 @@ export default function CoformResourceDirectorySection({
     () => ({
       title: filtersTitle,
       hideSearch: !searchFilter,
-      // La recherche de l'annuaire porte sur le lieu (nom, ville, code postal), pas sur un nom seul.
-      searchPlaceholder: {
-        fr: "Lieu, ville, code postal…",
-        en: "Place, city, ZIP code…",
-      },
+      searchPlaceholder: RESOURCE_SEARCH_PLACEHOLDER,
       defaultOpenGroups: defaultOpenFilterGroups({
         thematic: !!thematicFilter,
         typology: !!typologyFilter,
@@ -304,7 +307,15 @@ function ResourceDirectoryList({
   showFilters,
   showMap,
 }: ResourceDirectoryListProps) {
-  const t = useT("modules/search");
+  const tRendu = useT("modules/search");
+  // `useT` rend une closure neuve à chaque rendu : en dépendance d'un `useMemo`, elle le recalculerait à chaque
+  // frappe (et `SearchMap` reconstruirait son index). Ses sorties ne changent qu'avec la langue (i18next ou
+  // libellés `{ fr, en }`) et l'arrivée du namespace : c'est sur ces signaux qu'on la fige.
+  const { i18n } = useTranslation("modules/search");
+  const { currentLocale } = useLocalization();
+  const nsCharge = i18n.hasResourceBundle(i18n.language, "modules/search");
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- figée sur la langue et le namespace (cf. ci-dessus), pas sur l'identité de `tRendu`
+  const t = useMemo(() => tRendu, [i18n.language, currentLocale, nsCharge]);
   const pf = usePageFilters();
 
   // Filtre « porté par » (clic sur le nom du tiers-lieu d'une carte) → `filters.parentId`
@@ -366,11 +377,16 @@ function ResourceDirectoryList({
   const selectedFilters = pf.selectedFilters;
   const searchQuery = pf.searchQuery;
   const zones = useMemo(() => selectedZones(pf.searchByFields), [pf.searchByFields]);
+  const typologySel = useMemo(() => selectedFilters?.typologies ?? [], [selectedFilters]);
+  // Zone, typologie ou texte : facettes jugées sur le lieu porteur → chargement/erreur des lieux affichés.
+  const surLieuPorteur = judgesOnParentPlace({ zones, typologies: typologySel, query: searchQuery });
   const visible = useMemo(() => {
     if (aucunLieu) return [];
-    const typeSel = selectedFilters?.resourceType?.length ? selectedFilters.resourceType : typesDeLUrl;
+    // Type venu de l'URL (`?resourceType=`, sans colonne de filtres) : déjà appliqué à la REQUÊTE
+    // (`narrowResourceTypes`, qui élargit à tous les types un id inconnu) — le refiltrer ici viderait la
+    // liste sur une URL fautive. Seule la facette cochée filtre côté navigateur.
+    const typeSel = selectedFilters?.resourceType ?? [];
     const capacitySel = selectedFilters?.capacity ?? [];
-    const typologySel = selectedFilters?.typologies ?? [];
     const filtered = items.filter((it) => {
       if (typeSel.length > 0 && !(it.model.type && typeSel.includes(it.model.type.id))) return false;
       if (!matchesCapacity(resourceCapacity(it.model.stats[0]), capacitySel)) return false;
@@ -386,9 +402,9 @@ function ResourceDirectoryList({
       );
     });
     return limit === undefined ? filtered : filtered.slice(0, limit);
-  }, [aucunLieu, items, selectedFilters, typesDeLUrl, zones, searchQuery, parents, limit, t]);
+  }, [aucunLieu, items, selectedFilters, zones, typologySel, searchQuery, parents, limit, t]);
 
-  // Vue carte : un repère par LIEU (cf. `groupServicesByPoint`), sa popup liste ses services
+  // Vue carte : un repère par LIEU (cf. `groupServicesByPlace`), sa popup liste ses services
   // (`map.popup.type: "resource-place"`) ; chacun ouvre sa fiche (même détail que la liste : `listConf`).
   const [view, setView] = useState<"list" | "map">("list");
   const { placeItems, placedCount } = useMemo(() => {
@@ -409,17 +425,21 @@ function ResourceDirectoryList({
     const parId = new Map(visible.map((it) => [it.id, it]));
     // Libellé du type (« Salle de réunion »…) : sur la conf des types, pas sur le modèle.
     const libelleType = new Map(source.resourceTypes.map((rt) => [rt.id, t(rt.label)]));
-    const placeItems = groupServicesByPoint(points).map((groupe) => {
+    const placeItems = groupServicesByPlace(points, (id) => parents.get(id)?.coords).map((groupe) => {
       const services = groupe.ids.map((id) => parId.get(id)!);
       const premier = services[0];
-      const parentId = premier.model.parent?.id;
+      const parentId = groupe.parentId;
       const parent = parentId ? parents.get(parentId) : undefined;
       const parentName = parent?.name ?? premier.model.parent?.name;
       return {
         id: parentId ?? `${groupe.lng},${groupe.lat}`,
         serverData: {
           name: parentName,
-          address: premier.serverData.address,
+          // Adresse du lieu RÉSOLU (`useResourceParentsQuery`) ; la copie que pose `getRessourceTL` sur la
+          // réponse sert de repli, lieu non (encore) chargé OU lieu sans rue ni commune en base.
+          address: parent && (parent.streetAddress || parent.addressLocality)
+            ? { streetAddress: parent.streetAddress, postalCode: parent.postalCode, addressLocality: parent.addressLocality }
+            : premier.serverData.address,
           geo: { latitude: groupe.lat, longitude: groupe.lng },
           geoPosition: { type: "Point", coordinates: [groupe.lng, groupe.lat] },
         },
@@ -481,9 +501,9 @@ function ResourceDirectoryList({
       </div>
 
       {/* Échec de chargement : un message d'ERREUR (et non « Aucun résultat », qui dirait qu'il n'y a rien)
-          et de quoi réessayer. Zone cochée : elle se juge sur l'adresse des lieux porteurs — s'ils n'ont
-          pas pu être lus, la liste vide serait un « Aucun résultat » faux. */}
-      {error || (zones.length > 0 && parentsError) ? (
+          et de quoi réessayer. Zone, typologie ou texte : ils se jugent sur les lieux porteurs — s'ils
+          n'ont pas pu être lus, la liste vide serait un « Aucun résultat » faux. */}
+      {error || (surLieuPorteur && parentsError) ? (
         <div
           role="alert"
           className="flex flex-wrap items-center justify-between gap-3 rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
@@ -498,8 +518,8 @@ function ResourceDirectoryList({
             {t("resourceDirectory.retry")}
           </Button>
         </div>
-      ) : !aucunLieu && (isPending || (zones.length > 0 && parentsLoading)) ? (
-        // Zone cochée : tant que les lieux porteurs ne sont pas lus, aucune ressource ne passe le filtre —
+      ) : !aucunLieu && (isPending || (surLieuPorteur && parentsLoading)) ? (
+        // Zone, typologie ou texte : tant que les lieux porteurs ne sont pas lus, rien ne passe le filtre —
         // squelette plutôt qu'un « Aucun résultat » faux.
         <SearchListSkeleton />
       ) : visible.length === 0 ? (
@@ -515,7 +535,7 @@ function ResourceDirectoryList({
                   <ResourceParentsProvider value={parents}>
                     <SearchMapWrapper
                       results={placeItems as unknown as SearchEntity[]}
-                      map={{ popup: { type: "resource-place" } }}
+                      map={RESOURCE_PLACE_MAP}
                       card={listConf.card}
                       preview={listConf.preview}
                       list={listConf}

@@ -14,7 +14,18 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-11-03** — « Ajouter un acteur » corrigé : champs `type`/`role` manquants
+Dernière mise à jour : **2026-11-09** — mesure d'audience **Matomo en production** sur
+`www.parent62.org` : branche `feat/analytics-matomo` fusionnée dans `main` (`b8bfa570`), puis correctif
+`da7e244c` (après le premier déploiement, seule la première page vue partait : `matomo.js` remplace
+`window._paq` par son proxy) ; vérification navigateur du 09/11 : un hit `matomo.php` par navigation
+client (URL, titre, référent), aucun cookie, `parent62.00.re` muet — détail §10bis. Anonymisation des IP
+activée sur l'instance par Thomas le 09/11. Même jour : les trois pages légales étaient illisibles en mode
+sombre (`prose-slate` fige un gris foncé ; le plugin typography EST chargé, contrairement au commentaire du
+CSS) → variables `--tw-prose-*` rebranchées sur les tokens du thème dans `src/index-parent62.css`, palette
+retirée de la config ; `/mentions-legales` et `/confidentialite` rédigées (FR/EN), avec 5 marqueurs ambre à
+compléter par le réseau (éditeur, siège, téléphone, direction de publication, responsable de traitement ;
+hébergeur OVH posé, durées exprimées en critères sans chiffre sur décision de Thomas) — détail §10ter. SDK monté en `1.0.207`
+(`44f62a80`, 06/11). Précédemment : **2026-11-03** — « Ajouter un acteur » corrigé : champs `type`/`role` manquants
 au contrat `ADD_ORGANIZATION`, ajoutés en `hidden` + `subType:"acteur"` pour ne pas casser le
 discriminant de sous-type costum — détail §9sedecies. Plus tôt le même jour : retrait complet du
 concept « partenaire » (page `/annuaire`, formulaire costum, onglet admin, tag) au profit de
@@ -512,6 +523,8 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Double entrée parents / pro rétablie sur l'accueil (02/09)** | `config.prod.parent62.json` (section `action-tiles` `home-double-entree` réinsérée sur `pages[/].sections[1]`) ; `.claude/skills/config-assistant/page-recipes.json` (recette `home-a-la-une` resynchronisée : séquence + `titre`/`quand`/`rythme`) — gate `tests/preflight/page-recipes.test.ts` (§9septendecies) |
 | **Types de ressources — 2 ajouts + renommage (03/09)** | `config.prod.parent62.json` : `costumForms.parent62-recovery-center.fields.category.enum` (6 → 8 valeurs) et les 3 blocs `list.resource.badge` (`/ressources`, `/recherche` via `itemRules[2]`, `commandPalette.entitySearch.itemActionBySubType.recoveryCenter`) ; snapshots `.claude/skills/config-assistant/examples/{command-palette,list-item-rules,list-resource}.json` resynchronisés (§9octodecies) |
 | **Annuaire des partenaires + filtre « Villes » (22/09)** | `config.prod.parent62.json` : page `/annuaire`, `costumForms.parent62-partenaire`, `profiles.organizations.editModals`, onglet `admin.tabs` « partenaires », entrée de menu, page `/communaute` et son entrée de menu retirées, case « Rejoindre le réseau » de `/pro` vers `/annuaire`, villes au survol de « Entre Mer et Terres », `costumSlug` sur la liste de `/recherche`, champ `villes` de `parent62-article` et filtre de `/blog` ; `tests/preflight/filter-form-values.test.ts` (neuf) ; `e2e/parent62.spec.ts` ; skill `config-assistant` : `page-recipes.json` (recette `page-communaute-onglets` → eXtremeDefiAdeme), exemples `admin.json` et `list-item-rules.json` ; instantané `tests/preflight/__effective__/parent62.json` ; base locale : `costum.typeObj.organizations` et `typeObj.article.villes` (§9octotricies) |
+| **Mesure d'audience Matomo (06/11)** | **Moteur** (générique) : `src/lib/consent.ts` (+ `.test`), `src/lib/analytics/matomo.ts` (+ `.test`), `src/lib/analytics/ga4.ts` (+ `.test`), `src/components/layout/IntegrationsLoader.tsx` (+ `.test.tsx`), `src/components/sections/CookieConsentSection.tsx` (mode `inline`, `defaultOn`), `src/RootLayout.tsx` (bandeau global `config.consent`), `src/types/site-schema.ts` (`AnalyticsIntegration`, `consent`), `src/lib/constant/common.ts` (`getSitePublicUrlConfigured`) ; **config** : `integrations.analytics`, page `/politique-cookies`, `footer.bottomLinks` ; doc moteur `doc/03`, `doc/04`, `doc/06` (§10bis) |
+| **Pages légales (09/11)** | `src/index-parent62.css` (bloc `.prose` → tokens), `config.prod.parent62.json` (pages `/mentions-legales`, `/confidentialite`, `/politique-cookies`) (§10ter) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -5428,10 +5441,111 @@ Hors périmètre engagé : publication RS, mailing, migration GoGoCarto, fiches 
 
 ---
 
+## 10bis. Impacts — mesure d'audience Matomo et politique de cookies (06/11, en production le 09/11)
+
+**Demande** : statistiques de fréquentation pour parent62. **Choix** : Matomo (l'instance du réseau,
+`https://communecter.matomo.cloud/`, déjà déclarée dans la config legacy de communecter) plutôt que
+Google Analytics — en mode **exempté de consentement** au sens CNIL (sans cookie, IP anonymisée,
+pas de recoupement, Do Not Track honoré), donc **pas de bandeau bloquant** : un droit d'opposition
+suffit, porté par la page `/politique-cookies`.
+
+**Ce que fait le code (partagé, `src/`)** — `IntegrationsLoader` ne câblait que GA4 et sans suivi
+des navigations ; il gère désormais `matomo` et `ga4`, n'émet rien au SSR, ne mesure que sur l'hôte
+de `VITE_SITE_PUBLIC_URL` (`www.parent62.org` — ni `parent62.00.re`, ni `parent62.org` avant sa
+redirection, ni le dev), envoie **une page vue par navigation client** (URL du routeur, titre Helmet,
+page précédente en référent), et obéit à la catégorie `analytics` du consentement
+(`src/lib/consent.ts`, clé `cookie-consent` du localStorage — jusqu'ici écrite par la section
+`cookieConsent` et lue par personne). La section `cookieConsent` gagne un mode `inline` (panneau de
+préférences dans la page) et `defaultOn` par catégorie ; `config.consent` monte le même composant
+en bandeau global pour les sites qui en veulent un (pas parent62).
+
+**Ce que dit la config** (`config.prod.parent62.json`) :
+
+| Clé | Valeur | Pourquoi |
+|---|---|---|
+| `integrations.analytics` | `matomo`, `url` cloud, `cookies: false`, `respectDnt: true`, `consent: "opt-out"`, `publicHostOnly: true` | mode exempté ; toutes les clés écrites (gotcha #13) |
+| `integrations.analytics.id` | `"29"` | idSite créé par Thomas le 06/11 dans l'instance (snippet Matomo vérifié : même tracker, même CDN). Un idSite non numérique désactiverait la mesure |
+| `/politique-cookies` | `html` (texte réel) + `cookieConsent` `inline` (`necessary` requis, `analytics` `defaultOn`) | droit d'opposition ; remplace « page en construction » |
+| `footer.bottomLinks` | + `/politique-cookies` | la page n'était reliée nulle part |
+
+**Mise en production** (commits `b0a000ee` → `6d643fd6` (sept constats de la review corrigés) →
+`1e33f955` (idSite 29) ; fusion dans `main` `b8bfa570` ; correctif `da7e244c`, tous du 06/11).
+Le premier déploiement a révélé un défaut invisible en recette locale : **seule la première page vue
+partait**. `matomo.js` consomme la file `_paq` initiale puis **remplace `window._paq` par son propre
+objet** ; le loader écrivait toujours dans l'ancien tableau, et la recette dev, qui bloquait le script,
+gardait ce tableau vivant. `da7e244c` relit `window._paq` à chaque commande (test ajouté au loader).
+Vérification du 09/11 dans un navigateur réel (`matomo.js` chargé, hits `matomo.php` interceptés) :
+
+| Hôte / parcours | Résultat |
+|---|---|
+| `www.parent62.org` accueil | 1 hit `idsite=29`, `url=https://www.parent62.org/`, **aucun cookie** |
+| → `/reseau` (navigation client) | 1 hit : URL `/reseau`, titre « Du REAAP au Réseau Parentalité », `urlref` = accueil |
+| → retour accueil | 1 hit : URL `/`, `urlref=/reseau` |
+| `parent62.org` | 301 vers `www.` (redirection canonique, §8) |
+| `parent62.00.re` | aucun script, aucun hit, avertissement `[analytics] hôte … ≠ VITE_SITE_PUBLIC_URL` en console |
+
+**Reste à faire, côté Thomas** :
+1. ~~créer le site parent62 dans Matomo et reporter l'`idSite`~~ — fait le 06/11 (`29`) ;
+2. ~~vérifier sur l'instance : *Administration → Vie privée → Anonymiser les données*~~ — fait par
+   Thomas le 09/11 (anonymisation des IP activée sur `communecter.matomo.cloud`) ; la rétention des
+   journaux bruts reste à regarder au même endroit si on veut borner la conservation ;
+3. ~~`/confidentialite` est toujours un placeholder~~ — rédigée le 09/11 (§10ter), mentionne la mesure
+   d'audience et renvoie à `/politique-cookies` ; restent ses marqueurs ambre à compléter ;
+4. ~~après déploiement, vérifier une requête `matomo.php` par navigation~~ — fait le 09/11 (tableau
+   ci-dessus) ; les visites doivent désormais apparaître dans le tableau de bord du site 29.
+
+**Vérifié** : unitaires `src/lib/consent.test.ts`, `src/lib/analytics/matomo.test.ts`,
+`src/components/layout/IntegrationsLoader.test.tsx` (11, dont le remplacement de `_paq` par le
+proxy) ; `config:validate` ; lint, typecheck, préflight (voir les commits) ; production le 09/11.
+
+---
+
+## 10ter. Impacts — pages légales lisibles en sombre, mentions légales et confidentialité rédigées (09/11)
+
+**Constat** (Thomas, 09/11, sur www.parent62.org) : `/politique-cookies`, `/mentions-legales` et
+`/confidentialite` « pas trop lisibles » en mode sombre, et les deux dernières encore des placeholders
+(« Contenu à compléter »).
+
+**Cause mesurée** (Playwright sur la prod, `getComputedStyle`) : le texte des trois pages restait en
+`oklch(0.372 …)` quel que soit le mode. Les sections `html` portaient `class="prose prose-slate …"` ; le
+commentaire du CSS parent62 affirmait que le plugin typography n'était pas chargé, or le bundle contient
+bien `.prose` et `.prose-slate` — une palette typography fige `--tw-prose-body` en gris ardoise foncé,
+d'où un texte sombre sur fond sombre. La classe `prose-theme` utilisée ailleurs dans la config n'existe
+nulle part (inerte).
+
+**Correctif** :
+
+| Fichier | Changement |
+|---|---|
+| `src/index-parent62.css` | bloc `.prose` **hors `@layer`** (prioritaire sur les utilitaires) qui rebranche les variables du plugin (`--tw-prose-body/headings/links/bullets/hr/…`) sur `--foreground`, `--muted-foreground`, `--secondary-foreground`, `--border` ; commentaire corrigé |
+| `config.prod.parent62.json` | `prose-slate` retiré des 3 pages (6 occurrences FR/EN) ; `/mentions-legales` et `/confidentialite` rédigées FR/EN ; titre de page `Politique de confidentialité(UE)` → `Politique de confidentialité` |
+
+Mesuré en dev (`SITE_CONFIG_PATH=config.prod.parent62.json`, port 5198) : sombre = texte `oklch(0.94)` sur
+fond `oklch(0.22)`, clair = `oklch(0.26)` sur `oklch(0.976)`, liens teal dans les deux modes.
+
+**Contenu des pages** — seuls des faits lus dans le dépôt ou sur le site y figurent : réseau animé par la
+Fédération des Centres Sociaux Nord Pas-de-Calais avec la CAF du Pas-de-Calais (page `/equipe`),
+`contact@parent62.org`, plateforme Communecter / Open Atlas (sous-traitant), Matomo sans cookie (§10bis),
+images de l'ancien WordPress sur OVHcloud (`tools/wp-migration/README.md`), catégories de données réelles
+tirées des `costumForms` (compte, contributions, paroles avec `paroleConsentement`, coordonnées des
+acteurs). **Rien d'inventé** : 8 marqueurs `[…]` sur fond ambre restent à remplir par le réseau —
+mentions légales : raison sociale/forme/SIRET, siège, téléphone, direction de la publication (l'hébergeur a été posé le 09/11 : OVH SAS, Roubaix — IP de `www.parent62.org` dans le réseau OVH Public Cloud de Gravelines, vérifiée par RDAP ; « Réalisation : Open Atlas » sur décision de Thomas, mention SiteForge retirée) ;
+confidentialité : responsable de traitement (renvoi aux mentions). Les durées de conservation des journaux et des
+messages de contact sont exprimées en **critères** (RGPD art. 13 : durée ou critères), sans chiffre, sur décision de
+Thomas le 09/11 — un chiffre aurait engagé une purge que personne ne vérifie. L'ancien WordPress n'était plus consultable (archive.org refuse l'accès depuis ce poste) pour
+en reprendre les mentions d'origine.
+
+**Vérifié** : `config:validate` (51 pages / 183 sections) ; `test:preflight` 927/929 — les 2 échecs sont
+les préexistants hors lot (`lazy-entry-facades`, `site-assets` sur des dossiers locaux non suivis) ;
+rendu dev des 3 pages dans les deux modes (captures `legal-*-dark.png`). Pas encore commité ni déployé.
+
+---
+
 ## 11. Dépendances site-json ↔ cocolight-api-client
 
 Le SDK est en **lecture seule** : toute évolution passe par une spec `.md` transmise à Aboire
-(`spec-cocolight-api-parents62.md`). Version courante au 23/09 : **1.0.194 installée** (`^1.0.194` dans
+(`spec-cocolight-api-parents62.md`). Version courante au 09/11 : **1.0.207 installée** (`44f62a80`, 06/11,
+bump sans changement de config parent62). Au 23/09 : **1.0.194 installée** (`^1.0.194` dans
 `package.json`, publiée le 22/09 — §9septvicies.6). Historique : **1.0.172, publiée sur npm** (`^1.0.172`,
 commit `09e145a0` du 03/08, résolue depuis `registry.npmjs.org` dans le lockfile — fini le tarball
 `npm pack` local). La 1.0.172 règle notamment la **pose du scope costum côté back-office**
@@ -5537,6 +5651,9 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 
 | Évolution / question | Pour qui |
 |---|---|
+| ~~**[09/11] Matomo — anonymisation des IP**~~ — **FAIT le 09/11** par Thomas sur `communecter.matomo.cloud` (*Vie privée → Anonymiser les données*) ; la condition CNIL du mode sans bandeau est remplie. Reste, si voulu, à borner la rétention des journaux bruts au même endroit (§10bis) | — |
+| **[09/11] Compléter les 5 marqueurs ambre des pages légales** (§10ter) — mentions légales : raison sociale, forme juridique et SIRET/RNA de la structure éditrice, siège, téléphone, directeur·rice de la publication ; confidentialité : responsable de traitement (la même structure éditrice). Hébergeur OVH posé et durées en critères le 09/11. Puis retirer les `<span class="not-prose …">` qui les encadrent | réseau / Thomas |
+| **[09/11] Footer : « Politique de cookies » figure deux fois** (menu du footer et `bottomLinks`) depuis l'ajout du 06/11 — garder une seule entrée ? | Peterson |
 | **[23/09] `ArticleBody` — profil strict ou permissif ?** — le corps d'article est en `sanitizeProse` (pas de `style`/`class`/`id`) ; impact mesuré : 5 `style=` et 4 `class=` résiduels sur 2 000 articles, 0 ancre (§9septvicies.7). Assumer (recommandé), ou rétablir via `source` | Thomas / Peterson |
 | **[23/09] Quatre constats de revue à arbitrer** — `validators.ts` : contrôle `start ≤ end` en récurrent ; `GridLayoutSection` mode rangée : `wrapperClass` propre ou retrait de `rightWrapperClass`/`leftColumns`/`rightColumns` du contrat ; `ActionTiles` : `accentTextColor` (schéma + `prop-descriptions` + doc) ; `sectionBadge` : rétablir la taille historique du badge `sticker` du carousel | Peterson |
 | **[23/09] Rejouer « Audomarois → Ludivine » sur le backend qui porte le réseau** — ni `:5080` ni `www.communecter.org` n'ont les 10 membres / 5 coordinations de §9septvicies.4 ; vérifié localement sur un semis (§9septvicies.6) | Thomas |

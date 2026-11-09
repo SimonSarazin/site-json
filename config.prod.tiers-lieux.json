@@ -560,7 +560,6 @@
                 "href": "/lieux"
               }
             ],
-            "scrollTarget": "section-lieux",
             "searchHref": "/lieux",
             "placeholder": {
               "fr": "Ville, département, code postal ...",
@@ -6366,33 +6365,6 @@
           ]
         },
         {
-          "id": "location",
-          "label": {
-            "fr": "Lieu",
-            "en": "Location"
-          },
-          "sections": [
-            {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "profile-map"
-                }
-              ],
-              "rightSections": [
-                {
-                  "type": "profile-info",
-                  "variant": "sidebar",
-                  "sticky": true,
-                  "showAddress": true,
-                  "showPhone": true,
-                  "showWebsite": true
-                }
-              ]
-            }
-          ]
-        },
-        {
           "id": "organizer",
           "label": {
             "fr": "Organisateur",
@@ -6404,14 +6376,6 @@
               "leftSections": [
                 {
                   "type": "profile-organizer"
-                },
-                {
-                  "type": "profile-related",
-                  "relationType": "events",
-                  "title": {
-                    "fr": "Autres événements",
-                    "en": "Other events"
-                  }
                 }
               ],
               "rightSections": [
@@ -6422,6 +6386,35 @@
                   "showOrganizer": true,
                   "showEmail": true,
                   "showPhone": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "participants",
+          "label": {
+            "fr": "Participants",
+            "en": "Participants"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showDates": true,
+                  "showAddress": true,
+                  "showOrganizer": true
                 }
               ]
             }

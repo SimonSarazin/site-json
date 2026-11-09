@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,8 @@ interface MemberListRendererProps {
     action: () => void;
     isDestructive?: boolean;
   }) => void;
+  /** Mode SÉLECTION (section admin « Envoyer un e-mail ») : une case par ligne. Absent → liste inchangée. */
+  selection?: { selected: Set<string>; onToggle: (member: User | Organization) => void };
 }
 
 /**
@@ -47,6 +50,7 @@ export function MemberListRenderer({
   lastItemRef,
   isFetchingNextPage,
   showConfirmation,
+  selection,
 }: MemberListRendererProps) {
   const t = useT("modules/profil");
   const { getUserStatusBadge } = useUserStatusBadge();
@@ -200,18 +204,35 @@ export function MemberListRenderer({
   return (
     <>
       <div className="space-y-3">
-        {members.map((member: User | Organization, index: number) => (
-          <UserListItem
-            key={member.id}
-            ref={index === members.length - 1 ? lastItemRef : undefined}
-            user={member}
-            subtitle={member.serverData?.email}
-            variant="card"
-            extra={renderRoles(member)}
-            badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
-            actions={renderMemberActions(member)}
-          />
-        ))}
+        {members.map((member: User | Organization, index: number) => {
+          const item = (
+            <UserListItem
+              key={member.id}
+              ref={index === members.length - 1 ? lastItemRef : undefined}
+              user={member}
+              subtitle={member.serverData?.email}
+              variant="card"
+              extra={renderRoles(member)}
+              badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
+              actions={renderMemberActions(member)}
+            />
+          );
+          if (!selection) return item;
+          const mid = member.id ?? "";
+          const checked = selection.selected.has(mid);
+          return (
+            <div key={mid || index} className="flex items-start gap-3">
+              <Checkbox
+                className="mt-4"
+                checked={checked}
+                onCheckedChange={() => selection.onToggle(member)}
+                aria-label={member.serverData?.name ?? mid}
+                data-testid={`member-select-${mid}`}
+              />
+              <div className="min-w-0 flex-1">{item}</div>
+            </div>
+          );
+        })}
 
         {/* Indicateur de chargement pour le scroll infini */}
         {isFetchingNextPage && (

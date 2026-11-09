@@ -9,6 +9,7 @@ import AcceptInvitationPage from "./pages/AcceptInvitationPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import JoinByLinkPage from "./pages/JoinByLinkPage";
 import SsoCallbackPage from "./pages/SsoCallbackPage";
+import UnsubscribePage from "./pages/UnsubscribePage";
 
 /**
  * Routes du module auth, injectées dans le router via la découverte de modules
@@ -22,6 +23,8 @@ import SsoCallbackPage from "./pages/SsoCallbackPage";
  * - /validate/:user/:validationKey        (liens du backend Node)
  * - /co2/person/activate/user/:user/validationKey/:validationKey/*  (liens LEGACY)
  * - /co2/link/connect/ref/:ref            (lien d'invitation partageable, cf. docs/25)
+ * - /co2/person/unsubscribe/user/:user/validationKey/:validationKey/*  (lien « ne plus recevoir de mail »
+ *   des mailings d'admin, posé par le backend Node — docs/36 ; le splat porte `/costum/<slug>`)
  * - /sso/callback                         (retour SSO hors popup : code d'échange en fragment, cf. SsoCallbackPage)
  *
  * Les deux formes de liens de validation sont servies pour que les e-mails DÉJÀ
@@ -77,6 +80,16 @@ export const routes: ModuleRouteFactory = (_queryClient, config): RouteObject[] 
   {
     path: "co2/link/validateinvitationbymail/userId/:userId/targetType/:targetType/targetId/:targetId/*",
     element: <AcceptInvitationPage />,
+  },
+  // Lien « ne plus recevoir de mail » (pied des mailings d'admin) : même patron que les liens d'activation,
+  // confirmé d'un clic sur la page, connecté ou non.
+  {
+    path: "co2/person/unsubscribe/user/:user/validationKey/:validationKey/*",
+    element: <UnsubscribePage />,
+  },
+  {
+    path: "co2/person/unsubscribe/user/:user/validationKey/:validationKey",
+    element: <UnsubscribePage />,
   },
   { path: "co2/link/connect/ref/:ref", element: <JoinByLinkPage /> },
   { path: "sso/callback", element: <SsoCallbackPage /> },

@@ -45,3 +45,20 @@ export const EncartDroite = () => (
     />
   </CadreViewport>
 );
+
+// Panneau de préférences dans le flux (`inline: true`) : page « Politique de cookies », toujours
+// visible, pour consulter et modifier son choix (droit d'opposition à une mesure exemptée).
+export const Panneau = () => (
+  <CookieConsentSection
+    props={{
+      message: { fr: "Vos choix pour ce site. La mesure d'audience sans cookie est active tant que vous ne vous y opposez pas." },
+      acceptLabel: { fr: "Tout accepter" },
+      position: "bottom",
+      inline: true,
+      categories: [
+        { id: "necessary", label: { fr: "Fonctionnement du site" }, description: { fr: "Session, langue, mode d'affichage et mémorisation de vos choix." }, required: true },
+        { id: "analytics", label: { fr: "Mesure d'audience (Matomo, sans cookie)" }, description: { fr: "Statistiques anonymes de fréquentation. IP anonymisée, aucun cookie." }, required: false, defaultOn: true },
+      ],
+    }}
+  />
+);

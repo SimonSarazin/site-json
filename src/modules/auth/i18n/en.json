@@ -120,5 +120,14 @@
   "Définir un mot de passe": "Set a password",
   "Ce compte n'a pas encore de mot de passe. Définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code": "This account has no password yet. Set one with “Forgot password”, then sign in with your password and a code",
   "Ce compte n'a pas encore de mot de passe. Demandez-en un avec « Mot de passe oublié », il vous sera envoyé par e-mail, puis connectez-vous avec ce mot de passe et un code": "This account has no password yet. Request one with “Forgot password”, it will be e-mailed to you, then sign in with that password and a code",
-  "Recevoir un mot de passe": "Receive a password"
+  "Recevoir un mot de passe": "Receive a password",
+  "Ne plus recevoir de mails": "Unsubscribe from emails",
+  "Confirmez votre choix : vous ne recevrez plus les e-mails envoyés par les responsables de ce site.": "Confirm your choice: you will no longer receive emails sent by the managers of this site.",
+  "Ne plus recevoir les e-mails de ce site": "Stop receiving emails from this site",
+  "Ne plus recevoir aucun e-mail de la plateforme": "Stop receiving any email from the platform",
+  "Confirmer": "Confirm",
+  "Votre choix est enregistré.": "Your choice has been saved.",
+  "Ce lien de désinscription est invalide ou a expiré.": "This unsubscribe link is invalid or has expired.",
+  "Ce lien de désinscription est incomplet. Ouvrez-le depuis l'e-mail reçu.": "This unsubscribe link is incomplete. Open it from the email you received.",
+  "Préférence enregistrée": "Preference saved"
 }

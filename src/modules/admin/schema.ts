@@ -155,8 +155,9 @@ const AdminMembersSectionSchema = z.object({
    *  text (barre de recherche). Absent → à-valider + admins + recherche (l'onglet « tous » est
    *  toujours présent). */
   filters: z.array(z.enum(["isAdmin", "toBeValidated", "isInviting", "text"])).optional(),
-  /** Actions proposées. Absent → tout (comportement historique). `invite` gate le bouton « Inviter ». */
-  actions: z.array(z.enum(["invite"])).optional(),
+  /** Actions proposées. Absent → tout (comportement historique). `invite` gate le bouton « Inviter »,
+   *  `mail` le mode « Envoyer un e-mail » (sélection de membres → ADMIN_MAILING_SEND, backend docs/36). */
+  actions: z.array(z.enum(["invite", "mail"])).optional(),
 });
 export type AdminMembersSection = z.infer<typeof AdminMembersSectionSchema>;
 
@@ -217,7 +218,9 @@ const AdminResourceSectionSchema = z.object({
   restrictActionsToOwned: z.boolean().optional(),
   /** `transfer` requiert `transferFrom` (le bouton reste caché sans lui) — ouvre le dialog de
    *  migration d'appropriation en mode ids[] sur la sélection (mêmes contrôles/gate serveur). */
-  bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer"])).optional(),
+  /** `mail` : « Envoyer un e-mail » aux fiches cochées (citoyens → par _id résolu serveur ; autres → champ
+   *  `email` de la fiche, les lignes sans e-mail sont ignorées) — ADMIN_MAILING_SEND, backend docs/36. */
+  bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer", "mail"])).optional(),
   /** Slug du costum CÉDANT pour la bulkAction `transfer` (les fiches cochées lui appartiennent). */
   transferFrom: z.string().min(1).optional(),
   status: AdminStatusConfigSchema.optional(),
