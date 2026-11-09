@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-10-30** (seconde note de Thomas sur la MR 114 : avec `adminOnly: false`, le bouton d'ajout de la fiche association s'affiche aussi hors connexion et ouvre la connexion, comme sur la fiche équipement — §9 ; production : mise à jour Data ES appliquée — 703 équipements, 128 structurants —, plannings de Petite-Île importés, questionnaire copié avec son identifiant, réglages du formulaire des créneaux posés ; lots CDC-1 à CDC-5 committés et poussés, à proposer dans une nouvelle MR, la MR 114 étant fusionnée depuis le 29/10 — §9 ; revue avant commit des lots CDC-1 à CDC-5, 11 corrections : KPI des structurants juste en anglais, couleurs du statut dans les deux langues, exports après le calcul, mesure d'usage « — » en cas d'échec, filtre de statut indépendant de l'ordre des filtres, doublons retirés, docs et Méthodologie précisées — §9 ; 28/10 : CDC de la DRAJES : lots CDC-1 à CDC-5 livrés et vérifiés au navigateur après l'import de Petite-Île, committés le 30/10 — §9 ; CDC de la DRAJES v1.0 reporté : chantier et synthèse au §1, lots CDC-1 à CDC-5 en checklist §10, questions au §13, plan en attente du go ; review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion — remplacé le 30/10) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, appliquée en production le 30/10 (§9).
+Dernière mise à jour : **2026-11-09** (note de Thomas sur la MR 120 : plafond du dump relevé à sa demande, mesure d'usage protégée — identifiants des usagers, type des fiches, graphes et export pendant le calcul ou en échec —, règle des types tenue une fois, heures disponibles et taux sur les seuls équipements qui ont un planning — §9 ; 30/10 : seconde note de Thomas sur la MR 114 : avec `adminOnly: false`, le bouton d'ajout de la fiche association s'affiche aussi hors connexion et ouvre la connexion, comme sur la fiche équipement — §9 ; production : mise à jour Data ES appliquée — 703 équipements, 128 structurants —, plannings de Petite-Île importés, questionnaire copié avec son identifiant, réglages du formulaire des créneaux posés ; lots CDC-1 à CDC-5 committés et poussés, à proposer dans une nouvelle MR, la MR 114 étant fusionnée depuis le 29/10 — §9 ; revue avant commit des lots CDC-1 à CDC-5, 11 corrections : KPI des structurants juste en anglais, couleurs du statut dans les deux langues, exports après le calcul, mesure d'usage « — » en cas d'échec, filtre de statut indépendant de l'ordre des filtres, doublons retirés, docs et Méthodologie précisées — §9 ; 28/10 : CDC de la DRAJES : lots CDC-1 à CDC-5 livrés et vérifiés au navigateur après l'import de Petite-Île, committés le 30/10 — §9 ; CDC de la DRAJES v1.0 reporté : chantier et synthèse au §1, lots CDC-1 à CDC-5 en checklist §10, questions au §13, plan en attente du go ; review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion — remplacé le 30/10) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, appliquée en production le 30/10 (§9).
 
 ---
 
@@ -56,6 +56,8 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 | 30/10 | Claude | Lots CDC-1 à CDC-5 committés après la revue avant commit (`80186746`, `768ac78e`, `9fc24c04`), poussés par Peterson |
 | 30/10 | Peterson | Production : mise à jour Data ES, plannings de Petite-Île, questionnaire, réglages du formulaire des créneaux (§9) |
 | 30/10 | Claude | Seconde note de Thomas sur la MR 114 : bouton « Ajouter un créneau » de la fiche association aligné sur la fiche équipement (§9) |
+| 04/11 | Peterson | MR 120 (lots CDC-1 à CDC-5) ouverte vers `main` |
+| 09/11 | Claude | Note de Thomas sur la MR 120 : plafond du dump, mesure d'usage, heures disponibles et taux sur les équipements qui ont un planning (`b85266ae`, `7c4b22af`, `3779db5a`, §9) |
 
 ### Cahier des charges de la DRAJES (v1.0, octobre 2026)
 
@@ -267,6 +269,63 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 
 ## 9. Impacts des modifications
 
+### Note de Thomas sur la MR 120 (2026-11-09)
+
+**Contexte** : Thomas relit la MR 120 (lots CDC-1 à CDC-5, `ess974` → `main`) sur `c5459b92`. Son verdict est
+bloquant pour une seule raison : le préflight `prop-descriptions` échoue, `section:searchProStatic` passant à
+71 053 caractères pour un plafond de 70 000 (68 094 sur `main`) — le bloc `reservations.usage` s'ajoute à la carte
+des communes venue de `main`. Le reste tient : fusion à blanc avec `main` sans conflit, code partagé opt-in,
+Saint-Paul ne gagne que « Historique ». Il relève aussi 5 points « À vérifier » et 3 de nettoyage, tous confirmés
+dans le code le 09/11.
+
+**Ce qui change** (choix de Peterson du 09/11), en 3 commits :
+- **Lot A — bloquant et sûreté de la mesure** (`b85266ae`) :
+  - plafond du test porté à 80 000, à la demande de Thomas, avec la date et la raison en commentaire ;
+  - `isObjectId` partagé (`src/lib/objectId.ts`) : `usagerIdsOf` n'envoie plus que des identifiants de base. Une
+    seule clé d'usager saisie à la main faisait échouer la lecture des types pour tout le parc (KPI d'usage à
+    « — », filtre de statut sur « Réessayer » sans fin, résumé de fiche masqué). `usageFilter` et `slotFilter`
+    l'utilisent à la place de leur copie, avec la même règle ;
+  - type de la fiche usagère lu dans `serverData` seul : une fiche sans type en base n'est plus comptée club ;
+  - observatoire : l'export de la liste et de la table est masqué aussi sur une mesure en échec ; les graphes qui
+    lisent la mesure montrent le sablier des KPI pendant le calcul, puis « Mesure indisponible pour le moment. ».
+- **Lot B — nettoyage** (`7c4b22af`) : `useUsageMeasure` tient une seule fois la règle « jamais sans les types des
+  fiches », pour l'observatoire, la fiche équipement et le filtre de statut ; la commune de la carte est lue une
+  fois par carte et par langue, et non plus à chaque rendu.
+- **Lot C — équipements sans planning** (`3779db5a`, la première des deux options de Thomas) : les heures
+  disponibles et le taux d'occupation ne portent que sur les équipements qui ont un planning — KPI, barres par
+  commune, camembert et filtre des tranches de taux, export. La fiche équipement ne change pas. Page Méthodologie
+  (fr, en), docs 07 et 27.
+
+**À savoir** :
+- **Chiffres en local** (09/11) : « Heures disponibles / semaine » 712,6 h et « Taux d'occupation moyen » 19,1 %,
+  sur les équipements qui ont un planning (9). L'ancienne règle aurait donné environ 69 200 h et 0,2 % sur les 708
+  (estimation déduite, non mesurée) ; Thomas lisait 68 410 h et 0,7 % sur sa base.
+- **Filtre « Sans planning »** : heures disponibles et taux affichent « — », faute de mesure.
+- **« Historique » sur Saint-Paul** : citizenToolKit `17ee95d8` est déjà déployé en production (Peterson, 09/11).
+  Les modifications d'horaire faites avant son déploiement n'ont pas de ligne d'historique.
+- **Copies restantes de la garde ObjectId** (`coformAnswer`, `comment`, `coform`, `aac`, `ampli`) : non
+  fusionnées, leurs options de casse divergent (note « dette » de `objectId.ts`).
+
+**Reste, pour `main` (Thomas)** : stabiliser `t` dans `useT`, qui fera tomber les `eslint-disable` du même type,
+dont celui de la carte (lot B) ; unifier, s'il le souhaite, les copies de la garde ObjectId.
+
+**Validation** :
+- tests ✅ 260 dans 18 des 19 fichiers de test de la MR, dont `prop-descriptions` du préflight et
+  `dashboard.test.ts` (accord de Peterson) ; `dropdownFilters.test.ts`, co-écrit par mirana et non touché, n'a pas
+  été relancé ;
+- préflight 899/903 (les 4 échecs d'environnement local, §12) ; lint 0 erreur (23 avertissements préexistants) ;
+  typecheck ✅ ; `config:validate` ✅ 11 pages, 17 sections ; `audit:config` ✅ 0 constat ; `config:render` ✅
+  ESS974 11/11 pages et 17/17 sections, Saint-Paul 12/12 pages et 21/21 sections ; fusion à blanc avec `main`
+  (`e3f8e138`) sans conflit ;
+- navigateur (base locale, visiteur, aucune écriture), aucune erreur de page :
+  - `/observatoire` pendant le calcul : les 5 graphes d'usage en sablier, celui des types rendu, pas d'« Exporter
+    CSV » ; après le calcul (≈ 1 min 30) : tout est rendu, « Exporter CSV » et « Chiffres clés » présents ;
+  - page Équipements : « Commune : … » sur les 10 cartes ; `?statut=open` → 9 équipements, autant que le KPI
+    « Ouverts aux clubs » ;
+  - fiche du gymnase du collège Joseph Suacot inchangée (« Occupé 18 h/sem (école 17 h · clubs 1 h) · libre
+    80 h/sem · taux d'occupation 18 % ») ;
+  - Saint-Paul : fiche « Salle de danse » avec ses 9 réservations par club, sans résumé d'usage.
+
 ### Seconde note de Thomas sur la MR 114 (2026-10-30)
 
 **Contexte** : la seconde note de Thomas sur la MR 114 relit en delta les commits posés depuis sa première note,
@@ -344,7 +403,8 @@ défini « ouvert » (§13).
   (`modules/observatoire/usage.ts`). École ou club : le « Type usager » importé (`fields.userType`, l'AS comptée
   scolaire), sinon le type de la fiche usagère (`useUsagerTypesQuery`). Statut ouvert / non ouvert / sans
   planning ; heures scolaires, clubs et libres, taux sur la plage 8 h-22 h, 7 j/7 (98 h/sem) — un équipement sans
-  planning compte 98 h libres. Les champs `__usage.*` alimentent 3 filtres (statut, tranches de taux et d'heures
+  planning compte 98 h libres (dans l'observatoire, remplacé le 09/11 : ni heures libres ni taux sans planning,
+  note de Thomas sur la MR 120). Les champs `__usage.*` alimentent 3 filtres (statut, tranches de taux et d'heures
   clubs), 5 KPI, 2 camemberts et 3 barres par commune (`value` : somme ou moyenne, `aggregateBy`). Bouton
   « Chiffres clés » (`export.kpis`), affiché une fois les calculs terminés.
 - **CDC-3 — fiche, cartes et carte** : sur la fiche équipement, résumé d'occupation, part de la plage par
@@ -1329,14 +1389,14 @@ repassent au vert.
 
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
-| 1 | Config valide (Zod) | ✅ | 11 pages, 16 sections (28/10) |
+| 1 | Config valide (Zod) | ✅ | 11 pages, 17 sections (09/11, carte des communes venue de `main` comprise) |
 | 2 | Audit qualité | ✅ | **RAS** — 0 constat (i18n, liens, assets, thème, prérequis) |
 | 3 | Rendu SSR | ✅ | 9/9 pages en 200 (16/10) |
 | 4 | Périmètres de données | ✅ | **3/3 à 708 résultats** (annuaire, observatoire, data) sur la base locale ; en production, 703 équipements depuis la mise à jour Data ES du 30/10 (§9) |
 | 5 | Filtres alignés sur la donnée | ✅ | 0 valeur orpheline, 0 type réel sans option, 0 virgule |
-| 6 | Préflight | 🟡 | 898/903 (28/10, après les lots CDC) : les 4 échecs d'environnement et le plafond de `prop-descriptions`, laissé à Thomas (§12). Avant : 898/903 (28/10, après le lot D de la review de la MR 114) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
-| 7 | Aperçu navigateur | 🟡 | 28/10 : observatoire, Équipements, fiche, questionnaire, méthodologie et pages légales après l'import de Petite-Île, Saint-Paul en témoin (§9 CDC). Avant : Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
-| 8 | Déploiement | ❌ | à faire. Données de production prêtes le 30/10 (§9) ; restent la MR des lots CDC, le déploiement Coolify et le DNS |
+| 6 | Préflight | 🟡 | 899/903 (09/11, après les corrections de la MR 120) : ne restent que les 4 échecs d'environnement local (§12) ; plafond de `prop-descriptions` relevé à 80 000 à la demande de Thomas. Avant : 898/903 (28/10, après les lots CDC) : les 4 échecs d'environnement et le plafond de `prop-descriptions`, laissé à Thomas (§12). Avant : 898/903 (28/10, après le lot D de la review de la MR 114) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
+| 7 | Aperçu navigateur | 🟡 | 09/11 : observatoire (graphes en sablier pendant le calcul, export après, heures disponibles et taux sur les équipements qui ont un planning), Équipements (commune, statut « Ouvert »), fiche, Saint-Paul en témoin (§9, note sur la MR 120). Avant : 28/10 : observatoire, Équipements, fiche, questionnaire, méthodologie et pages légales après l'import de Petite-Île, Saint-Paul en témoin (§9 CDC). Avant : Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
+| 8 | Déploiement | ❌ | à faire. Données de production prêtes le 30/10 (§9) ; restent la fusion de la MR 120 (lots CDC, corrigée le 09/11 après la note de Thomas), le déploiement Coolify et le DNS |
 | 9 | Saisie / back-office | ❌ | **bloqué backend** (§12) |
 | 10 | Fiche équipement, filtres multi-valeurs, communes | ✅ | Lot 2, vérifié au navigateur le 15/10 (§9) |
 | 11 | Annuaire des associations usagères | ✅ | Lot 3 : 23 organisations, liste générique, fiche en modale, équipements réservés restreints au scolaire — vérifié au navigateur le 16/10 (§9) |
@@ -1350,10 +1410,11 @@ repassent au vert.
 | 19 | Ajout et modification des associations | ✅ | Lot 11 : ajout depuis l'annuaire réservé aux admins (clé ESS974 posée par le serveur, étiquette usager, doublons signalés, apparition immédiate) ; modification par l'admin qui a ajouté l'association — vérifié au navigateur le 26/10, puis de nouveau sur le code final après la relecture de conformité (§9). Les 37 associations existantes restent non modifiables depuis le site |
 | 20 | Corrections de la review de la MR 114 | ✅ | Lot A (27/10) : garde de modification d'horaire sur la période, contrôles sur toutes les réservations, bouton masqué hors connexion. Lot B (27/10) : fiche équipement en option (`equipmentDetails`), sport-santé revenu à main, club du formulaire avec l'étiquette, annonces sur les sites en ligne. Lot C (27/10) : mémo serveur de l'annuaire (11,5 s → moins d'1 s par rendu), contrôles et mémos stables. Lot D (28/10) : nettoyage, dont les heures affichées en « h ». Vérifiés au navigateur (§9). MR 114 fusionnée dans `main` par Thomas le 29/10 (`e9013d80`) |
 | 21 | CDC DRAJES, lot CDC-1 : structurants (KPI, filtre « Catégorie » de l'observatoire), type d'établissement et public / privé (listes d'UAI en config), mentions légales au nom de la DRAJES | ✅ | Vérifié au navigateur le 28/10 : 129 structurants, filtres type d'établissement et public / privé, export enrichi, pages légales au nom de la DRAJES (§9). En production, 128 structurants depuis la mise à jour Data ES (30/10) |
-| 22 | CDC DRAJES, lot CDC-2 : usage des créneaux dans l'observatoire (statut d'ouverture, école / clubs, heures libres, tranches, comparaison des communes, exports) | ✅ | Vérifié au navigateur le 28/10 : statut, heures et taux par équipement, 3 filtres, 5 KPI, 5 graphes, « Chiffres clés » (§9). Statuts provisoires (§13) |
-| 23 | CDC DRAJES, lot CDC-3 : fiche équipement (résumé, cases « Libre », historique des horaires), commune sur les résultats, statut sur la carte, correctif citizenToolKit | ✅ | Vérifié au navigateur le 28/10 : résumé et cases « Libre », commune sur les cartes, statut sur la liste et la carte ; trace des modifications d'horaire écrite en base, son affichage attend le module `survey` à jour en local (§9). Correctif citizenToolKit poussé sur `master` (`17ee95d8`, 30/10) |
+| 22 | CDC DRAJES, lot CDC-2 : usage des créneaux dans l'observatoire (statut d'ouverture, école / clubs, heures libres, tranches, comparaison des communes, exports) | ✅ | Vérifié au navigateur le 28/10 : statut, heures et taux par équipement, 3 filtres, 5 KPI, 5 graphes, « Chiffres clés » (§9). Statuts provisoires (§13). 09/11 : heures libres et taux sur les seuls équipements qui ont un planning, graphes d'usage en sablier pendant le calcul (§9, MR 120) |
+| 23 | CDC DRAJES, lot CDC-3 : fiche équipement (résumé, cases « Libre », historique des horaires), commune sur les résultats, statut sur la carte, correctif citizenToolKit | ✅ | Vérifié au navigateur le 28/10 : résumé et cases « Libre », commune sur les cartes, statut sur la liste et la carte ; trace des modifications d'horaire écrite en base, son affichage attend le module `survey` à jour en local (§9). Correctif citizenToolKit poussé sur `master` (`17ee95d8`, 30/10), déployé en production (Peterson, 09/11) |
 | 24 | CDC DRAJES, lot CDC-4 : questionnaire des communes (CoForm) | ✅ | Page et CoForm vérifiés en local le 28/10 : réponse d'essai enregistrée, dépôt de fichier à revérifier avec le module `survey` à jour (§9). CoForm copié en production le 30/10 avec le même identifiant (2 documents, 10 champs, contrôlés) : la config ne change pas ; dépôt de fichier à essayer en production |
 | 25 | CDC DRAJES, lot CDC-5 : page Méthodologie et documentation | ✅ | Page vérifiée au navigateur le 28/10, docs moteur 05, 07 et 27 (§9) |
+| 26 | Corrections de la note de Thomas sur la MR 120 | ✅ | Lot A (`b85266ae`) : plafond du dump relevé à sa demande, identifiants des usagers contrôlés, type des fiches lu dans le document, graphes et export pendant le calcul ou en échec. Lot B (`7c4b22af`) : règle des types tenue une fois (`useUsageMeasure`), commune de la carte lue une fois. Lot C (`3779db5a`) : heures disponibles et taux sur les seuls équipements qui ont un planning. Vérifié au navigateur le 09/11 (§9) |
 
 ---
 
@@ -1420,7 +1481,8 @@ passent.
 
 Le garde-fou `tests/preflight/prop-descriptions.test.ts` d'aboire plafonne chaque dump à 70 000 caractères :
 `section:searchProStatic` atteint 71 Ko avec le bloc `usage` (66 358 au 16/10). Le plafond n'est pas relevé : la
-décision revient à Thomas, prévenu dans la description de la MR.
+décision revient à Thomas, prévenu dans la description de la MR. **Relevé à 80 000 le 09/11**, à sa demande
+(note sur la MR 120, `b85266ae`) : le préflight repasse, il ne reste que les 4 échecs d'environnement.
 
 ### Valeurs traduites dans l'observatoire (29/10, revue avant commit)
 
