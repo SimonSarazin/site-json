@@ -9,6 +9,7 @@
     "id": "agenda-parent62",
     "props": {
       "defaultMode": "list",
+      "showPdfExport": true,
       "tabs": [
         "upcoming",
         "ongoing",

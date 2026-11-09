@@ -37,6 +37,9 @@
     "badgePending": "Pending",
     "badgeValidated": "Validated",
     "edit": "Edit",
+    "duplicate": "Duplicate",
+    "duplicateNamePrefix": "Copy of {{name}}",
+    "duplicateFilesPartial": "Entry duplicated, but {{failed}} out of {{total}} file(s) could not be copied over — add them manually.",
     "validate": "Validate",
     "invalidate": "Invalidate",
     "reference": "Reference",
@@ -215,7 +218,8 @@
   "DashboardKpis": {
     "trendMonthly": "+{{added}} this month · {{delta}} vs last month",
     "membersPending": "awaiting validation",
-    "analyticsPending": "Audience analytics to be connected (GDPR-compliant tool pending)"
+    "analyticsPending": "Audience analytics to be connected (GDPR-compliant tool pending)",
+    "openLink": "Open"
   },
   "AdminOwnershipMigration": {
     "title": "Ownership migration",

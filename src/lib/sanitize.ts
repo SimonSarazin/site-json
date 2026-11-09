@@ -17,6 +17,18 @@ export function sanitize(html: string): string {
 }
 
 /**
+ * Comme `sanitize()`, mais autorise l'attribut `target` — DOMPurify le retire par défaut (pas dans
+ * son allowlist standard). Opt-in, PAS le profil par défaut : un `target="_blank"` n'ouvre pas de
+ * nouvelle surface XSS (aucun script, aucune entrée de formulaire), mais changer le défaut de
+ * `sanitize()` toucherait d'un coup tous ses appelants (html/svg/content/icon…) sans qu'aucun ne
+ * l'ait demandé. À utiliser avec un `rel="noopener noreferrer"` déjà posé sur le lien (ex. une règle
+ * `link_open` de markdown-it) — DOMPurify ne l'ajoute pas lui-même.
+ */
+export function sanitizeAllowingTarget(html: string): string {
+  return DOMPurify.sanitize(html, { ADD_ATTR: ["target"] });
+}
+
+/**
  * Profil pour la PROSE SAISIE PAR N'IMPORTE QUEL UTILISATEUR — réponse coform,
  * description d'un commun, note libre d'une fiche. C'est le défaut de
  * `ProseContent` ; ce qui décide du profil est la SOURCE du texte, pas le

@@ -14,20 +14,28 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-11-09** — mesure d'audience **Matomo en production** sur
-`www.parent62.org` : branche `feat/analytics-matomo` fusionnée dans `main` (`b8bfa570`), puis correctif
-`da7e244c` (après le premier déploiement, seule la première page vue partait : `matomo.js` remplace
-`window._paq` par son proxy) ; vérification navigateur du 09/11 : un hit `matomo.php` par navigation
-client (URL, titre, référent), aucun cookie, `parent62.00.re` muet — détail §10bis. Anonymisation des IP
-activée sur l'instance par Thomas le 09/11. Même jour : les trois pages légales étaient illisibles en mode
-sombre (`prose-slate` fige un gris foncé ; le plugin typography EST chargé, contrairement au commentaire du
-CSS) → variables `--tw-prose-*` rebranchées sur les tokens du thème dans `src/index-parent62.css`, palette
-retirée de la config ; `/mentions-legales` et `/confidentialite` rédigées (FR/EN), avec 5 marqueurs ambre à
-compléter par le réseau (éditeur, siège, téléphone, direction de publication, responsable de traitement ;
-hébergeur OVH posé, durées exprimées en critères sans chiffre sur décision de Thomas) — détail §10ter. SDK monté en `1.0.207`
-(`44f62a80`, 06/11). Précédemment : **2026-11-03** — « Ajouter un acteur » corrigé : champs `type`/`role` manquants
-au contrat `ADD_ORGANIZATION`, ajoutés en `hidden` + `subType:"acteur"` pour ne pas casser le
-discriminant de sous-type costum — détail §9sedecies. Plus tôt le même jour : retrait complet du
+Dernière mise à jour : **2026-11-09** — renommage admin « Actualités » → « Article », décalage de la
+bulle « Ternois Bruaysis » sur la carte (chevauchement de label à 150 % de zoom) et activation du
+bouton **export PDF** sur `/agenda` (`agenda.showPdfExport`) — détail §9octodecies. Même jour :
+mesure d'audience **Matomo en production** sur `www.parent62.org` : branche `feat/analytics-matomo`
+fusionnée dans `main` (`b8bfa570`), puis correctif `da7e244c` (après le premier déploiement, seule la
+première page vue partait : `matomo.js` remplace `window._paq` par son proxy) ; vérification
+navigateur du 09/11 : un hit `matomo.php` par navigation client (URL, titre, référent), aucun cookie,
+`parent62.00.re` muet — détail §10bis. Anonymisation des IP activée sur l'instance par Thomas le 09/11.
+Même jour : les trois pages légales étaient illisibles en mode sombre (`prose-slate` fige un gris
+foncé ; le plugin typography EST chargé, contrairement au commentaire du CSS) → variables
+`--tw-prose-*` rebranchées sur les tokens du thème dans `src/index-parent62.css`, palette retirée de
+la config ; `/mentions-legales` et `/confidentialite` rédigées (FR/EN), avec 5 marqueurs ambre à
+compléter par le réseau (éditeur, siège, téléphone, direction de publication, responsable de
+traitement ; hébergeur OVH posé, durées exprimées en critères sans chiffre sur décision de Thomas) —
+détail §10ter. SDK monté en `1.0.207` (`44f62a80`, 06/11). **2026-11-05** : bouton **« Dupliquer »**
+sur les tableaux admin Actualités et Agenda (ouvre la création pré-remplie, nom préfixé « Copie
+de … », rien écrit tant que rien n'est soumis) — champs simples, adresse et horaires couverts
+nativement ; galerie/documents recopiés en best-effort post-création (point CORS non vérifiable ici) —
+détail §9septdecies. **03/11** : « Ajouter un acteur » corrigé : champs `type`/`role` manquants au
+contrat `ADD_ORGANIZATION`, injectés via `mutation.inject.extraFields` (patron déjà en usage,
+`federationDesCae`/`cae`) pour ne pas casser le discriminant de sous-type costum — détail §9sedecies.
+Plus tôt le même jour : retrait complet du
 concept « partenaire » (page `/annuaire`, formulaire costum, onglet admin, tag) au profit de
 l'annuaire des acteurs du soutien à la parentalité, déjà doté du filtre territoire — détail
 §9quindecenties. Plus tôt encore :
@@ -4283,9 +4291,9 @@ rôle à l'invitation » (onglets « users » et « emails ») en hérite. Non r
 `useAgendaPdfExport` (`endpointApi.agendaGetPdf`, scope le costum PORTEUR entier via
 `getSiteCostumContext({contextId, contextType})` — jamais les filtres de la vue). Téléchargement par
 `Blob` + `<a download>` transitoire (aucun pattern de blob-download réutilisable trouvé — `downloadCsv.ts`
-est CSV-only, non généralisé pour un seul 2ᵉ usage). **Non activé sur `/agenda`** : la prop reste à son
-défaut `false`, conformément à la convention moteur (nouveauté = option, jamais un nouveau défaut pour
-un site en marche).
+est CSV-only, non généralisé pour un seul 2ᵉ usage). **Activé sur `/agenda` le 09/11** (demande client) :
+`showPdfExport: true` posé sur la section `agenda-parent62` dans `config.prod.parent62.json` — seule
+cette config change, le défaut moteur reste `false` pour tout le reste du parc.
 
 ### 9quinquadragies.1 Vérifications
 
@@ -5400,6 +5408,107 @@ sur le flux réel.
 | `npm run typecheck` / `npm run lint` | ✅ 0 erreur |
 | `tests/preflight/` (suite complète) | ✅ 906 tests, 0 échec |
 
+## 9septdecies. Bouton « Dupliquer » (actualités + agenda, tableaux admin)
+
+**Demande client (04-05/11)** : dupliquer une actualité ou un événement depuis l'admin — récupérer
+ses données SANS les enregistrer, ouvrir le formulaire de création pré-rempli (nom préfixé « Copie
+de … »), rien écrit tant que la création n'est pas soumise.
+
+**Mécanisme (moteur, opt-in par `rowActions:["duplicate"]`)** : `AdminResourceTable.tsx` recharge
+l'entité complète (même recette que « Éditer ») puis construit le seed via **le VRAI pipeline de
+lecture du formulaire** (`seedFromEntity`, `@/modules/formEngine`), appliqué au descripteur costum
+RÉELLEMENT compilé pour ce formulaire (résolu par id dans le registre `getDescriptor`/
+`getCostumModalSpec`, enregistré par `registerCostumForms.ts`) — pas une copie brute ni des cas
+particuliers maintenus à la main. Repli sur une copie brute (`seedBrut`, sans `id`/`_id`/`slug`)
+pour un type STANDARD sans costumForm (hors périmètre de ce lot). Injecté dans `createDefaults` de
+la modale de création — mécanisme DÉJÀ existant (jusque-là nourri seulement par une valeur STATIQUE
+de config), appliqué ici dynamiquement. `applyCreateDefaults` ne retient que les clés connues du
+formulaire : un champ absent du formulaire de création est silencieusement ignoré, jamais une erreur.
+
+**Révision du 09/11 (relecture)** : la 1ʳᵉ version (05/11) codait à la main 2 cas (`openingHours`,
+`address`) et copiait tout le reste tel quel — bug confirmé en relecture : `category`
+(`parent62-article`, `multiselect` au `write:"joinCsv"` SANS codec de lecture propre, donc
+`coerce:stringArray` par défaut de widget) est stocké en CSV serveur (`"appel-projet, offre-emploi"`)
+et aurait été semé TEL QUEL, lu par `ValueSelectField` comme une seule option bogue au lieu d'être
+splitté — le type d'actualité (et ses mots-clés dérivés) silencieusement perdu à la duplication, sans
+toucher à `openingHours`/`address` qui restaient corrects par hasard. Remplacé par l'appel au VRAI
+pipeline ci-dessus, qui couvre `category` ET tout champ futur à codec de lecture sans cas particulier
+à ajouter à la main. Testé (`AdminResourceTable.test.tsx`, costum RÉEL `parent62-article`/
+`parent62-event` enregistrés via `registerCostumForm`, pas une fixture synthétique).
+
+**3 autres constats de la relecture du 09/11, corrigés** :
+- La tuile KPI dashboard `type:"link"` (§9octodecies) rendait son `linkTo` via un `<Link>` brut
+  plutôt que `NavLink`/`classifyHref` (règle #20 des bonnes pratiques pour tout `href` venu de la
+  config) — un `linkTo` externe serait tombé sur le catch-all au lieu de s'ouvrir. `linkTo` posé
+  REQUIS (et non plus optionnel) pour ce type précis dans `AdminDashboardKpiSchema`.
+- Anti-double-clic sur « Dupliquer » (`isDuplicating`, bouton désactivé pendant l'attente réseau) :
+  sans lui, cliquer « Dupliquer » sur une 2ᵉ ligne avant la fin du 1ᵉʳ chargement aurait mélangé le
+  seed d'une ligne et la galerie de l'autre.
+- Défense supplémentaire : les champs d'identité (`id`/`_id`/`slug`) sont retirés du seed même après
+  le VRAI pipeline (`seedFromEntity`), qui ne les exclut pas lui-même — aucun des costumForms
+  dupliquables actuels ne déclare ces champs en écriture, mais rien ne le garantit pour un futur.
+
+**Champs composites, couverts au-delà des champs simples (05/11, révisé 09/11)** :
+- **Adresse** — **bug trouvé et corrigé le 05/11 : « le lieu n'est pas dupliqué » (retour client)**.
+  `serverData` ne porte PAS les champs plats `addressCountry`/`addressLocality`/`postalCode`/
+  `streetAddress`/`localityId` : le serveur stocke un objet composite UNIQUE `address`
+  (`serializeGroups.address`, `serverKey:"address"`), que `EditLocationTab` ne lit jamais
+  directement (il lit les champs plats via `form.watch`). Couvert nativement par `seedFromEntity`
+  (étape GROUPE du pipeline, `address:read`).
+- **Horaires** (`openingHours`, `parent62-event` seulement — `parent62-article` n'a pas ce champ) —
+  **affirmation du 05/11 corrigée le 09/11** : ce champ est `widget:"hidden"` SANS codec de lecture
+  (seule `eventOpeningHours:write` normalise à l'ÉCRITURE, selon `recurrency`) — AUCUN widget visible
+  n'attend un modèle 7 jours en lecture, contrairement à ce qu'affirmait la version précédente de
+  cette ligne. Le tableau brut (jours cochés, partiel) EST la forme correcte à semer ; `seedFromEntity`
+  le relaie inchangé (pas de `field.read` déclaré).
+- **Galerie/documents** (`parent62-article` seulement — `parent62-event` n'en a pas) : ce ne sont
+  PAS des champs de formulaire (uploadés APRÈS la création, qui exige un `id`) — recopiés via un
+  nouveau passage `onCreated` (déjà prévu par `EntityFormModal`, jusque-là inutilisé par l'admin) :
+  `fetch` de chaque fichier existant (`docPath`/`imagePath`) puis `uploadDocument` sur la fiche
+  neuve. **Best-effort, par fichier** : un échec individuel n'empêche jamais les autres ni la
+  création elle-même ; un toast résume `{{failed}}/{{total}}` si au moins un fichier a manqué.
+  ⚠️ **Point non vérifiable depuis cet environnement** : le `fetch` est CROISÉ (fichiers servis par
+  `www.communecter.org`, appelés depuis le domaine du site) — fonctionne seulement si ce serveur
+  envoie un en-tête CORS permissif sur `/upload/…`. Aucune session navigateur authentifiée
+  disponible ici pour le constater ; **à confirmer par un essai réel avec des pièces jointes**.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 51 pages/183 sections |
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur, 0 nouveau warning (hors `src/modules/kanban` et les 23 warnings React Compiler préexistants d'`EntityFormModal.tsx`, fichier non touché) |
+| `npm run test:unit` (suite complète) | ✅ 10 005 tests, 0 échec |
+| `AdminResourceTable.test.tsx` | ✅ 18 tests (seed sans id/slug, openingHours relayé tel quel [corrigé 09/11], dépliage adresse, **décodage `category` CSV→tableau [bug du 05/11, corrigé 09/11]**, copie galerie/documents, échec partiel non bloquant) |
+| `ContentSection.test.tsx` | ✅ 3 tests (externe, interne, **protocole-relatif `//hôte` [corrigé 09/11]**) |
+| Vérification navigateur réelle | ✅ **adresse confirmée en défaut par le client (05/11)**, corrigée depuis — reste à reconfirmer en réel, ainsi que `category` (bug du 05/11, jamais visible car non testé en réel avant ce lot) et le KPI `type:"link"`/l'anti-double-clic « Dupliquer » (09/11) ; le point CORS galerie/documents ci-dessus reste lui non vérifié |
+
+## 9octodecies. Renommage admin « Actualités » → « Article », carte à bulles, export PDF agenda
+
+**Admin (05/11)** : sur demande, le libellé de l'onglet admin et de sa section tableau passent
+d'« Actualités »/« News » à « Article »/« Article » (fr/en) — `admin.tabs[id="actualites"].label` et
+`admin.tabs[id="actualites"].sections[0].label` dans `config.prod.parent62.json`. Changement de
+libellé pur, sans impact fonctionnel (le `id` de l'onglet reste `actualites`).
+
+**Carte à bulles, chevauchement de labels (09/11)** : signalé par le client à 150 % de zoom
+navigateur — le label « Ternois Bruaysis » (texte long, bulle `size:19`) chevauchait celui de « FSM
+Lens-Liévin » (bulle `size:10`, proche en `x` : 50 contre 74, même `y:60`). Cause : dans
+`MapBubbles.tsx`, le label est ancré à droite du rond (`md:right-1/3`) sans détection de collision
+entre labels voisins — sa largeur suit la longueur du texte, pas la taille du rond. Le composant porte
+un avertissement explicite (commentaire) à ne pas retoucher les positions `x`/`y`/`size` pour
+compenser un AUTRE problème (chevauchement bloc titre/bulles sur carte étroite) ; ce nouveau cas est
+différent et le client a confirmé vouloir un décalage direct. **Corrigé en déplaçant uniquement
+`Ternois Bruaysis` vers le bas** (`y: 60 → 66`, `x`/`size` inchangés) dans `config.prod.parent62.json`
+— écarte verticalement son label de celui de FSM Lens-Liévin (resté à `y:60`).
+
+**Export PDF de l'agenda, activation (09/11)** — voir §9quinquadragies et checklist 2.4 : la prop
+opt-in `agenda.showPdfExport` (code déjà livré, SDK ≥ 1.0.196) est posée à `true` sur la section
+`agenda-parent62`.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 51 pages / 182 sections, après chacun des 3 changements |
+| `tests/preflight/` | ✅ 919 passés (2 échecs préexistants, non liés : snapshot archétype agenda à resynchroniser, dossier d'images non déclaré — hérités de lots antérieurs) |
+| Vérification navigateur réelle | ⬜ à faire : renommage admin, décalage de bulle à 150 % de zoom, bouton PDF agenda sur `/agenda` |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -5424,7 +5533,7 @@ sur le flux réel.
 | 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies). **30/09** : les 33 fils passent en **pagination numérotée** (12/page) au lieu du scroll infini, réglée une seule fois via `config.blog.defaultPagination` (§9tresquadragies) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
-| 2.4 | Impression de l'agenda | ✅ *(code prêt, non activé)* | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` (défaut `false`, vérifié en direct avec l'option forcée à `true` puis retirée — §9quinquadragies) — à activer sur `/agenda` quand souhaité |
+| 2.4 | Impression de l'agenda | ✅ activé | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` posé à `true` sur `/agenda` le 09/11 (défaut moteur resté `false` ailleurs, vérifié en direct — §9quinquadragies) |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
 | 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies). **03/11** : page `/annuaire`, formulaire `parent62-partenaire` et onglet admin « Partenaires » **RETIRÉS** — toute organisation passe désormais par `parent62-acteur`, bouton « Ajouter un acteur » posé sur `/annuaire-acteurs-parentalite` (§9quindecenties) |
