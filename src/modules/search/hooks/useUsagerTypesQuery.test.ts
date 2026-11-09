@@ -31,13 +31,18 @@ describe("fetchUsagerTypes — type de la fiche des organisations usagères", ()
     }));
   });
 
-  it("lit le type du document brut (serverData) avant celui de l'objet, et suit les pages", async () => {
+  it("lit le type du document brut (serverData), jamais celui de l'objet du SDK, et suit les pages", async () => {
     const searchCostum = vi.fn().mockResolvedValue(
       page([{ id: "ecole", serverData: { type: "GovernmentOrganization" }, type: "organizations" }], async () =>
-        page([{ id: "club", type: "NGO" }, { id: "sans-type" }]),
+        page([
+          { id: "club", serverData: { type: "NGO" } },
+          // Fiche sans type en base : le `type` de l'objet ne la classe pas (elle serait comptée club).
+          { id: "objet-seul", serverData: {}, type: "organizations" },
+          { id: "sans-type" },
+        ]),
       ),
     );
-    const types = await fetchUsagerTypes(host(searchCostum), ["ecole", "club", "sans-type"]);
+    const types = await fetchUsagerTypes(host(searchCostum), ["ecole", "club", "objet-seul", "sans-type"]);
     expect(Object.fromEntries(types)).toEqual({ ecole: "GovernmentOrganization", club: "NGO" });
   });
 });

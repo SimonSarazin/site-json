@@ -228,8 +228,9 @@ export default function DataObservatorySection({
   // Pas de bouton pendant un calcul (mesure d'usage, heures réservées) ni sur une mesure en échec : l'export
   // écrirait 0 % ou « — » là où les cartes affichent « Calcul en cours… » ou « — ».
   const kpisReady = !usageLoading && !usageFailed && !reservationsLoading;
-  // Export de la liste et de la table : ses colonnes `__usage.*` sortiraient vides pendant le calcul.
-  const listExport = usageLoading ? null : exportConf;
+  // Export de la liste et de la table : ses colonnes `__usage.*` sortiraient vides pendant le calcul ou sur une
+  // mesure en échec — lues « sans planning » ou « 0 h » par qui ouvre le fichier.
+  const listExport = usageLoading || usageFailed ? null : exportConf;
 
   // Drill-down (opt-in) : clic sur une part/barre → applique le filtre —
   // seulement pour les dimensions réellement filtrables (retirables par
@@ -291,6 +292,8 @@ export default function DataObservatorySection({
       labels={labels}
       animate={!stillLoading}
       onDrill={onDrill}
+      loadingDimensions={usageLoading ? usageDimensions : undefined}
+      unavailableDimensions={usageFailed ? usageDimensions : undefined}
     />
   );
 

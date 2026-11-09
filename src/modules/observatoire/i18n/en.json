@@ -21,7 +21,8 @@
   },
   "charts": {
     "yes": "yes",
-    "no": "no"
+    "no": "no",
+    "unavailable": "Measure unavailable for now."
   },
   "table": {
     "title": "Detailed data",

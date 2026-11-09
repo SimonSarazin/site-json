@@ -1,4 +1,5 @@
 import type { useT } from "@/hooks/useT";
+import { isObjectId } from "@/lib/objectId";
 import { weeklyReservations } from "@/modules/search/lib/reservationHours";
 import { periodsOverlap, slotPeriod, type Reservation } from "@/modules/search/lib/reservations";
 import type { ReservationsConf } from "@/modules/search/schema";
@@ -168,9 +169,14 @@ export function usageFields(u: PoiUsage, conf: UsageConf, labels: UsageLabels): 
   };
 }
 
-/** Organisations usagères des réservations (finder `userOrga`), sans doublon — à typer par leur fiche. */
+/**
+ * Organisations usagères des réservations (finder `userOrga`), sans doublon — à typer par leur fiche.
+ * Identifiants de base seulement (`isObjectId`) : ils partent dans un `_id: {$in}`, qu'une seule clé saisie à
+ * la main ferait échouer pour tout le parc. Une clé écartée laisse sa réservation au type d'usager, sinon
+ * « non précisée ».
+ */
 export function usagerIdsOf(reservations: readonly Reservation[] | undefined): string[] {
-  return [...new Set((reservations ?? []).map((r) => r.userId).filter((id): id is string => Boolean(id)))];
+  return [...new Set((reservations ?? []).map((r) => r.userId).filter(isObjectId))];
 }
 
 /** Dimensions qui lisent la mesure d'usage (un chemin `__usage.*`) : leurs KPI attendent la fin du calcul. */

@@ -129,9 +129,15 @@ describe("usageFields / withUsage — champs __usage des items", () => {
 });
 
 describe("usagerIdsOf / usageDimensionIds — câblage de la section", () => {
+  const ORGA = "6a0b3078f16441794857e2a1";
+
   it("organisations usagères sans doublon, réponses sans fiche ignorées", () => {
-    expect(usagerIdsOf([resa("a", [], { userId: "o1" }), resa("b", [], { userId: "o1" }), resa("c", [])])).toEqual(["o1"]);
+    expect(usagerIdsOf([resa("a", [], { userId: ORGA }), resa("b", [], { userId: ORGA }), resa("c", [])])).toEqual([ORGA]);
     expect(usagerIdsOf(undefined)).toEqual([]);
+  });
+
+  it("une clé d'usager qui n'est pas un identifiant de base est écartée (elle ferait échouer toute la requête)", () => {
+    expect(usagerIdsOf([resa("a", [], { userId: ORGA }), resa("b", [], { userId: "club-saisi-a-la-main" })])).toEqual([ORGA]);
   });
 
   it("seules les dimensions qui lisent un chemin __usage.* attendent la mesure", () => {

@@ -100,7 +100,11 @@ describe("registre prop-descriptions ⇄ schéma (garde-fou)", () => {
     // sur les blocs les plus courants. Le plafond n'attrape que CETTE
     // régression-là, pas la croissance ordinaire du schéma.
     //
-    const CEILING = 70_000;
+    // 70 000 → 80 000 le 09/11/2026 (MR 120, à la demande de Thomas) : le bloc
+    // `reservations.usage` de la recherche (mesure d'usage d'ESS974), repris dans
+    // `list.preview.reservations`, porte `section:searchProStatic` à 71 Ko —
+    // croissance ordinaire, à sa place dans le schéma.
+    const CEILING = 80_000;
     const selectors = [...ROOT_BLOCK_SELECTORS, ...[...sectionOptions().keys()].map((t) => `section:${t}`)];
     const oversized = selectors
       .map((s) => {

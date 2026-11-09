@@ -21,7 +21,8 @@
   },
   "charts": {
     "yes": "oui",
-    "no": "non"
+    "no": "non",
+    "unavailable": "Mesure indisponible pour le moment."
   },
   "table": {
     "title": "Données détaillées",

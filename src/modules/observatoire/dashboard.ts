@@ -313,6 +313,12 @@ export function chartTitle(def: ChartDef, dims: DimensionsConfig, t: T): string 
   return "";
 }
 
+/** Dimensions LUES par un graphe : la sienne, celle de sa valeur (`value`, somme ou moyenne) et celles d'un
+ *  `booleanGroups` — un graphe attend une mesure en calcul dès qu'il en lit une seule. */
+export function chartDimensionIds(def: ChartDef): string[] {
+  return [def.dimension, def.value?.dimension, ...(def.dimensions ?? [])].filter((id): id is string => Boolean(id));
+}
+
 /** Libellé d'un KPI, même règle que le titre d'un graphe — partagé par les cartes et l'export des chiffres clés. */
 export function kpiLabel(def: KpiDef, dims: DimensionsConfig, t: T): string {
   if (def.label) return t(def.label);

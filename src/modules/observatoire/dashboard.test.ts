@@ -17,6 +17,7 @@ import {
   buildEntitiesCsv,
   buildKpiCsv,
   buildRow,
+  chartDimensionIds,
   chartRows,
   chartTitle,
   colorFor,
@@ -492,6 +493,16 @@ describe("aggregateBy / itemsFor avec `value` — somme ou moyenne par valeur de
     const def: ChartDef = { kind: "bars", dimension: "commune", value: { kind: "sum", dimension: "heures" } };
     expect(itemsFor(def, data, dims)).toEqual(aggregateBy(data, dims.commune, dims.heures, "sum"));
     expect(itemsFor({ ...def, value: { kind: "sum", dimension: "absente" } }, data, dims)).toEqual([]);
+  });
+
+  it("chartDimensionIds : la dimension du graphe, celle de sa valeur et celles d'un booleanGroups", () => {
+    // Une barre par commune qui somme les heures clubs attend la mesure d'usage par sa VALEUR.
+    expect(chartDimensionIds({ kind: "bars", dimension: "commune", value: { kind: "avg", dimension: "taux" } })).toEqual([
+      "commune",
+      "taux",
+    ]);
+    expect(chartDimensionIds({ kind: "booleanGroups", dimensions: ["pmr", "pshs"] })).toEqual(["pmr", "pshs"]);
+    expect(chartDimensionIds({ kind: "pie", dimension: "statut" })).toEqual(["statut"]);
   });
 });
 

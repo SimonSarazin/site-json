@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import type { useT } from "@/hooks/useT";
+import { isObjectId } from "@/lib/objectId";
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 import { keyFor, splitKey } from "./dropdownFilters";
 import { EXCLUDE_TYPE } from "./searchByFieldsToQuery";
@@ -76,7 +77,6 @@ export type SlotIssue = "hours" | "period" | "days";
 const HOUR = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const PARAM =
   /^([a-z]+(?:\.[a-z]+)*)?(?:_(?:(\d{2}h\d{2})?-(\d{2}h\d{2})?)?(?:_(\d{4}-\d{2}-\d{2})?-(\d{4}-\d{2}-\d{2})?)?)?$/;
-const OBJECT_ID = /^[0-9a-f]{24}$/i;
 
 /** `HH:MM` → minutes depuis minuit, `null` si absent ou invalide. Exporté pour la fenêtre de modification
  *  d'horaire, qui lit des champs `<input type="time">`. */
@@ -279,7 +279,7 @@ export function busyResourceIds(reservations: Reservation[], range: SlotRange): 
   };
   const ids = new Set<string>();
   for (const r of reservationConflicts(candidate, reservations)) {
-    for (const id of r.resourceIds) if (OBJECT_ID.test(id)) ids.add(id);
+    for (const id of r.resourceIds) if (isObjectId(id)) ids.add(id);
   }
   return [...ids].sort();
 }

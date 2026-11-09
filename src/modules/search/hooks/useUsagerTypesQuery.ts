@@ -4,10 +4,13 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
 import { searchCostumEach, type PoiSearchHost } from "./useResourcesInPerimeterQuery";
 
-/** Type porté par un résultat de recherche : le document brut (`serverData`) prime sur l'objet lui-même. */
+/**
+ * Type de la FICHE : celui du document (`serverData.type`), jamais le champ `type` de l'objet du SDK, qui
+ * n'est pas celui de la base. Une fiche sans type en base reste sans type : sa réservation est « non
+ * précisée » (`audienceOf`), au lieu d'être comptée club.
+ */
 function typeOf(result: unknown): string | undefined {
-  const r = result as { serverData?: { type?: unknown }; type?: unknown };
-  const type = r.serverData?.type ?? r.type;
+  const type = (result as { serverData?: { type?: unknown } }).serverData?.type;
   return typeof type === "string" && type ? type : undefined;
 }
 
