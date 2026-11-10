@@ -3,6 +3,8 @@ import type { Reservation, ReservationSlot } from "./reservations";
 import {
   countWeekdays,
   formatReservationHours,
+  formatUsageShare,
+  formatUsageSummary,
   hoursOf,
   sumReservationHours,
   weeklyReferenceDay,
@@ -185,5 +187,29 @@ describe("formatReservationHours", () => {
   it("arrondit au dixième d'heure, format français, et choisit la phrase de total", () => {
     expect(formatReservationHours({ weeklyMinutes: 270, cumulativeMinutes: 8100 }, t)).toBe("ReservationHours.summary:4,5|135");
     expect(formatReservationHours({ weeklyMinutes: 60, cumulativeMinutes: 0 }, t, true)).toBe("ReservationHours.total:1|0");
+  });
+});
+
+describe("formatUsageSummary / formatUsageShare — mesure d'usage sur la fiche", () => {
+  const t = ((key: string, _: unknown, vars: Record<string, unknown>) =>
+    `${key}:${Object.values(vars).join("|")}`) as unknown as Parameters<typeof formatUsageSummary>[1];
+  const usage = {
+    status: "open" as const, occupiedMinutes: 240, schoolMinutes: 120, clubMinutes: 120, unknownMinutes: 0,
+    freeMinutes: 5640, rate: 240 / 5880,
+  };
+
+  it("occupé, école, clubs, libre (heures au dixième) et taux en % entier", () => {
+    expect(formatUsageSummary(usage, t)).toBe("ReservationHours.usage:4|2|2|94|4");
+  });
+
+  it("la part non précisée n'apparaît que si elle existe", () => {
+    expect(formatUsageSummary({ ...usage, unknownMinutes: 90 }, t)).toBe(
+      "ReservationHours.usage:4|2|2|94|4 · ReservationHours.usageUnknown:1,5",
+    );
+  });
+
+  it("part de la plage occupée par un usager, 0 sans plage", () => {
+    expect(formatUsageShare(588, 5880, t)).toBe("ReservationHours.share:10");
+    expect(formatUsageShare(60, 0, t)).toBe("ReservationHours.share:0");
   });
 });

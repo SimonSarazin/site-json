@@ -187,6 +187,9 @@ export const DataObservatorySectionSchema = z.object({
       .object({
         filename: z.string().optional(),
         fields: z.array(DimensionDefSchema).optional(),
+        // Bouton « Chiffres clés » à côté de l'export de la liste : les KPI du résultat filtré, tels
+        // qu'affichés (`buildKpiCsv`). Absent → pas de bouton.
+        kpis: z.boolean().optional(),
       })
       .optional(),
     // Clic sur une part/barre de graphe → applique le filtre correspondant

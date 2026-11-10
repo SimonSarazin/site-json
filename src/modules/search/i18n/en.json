@@ -79,6 +79,7 @@
     }
   },
   "CardPoiAmenities": {
+    "commune": "Municipality: {{commune}}",
     "amenities": "Amenities",
     "pmrAccess": "PRM access",
     "publicTransport": "Public transport",
@@ -240,6 +241,9 @@
     "hourColumn": "Time",
     "gridCaption": "Booking slots, by day and hour",
     "free": "Free slot",
+    "freeShort": "Free",
+    "history": "History",
+    "historyStep": "Time slots",
     "bookAria": "Book {{day}} from {{start}} to {{end}}",
     "bookTitle": "Book a time slot",
     "addSlot": "Add a time slot",
@@ -281,7 +285,19 @@
   },
   "ReservationHours": {
     "summary": "{{weekly}} h/week · {{cumulative}} h in total",
-    "total": "Total: {{weekly}} h/week · {{cumulative}} h in total"
+    "total": "Total: {{weekly}} h/week · {{cumulative}} h in total",
+    "usage": "Occupied {{occupied}} h/week (school {{school}} h · clubs {{club}} h) · free {{free}} h/week · occupancy rate {{rate}} %",
+    "usageUnknown": "unspecified {{unknown}} h",
+    "share": "{{share}} % of the reference range"
+  },
+  "UsageFilter": {
+    "all": "All statuses",
+    "open": "Open",
+    "closed": "Not open",
+    "noPlanning": "No schedule",
+    "pending": "Computing status…",
+    "retry": "Retry",
+    "chip": "Status: {{status}}"
   },
   "SlotFilter": {
     "from": "From",

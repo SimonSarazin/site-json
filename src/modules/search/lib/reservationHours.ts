@@ -1,5 +1,6 @@
 import type { useT } from "@/hooks/useT";
-import { formatHours } from "@/modules/observatoire/installation";
+import { formatHours, utilizationRate } from "@/modules/observatoire/installation";
+import type { PoiUsage } from "@/modules/observatoire/usage";
 import { DAY_KEYS, type DayKey } from "./schedules";
 import { isoBound, JOUR_MS, periodsOverlap, reservationsInPeriod, slotPeriod, type Reservation } from "./reservations";
 import { dayKeyOf } from "./slotFilter";
@@ -132,4 +133,25 @@ export function formatReservationHours(hours: ReservationHours, t: Translate, to
     weekly: formatHours(hours.weeklyMinutes),
     cumulative: formatHours(hours.cumulativeMinutes),
   });
+}
+
+/** « Occupé 32 h/sem (école 20 h · clubs 12 h) · libre 66 h/sem · taux d'occupation 33 % » — résumé de la
+ *  mesure d'usage (`reservations.usage`) sur la fiche équipement ; la part non précisée n'apparaît que si
+ *  elle existe. Heures arrondies au dixième (`formatHours`). */
+export function formatUsageSummary(usage: PoiUsage, t: Translate): string {
+  const summary = t("ReservationHours.usage", undefined, {
+    occupied: formatHours(usage.occupiedMinutes),
+    school: formatHours(usage.schoolMinutes),
+    club: formatHours(usage.clubMinutes),
+    free: formatHours(usage.freeMinutes),
+    rate: Math.round(usage.rate * 100),
+  });
+  return usage.unknownMinutes > 0
+    ? `${summary} · ${t("ReservationHours.usageUnknown", undefined, { unknown: formatHours(usage.unknownMinutes) })}`
+    : summary;
+}
+
+/** Part de la plage de référence occupée par un usager (CDC ESS974 §8.1, taux par club) : « 12 % de la plage ». */
+export function formatUsageShare(weeklyMinutes: number, amplitudeMinutes: number, t: Translate): string {
+  return t("ReservationHours.share", undefined, { share: Math.round(utilizationRate(weeklyMinutes, amplitudeMinutes) * 100) });
 }

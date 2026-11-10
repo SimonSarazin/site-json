@@ -9,6 +9,7 @@ import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useAuthModal } from "@/modules/auth";
 import { formatHours } from "@/modules/observatoire/installation";
 import { KpiCard } from "@/modules/observatoire/components/KpiCard";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
@@ -109,11 +110,13 @@ export default function PreviewBookedResources({
 
   /* ── Ajout et modification (opt-in `conf.booking`, admins) ───────────────── */
   const { me, entity } = useCocolight();
+  const { openLogin } = useAuthModal();
   const permissions = useProfilPermissions(entity || null);
   const booking = conf.booking;
-  // Jamais pour un visiteur déconnecté, même avec `adminOnly: false` : le formulaire s'ouvrirait sans passer
-  // par la connexion (choix de Peterson du 27/10 : masquer le bouton plutôt qu'ouvrir la connexion).
-  const canBook = Boolean(booking) && Boolean(me) && (booking?.adminOnly === false || permissions.isAdmin);
+  // Comme sur la fiche équipement : avec `adminOnly: false`, un visiteur déconnecté voit aussi le bouton, et
+  // le clic ouvre la connexion au lieu du formulaire (seconde note de Thomas sur la MR 114, 30/10). L'ajout
+  // n'est pas repris après la connexion : l'utilisateur reclique, comme sur la fiche équipement.
+  const canBook = Boolean(booking) && (booking?.adminOnly === false || permissions.isAdmin);
   const canEditHours = Boolean(booking?.editHours) && permissions.isAdmin;
   const [adding, setAdding] = useState<{ resourceId: string; resourceName: string } | null>(null);
   const {
@@ -296,7 +299,10 @@ export default function PreviewBookedResources({
                     variant="outline"
                     size="sm"
                     className="h-7 gap-1.5 px-2 text-xs"
-                    onClick={() => setAdding({ resourceId: g.resourceId, resourceName: g.resourceName })}
+                    onClick={() => {
+                      if (!me) openLogin();
+                      else setAdding({ resourceId: g.resourceId, resourceName: g.resourceName });
+                    }}
                     aria-label={t("PreviewBookedResources.addSlotAria", undefined, {
                       name: g.resourceName || t("PreviewBookedResources.unknownResource"),
                     })}

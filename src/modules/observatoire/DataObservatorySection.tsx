@@ -2,14 +2,19 @@ import "./i18n";
 import { Suspense, useMemo } from "react";
 import { lazy } from "vite-preload";
 import { useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { TriangleAlert } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DEFAULT_INSTALLATION_PARAM } from "@/modules/search/schema";
 import { useSlotReservationsQuery } from "@/modules/search/hooks/useSlotReservationsQuery";
+import { useUsageMeasure } from "@/modules/search/hooks/useUsageMeasure";
 import { sumReservationHours } from "@/modules/search/lib/reservationHours";
 import { localIsoDay } from "@/modules/search/lib/slotFilter";
 import type { DataObservatorySectionProps, FilterDef } from "./schema";
+import { buildKpiCsv, computeKpiValue, kpiLabel } from "./dashboard";
+import { computePoiUsage, usageDimensionIds, usageLabelsFrom, withUsage } from "./usage";
+import { downloadCsv } from "./utils";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
 import { ObservatoryCharts } from "./components/Charts";
@@ -98,10 +103,54 @@ export default function DataObservatorySection({
       urlParams.get(installationConf.param ?? DEFAULT_INSTALLATION_PARAM),
   );
 
-  const { items, entities, error, stillLoading, progress, capped } = useObservatoryItemsQuery(
+  const { items: rawItems, entities, error, stillLoading, progress, capped } = useObservatoryItemsQuery(
     props.baseParams,
     dimensions,
   );
+
+  // Réservations du formulaire de la fiche ouverte depuis la page (`rowAction.preview.reservations`),
+  // chargées seulement si un KPI `reservationHours` OU la mesure d'usage (`reservations.usage`) les lit —
+  // même requête, donc même cache, que le filtre « Créneau disponible ».
+  const reservationsConf = rowAction?.preview?.reservations;
+  const usageConf = reservationsConf?.usage;
+  const wantsHours = kpis.some((k) => k.kind === "reservationHours");
+  if (import.meta.env.DEV && wantsHours && !reservationsConf) {
+    console.warn(
+      "[observatoire] KPI reservationHours sans rowAction.preview.reservations — la valeur reste « — »",
+    );
+  }
+  // `isLoading` (et non `isPending`) : une query désactivée — entité pas encore là, ou KPI absent —
+  // reste `isPending` sans jamais charger ; le sablier n'a de sens que pendant une requête en vol.
+  const {
+    data: reservations,
+    isLoading: reservationsLoading,
+    isError: reservationsError,
+  } = useSlotReservationsQuery(reservationsConf, wantsHours || Boolean(usageConf));
+  // Types des fiches usagères : jamais de mesure sans eux (`useUsageMeasure`).
+  const usageMeasure = useUsageMeasure(reservations, usageConf);
+  const usagerTypes = usageMeasure.types;
+  // Mesure d'usage EN ÉCHEC quand les réservations ou les types des fiches n'ont pas pu être lus : ses KPI
+  // disent « — » au lieu d'un sablier sans fin, et elle n'est pas posée sans les types — une réservation sans
+  // type d'usager y serait « non précisée » à tort. EN CALCUL tant que l'un des deux manque.
+  const usageFailed = Boolean(usageConf) && ((reservationsError && !reservations) || usageMeasure.failed);
+  const usageLoading = Boolean(usageConf) && !usageFailed && (usageMeasure.loading || reservationsLoading);
+  // Mesure d'usage (opt-in) : champs `__usage.*` posés sur chaque item AVANT libellés, filtres et widgets —
+  // les dimensions de la config les lisent comme n'importe quel chemin. L'index reste aligné sur `entities`.
+  const entityIds = useMemo(() => entities.map((e) => (e as { id?: string }).id), [entities]);
+  const { i18n } = useTranslation();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` est recréé à chaque rendu (cf. useT) : la langue suffit.
+  const usageLabels = useMemo(() => usageLabelsFrom(t), [i18n.language]);
+  const items = useMemo(() => {
+    if (!usageConf || !reservations || usageLoading || usageFailed) return rawItems;
+    const ids = entityIds.filter((id): id is string => Boolean(id));
+    const usage = computePoiUsage(reservations, ids, localIsoDay(new Date()), usagerTypes, usageConf);
+    return withUsage(rawItems, entityIds, usage, usageConf, usageLabels);
+  }, [rawItems, entityIds, reservations, usagerTypes, usageConf, usageLabels, usageLoading, usageFailed]);
+  const usageDimensions = useMemo(
+    () => (usageConf ? usageDimensionIds(dimensions) : undefined),
+    [usageConf, dimensions],
+  );
+
   // Libellés canoniques des dimensions à `keyPaths` (ex. departement regroupé
   // par `address.level4`) : construits UNE fois sur le dataset COMPLET (`items`)
   // pour rester stables quel que soit le filtrage, puis partagés à tous les
@@ -136,20 +185,7 @@ export default function DataObservatorySection({
       .filter((e): e is (typeof entities)[number] => e != null);
   }, [filtered, items, entities]);
 
-  // KPI `reservationHours` (opt-in) : réservations du formulaire de la fiche ouverte depuis la page
-  // (`rowAction.preview.reservations`), chargées seulement si un tel KPI est déclaré — même requête,
-  // donc même cache, que le filtre « Créneau disponible ». Sommées sur les équipements AFFICHÉS : la
-  // valeur suit les filtres.
-  const reservationsConf = rowAction?.preview?.reservations;
-  const wantsHours = kpis.some((k) => k.kind === "reservationHours");
-  if (import.meta.env.DEV && wantsHours && !reservationsConf) {
-    console.warn(
-      "[observatoire] KPI reservationHours sans rowAction.preview.reservations — la valeur reste « — »",
-    );
-  }
-  // `isLoading` (et non `isPending`) : une query désactivée — entité pas encore là, ou KPI absent —
-  // reste `isPending` sans jamais charger ; le sablier n'a de sens que pendant une requête en vol.
-  const { data: reservations, isLoading: reservationsLoading } = useSlotReservationsQuery(reservationsConf, wantsHours);
+  // KPI `reservationHours` : heures sommées sur les équipements AFFICHÉS — la valeur suit les filtres.
   const reservationHours = useMemo(() => {
     if (!reservations) return undefined;
     const ids = new Set(
@@ -159,6 +195,38 @@ export default function DataObservatorySection({
     );
     return sumReservationHours(reservations, localIsoDay(new Date()), ids);
   }, [reservations, filteredEntities]);
+
+  // Export : une colonne peut tirer sa `valueMap` d'un filtre du site (`valueMapFrom`), comme une dimension
+  // — la commune de rattachement, le type d'établissement.
+  const exportFieldDims = useMemo(
+    () => Object.fromEntries((props.export?.fields ?? []).map((f, i) => [String(i), f])),
+    [props.export],
+  );
+  const resolvedExportDims = useResolvedDimensions(exportFieldDims);
+  const exportConf = useMemo(
+    () =>
+      props.export
+        ? { ...props.export, fields: props.export.fields?.map((f, i) => resolvedExportDims[String(i)] ?? f) }
+        : null,
+    [props.export, resolvedExportDims],
+  );
+  // Chiffres clés (`export.kpis`) : les KPI du résultat filtré, tels qu'affichés.
+  const exportKpis = () => {
+    const rows = kpis.map((def) => ({
+      label: kpiLabel(def, dimensions, t),
+      value: computeKpiValue(def, filtered, dimensions, labels, reservationHours),
+    }));
+    downloadCsv(
+      buildKpiCsv(rows, [t("export.kpiLabel"), t("export.kpiValue")]),
+      `${props.export?.filename ?? "export"}-${t("export.kpiFile")}`,
+    );
+  };
+  // Pas de bouton pendant un calcul (mesure d'usage, heures réservées) ni sur une mesure en échec : l'export
+  // écrirait 0 % ou « — » là où les cartes affichent « Calcul en cours… » ou « — ».
+  const kpisReady = !usageLoading && !usageFailed && !reservationsLoading;
+  // Export de la liste et de la table : ses colonnes `__usage.*` sortiraient vides pendant le calcul ou sur une
+  // mesure en échec — lues « sans planning » ou « 0 h » par qui ouvre le fichier.
+  const listExport = usageLoading || usageFailed ? null : exportConf;
 
   // Drill-down (opt-in) : clic sur une part/barre → applique le filtre —
   // seulement pour les dimensions réellement filtrables (retirables par
@@ -205,6 +273,8 @@ export default function DataObservatorySection({
       labels={labels}
       reservationHours={reservationHours}
       reservationHoursLoading={reservationsLoading}
+      loadingDimensions={usageLoading ? usageDimensions : undefined}
+      unavailableDimensions={usageFailed ? usageDimensions : undefined}
       columns={props.kpiColumns}
       layout={props.kpiLayout}
     />
@@ -218,6 +288,8 @@ export default function DataObservatorySection({
       labels={labels}
       animate={!stillLoading}
       onDrill={onDrill}
+      loadingDimensions={usageLoading ? usageDimensions : undefined}
+      unavailableDimensions={usageFailed ? usageDimensions : undefined}
     />
   );
 
@@ -228,7 +300,8 @@ export default function DataObservatorySection({
       dimensions={dimensions}
       list={props.list}
       rowAction={rowAction}
-      exportCsv={props.export ?? null}
+      exportCsv={listExport}
+      onExportKpis={props.export?.kpis && kpisReady ? exportKpis : undefined}
       labels={labels}
       selection={selection}
       onSelect={setSelection}
@@ -240,7 +313,7 @@ export default function DataObservatorySection({
       data={filtered}
       dimensions={dimensions}
       table={props.table}
-      exportCsv={props.export ?? null}
+      exportCsv={listExport}
       entities={filteredEntities}
       labels={labels}
     />

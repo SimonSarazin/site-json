@@ -21,7 +21,8 @@
   },
   "charts": {
     "yes": "yes",
-    "no": "no"
+    "no": "no",
+    "unavailable": "Measure unavailable for now."
   },
   "table": {
     "title": "Detailed data",
@@ -30,7 +31,8 @@
     "empty": "No item matches the selected filters.",
     "page": "Page {{current}} / {{total}}",
     "prev": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "exportKpis": "Key figures"
   },
   "list": {
     "title": "List",
@@ -72,5 +74,22 @@
     "unknownActivity": "Unspecified activity",
     "noReservations": "No booking slot for this facility.",
     "error": "Unable to load the facility data."
+  },
+  "export": {
+    "kpiLabel": "Indicator",
+    "kpiValue": "Value",
+    "kpiFile": "key-figures"
+  },
+  "usage": {
+    "status": {
+      "open": "Open",
+      "closed": "Not open",
+      "noPlanning": "No schedule"
+    },
+    "band": {
+      "zero": "0 {{unit}}",
+      "range": "{{min}}–{{max}} {{unit}}",
+      "over": "over {{min}} {{unit}}"
+    }
   }
 }

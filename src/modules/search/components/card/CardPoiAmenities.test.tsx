@@ -16,7 +16,15 @@ vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => ({ loaded: 
 vi.mock("../../hooks/useInstallationFilter", () => ({
   useInstallationFilter: () => ({ enabled: false, toggle: vi.fn(), isActive: () => false }),
 }));
+// Compté, résultat inchangé : la commune ne doit pas se relire à chaque rendu (review de la MR 120).
+vi.mock("../../lib/dropdownFilters", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../lib/dropdownFilters")>();
+  return { ...actual, optionLabelOf: vi.fn(actual.optionLabelOf) };
+});
 
+import type React from "react";
+import { SiteContext } from "@/contexts/SiteContext";
+import { optionLabelOf } from "../../lib/dropdownFilters";
 import CardPoiAmenities from "./CardPoiAmenities";
 
 const item = {
@@ -93,5 +101,47 @@ describe("CardPoiAmenities (card.collapsible)", () => {
 
     fireEvent.click(screen.getByText("Salle multisports - Win-Lime"));
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("CardPoiAmenities (card.communeFrom)", () => {
+  // Une page dont le filtre `poi-postalCode` regroupe deux codes postaux sous une commune.
+  const config = {
+    pages: [{
+      path: "/equipements",
+      sections: [{ type: "searchHeader", props: { dropdownFilters: [{
+        id: "poi-postalCode", label: "Commune", field: "address.postalCode",
+        options: [{ id: "saint-paul", label: "Saint-Paul (97411 / 97434)", values: ["97411", "97434"] }],
+      }] } }],
+    }],
+  };
+  const lieuDit = {
+    serverData: { ...item.serverData, address: { postalCode: "97411", addressLocality: "Bois-de-Nèfles" } },
+  } as unknown as SearchEntity;
+  const avecSite = (ui: React.ReactElement) => (
+    <SiteContext.Provider value={{ config } as unknown as React.ContextType<typeof SiteContext>}>{ui}</SiteContext.Provider>
+  );
+
+  it("ajoute la commune de rattachement sous le lieu-dit", () => {
+    render(avecSite(<CardPoiAmenities item={lieuDit} card={{ communeFrom: { filter: "poi-postalCode" } }} />));
+    expect(screen.getByText("97411 Bois-de-Nèfles")).toBeInTheDocument();
+    expect(screen.getByText("CardPoiAmenities.commune")).toBeInTheDocument();
+  });
+
+  it("sans la clé, ou hors SiteProvider, pas de ligne de commune", () => {
+    const { unmount } = render(avecSite(<CardPoiAmenities item={lieuDit} card={{}} />));
+    expect(screen.queryByText("CardPoiAmenities.commune")).not.toBeInTheDocument();
+    unmount();
+    render(<CardPoiAmenities item={lieuDit} card={{ communeFrom: { filter: "poi-postalCode" } }} />);
+    expect(screen.queryByText("CardPoiAmenities.commune")).not.toBeInTheDocument();
+  });
+
+  it("la commune se lit une fois par carte, pas à chaque rendu", () => {
+    vi.mocked(optionLabelOf).mockClear();
+    const carte = () => avecSite(<CardPoiAmenities item={lieuDit} card={{ communeFrom: { filter: "poi-postalCode" } }} />);
+    const { rerender } = render(carte());
+    rerender(carte());
+    expect(screen.getByText("CardPoiAmenities.commune")).toBeInTheDocument();
+    expect(optionLabelOf).toHaveBeenCalledTimes(1);
   });
 });

@@ -13,6 +13,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import {
   ChartContainer,
   ChartTooltip,
@@ -21,7 +22,7 @@ import {
 import { useT } from "@/hooks/useT";
 import type { ChartDef, DimensionsConfig, ObservatoryItem } from "../schema";
 import { dimensionBool, dimensionLabel, type LabelMaps } from "../dimensions";
-import { chartRows, chartTitle, colorFor, itemsFor } from "../dashboard";
+import { chartDimensionIds, chartRows, chartTitle, colorFor, itemsFor } from "../dashboard";
 
 type T = ReturnType<typeof useT>;
 
@@ -29,6 +30,9 @@ interface ChartCardProps {
   title: string;
   children: ReactNode;
   bodyClassName?: string;
+  /** Rendu À LA PLACE du graphe, dans le même cadre : sablier d'une mesure en calcul, mention d'une
+   *  mesure indisponible. Sans lui, un graphe vide se lirait « aucune donnée ». */
+  placeholder?: ReactNode;
 }
 
 /** Carte de graphe — shadcn Card + hauteur du corps pilotée par le graphe.
@@ -38,15 +42,21 @@ interface ChartCardProps {
  *  le SSR rend un Skeleton identique au 1er rendu client, le graphe monte
  *  juste après l'hydratation (les données sont déjà là, préchargées). */
 // Exporté : réutilisé par la modal installation (ClientOnly + Skeleton inclus).
-export function ChartCard({ title, children, bodyClassName }: ChartCardProps) {
+export function ChartCard({ title, children, bodyClassName, placeholder }: ChartCardProps) {
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-5">
       <CardContent className="px-5">
         <h3 className="text-sm font-semibold text-foreground mb-4">{title}</h3>
         <div className={bodyClassName ?? "h-72"}>
-          <ClientOnly fallback={<Skeleton className="h-full w-full rounded-md" />}>
-            {() => children}
-          </ClientOnly>
+          {placeholder ? (
+            <div className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">
+              {placeholder}
+            </div>
+          ) : (
+            <ClientOnly fallback={<Skeleton className="h-full w-full rounded-md" />}>
+              {() => children}
+            </ClientOnly>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -86,17 +96,19 @@ interface RendererProps {
   /** Drill-down (opt-in config) : clic sur une part/barre → applique le
    *  filtre de la dimension. Non défini = désactivé. */
   onDrill?: (dimensionId: string, value: string) => void;
+  /** Rendu à la place du graphe (cf. `ChartCard.placeholder`). */
+  placeholder?: ReactNode;
 }
 
 /* ── Formes de rendu ─────────────────────────────────────────────────────── */
 
-function DonutChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+function DonutChart({ def, data, dims, labels, t, animate, onDrill, placeholder }: RendererProps) {
   const items = itemsFor(def, data, dims, labels);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
   return (
-    <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
+    <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]" placeholder={placeholder}>
       <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_TALL}>
         <PieChart>
           {/* Rayons en POURCENTAGES (pas en px fixes) : avec la légende
@@ -129,13 +141,13 @@ function DonutChart({ def, data, dims, labels, t, animate, onDrill }: RendererPr
   );
 }
 
-function SimplePieChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+function SimplePieChart({ def, data, dims, labels, t, animate, onDrill, placeholder }: RendererProps) {
   const items = itemsFor(def, data, dims, labels);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
   return (
-    <ChartCard title={chartTitle(def, dims, t)}>
+    <ChartCard title={chartTitle(def, dims, t)} placeholder={placeholder}>
       <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_DEFAULT}>
         <PieChart>
           <Pie data={items} dataKey="value" nameKey="name" outerRadius="70%" isAnimationActive={animate} onClick={drill}>
@@ -151,13 +163,13 @@ function SimplePieChart({ def, data, dims, labels, t, animate, onDrill }: Render
   );
 }
 
-function BarsChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+function BarsChart({ def, data, dims, labels, t, animate, onDrill, placeholder }: RendererProps) {
   const items = itemsFor(def, data, dims, labels);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
   return (
-    <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
+    <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]" placeholder={placeholder}>
       <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_TALL}>
         <BarChart data={items} margin={{ left: -10, bottom: 80 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -187,13 +199,13 @@ function BarsChart({ def, data, dims, labels, t, animate, onDrill }: RendererPro
   );
 }
 
-function BarsHorizontalChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+function BarsHorizontalChart({ def, data, dims, labels, t, animate, onDrill, placeholder }: RendererProps) {
   const items = itemsFor(def, data, dims, labels).slice(0, def.top ?? 10);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
   return (
-    <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[440px]">
+    <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[440px]" placeholder={placeholder}>
       <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_TALLER}>
         <BarChart data={items} layout="vertical" margin={{ left: 30, top: 10, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -219,7 +231,7 @@ function BarsHorizontalChart({ def, data, dims, labels, t, animate, onDrill }: R
 }
 
 /** Oui/non empilés pour N dimensions anyTrue (ex. PMR / PSHS / Handi). */
-function BooleanGroupsChart({ def, data, dims, t, animate }: RendererProps) {
+function BooleanGroupsChart({ def, data, dims, t, animate, placeholder }: RendererProps) {
   const total = data.length;
   const yesKey = t("charts.yes");
   const noKey = t("charts.no");
@@ -234,7 +246,7 @@ function BooleanGroupsChart({ def, data, dims, t, animate }: RendererProps) {
       };
     });
   return (
-    <ChartCard title={chartTitle(def, dims, t)}>
+    <ChartCard title={chartTitle(def, dims, t)} placeholder={placeholder}>
       <ChartContainer config={{}} className={CHART_CONTAINER_CLASS} initialDimension={DIM_DEFAULT}>
         <BarChart data={items}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -266,13 +278,27 @@ interface ObservatoryChartsProps {
   labels?: LabelMaps;
   animate?: boolean;
   onDrill?: (dimensionId: string, value: string) => void;
+  /** Dimensions encore en calcul (champs `__usage.*`) : un graphe qui en lit une montre le sablier des KPI. */
+  loadingDimensions?: ReadonlySet<string>;
+  /** Dimensions sans valeur possible (mesure d'usage en échec) : un graphe qui en lit une le dit, au lieu de
+   *  rester vide — à zéro, il se lirait « aucune donnée ». */
+  unavailableDimensions?: ReadonlySet<string>;
 }
 
 /**
  * Compose les graphes déclarés : les `layout: "half"` consécutifs sont
  * appairés en 2 colonnes (lg), les `full` occupent leur rangée.
  */
-export function ObservatoryCharts({ charts, data, dimensions, labels, animate = true, onDrill }: ObservatoryChartsProps) {
+export function ObservatoryCharts({
+  charts,
+  data,
+  dimensions,
+  labels,
+  animate = true,
+  onDrill,
+  loadingDimensions,
+  unavailableDimensions,
+}: ObservatoryChartsProps) {
   const t = useT("modules/observatoire");
   const rows = chartRows(charts);
 
@@ -285,9 +311,16 @@ export function ObservatoryCharts({ charts, data, dimensions, labels, animate = 
         >
           {row.map((def, j) => {
             const render = RENDERERS[def.kind];
+            // Il suffit d'une dimension lue (la sienne, celle de sa valeur…) pour que le graphe attende.
+            const reads = chartDimensionIds(def);
+            const placeholder = reads.some((id) => unavailableDimensions?.has(id)) ? (
+              t("charts.unavailable")
+            ) : reads.some((id) => loadingDimensions?.has(id)) ? (
+              <Spinner className="h-6 w-6" label={t("kpiComputing")} showLabel />
+            ) : undefined;
             return (
               <div key={`${def.kind}-${def.dimension ?? j}`} className="min-w-0">
-                {render({ def, data, dims: dimensions, labels, t, animate, onDrill })}
+                {render({ def, data, dims: dimensions, labels, t, animate, onDrill, placeholder })}
               </div>
             );
           })}

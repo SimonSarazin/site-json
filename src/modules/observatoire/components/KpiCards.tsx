@@ -1,8 +1,8 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useT } from "@/hooks/useT";
 import type { DataObservatorySectionProps, DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
-import { TOKEN_TINT_CLASSES, dimensionLabel, type LabelMaps } from "../dimensions";
-import { computeKpiValue } from "../dashboard";
+import { TOKEN_TINT_CLASSES, type LabelMaps } from "../dimensions";
+import { PLACEHOLDER, computeKpiValue, kpiLabel } from "../dashboard";
 import type { ReservationHours } from "@/modules/search/lib/reservationHours";
 import { KpiCard } from "./KpiCard";
 
@@ -29,6 +29,12 @@ interface KpiCardsProps {
   /** Réservations en cours de chargement : les KPI `reservationHours` montrent un sablier plutôt que
    *  « — », qui se lisait comme une absence de données (le chargement prend plusieurs secondes). */
   reservationHoursLoading?: boolean;
+  /** Dimensions encore en calcul (champs `__usage.*` de la mesure d'usage) : leurs KPI montrent le même
+   *  sablier que `reservationHours`. */
+  loadingDimensions?: ReadonlySet<string>;
+  /** Dimensions sans valeur possible (mesure d'usage en échec) : leurs KPI disent « — », comme
+   *  `reservationHours` sans réservations, plutôt qu'un sablier sans fin ou un 0 % trompeur. */
+  unavailableDimensions?: ReadonlySet<string>;
   /** Cartes par ligne dès 1024 px (`kpiColumns`) ; absent = remplissage automatique. */
   columns?: KpiColumns;
   /**
@@ -48,6 +54,8 @@ export function KpiCards({
   labels,
   reservationHours,
   reservationHoursLoading,
+  loadingDimensions,
+  unavailableDimensions,
   columns,
   layout = "cards",
 }: KpiCardsProps) {
@@ -56,15 +64,14 @@ export function KpiCards({
   const entries = kpis.map((def, i) => ({
     key: `${def.kind}-${def.dimension ?? i}`,
     icon: def.icon ?? "activity",
-    label: def.label
-      ? t(def.label)
-      : def.labelKey
-        ? t(def.labelKey)
-        : def.dimension
-          ? dimensionLabel(t, dimensions, def.dimension)
-          : "",
-    value: computeKpiValue(def, data, dimensions, labels, reservationHours),
-    loading: def.kind === "reservationHours" && Boolean(reservationHoursLoading),
+    label: kpiLabel(def, dimensions, t),
+    value:
+      def.dimension && unavailableDimensions?.has(def.dimension)
+        ? PLACEHOLDER
+        : computeKpiValue(def, data, dimensions, labels, reservationHours),
+    loading:
+      (def.kind === "reservationHours" && Boolean(reservationHoursLoading)) ||
+      Boolean(def.dimension && loadingDimensions?.has(def.dimension)),
     accentClasses: TOKEN_TINT_CLASSES[def.accent ?? "primary"],
   }));
 

@@ -1,6 +1,7 @@
 import type { SiteConfig } from "@/types/site-schema";
 import type { SearchHeaderSectionProps } from "@/modules/search/schema";
 import type { SearchByFieldValue } from "@/modules/search/contexts/pageFilters";
+import { filterValueMap } from "@/modules/observatoire/dimensions";
 import { TOKEN_MATCH_TYPE } from "./tokenMatch";
 
 /**
@@ -152,6 +153,22 @@ export function getDropdownFilterOwner(
     if (onPage) return onPage;
   }
   return matches[0];
+}
+
+/**
+ * Libellé de l'option du filtre `filterId` qui interroge `value` (`values`, sinon `value`), traduit par
+ * `label` — ex. la commune de rattachement d'un code postal (`card.communeFrom`). Résolu par
+ * `filterValueMap`, celle de la `valueMapFrom` de l'observatoire : la carte et l'export disent la même
+ * commune. Filtre ou valeur inconnus → `undefined`.
+ */
+export function optionLabelOf(
+  config: SiteConfig,
+  filterId: string,
+  value: string | undefined,
+  label: Parameters<typeof filterValueMap>[1],
+): string | undefined {
+  if (!value) return undefined;
+  return filterValueMap(getDropdownFilterOwner(config, filterId)?.filter.options ?? [], label)[value];
 }
 
 /** Idem mais par `field` `serverData` (dérivation champ → filtre). */

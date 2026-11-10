@@ -19,7 +19,7 @@ const data: ObservatoryItem[] = [{ name: "Gymnase" }, { name: "" }];
 // Une entité par ligne : le bouton « Fiche » reste rendu même sans libellé.
 const entities = [{}, {}] as unknown as SearchEntity[];
 
-const renderList = (onSelect = vi.fn(), selection = "") =>
+const renderList = (onSelect = vi.fn(), selection = "", onExportKpis?: () => void) =>
   renderWithProviders(
     <MemoryRouter>
       <ObservatoryList
@@ -30,6 +30,7 @@ const renderList = (onSelect = vi.fn(), selection = "") =>
         rowAction={{ kind: "preview" }}
         selection={selection}
         onSelect={onSelect}
+        onExportKpis={onExportKpis}
       />
     </MemoryRouter>,
   );
@@ -58,5 +59,21 @@ describe("ObservatoryList (sélection par clic)", () => {
     renderList();
 
     expect(screen.getAllByRole("button", { name: /fiche/i })).toHaveLength(2);
+  });
+});
+
+describe("ObservatoryList (export des chiffres clés)", () => {
+  it("avec onExportKpis : bouton « Chiffres clés » qui le déclenche", () => {
+    const onExportKpis = vi.fn();
+    renderList(vi.fn(), "", onExportKpis);
+
+    fireEvent.click(screen.getByRole("button", { name: /chiffres clés/i }));
+    expect(onExportKpis).toHaveBeenCalledOnce();
+  });
+
+  it("sans onExportKpis : pas de bouton", () => {
+    renderList();
+
+    expect(screen.queryByRole("button", { name: /chiffres clés/i })).toBeNull();
   });
 });
