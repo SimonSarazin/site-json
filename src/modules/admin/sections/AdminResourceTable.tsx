@@ -1,4 +1,4 @@
-import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Eye, Link2, Mail, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, BadgeX, ChevronDown, ChevronUp, CircleCheck, CircleDashed, CircleDot, CirclePlay, CircleX, Copy, Eye, Link2, Mail, MoreHorizontal, Pencil, Plus, Trash2, Star } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Suspense, useMemo, useState } from "react";
 import { lazy } from "vite-preload";
@@ -29,6 +29,7 @@ import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { publicSurfaceKeys } from "@/lib/queryKeys";
 import { useSite } from "@/hooks/useSite";
 import { useT } from "@/hooks/useT";
+import { seedFromEntity } from "@/modules/formEngine";
 import "@/modules/admin/i18n";
 // Effet de bord : enregistre le bundle i18n "modules/search" (clés `days.*`/`card.event.recurring*`,
 // utilisées par `formatColumnCell` pour la colonne `startDate` d'un event récurrent). Les autres
@@ -120,6 +121,114 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       } catch { /* repli sur la ligne allégée */ }
     }
     setEditEntity(grantCostumAdmin(item) as unknown as EntityTypes);
+  };
+  // Champs d'IDENTITÉ jamais repris sur la copie — utile seulement au repli ci-dessous (le pipeline
+  // `seedFromEntity` n'émet que des champs de FORMULAIRE : id/_id/slug n'en sont jamais).
+  const DUPLICATE_SKIP_FIELDS = new Set(["id", "_id", "slug"]);
+  // Repli minimal si aucun descripteur costum n'est résolu (type standard — poi/organization/
+  // project/event sans costumForm) : copie brute, sans codec de lecture. `openingHours`/`address`
+  // resteraient dans la forme SERVEUR (tableau legacy / objet composite), pas celle attendue par le
+  // widget — limite connue, non couverte par ce repli (cf. §9septdecies, doc-projets/parent62.md).
+  const seedBrut = (serverData: Record<string, unknown>): Record<string, unknown> => {
+    const seed: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(serverData)) {
+      if (v === undefined || DUPLICATE_SKIP_FIELDS.has(k)) continue;
+      seed[k] = v;
+    }
+    return seed;
+  };
+  const openDuplicateEntity = async (item: unknown, realId: string | undefined): Promise<void> => {
+    if (isDuplicating) return; // anti-double-clic : cf. déclaration de l'état
+    setIsDuplicating(true);
+    try {
+    const method = EDIT_LOAD_METHOD[resource.entityType];
+    const sdk = me as unknown as Record<string, ((a: { id: string }) => Promise<unknown>) | undefined> | null;
+    let source: unknown = item;
+    if (sdk && realId && method && typeof sdk[method] === "function") {
+      try {
+        const full = await sdk[method]!({ id: realId });
+        if (full) source = full;
+      } catch { /* repli sur la ligne allégée */ }
+    }
+    const serverData = ((source as { serverData?: Record<string, unknown> })?.serverData ?? source) as Record<string, unknown>;
+    // `createModal` ("add-<id>") pointe un costumForm de la config → son descripteur COMPILÉ (déjà
+    // enregistré par `registerCostumForms.ts`, chargé dynamiquement par `ModalRegistry` — on force
+    // l'import ici pour ne pas dépendre de l'ordre d'ouverture des modales) donne le VRAI pipeline de
+    // lecture (`seedFromEntity` : groupes `address`/`openingHours` ET tout champ à `read` déclaré ou
+    // par défaut de widget, ex. `category` en multiselect `coerce:stringArray` — pas seulement les 2
+    // cas vus en test). Un type STANDARD (poi/organization/project/event sans costumForm) n'a pas
+    // d'entrée dans ce registre : repli sur la copie brute (`seedBrut`).
+    const costumId = createModal?.replace(/^add-/, "");
+    let seed: Record<string, unknown> | undefined;
+    if (costumId) {
+      try {
+        const { getCostumModalSpec } = await import("@/modules/profil/forms/costum/registerCostumForms");
+        if (getCostumModalSpec(costumId)) {
+          const { getDescriptor } = await import("@/modules/profil/forms/specRegistries");
+          const descriptor = getDescriptor(costumId);
+          if (descriptor) seed = seedFromEntity(descriptor, serverData ?? {});
+        }
+      } catch { /* registre costum indisponible (ex. test unitaire isolé) → repli brut */ }
+    }
+    seed ??= seedBrut(serverData ?? {});
+    // `seedFromEntity` lit TOUS les champs du formulaire par leur `field.name` — un costumForm qui
+    // déclarerait un `slug`/`id` ÉDITABLE (aucun des formulaires dupliquables aujourd'hui, mais
+    // `seedFromEntity` lui-même ne le garantit pas) le recopierait sinon tel quel.
+    for (const k of DUPLICATE_SKIP_FIELDS) delete seed[k];
+    const originalName = typeof serverData?.name === "string" ? serverData.name : "";
+    seed.name = tAdmin("AdminResourceTable.duplicateNamePrefix", undefined, { name: originalName });
+    setDuplicateSeed(seed);
+    // Galerie/documents : PAS un champ de formulaire (renderOnly, uploadés APRÈS la création — cf.
+    // `uploadDocument`, qui exige un `id`). Capturés ICI pour être recopiés sur la fiche nouvellement
+    // créée, via `onCreated` (cf. plus bas) — best-effort, jamais bloquant pour la création elle-même.
+    try {
+      const withGallery = source as { getGalleryImages?: (k?: string) => Array<Record<string, unknown>>; getGalleryFiles?: () => Promise<Array<Record<string, unknown>>> };
+      const images = typeof withGallery.getGalleryImages === "function" ? withGallery.getGalleryImages("slider") : [];
+      const documents = typeof withGallery.getGalleryFiles === "function" ? await withGallery.getGalleryFiles() : [];
+      setPendingDuplicateFiles(images.length || documents.length ? { images, documents } : null);
+    } catch {
+      setPendingDuplicateFiles(null);
+    }
+    setCreateOpen(true);
+    } finally {
+      setIsDuplicating(false);
+    }
+  };
+  /** Recopie best-effort la galerie/documents de l'original sur l'entité VENANT d'être créée par
+   *  duplication — `fetch` du fichier existant (même origine publique que son affichage en `<img>`/
+   *  lien, mais ICI en XHR : nécessite CORS côté serveur de fichiers, non vérifiable depuis cet
+   *  environnement sans session navigateur réelle) puis `uploadDocument`. Échec PAR FICHIER avalé
+   *  (jamais toute la copie à cause d'une pièce) ; un résumé est toasté si au moins un fichier a
+   *  échoué, pour ne pas laisser l'admin croire la copie complète à tort. */
+  const copyDuplicateFiles = async (created: EntityTypes): Promise<void> => {
+    const pending = pendingDuplicateFiles;
+    setPendingDuplicateFiles(null);
+    if (!pending) return;
+    const target = created as unknown as { uploadDocument: (f: Blob, o: { contentKey: string; docType: "image" | "file" }) => Promise<unknown> };
+    let failed = 0;
+    const total = pending.images.length + pending.documents.length;
+    for (const img of pending.images) {
+      const path = (img.imagePath ?? img.docPath) as string | undefined;
+      if (!path) { failed++; continue; }
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(String(res.status));
+        await target.uploadDocument(await res.blob(), { contentKey: "slider", docType: "image" });
+      } catch { failed++; }
+    }
+    for (const doc of pending.documents) {
+      const path = doc.docPath as string | undefined;
+      if (!path) { failed++; continue; }
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(String(res.status));
+        await target.uploadDocument(await res.blob(), { contentKey: "file", docType: "file" });
+      } catch { failed++; }
+    }
+    if (failed > 0) {
+      toast.warning(tAdmin("AdminResourceTable.duplicateFilesPartial", undefined, { failed: String(failed), total: String(total) }));
+    }
+    void refetch();
   };
   const t = useT();
   // Second hook nommé : `t` reste réservé aux LocalizedString de config, `tAdmin` au namespace du module.
@@ -254,6 +363,17 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
   }
 
   const [editEntity, setEditEntity] = useState<EntityTypes | null>(null);
+  // Semis de la modale de CRÉATION pour « Dupliquer » (prioritaire sur `resource.createDefaults`
+  // statique tant qu'il est posé) — cf. `openDuplicateEntity`. `null` = bouton « Ajouter » normal.
+  const [duplicateSeed, setDuplicateSeed] = useState<Record<string, unknown> | null>(null);
+  // Anti-double-clic : `openDuplicateEntity` attend un rechargement réseau + un import dynamique
+  // avant de poser `duplicateSeed`/`pendingDuplicateFiles` — sans garde, un 2ᵉ « Dupliquer » cliqué
+  // sur une AUTRE ligne pendant ce délai mélangerait le seed d'une ligne et la galerie de l'autre.
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  // Galerie/documents de l'original à recopier sur la fiche dupliquée une fois créée (cf.
+  // `copyDuplicateFiles`) — `null` tant qu'aucune duplication n'est en cours ou que l'original n'a
+  // ni image ni document.
+  const [pendingDuplicateFiles, setPendingDuplicateFiles] = useState<{ images: Array<Record<string, unknown>>; documents: Array<Record<string, unknown>> } | null>(null);
   const [toDelete, setToDelete] = useState<{ entity: DeletableEntity; label: string } | null>(null);
   // Détacher = action FORTE (l'élément sort du scope costum et disparaît de la table) → confirmation.
   const [toDetach, setToDetach] = useState<{ item: unknown; id: string; label: string } | null>(null);
@@ -724,6 +844,11 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
                             <Pencil className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.edit")}
                           </DropdownMenuItem>
                         )}
+                        {actionnable && rowActions.includes("duplicate") && createModal && hasRealId && (
+                          <DropdownMenuItem disabled={isDuplicating} onClick={() => void openDuplicateEntity(item, id)}>
+                            <Copy className="mr-2 h-4 w-4" /> {tAdmin("AdminResourceTable.duplicate")}
+                          </DropdownMenuItem>
+                        )}
                         {actionnable && fieldStatus && rowActions.includes("validate") && hasRealId && (() => {
                           // Une action par ÉTAT CIBLE (l'état courant est omis) — le libellé porte
                           // l'état, l'icône (ton) n'est qu'un repère. Écrit la valeur brute config.
@@ -859,13 +984,20 @@ export default function AdminResourceTable({ section }: { section: AdminSection 
       {createModal && (
         <DynamicModal
           modalName={createModal}
-          createDefaults={resource.createDefaults}
+          createDefaults={duplicateSeed ?? resource.createDefaults}
+          // Uniquement pendant une duplication (sinon `undefined`, comportement `Ajouter` inchangé) :
+          // force `navigateOnSuccess:false` (déjà la valeur des forms costum parent62-article/-event,
+          // donc sans effet ici) et reçoit l'entité créée pour y recopier galerie/documents.
+          {...(duplicateSeed ? { onCreated: (created: EntityTypes) => void copyDuplicateFiles(created) } : {})}
           open={createOpen}
           onOpenChange={(o) => {
             setCreateOpen(o);
             // REVIEW M4 : à la fermeture de la modale de création, refetch (un élément vient
             // peut-être d'être créé — staleTime 60s sinon).
             if (!o) void refetch();
+            // Semis de duplication à USAGE UNIQUE : sans ce reset, un « Ajouter » normal après une
+            // duplication annulée réouvrirait avec les valeurs de la ligne dupliquée.
+            if (!o) setDuplicateSeed(null);
           }}
           parent={carrier}
         />
