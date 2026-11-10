@@ -14,7 +14,11 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-11-09** — renommage admin « Actualités » → « Article », décalage de la
+Dernière mise à jour : **2026-11-10** — reprise éditoriale `/reseau`/`/equipe`/`/charte` sur PDF de
+relecture client, page « Nos champs d'actions » retirée, retrait du bloc CAF sur `/equipe` — détail
+§9novodecies.
+
+**2026-11-09** — renommage admin « Actualités » → « Article », décalage de la
 bulle « Ternois Bruaysis » sur la carte (chevauchement de label à 150 % de zoom) et activation du
 bouton **export PDF** sur `/agenda` (`agenda.showPdfExport`) — détail §9octodecies. Même jour :
 mesure d'audience **Matomo en production** sur `www.parent62.org` : branche `feat/analytics-matomo`
@@ -5509,6 +5513,55 @@ opt-in `agenda.showPdfExport` (code déjà livré, SDK ≥ 1.0.196) est posée �
 | `tests/preflight/` | ✅ 919 passés (2 échecs préexistants, non liés : snapshot archétype agenda à resynchroniser, dossier d'images non déclaré — hérités de lots antérieurs) |
 | Vérification navigateur réelle | ⬜ à faire : renommage admin, décalage de bulle à 150 % de zoom, bouton PDF agenda sur `/agenda` |
 
+## 9novodecies. Reprise éditoriale `/reseau`, `/equipe`, `/charte` ; page « Nos champs d'actions » retirée (09-10/11)
+
+**`/equipe` (09/11)** : retrait du bloc « Le contact à la CAF du Pas-de-Calais » (section `title`
+`equipe-caf-titre` + section `member` `equipe-caf`, rôle « Conseillère thématique Parentalité CAF ») ;
+`equipe-terr` (« L'équipe de Coordonnateurs (trices) »), devenue la dernière section de la page, reçoit
+`className: "mb-16"` pour conserver l'espacement bas que portait le bloc retiré. Les deux variables CSS
+`--p62-caf`/`--p62-caf-encre` (`src/index-parent62.css:326-327`) restent orphelines — non retirées, pas
+demandé.
+
+**`/reseau` (10/11, sur demande client avec PDF de relecture)** : titre de page « Du REAAP au Réseau
+Parentalité » → **« Le Réseau Parentalité »** (page + hero), sous-titre allégé (« 25 ans » au lieu de
+« Vingt-cinq ans », espace en trop corrigé) ; équipe du réseau → **« coordonnat·eurs·ices »** (au lieu
+de « coordonnatrices »), parenthèse « (ADS) Caf » recalée (avant : « ADS Caf) » fermait après Caf) ;
+carte « Les membres du Réseau » → sous-titre et cartes Professionnels/Institutions réécrits sur le texte
+du PDF (retrait UDAF/EPDEF/liste détaillée, ajout « l'État »/« la MSA ») ; section « 8 valeurs au
+service de la « cause des parents » » **remplacée par un lien direct** vers `/charte` (type `cta`, la
+page qui porte déjà le détail des 8 valeurs).
+
+**Alignement et mise en forme (10/11)** : les sections « Qu'est-ce que la parentalité ? » et
+« L'objectif du Réseau Parentalité 62 » étaient en type `title` (rendu texte brut, centré, sans gras ni
+puces possibles — `TitleSection.tsx` rend le sous-titre via `<T>`, un `<span>`/`<p>` sans parseur
+markdown). Passées en type `content` (comme le reste de la page, aligné à gauche, markdown) pour
+respecter les consignes du client : **pas de centrage**, et **« L'objectif »** porte désormais une
+vraie liste à puces markdown pour ses 4 axes (pauvreté, ruptures familiales, handicap, violences
+intra-familiales). Même conversion `title` → `content` pour « Adhérer à la Charte du REAAP 62, c'est : »
+sur `/charte`, afin de respecter le **gras** (phrases-clés du PDF) et les **sauts de ligne** entre
+paragraphes (qui peut adhérer / travail de réflexion en cours / adhésions suspendues) — impossibles en
+`title`. Les 4 sections `content` désormais consécutives de `/reseau` (histoire, parentalité, objectif,
+équipe) ont aussi reçu `className: "py-10"` (au lieu du `py-16` par défaut du composant) pour resserrer
+l'espacement entre elles, sur demande.
+
+**`/charte` (10/11)** : bloc « Votre dossier de candidature doit comporter » (3 étapes : courrier,
+délibération, statuts — section `steps` `charte-adherer-steps`) et bloc « Votre dossier doit être
+adressé à la CAF… » (section `cta` `charte-cta`, bouton « Écrire au service Action Sociale ») **retirés
+en totalité** — les nouvelles adhésions à la Charte sont temporairement suspendues (texte ajouté sur
+`charte-adherer-titre`).
+
+**Page « Nos champs d'actions » (10/11)** : **page retirée en totalité** (`/champs-actions`, présentait
+REAAP/CLAS/LAEP) ainsi que son entrée de nav (sous « Le Réseau parentalité »). Aucun autre lien interne
+ne pointait vers `/champs-actions` (vérifié par recherche texte et par l'audit `lien-mort`).
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 50 pages / 174 sections (49/169 à mi-lot, le temps de retrouver la page `/equipe`) |
+| `audit:config` | ✅ RAS |
+| `tests/preflight/` | ✅ 920/928 passés (8 skip), recette `page-editoriale` (config-assistant) resynchronisée avec la nouvelle séquence de sections de `/reseau` |
+| `typecheck` | ✅ |
+| Vérification navigateur réelle | ⬜ à faire : `/reseau`, `/equipe`, `/charte`, disparition de `/champs-actions` |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -5516,7 +5569,7 @@ opt-in `agenda.showPdfExport` (code déjà livré, SDK ≥ 1.0.196) est posée �
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; double entrée `/parents`/`/pro` **rétablie le 02/09** (1.4, §9septendecies), la recette visuelle et le déploiement → 1.10. **09-10/09** : haut de page resserré — bandeau au quart de l'écran, « Territoires » et « à la une » côte à côte dans un `gridLayout` qui tient dans le premier écran jusqu'à **150 % de zoom** ; page `/contact` retirée au profit de `/equipe`, qui portait déjà la même section (§9sexvicies.1, §9sexvicies.6) |
-| 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13). **10/09** : **deux pages reprises mot pour mot** à la source officielle — `/champs-actions` (5 valeurs du REAAP, charte et 5 objectifs du CLAS, âges du LAEP, 3 liens documentaires, actu d'Olhain tirée par son slug, §9sexvicies.3) et `/reseau` (l'équipe nommée, la définition intégrale du CNSP, les 3 familles de membres, la circulaire de 1999 et la plaquette du réseau en PDF ; frise chronologique retirée, §9sexvicies.5). **Reste à faire** : les 8 valeurs de `/charte` sont **tronquées** à leur première phrase alors que la source les donne en entier |
+| 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/equipe` ; arbitrage éditorial réseau ouvert (§13). **10/09** : **deux pages reprises mot pour mot** à la source officielle — `/champs-actions` (5 valeurs du REAAP, charte et 5 objectifs du CLAS, âges du LAEP, 3 liens documentaires, actu d'Olhain tirée par son slug, §9sexvicies.3) et `/reseau` (l'équipe nommée, la définition intégrale du CNSP, les 3 familles de membres, la circulaire de 1999 et la plaquette du réseau en PDF ; frise chronologique retirée, §9sexvicies.5). **10/11, relecture client sur PDF** : `/champs-actions` **retirée en totalité** (contenu obsolète) ; `/reseau` et `/charte` réécrites sur le texte du PDF — les 8 valeurs de `/charte` restent donc complètes (le point « tronquées » ci-dessus visait le texte d'origine, caduc depuis) (§9novodecies) |
 | 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide ; **03/09** : haut de page refondu — **3 prochaines réunions du comité local** juste après le bandeau, carte « Comptes rendus des réunions » (Drive) et **3 ressources du territoire** avec bouton « Voir toutes les ressources » ; carte « Le comité local » et blocs de liens externes retirés ; saisie des réunions par l'onglet `/admin` dédié (§9novodecies). Les deux blocs de données sont **câblés** ; leur remplissage dépend de la saisie côté costum (§9novodecies.5) ; **22-23/09** : coordination lue en UNE requête serveur (`filters`+`fields`, SDK 1.0.194), plus d'appel par carte, `card.rattachement` obligatoire, gate labels exacts (§9septvicies.6-7) |
 | 1.4 | Double entrée parents / pro | ✅ *(était 🟡, régression du 06/08)* | **Rétablie le 02/09** : la section `action-tiles` `home-double-entree` (« Vous êtes… » → `/parents` / `/pro`) est réinsérée sur l'accueil, en 2ᵉ position — juste après le carrousel « à la une », sa place d'origine dans le rythme de la page. Les deux pages existaient toujours mais **n'étaient liées de nulle part** depuis la refonte du 06/08 (vérifié : une seule occurrence de chaque chemin dans la config, sa propre déclaration de page). Elles coexistent avec le dropdown « Publics » (7 pages `/public/*`), qui ne les remplace donc pas — question §13 tranchée |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |

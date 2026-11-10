@@ -96,20 +96,8 @@
           },
           {
             "label": {
-              "fr": "Nos champs d'actions",
-              "en": "Our fields of action"
-            },
-            "path": "/champs-actions",
-            "icon": "hand-heart",
-            "description": {
-              "fr": "REAAP, CLAS, LAEP.",
-              "en": "REAAP, CLAS, LAEP."
-            }
-          },
-          {
-            "label": {
-              "fr": "Notre équipe & contact",
-              "en": "Our team & contact"
+              "fr": "Notre équipe & contacts",
+              "en": "Our team & contacts"
             },
             "path": "/equipe",
             "icon": "contact",
@@ -722,14 +710,14 @@
     {
       "path": "/reseau",
       "title": {
-        "fr": "Du REAAP au Réseau Parentalité",
-        "en": "From REAAP to the Parenting Network"
+        "fr": "Le Réseau Parentalité",
+        "en": "The Parenting Network"
       },
       "layout": "fullwidth",
       "seo": {
         "title": {
-          "fr": "Du REAAP au Réseau Parentalité",
-          "en": "From REAAP to the Parenting Network"
+          "fr": "Le Réseau Parentalité",
+          "en": "The Parenting Network"
         },
         "description": {
           "fr": "Présentation de l'histoire, de l'équipe, des valeurs et des objectifs du Réseau Parentalité 62, issu du dispositif REAAP mis en place dans le Pas-de-Calais dès 1999.",
@@ -744,10 +732,10 @@
           "type": "title",
           "id": "reseau-hero",
           "props": {
-            "title": { "fr": "Du REAAP au Réseau Parentalité", "en": "From REAAP to the Parenting Network" },
+            "title": { "fr": "Le Réseau Parentalité", "en": "The Parenting Network" },
             "subtitle": {
-              "fr": "Le Pas-de-Calais fut l'un des premiers départements de France à organiser le dispositif REAAP. Vingt-cinq ans plus tard, le réseau est piloté par la CAF et animé au plus près des acteurs.",
-              "en": "Pas-de-Calais was one of the first departments in France to set up the REAAP scheme. Twenty-five years on, the network is led by the CAF and run close to the ground."
+              "fr": "Le Pas-de-Calais est l'un des premiers départements de France à organiser le dispositif Réseau d’Ecoute, d’Appui et d’Accompagnement des Parents (REAAP). 25 ans plus tard, le Réseau Parentalité (ex-REAAP) est piloté par la CAF et animé au plus près des acteurs.",
+              "en": "Pas-de-Calais was one of the first departments in France to establish the Network for Listening, Support, and Guidance for Parents (REAAP). 25 years later, the Parenting Network (formerly REAAP) is managed by the CAF and coordinated in close collaboration with local stakeholders."
             },
             "align": "center",
             "size": "xl"
@@ -763,7 +751,37 @@
               "fr": "En 1999, le département du Pas-de-Calais a été l'un des premiers en France à avoir organisé le dispositif REAAP sur son territoire. Ainsi, dès mai 1999 et selon les directives de [la première circulaire REAAP du 9 mars 1999](https://www.communecter.org/upload/communecter/organizations/6a450f0ac34c7070327d2a64/file/circulaire-reaap-9-mars-1999.pdf), s'est mise très vite en place une organisation multi partenariale pilotée à l'époque par la Direction Départementale des Affaires Sanitaires et Sociales du Pas-de-Calais (DDASS 62), qui a structuré le réseau avec une animation départementale et locale.\n\nEn 2014, la CAF du Pas-de-Calais prend le pilotage de la démarche, crée 9 postes de coordonnateurs.trices sur l'ensemble du département, ainsi que 2 postes pour l'animation départementale, et impulse une nouvelle dynamique en développant l'animation du Réseau Parentalité 62 au plus près des acteurs.",
               "en": "In 1999, Pas-de-Calais was one of the first departments in France to organise the REAAP scheme on its territory. From May 1999, following [the first REAAP circular of 9 March 1999](https://www.communecter.org/upload/communecter/organizations/6a450f0ac34c7070327d2a64/file/circulaire-reaap-9-mars-1999.pdf), a multi-partner organisation was quickly set up, led at the time by the department's health and social affairs directorate (DDASS 62), which structured the network with both departmental and local coordination.\n\nIn 2014, the CAF of Pas-de-Calais took over the lead, created 9 coordinator posts across the department plus 2 posts for departmental coordination, and gave fresh impetus by running the Parenting Network 62 as close as possible to its members."
             },
-            "width": "wide"
+            "width": "wide",
+            "className": "py-10"
+          }
+        },
+        {
+          "type": "content",
+          "id": "reseau-parentalite",
+          "props": {
+            "title": { "fr": "Qu'est-ce que la parentalité ?", "en": "What is parenting (« parentalité »)?" },
+            "description": {
+              "fr": "La parentalité désigne « l'ensemble des façons d'être et de vivre le fait d'être parent. C'est un processus qui conjugue les différentes dimensions de la fonction parentale, matérielle, psychologique, morale, culturelle, sociale. Elle qualifie le lien entre l'adulte et un enfant, quelle que soit la structure familiale dans laquelle il s'inscrit, dans le but d'assurer le soin, le développement et l'éducation de l'enfant. Cette relation adulte/enfant suppose un ensemble de fonctions, de droits et d'obligations (morales, matérielles, juridiques, éducatives, culturelles) exercés dans l'intérêt supérieur de l'enfant en vertu d'un lien prévu par le droit (autorité parentale). Elle s'inscrit dans l'environnement social et éducatif où vivent la famille et l'enfant ». Définition validée en 2011 par le Comité national de soutien à la parentalité (CNSP), placé auprès du ministre en charge de la famille.",
+              "en": "Parenting means \"all the ways of being and living the fact of being a parent. It is a process combining the different dimensions of the parental role — material, psychological, moral, cultural and social. It describes the bond between an adult and a child, whatever the family structure it belongs to, with the aim of ensuring the child's care, development and education. This adult/child relationship implies a set of functions, rights and obligations (moral, material, legal, educational, cultural) exercised in the child's best interests by virtue of a bond provided for in law (parental authority). It is embedded in the social and educational environment in which the family and the child live.\" Definition endorsed in 2011 by France's national parenting-support committee (CNSP), attached to the minister responsible for family affairs."
+            },
+            "width": "wide",
+            "className": "py-10"
+          }
+        },
+        {
+          "type": "content",
+          "id": "reseau-objectif",
+          "props": {
+            "title": {
+              "fr": "L'objectif du Réseau Parentalité 62",
+              "en": "The goal of the Parenting Network 62"
+            },
+            "description": {
+              "fr": "À travers son action, le Réseau Parentalité du Pas-de-Calais déploie la politique de soutien à la parentalité sur l'ensemble des territoires du département. Il contribue à la mise en œuvre des ambitions départementales en :\n\n- Luttant contre la reproduction des phénomènes de pauvreté\n- Accompagnant et prévenant les ruptures familiales\n- Favorisant l'inclusion des familles confrontées au handicap\n- Luttant contre les violences intra-familiales\n\nDans ce cadre, son objectif est de soutenir les parents dans leur rôle éducatif, de rompre leur isolement en organisant rencontres, échanges et partages d'expériences, de valoriser leurs missions et leurs ressources, de susciter de nouvelles initiatives et d'encourager la mise en réseau de tous les acteurs qui contribuent à ces initiatives.",
+              "en": "Through its action, the Parenting Network of Pas-de-Calais carries out parenting-support policy across the department's territories. It contributes to the département's ambitions by:\n\n- Fighting the reproduction of poverty\n- Supporting and preventing family breakdowns\n- Fostering the inclusion of families facing disability\n- Fighting intra-family violence\n\nAs part of this, its goal is to support parents in their educational role, to break their isolation by organising meetings, discussions and shared experience, to value their work and their resources, to spark new initiatives and to encourage networking between everyone who contributes to them."
+            },
+            "width": "wide",
+            "className": "py-10"
           }
         },
         {
@@ -773,7 +791,7 @@
             "category": { "fr": "Qui sommes-nous ?", "en": "Who we are" },
             "title": { "fr": "L'équipe Réseau Parentalité 62", "en": "The Parenting Network 62 team" },
             "description": {
-              "fr": "- **Un pilote : la CAF du Pas-de-Calais** — Sophie Halle, Conseillère Thématique Parentalité.\n- **Une coordination départementale** — Clarisse Feutry et Antoine Legrand, coordonnateurs du réseau, Fédération des Centres Sociaux du Nord-Pas-de-Calais.\n- **9 coordonnatrices parentalité** réparties sur l'ensemble des territoires, employées chacune par un centre social, travaillant en lien étroit avec l'Antenne de Développement Social (ADS Caf) de leur territoire.",
+              "fr": "- **Un pilote : la CAF du Pas-de-Calais** — Sophie Halle, Conseillère Thématique Parentalité.\n- **Une coordination départementale** — Clarisse Feutry et Antoine Legrand, coordonnateurs du réseau, Fédération des Centres Sociaux du Nord-Pas-de-Calais.\n- **9 coordonnat·eurs·ices parentalité** réparties sur l'ensemble des territoires, employées chacune par un centre social, travaillant en lien étroit avec l'Antenne de Développement Social (ADS) Caf de leur territoire.",
               "en": "- **A lead: the CAF of Pas-de-Calais** — Sophie Halle, Parenting Policy Adviser.\n- **A departmental coordination** — Clarisse Feutry and Antoine Legrand, network coordinators, Federation of Social Centres of Nord-Pas-de-Calais.\n- **9 parenting coordinators** across the territories, each employed by a social centre and working closely with their territory's social development office (ADS Caf)."
             },
             "image": "/images/parent62/plaquette-reseau-parentalite-62.jpg",
@@ -785,33 +803,18 @@
               "fr": "Cliquez sur la plaquette pour télécharger la plaquette de communication du Réseau (PDF).",
               "en": "Click the leaflet to download the network's communication leaflet (PDF)."
             },
-            "width": "wide"
-          }
-        },
-        {
-          "type": "title",
-          "id": "reseau-objectif",
-          "props": {
-            "title": {
-              "fr": "L'objectif du Réseau Parentalité 62",
-              "en": "The goal of the Parenting Network 62"
-            },
-            "subtitle": {
-              "fr": "Dans le cadre du déploiement de la politique de soutien à la parentalité de la CAF du Pas-de-Calais, notre objectif est de soutenir les parents dans leur rôle éducatif, de rompre leur isolement en organisant rencontres, échanges et partages d'expériences, de valoriser leurs missions et leurs ressources, de susciter de nouvelles initiatives et d'encourager la mise en réseau de tous les acteurs qui contribuent à ces initiatives.",
-              "en": "As part of the CAF of Pas-de-Calais's parenting-support policy, our goal is to support parents in their educational role, to break their isolation by organising meetings, discussions and shared experience, to value their work and their resources, to spark new initiatives and to encourage networking between everyone who contributes to them."
-            },
-            "align": "center",
-            "size": "lg"
+            "width": "wide",
+            "className": "py-10"
           }
         },
         {
           "type": "categories-grid",
           "id": "reseau-membres",
           "props": {
-            "headline": { "fr": "Les membres du réseau", "en": "Network members" },
+            "headline": { "fr": "Les membres du Réseau", "en": "Network members" },
             "subhead": {
-              "fr": "Une synergie entre parents, professionnel.le.s et institutionnel.le.s",
-              "en": "A synergy between parents, professionals and institutions"
+              "fr": "Une synergie entre parents, professionnels et institutions.",
+              "en": "A synergy between parents, professionals and institutions."
             },
             "variant": "frosted",
             "columns": 3,
@@ -826,120 +829,37 @@
               {
                 "icon": "home",
                 "subtitle": {
-                  "fr": "Des Centres Sociaux et des Espaces de Vie Sociale, associations et/ou établissements spécialisés (accompagnement social, petite enfance, enfance, familles, éducation, adolescence, handicap, situations familiales spécifiques, santé)",
-                  "en": "Social Centres and Social Life Spaces, associations and/or specialised establishments (social support, early years, childhood, families, education, adolescence, disability, specific family situations, health)"
+                  "fr": "Des Centres Sociaux, des Espaces de Vie Sociale, des associations et/ou établissements spécialisés, des services des collectivités locales, …",
+                  "en": "Social Centres, Social Life Spaces, associations and/or specialised establishments, local authority services, …"
                 }
               },
               {
                 "icon": "landmark",
                 "subtitle": {
-                  "fr": "La CAF, l'Éducation Nationale, le Conseil Départemental, l'UDAF, l'EPDEF, les services des collectivités locales (Relais petite enfance, jeunesse, culture, famille, CCAS, PRE)…",
-                  "en": "The CAF, National Education, the County Council, UDAF, EPDEF, local authority services (early-years hubs, youth, culture, family, CCAS, PRE)…"
+                  "fr": "La Caf, l'Éducation Nationale, l'État, le Conseil Départemental, la MSA, …",
+                  "en": "The Caf, National Education, the State, the County Council, the MSA, …"
                 }
               }
             ]
           }
         },
         {
-          "type": "features-glass",
+          "type": "cta",
           "id": "reseau-valeurs",
           "props": {
-            "headline": {
-              "fr": "8 valeurs au service de la « cause des parents »",
-              "en": "8 values serving the parents' cause"
-            },
+            "headline": { "fr": "La Charte du REAAP 62", "en": "The REAAP 62 Charter" },
             "subhead": {
-              "fr": "Le socle commun de tous les acteurs du réseau, inscrit dans la charte du REAAP 62.",
-              "en": "The common ground of every network member, set out in the REAAP 62 charter."
+              "fr": "Les 8 valeurs partagées.",
+              "en": "The 8 shared values."
             },
-            "bg": "muted",
-            "features": [
+            "buttons": [
               {
-                "icon": "users",
-                "title": { "fr": "La participation", "en": "Participation" },
-                "description": {
-                  "fr": "Les parents participent aux actions qui les concernent, eux ou leurs enfants.",
-                  "en": "Parents take part in the actions that concern them or their children."
-                },
-                "color": "primary"
-              },
-              {
-                "icon": "heart-handshake",
-                "title": { "fr": "La co-éducation", "en": "Co-education" },
-                "description": {
-                  "fr": "Les parents, premiers éducateurs, entourés d'une chaîne éducative cohérente.",
-                  "en": "Parents, the first educators, supported by a coherent educational chain."
-                },
-                "color": "turquoise"
-              },
-              {
-                "icon": "shapes",
-                "title": { "fr": "La diversité", "en": "Diversity" },
-                "description": {
-                  "fr": "Toutes les formes d'exercice de la fonction parentale sont prises en compte.",
-                  "en": "Every form of parenting is taken into account."
-                },
-                "color": "accent"
-              },
-              {
-                "icon": "users-round",
-                "title": { "fr": "La mixité sociale", "en": "Social diversity" },
-                "description": {
-                  "fr": "Des actions ouvertes à tous les parents, pour préserver la cohésion sociale.",
-                  "en": "Actions open to all parents, preserving social cohesion."
-                },
-                "color": "chart-2"
-              },
-              {
-                "icon": "map-pin",
-                "title": { "fr": "La priorité du territoire", "en": "Territory first" },
-                "description": {
-                  "fr": "Les réseaux et solidarités grandissent sur les lieux de vie des familles.",
-                  "en": "Networks and solidarity grow where families live."
-                },
-                "color": "chart-3"
-              },
-              {
-                "icon": "sprout",
-                "title": { "fr": "Le soutien à l'initiative", "en": "Backing initiative" },
-                "description": {
-                  "fr": "Institutions, élus et associations soutiennent les initiatives locales.",
-                  "en": "Institutions, elected officials and associations back local initiatives."
-                },
-                "color": "turquoise"
-              },
-              {
-                "icon": "heart",
-                "title": { "fr": "La solidarité intergénérationnelle", "en": "Intergenerational solidarity" },
-                "description": {
-                  "fr": "Grands-parents, beaux-parents : la parentalité se partage en famille.",
-                  "en": "Grandparents, step-parents: parenting is shared within the family."
-                },
-                "color": "primary"
-              },
-              {
-                "icon": "message-circle",
-                "title": { "fr": "L'échange", "en": "Exchange" },
-                "description": {
-                  "fr": "Des lieux ressources accessibles pour se rencontrer et échanger.",
-                  "en": "Accessible resource centres to meet and share."
-                },
-                "color": "accent"
+                "label": { "fr": "La Charte du REAAP 62", "en": "The REAAP 62 Charter" },
+                "href": "/charte",
+                "variant": "default"
               }
-            ]
-          }
-        },
-        {
-          "type": "title",
-          "id": "reseau-parentalite",
-          "props": {
-            "title": { "fr": "Qu'est-ce que la parentalité ?", "en": "What is parenting (« parentalité »)?" },
-            "subtitle": {
-              "fr": "La parentalité désigne « l'ensemble des façons d'être et de vivre le fait d'être parent. C'est un processus qui conjugue les différentes dimensions de la fonction parentale, matérielle, psychologique, morale, culturelle, sociale. Elle qualifie le lien entre l'adulte et un enfant, quelle que soit la structure familiale dans laquelle il s'inscrit, dans le but d'assurer le soin, le développement et l'éducation de l'enfant. Cette relation adulte/enfant suppose un ensemble de fonctions, de droits et d'obligations (morales, matérielles, juridiques, éducatives, culturelles) exercés dans l'intérêt supérieur de l'enfant en vertu d'un lien prévu par le droit (autorité parentale). Elle s'inscrit dans l'environnement social et éducatif où vivent la famille et l'enfant ». Définition validée en 2011 par le Comité national de soutien à la parentalité (CNSP), placé auprès du ministre en charge de la famille.",
-              "en": "Parenting means \"all the ways of being and living the fact of being a parent. It is a process combining the different dimensions of the parental role — material, psychological, moral, cultural and social. It describes the bond between an adult and a child, whatever the family structure it belongs to, with the aim of ensuring the child's care, development and education. This adult/child relationship implies a set of functions, rights and obligations (moral, material, legal, educational, cultural) exercised in the child's best interests by virtue of a bond provided for in law (parental authority). It is embedded in the social and educational environment in which the family and the child live.\" Definition endorsed in 2011 by France's national parenting-support committee (CNSP), attached to the minister responsible for family affairs."
-            },
-            "align": "center",
-            "size": "lg"
+            ],
+            "align": "center"
           }
         },
         {
@@ -1316,265 +1236,18 @@
           }
         },
         {
-          "type": "title",
+          "type": "content",
           "id": "charte-adherer-titre",
           "props": {
             "title": {
               "fr": "Adhérer à la Charte du REAAP 62, c'est :",
               "en": "Joining the REAAP 62 charter means:"
             },
-            "subtitle": {
-              "fr": "Défendre et partager les valeurs qu'elle définit. Conforter l'alliance avec les familles autour de l'éducation de leurs enfants. Qui peut adhérer ? Les collectivités, les associations, les établissements scolaires… Votre dossier de candidature doit comporter :",
-              "en": "Standing up for and sharing the values it sets out. Strengthening the alliance with families around their children's education. Who can join? Local authorities, associations, schools… Your application must include:"
-            },
-            "align": "center",
-            "size": "lg"
-          }
-        },
-        {
-          "type": "steps",
-          "id": "charte-adherer-steps",
-          "props": {
-            "orientation": "vertical",
-            "showProgress": false,
-            "steps": [
-              {
-                "title": { "fr": "Le courrier de demande", "en": "The application letter" },
-                "completed": false,
-                "icon": "mail",
-                "description": {
-                  "fr": "Un courrier de demande d'adhésion signé du responsable légal. Il retracera les actions déjà menées sur le champ de la parentalité, qu'elles soient ou non financées dans le cadre du dispositif REAAP.",
-                  "en": "An application letter signed by the legal representative, setting out the parenting actions already carried out, whether or not funded under the REAAP scheme."
-                }
-              },
-              {
-                "title": { "fr": "La délibération", "en": "The deliberation" },
-                "completed": false,
-                "icon": "gavel",
-                "description": {
-                  "fr": "Une délibération de l'instance dirigeante (Conseil municipal, communautaire, d'administration) qui témoigne du débat autour des valeurs soutenues par la Charte, et de l'engagement de la structure candidate à les défendre dans son action quotidienne.",
-                  "en": "A decision of the governing body (municipal, community or management board) evidencing the debate on the values the charter upholds, and the applicant's commitment to defending them in its daily work."
-                }
-              },
-              {
-                "title": { "fr": "Les statuts", "en": "The statutes" },
-                "completed": false,
-                "icon": "file-text",
-                "description": {
-                  "fr": "Une copie des statuts (pour les Communautés de communes, d'agglomérations…, les associations) qui établissent leurs champs de compétences et objectifs.",
-                  "en": "A copy of the statutes (for communities of communes, agglomerations…, associations) establishing their remit and objectives."
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "cta",
-          "id": "charte-cta",
-          "props": {
-            "headline": { "fr": "Votre dossier doit être adressé à la :", "en": "Send your application to:" },
-            "subhead": {
-              "fr": "CAF du PAS-DE-CALAIS — Site de CALAIS, Service Action Sociale. À l'attention de Sophie Halle, Conseillère Thématique Parentalité. Quai de la gendarmerie, 62908 CALAIS CEDEX. Si elles sont validées, les adhésions sont officialisées à l'occasion d'une cérémonie au cours de laquelle est paraphé le Livre d'Or du REAAP.",
-              "en": "CAF du PAS-DE-CALAIS — Calais site, Social Action Department. For the attention of Sophie Halle, Parenting Policy Adviser. Quai de la gendarmerie, 62908 CALAIS CEDEX. Once approved, memberships are made official at a ceremony where the REAAP's Golden Book is signed."
-            },
-            "backgroundColor": "color-mix(in oklab, var(--accent) 18%, var(--background))",
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Écrire au service Action Sociale",
-                  "en": "Email the Social Action Department"
-                },
-                "href": "mailto:secretariat-action-sociale@caf62.caf.fr",
-                "variant": "default"
-              }
-            ],
-            "align": "center"
-          }
-        }
-      ]
-    },
-    {
-      "path": "/champs-actions",
-      "title": {
-        "fr": "Nos champs d'actions",
-        "en": "Our fields of action"
-      },
-      "layout": "fullwidth",
-      "seo": {
-        "title": {
-          "fr": "Nos champs d'actions",
-          "en": "Our fields of action"
-        },
-        "description": {
-          "fr": "Présentation des principaux dispositifs d'accompagnement à la parentalité portés par le réseau : les REAAP, les CLAS et les LAEP.",
-          "en": "The main parenting-support schemes carried by the network: REAAP, CLAS and LAEP."
-        },
-        "ogType": "website",
-        "twitterCard": "summary_large_image",
-        "ogImage": "/images/parent62/hero-carte.png"
-      },
-      "sections": [
-        {
-          "type": "title",
-          "id": "champs-hero",
-          "props": {
-            "title": {
-              "fr": "Nos champs d'actions",
-              "en": "Our fields of action"
-            },
-            "subtitle": {
-              "fr": "Trois dispositifs nationaux, déclinés au plus près des familles du Pas-de-Calais.",
-              "en": "Three national schemes, brought close to the families of Pas-de-Calais."
-            },
-            "align": "center",
-            "size": "xl"
-          }
-        },
-        {
-          "type": "content",
-          "id": "champs-reaap",
-          "props": {
-            "category": { "fr": "Depuis 1999", "en": "Since 1999" },
-            "title": {
-              "fr": "REAAP — Réseaux d'Écoute, d'Appui et d'Accompagnement des Parents",
-              "en": "REAAP — Parents' support networks"
-            },
             "description": {
-              "fr": "Dispositif national créé en 1999, ce dispositif national est piloté par la CNAF et sur chaque département par les CAF. Chaque année, un appel à projet est lancé sur chaque département pour le financement d'actions parentalité. Il s'appuie sur des valeurs fondamentales comme :",
-              "en": "A national scheme created in 1999, steered by the CNAF and, in each département, by the CAF. Every year a call for projects is launched in each département to fund parenting initiatives. It rests on core values such as:"
-            },
-            "imagePosition": "right",
-            "tags": [
-              {
-                "fr": "La reconnaissance de l'enfant en tant que personne",
-                "en": "Recognising the child as a person"
-              },
-              {
-                "fr": "La reconnaissance des parents comme premiers éducateurs de leur enfant",
-                "en": "Recognising parents as their child's first educators"
-              },
-              {
-                "fr": "L'importance de la cohérence éducative autour de l'enfant",
-                "en": "The importance of educational coherence around the child"
-              },
-              { "fr": "Le respect de la différence", "en": "Respect for difference" },
-              { "fr": "L'ouverture à tous", "en": "Openness to all" }
-            ],
-            "infoText": {
-              "fr": "À partir du 1ᵉʳ janvier 2025, le REAAP devient l'axe 1 du Fonds National Parentalité (FNP) — « Implication et participation des parents à travers des modalités d'interventions collectives » — et se décline en deux volets :<br/>— Volet 1 : actions collectives d'échanges et d'entraide entre parents<br/>— Volet 2 : activités et ateliers partagés « Parents-Enfants »",
-              "en": "As of 1 January 2025, the REAAP becomes strand 1 of the National Parenting Fund (Fonds National Parentalité, FNP) — “Involving and engaging parents through collective forms of intervention” — with two strands:<br/>— Strand 1: collective activities for exchange and mutual support between parents<br/>— Strand 2: shared “Parent-Child” activities and workshops"
+              "fr": "**Défendre et partager les valeurs** qu'elle définit et **conforter l'alliance avec les familles** autour de l'éducation de leurs enfants.\n\nQui peut adhérer : les collectivités, les associations, les établissements scolaires, …\n\n**La Charte fait actuellement l'objet d'un travail de réflexion afin de garantir son adéquation avec les enjeux et besoins actuels du réseau.**\n\n**Les nouvelles adhésions sont temporairement suspendues. Les modalités pratiques vous seront communiquées dès que la possibilité d'adhérer à la Charte sera réouverte.**",
+              "en": "**Standing up for and sharing the values** it sets out and **strengthening the alliance with families** around their children's education.\n\nWho can join: local authorities, associations, schools, …\n\n**The Charter is currently under review to ensure it matches the network's current challenges and needs.**\n\n**New memberships are temporarily suspended. Practical details will be shared once applications reopen.**"
             },
             "width": "wide"
-          }
-        },
-        {
-          "type": "content",
-          "id": "champs-clas",
-          "props": {
-            "category": { "fr": "Scolarité", "en": "Schooling" },
-            "title": {
-              "fr": "CLAS — Contrat Local d'Accompagnement à la Scolarité",
-              "en": "CLAS — Local schooling support contract"
-            },
-            "description": {
-              "fr": "**Il s'agit des actions d'accompagnement à la scolarité inscrites dans le cadre d'une charte nationale CLAS (Contrat Local d'Accompagnement à la Scolarité).**\n\nCes actions ont lieu en dehors du temps scolaire, dans des espaces adaptés, en complémentarité avec l'école.\n\n**Elles proposent aux parents :**\n– un soutien dans leur rôle éducatif,\n– un accompagnement scolaire personnalisé de l'enfant au sein de groupes de travail restreints.\n\n**Les actions d'accompagnement à la scolarité ont pour objectifs :**",
-              "en": "**These are school support activities framed by the national CLAS charter (Local Contract for School Support).**\n\nThey take place outside school hours, in suitable spaces, complementing the school.\n\n**They offer parents:**\n– support in their educational role,\n– personalised school support for the child in small working groups.\n\n**School support activities aim to:**"
-            },
-            "imagePosition": "left",
-            "iconCard": {
-              "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\"/><path d=\"M22 10v6\"/><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\"/></svg>"
-            },
-            "tags": [
-              {
-                "fr": "Aider les enfants à acquérir des méthodes",
-                "en": "Help children acquire study methods"
-              },
-              {
-                "fr": "Faciliter leur accès au savoir et à la culture",
-                "en": "Ease their access to knowledge and culture"
-              },
-              {
-                "fr": "Promouvoir leur apprentissage à la citoyenneté",
-                "en": "Foster their learning of citizenship"
-              },
-              {
-                "fr": "Valoriser les acquis afin de renforcer leur autonomie",
-                "en": "Value what they have learnt to build autonomy"
-              },
-              {
-                "fr": "Soutenir les parents dans le suivi scolaire de leurs enfants",
-                "en": "Support parents in following their children's schooling"
-              }
-            ],
-            "links": [
-              {
-                "label": {
-                  "fr": "Télécharger la brochure CLAS sur mon-enfant.fr",
-                  "en": "Download the CLAS brochure on mon-enfant.fr"
-                },
-                "href": "http://www.mon-enfant.fr/c/document_library/get_file?uuid=d8a3e4a0-5837-4958-85e9-e699da8588ff&groupId=101"
-              },
-              {
-                "label": {
-                  "fr": "La vidéo « l'accompagnement à la scolarité » vue par les parents et les enfants",
-                  "en": "The video “school support” seen by parents and children"
-                },
-                "href": "http://www.mon-enfant.fr/web/guest/espace-doc-parents"
-              },
-              {
-                "label": { "fr": "Les actus éducation", "en": "Education news" },
-                "href": "/theme/leducation"
-              }
-            ],
-            "width": "wide",
-            "className": "bg-muted/40"
-          }
-        },
-        {
-          "type": "content",
-          "id": "champs-laep",
-          "props": {
-            "category": { "fr": "Petite enfance", "en": "Early childhood" },
-            "title": {
-              "fr": "LAEP — Lieux d'Accueil Enfants-Parents",
-              "en": "LAEP — Parent-Child Drop-in Centres"
-            },
-            "description": {
-              "fr": "Les Lieux d'Accueil Enfant Parent sont ouverts à tous les petits enfants (moins de 4 ans ou moins de 6 ans selon les lieux) et aux adultes qui les accompagnent (parents, grands-parents, éventuellement assistantes maternelles, etc.). Des accueillants sont présents et offrent un espace convivial de jeux et d'échanges.",
-              "en": "Parent-Child Drop-in Centres welcome all young children (under 4 or under 6 depending on the venue) and the adults with them (parents, grandparents, sometimes childminders, etc.). Hosts are on hand and offer a friendly space for play and conversation."
-            },
-            "tags": [
-              {
-                "fr": "Moins de 4 ans ou moins de 6 ans selon les lieux",
-                "en": "Under 4 or under 6 depending on the venue"
-              },
-              {
-                "fr": "Parents, grands-parents, assistantes maternelles",
-                "en": "Parents, grandparents, childminders"
-              },
-              { "fr": "Sans inscription", "en": "No registration" }
-            ],
-            "image": "/images/parent62/guide-Creer-un-LAEP-e1678108373559.png",
-            "imageHref": "https://www.caf.fr/sites/default/files/medias/cnaf/Nous_connaitre/qui%20sommes%20nous/Textes%20de%20r%C3%A9f%C3%A9rence/Circulaires/2023/C2023-002_Annexe_Laep_guide_accompagnement_creation.pdf",
-            "imagePosition": "right",
-            "width": "wide",
-            "imageFit": "contain"
-          }
-        },
-        {
-          "type": "articleFeed",
-          "id": "champs-laep-actu",
-          "props": {
-            "title": {
-              "fr": "Retour sur la Journée Départementale des accueillants LAEP",
-              "en": "Report on the LAEP hosts' county day"
-            },
-            "costumSlug": "parent62",
-            "filters": { "slug": "lantsDesLieuxDaccueilEnfantsParentsDu25SeptembreAOlhain" },
-            "pageSize": 1,
-            "featured": true,
-            "density": "compact",
-            "pagination": "infinite"
           }
         }
       ]
@@ -1582,14 +1255,14 @@
     {
       "path": "/equipe",
       "title": {
-        "fr": "Notre équipe & contact",
-        "en": "Our team & contact"
+        "fr": "Notre équipe & contacts",
+        "en": "Our team & contacts"
       },
       "layout": "fullwidth",
       "seo": {
         "title": {
-          "fr": "Notre équipe & contact",
-          "en": "Our team & contact"
+          "fr": "Notre équipe & contacts",
+          "en": "Our team & contacts"
         },
         "description": {
           "fr": "Pour être informé de l'actualité des comités locaux Parentalité 62 et participer aux rencontres, contactez l'animation départementale ou les coordonnateurs territoriaux du réseau.",
@@ -1605,8 +1278,8 @@
           "id": "equipe-hero",
           "props": {
             "title": {
-              "fr": "Notre équipe & contact",
-              "en": "Our team & contact"
+              "fr": "Notre équipe & contacts",
+              "en": "Our team & contacts"
             },
             "subtitle": {
               "fr": "Une animation départementale et neuf coordinations territoriales, à votre écoute pour vous informer et participer aux rencontres du réseau.",
@@ -1666,6 +1339,7 @@
           "type": "member",
           "id": "equipe-terr",
           "props": {
+            "className": "mb-16",
             "roles": ["Coordonnateur(trice)", "Coordonnateur", "Coordonnatrice"],
             "showRole": true,
             "showManagement": false,
@@ -1676,40 +1350,6 @@
             "showInvite": false,
             "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
             "card": { "type": "team", "detailsMode": "link", "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" }, "maxColumns": 3 }
-          }
-        },
-        {
-          "type": "title",
-          "id": "equipe-caf-titre",
-          "props": {
-            "title": {
-              "fr": "Le contact à la CAF du Pas-de-Calais",
-              "en": "The contact at the CAF of Pas-de-Calais"
-            },
-            "align": "center",
-            "size": "lg"
-          }
-        },
-        {
-          "type": "member",
-          "id": "equipe-caf",
-          "props": {
-            "className": "pb-16",
-            "roles": ["Conseillère thématique Parentalité CAF"],
-            "showRole": true,
-            "showManagement": false,
-            "showCard": false,
-            "search": false,
-            "showTabs": false,
-            "showTitle": false,
-            "showInvite": false,
-            "fields": ["territoires", "telephone", "phone", "mobile", "email", "structureRegister"],
-            "card": {
-              "type": "team",
-              "detailsMode": "link",
-              "rattachement": { "cheminGabarit": "/territoire/{slug}", "prefixeCouleur": "--territoire" },
-              "fixedColors": { "fond": "var(--p62-caf)", "encre": "var(--p62-caf-encre)" }
-            }
           }
         }
       ]
