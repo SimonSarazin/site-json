@@ -107,19 +107,6 @@ export function ResourceDetail({
           </p>
         )}
 
-        {tags.map((group) => (
-          <div key={group.label} className="space-y-1.5">
-            <p className="text-sm font-medium text-foreground">{group.label}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {group.values.map((v) => (
-                <span key={v} className="text-xs bg-muted text-muted-foreground rounded-md px-2 py-1">
-                  {v}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
-
         {/* Textes SAISIS par le gestionnaire du lieu — markdown ou HTML auto-détecté, puis sanitisé. */}
         {notes.map((note) => (
           <div key={note.label} className="space-y-1">
@@ -132,6 +119,19 @@ export function ResourceDetail({
                 className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
               />
             )}
+          </div>
+        ))}
+
+        {tags.map((group) => (
+          <div key={group.label} className="space-y-1.5">
+            <p className="text-sm font-medium text-foreground">{group.label}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {group.values.map((v) => (
+                <span key={v} className="text-xs bg-muted text-muted-foreground rounded-md px-2 py-1">
+                  {v}
+                </span>
+              ))}
+            </div>
           </div>
         ))}
 
