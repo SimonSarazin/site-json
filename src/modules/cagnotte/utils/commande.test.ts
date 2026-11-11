@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ligneReglement, montantARegler, promessesReglables, totalARegler } from "./commande";
+import { cleDepense, ligneReglement, montantARegler, promessesReglables, totalARegler } from "./commande";
 
 /**
  * Ce qui est verrouillé ici : un règlement de promesse vise la ligne par sa `finkey` (la position n'étant
@@ -40,6 +40,11 @@ describe("règlement des promesses — lignes de commande", () => {
       finkey: undefined,
       finIndex: 2,
     });
+  });
+
+  it("cleDepense : la clé de la dépense, sinon sa position", () => {
+    expect(cleDepense(pledge({ depenseKey: "7", depenseIndex: 1 }))).toBe("7");
+    expect(cleDepense(pledge({ depenseIndex: 1 }))).toBe("1");
   });
 
   // Règles de « Payer ma promesse » : le montant facturé est celui journalisé.

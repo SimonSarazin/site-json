@@ -1,11 +1,12 @@
 import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import MarkdownIt from "markdown-it";
-import { sanitize } from "@/lib/sanitize";
+import { sanitizeAllowingTarget } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import NavLink from "@/components/layout/NavLink";
+import { classifyHref } from "@/lib/linkKind";
 
 /**
  * Même parseur que `MarkdownSection`, initialisé une seule fois. La description accepte donc du
@@ -14,6 +15,24 @@ import NavLink from "@/components/layout/NavLink";
  * parc, aucune description existante ne contient de caractère markdown.
  */
 const mdParser = new MarkdownIt({ html: false, linkify: true, typographer: true, breaks: true });
+
+// Un lien markdown EXTERNE (ex. un PDF communecter cité dans une description) s'ouvrait dans le
+// même onglet, faisant quitter le site en pleine page plutôt que consulter la pièce jointe à côté.
+// Les liens RELATIFS (internes au site) restent inchangés, markdown-it ne les distingue pas d'une
+// navigation normale. `classifyHref` (déjà le point de vérité unique pour `NavLink`/`CTASection`/
+// `CardsSection`, cf. `linkKind.ts`) tranche AUSSI le cas `//cdn…` (protocole-relatif), qu'une regex
+// `^https?://` locale aurait manqué.
+const defaultLinkOpen =
+  mdParser.renderer.rules.link_open ??
+  ((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options));
+mdParser.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+  const href = tokens[idx].attrGet("href");
+  if (classifyHref(href) === "external") {
+    tokens[idx].attrSet("target", "_blank");
+    tokens[idx].attrSet("rel", "noopener noreferrer");
+  }
+  return defaultLinkOpen(tokens, idx, options, env, self);
+};
 
 export function ContentSection({ 
   id, 
@@ -94,7 +113,7 @@ export function ContentSection({
                 du thème, clair et sombre. */}
             <div
               className="prose prose-theme max-w-none text-muted-foreground mb-8 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: sanitize(mdParser.render(t(description))) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeAllowingTarget(mdParser.render(t(description))) }}
               suppressHydrationWarning
             />
 

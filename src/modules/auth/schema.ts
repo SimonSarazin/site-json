@@ -93,10 +93,18 @@ const AuthMenuConfigSchema = z.object({
   showName: z.boolean().optional(),
   showDropdownHeader: z.boolean().optional(),
   loginLabel: LocalizedString.optional(),
-  // Entrée « Kanban » : lien (nouvel onglet) vers la vue actions de la plateforme
-  // (`<serverUrl>/#@<costumSlug>.view.actions`). Opt-in ; réservé aux admins du costum —
-  // gate : `isKanbanEntryVisible` (modules/admin/lib/adminEntry), indépendant de `config.admin`.
+  // Entrée « Kanban » (opt-in). Module `kanban` actif : la page `/kanban` du site, pour les admins,
+  // membres et contributeurs du porteur. Sinon : la vue actions de la plateforme
+  // (`<serverUrl>/#@<costumSlug>.view.actions`, nouvel onglet), admins du costum seulement —
+  // règle : `resolveKanbanEntry` (modules/admin/lib/adminEntry), indépendante de `config.admin`.
   kanban: z.boolean().optional(),
+  // Entrée « Chat » : lien (nouvel onglet, comme Kanban) vers le chat de la plateforme
+  // (instance Rocket.Chat SÉPARÉE, `getRocketChatUrl()` — PAS un chemin sous `getServerUrl()`),
+  // réservé aux admins du costum — gate : `isRocketChatEntryVisible` (modules/admin/lib/adminEntry),
+  // indépendant de `config.admin`. PAS un modal/iframe : le SDK n'expose pas de jeton de connexion
+  // pour authentifier une iframe Rocket.Chat — cf. `AuthMenu.tsx`. Contrairement à `kanban`, ACTIF
+  // PAR DÉFAUT (absence de clé = visible) ; `false` explicite pour le désactiver sur un site.
+  rocketChat: z.boolean().optional(),
 });
 export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
 

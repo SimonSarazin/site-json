@@ -1,4 +1,13 @@
 {
   "Chiffre non disponible": "Figure unavailable",
-  "Chiffre en cours de chargement": "Loading figure"
+  "Chiffre en cours de chargement": "Loading figure",
+  "En savoir plus": "Learn more",
+  "Paramètres des cookies": "Cookie settings",
+  "Sauvegarder": "Save",
+  "Annuler": "Cancel",
+  "Fermer": "Close",
+  "Requis": "Required",
+  "Enregistrer mes choix": "Save my choices",
+  "Choix enregistré le {{date}}": "Choice saved on {{date}}",
+  "Aucun choix enregistré": "No choice saved yet"
 }

@@ -5,7 +5,7 @@ import {
   normalizeSearchText,
   resolveServicePoints,
   resourceDisplayName,
-  groupServicesByPoint,
+  groupServicesByPlace,
 } from "./resourceDirectorySearch";
 
 describe("resourceDisplayName", () => {
@@ -45,21 +45,53 @@ describe("matchesResourceSearch", () => {
   });
 });
 
-describe("groupServicesByPoint", () => {
-  it("un repère par point : les services d'un même lieu ensemble, dans l'ordre", () => {
+describe("groupServicesByPlace", () => {
+  it("un repère par lieu porteur, dans l'ordre d'arrivée", () => {
     expect(
-      groupServicesByPoint([
-        { id: "a", lng: 3.06, lat: 50.6 },
-        { id: "c", lng: 2.3, lat: 48.8 },
-        { id: "b", lng: 3.06, lat: 50.6 },
+      groupServicesByPlace([
+        { id: "a", parentId: "p1", lng: 3.06, lat: 50.6 },
+        { id: "c", parentId: "p2", lng: 2.3, lat: 48.8 },
+        { id: "b", parentId: "p1", lng: 3.06, lat: 50.6 },
       ]),
     ).toEqual([
-      { lng: 3.06, lat: 50.6, ids: ["a", "b"] },
-      { lng: 2.3, lat: 48.8, ids: ["c"] },
+      { parentId: "p1", lng: 3.06, lat: 50.6, ids: ["a", "b"] },
+      { parentId: "p2", lng: 2.3, lat: 48.8, ids: ["c"] },
+    ]);
+  });
+  it("deux lieux au même point : deux repères", () => {
+    expect(
+      groupServicesByPlace([
+        { id: "a", parentId: "p1", lng: 3, lat: 50 },
+        { id: "b", parentId: "p2", lng: 3, lat: 50 },
+      ]).map((g) => g.ids),
+    ).toEqual([["a"], ["b"]]);
+  });
+  it("un lieu dont les services ont des positions différentes : un seul repère, à la position du lieu", () => {
+    expect(
+      groupServicesByPlace(
+        [
+          { id: "a", parentId: "p1", lng: 3.1, lat: 50.1 },
+          { id: "b", parentId: "p1", lng: 3, lat: 50 },
+        ],
+        (id) => (id === "p1" ? { lng: 3, lat: 50 } : null),
+      ),
+    ).toEqual([{ parentId: "p1", lng: 3, lat: 50, ids: ["a", "b"] }]);
+  });
+  it("lieu sans position connue : celle de son premier service ; service sans lieu : par point", () => {
+    expect(
+      groupServicesByPlace([
+        { id: "a", parentId: "p1", lng: 3.1, lat: 50.1 },
+        { id: "b", parentId: "p1", lng: 3, lat: 50 },
+        { id: "x", lng: 2, lat: 48 },
+        { id: "y", lng: 2, lat: 48 },
+      ]),
+    ).toEqual([
+      { parentId: "p1", lng: 3.1, lat: 50.1, ids: ["a", "b"] },
+      { lng: 2, lat: 48, ids: ["x", "y"] },
     ]);
   });
   it("aucun service : aucun repère", () => {
-    expect(groupServicesByPoint([])).toEqual([]);
+    expect(groupServicesByPlace([])).toEqual([]);
   });
 });
 
@@ -98,9 +130,9 @@ describe("resolveServicePoints", () => {
         { id: "perdu", parentId: "p3", own: null, parent: null },
       ]),
     ).toEqual([
-      { id: "propre", ...A },
-      { id: "soeur", ...A },
-      { id: "lieu", ...L },
+      { id: "propre", parentId: "p1", ...A },
+      { id: "soeur", parentId: "p1", ...A },
+      { id: "lieu", parentId: "p2", ...L },
     ]);
   });
 });

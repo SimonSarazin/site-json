@@ -67,8 +67,6 @@
     "typeAction": "Type d'action",
     "publicCible": "Public cible",
     "territoires": "Territoires",
-    "publics": "Publics",
-    "themes": "Thèmes",
     "socialNetworks": "Réseaux sociaux",
     "accessibility": "Accès / stationnement",
     "provisionResources": "Mise à disposition de ressources",
@@ -806,7 +804,8 @@
       "imageUploadSuccess": "Photo de profil uploadée avec succès",
       "imageUploadError": "Impossible d'uploader la photo de profil",
       "bannerUploadSuccess": "Bannière uploadée avec succès",
-      "bannerUploadError": "Impossible d'uploader la bannière"
+      "bannerUploadError": "Impossible d'uploader la bannière",
+      "extraFieldsError": "Certains champs n'ont pas pu être enregistrés — réessayez depuis votre profil"
     },
     "friends": {
       "requestSent": "Demande d'amitié envoyée avec succès",

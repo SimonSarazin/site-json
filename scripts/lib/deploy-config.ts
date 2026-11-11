@@ -130,6 +130,9 @@ export const CONSTANTES: Record<string, string> = {
   // masque des champs réels. Coûteux (démarrage à froid) — cf. la doc de
   // `getCostumForceLive` dans src/lib/constant/common.ts.
   VITE_COSTUM_FORCE_LIVE: "false",
+  // Instance Rocket.Chat du lien « Chat » du menu avatar (`getRocketChatUrl()`). Même valeur sur
+  // tout le parc ; déclarée ici pour qu'un `env` de `sites.json` puisse la surcharger par site.
+  VITE_ROCKETCHAT_URL: "https://chat.communecter.org",
 };
 
 /**

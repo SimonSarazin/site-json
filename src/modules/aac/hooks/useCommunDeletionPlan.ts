@@ -13,6 +13,7 @@ import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope"
 import { useCagnotteType } from "@/modules/cagnotte/hooks/useCagnotteType";
 import { useCagnotteAdapter } from "@/modules/cagnotte/hooks/useCagnotteAdapter";
 import { buildResourceFromAnswer } from "@/modules/cagnotte/utils/dataTransform";
+import { hasPaymentInProgress } from "@/modules/cagnotte/utils/pledgeRetraction";
 import { COMMUN_ANSWER_QUERY_KEY, fetchCommunAnswer } from "../prefetch/prefetchCommun";
 import { resolveCommunDeletionPlan, type CommunDeletionPlan } from "../lib/communDeletion";
 import { useCommunFundingContext } from "./useCommunFundingContext";
@@ -72,7 +73,8 @@ export function useCommunDeletionPlan(answerId: string | null, step?: string): U
     [answer, step],
   );
   const resource = savedSelectedResource ?? answerResource;
-  const plan = useMemo(() => resolveCommunDeletionPlan(resource), [resource]);
+  const paymentInProgress = !!answerId && hasPaymentInProgress(envelope.data?.rawEnvelope, answerId);
+  const plan = useMemo(() => resolveCommunDeletionPlan(resource, paymentInProgress), [resource, paymentInProgress]);
 
   // Une réponse illisible laisse le plan en attente : pas de confirmation à l'aveugle.
   const isLoading = !!answerId && (!isHostResolved || envelope.isLoading);

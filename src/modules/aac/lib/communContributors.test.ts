@@ -176,6 +176,12 @@ describe("isProjectAdmin", () => {
     expect(isAdmin).toHaveBeenCalledWith({ silent: true });
   });
 
+  it("`checkHierarchy` : remonte au parent du projet, toujours en silence", () => {
+    const isAdmin = vi.fn(() => true);
+    expect(isProjectAdmin({ isAdmin }, { checkHierarchy: true })).toBe(true);
+    expect(isAdmin).toHaveBeenCalledWith({ silent: true, checkHierarchy: true });
+  });
+
   it("refuse plutôt que de casser la page quand `isAdmin()` lève", () => {
     expect(
       isProjectAdmin({

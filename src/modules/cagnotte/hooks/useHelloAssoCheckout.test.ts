@@ -25,7 +25,9 @@ vi.mock("@/lib/toastUtils", () => ({
 import {
   HELLOASSO_CHECK_MAX_MS,
   HELLOASSO_MAX_WAIT_MS,
+  HELLOASSO_FAST_POLL_MS,
   HELLOASSO_POLL_INTERVAL_MS,
+  HELLOASSO_SLOW_POLL_INTERVAL_MS,
   HELLOASSO_STATUS_TIMEOUT_MS,
   useHelloAssoCheckout,
 } from "./useHelloAssoCheckout";
@@ -68,6 +70,16 @@ async function avancer(ms: number) {
   });
 }
 
+/** Rend la page visible ou masquée, comme un changement d'onglet. */
+async function visibilite(etat: "visible" | "hidden") {
+  await act(async () => {
+    Object.defineProperty(document, "visibilityState", { configurable: true, get: () => etat });
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => etat === "hidden" });
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(1);
+  });
+}
+
 async function annuler(cancel: () => void) {
   await act(async () => {
     cancel();
@@ -93,6 +105,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  delete (document as unknown as Record<string, unknown>).visibilityState;
+  delete (document as unknown as Record<string, unknown>).hidden;
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.clearAllMocks();
@@ -262,14 +276,54 @@ describe("useHelloAssoCheckout — suivi du paiement", () => {
   });
 
   it("une vérification sans réponse ne bloque pas les suivantes", async () => {
-    const { result, onSettled } = monter([new Promise(() => undefined), enregistre(8)]);
+    const { result, onSettled, submit } = monter([new Promise(() => undefined), enregistre(8)]);
+    await demarrer(result.current.start);
+
+    await avancer(HELLOASSO_POLL_INTERVAL_MS * 2);
+    expect(verifications(submit)).toBe(1);
+
+    await avancer(HELLOASSO_STATUS_TIMEOUT_MS);
+    expect(verifications(submit)).toBe(2);
+    expect(onSettled).toHaveBeenCalledTimes(1);
+  });
+
+  it("une vérification sans réponse remonte son délai dépassé", async () => {
+    const { result } = monter([new Promise(() => undefined), new Promise(() => undefined)]);
     await demarrer(result.current.start);
 
     await avancer(HELLOASSO_POLL_INTERVAL_MS + HELLOASSO_STATUS_TIMEOUT_MS);
     expect(result.current.lastError).toBe("PaymentConfigPage.errors.statusTimeout");
+    expect(result.current.phase).toBe("waiting");
+  });
 
+  it("toutes les 5 s pendant 2 min, puis toutes les 15 s", async () => {
+    const { result, submit } = monter();
+    await demarrer(result.current.start);
+
+    await avancer(HELLOASSO_FAST_POLL_MS);
+    const rapides = verifications(submit);
+    expect(rapides).toBe(HELLOASSO_FAST_POLL_MS / HELLOASSO_POLL_INTERVAL_MS);
+
+    await avancer(HELLOASSO_SLOW_POLL_INTERVAL_MS - 1);
+    expect(verifications(submit)).toBe(rapides);
+    await avancer(1);
+    expect(verifications(submit)).toBe(rapides + 1);
+  });
+
+  it("page masquée : aucun suivi ; au retour, une vérification aussitôt", async () => {
+    const { result, submit } = monter();
+    await demarrer(result.current.start);
     await avancer(HELLOASSO_POLL_INTERVAL_MS);
-    expect(onSettled).toHaveBeenCalledTimes(1);
+    const avant = verifications(submit);
+
+    await visibilite("hidden");
+    await avancer(5 * 60_000);
+    expect(verifications(submit)).toBe(avant);
+
+    await visibilite("visible");
+    expect(verifications(submit)).toBe(avant + 1);
+    await avancer(HELLOASSO_SLOW_POLL_INTERVAL_MS);
+    expect(verifications(submit)).toBeGreaterThan(avant + 1);
   });
 });
 
@@ -345,7 +399,7 @@ describe("useHelloAssoCheckout — arrêt du suivi", () => {
     const { result, onSettled } = monter();
     await demarrer(result.current.start);
 
-    await avancer(HELLOASSO_MAX_WAIT_MS + HELLOASSO_POLL_INTERVAL_MS);
+    await avancer(HELLOASSO_MAX_WAIT_MS + HELLOASSO_SLOW_POLL_INTERVAL_MS);
 
     expect(result.current.phase).toBe("idle");
     expect(onSettled).not.toHaveBeenCalled();

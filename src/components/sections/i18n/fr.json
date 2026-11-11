@@ -1,4 +1,13 @@
 {
   "Chiffre non disponible": "Chiffre non disponible",
-  "Chiffre en cours de chargement": "Chiffre en cours de chargement"
+  "Chiffre en cours de chargement": "Chiffre en cours de chargement",
+  "En savoir plus": "En savoir plus",
+  "Paramètres des cookies": "Paramètres des cookies",
+  "Sauvegarder": "Sauvegarder",
+  "Annuler": "Annuler",
+  "Fermer": "Fermer",
+  "Requis": "Requis",
+  "Enregistrer mes choix": "Enregistrer mes choix",
+  "Choix enregistré le {{date}}": "Choix enregistré le {{date}}",
+  "Aucun choix enregistré": "Aucun choix enregistré"
 }

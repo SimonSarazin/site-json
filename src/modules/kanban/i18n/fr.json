@@ -1,0 +1,927 @@
+{
+  "activity": {
+    "by": "par {{name}}",
+    "communecterActor": "Communecter",
+    "empty": "Aucune activité récente sur ce tableau.",
+    "title": "Activité récente",
+    "unknownActor": "Quelqu'un",
+    "verbs": {
+      "board": {
+        "archived": "Tableau archivé",
+        "attached": "Tableau rattaché à un collectif",
+        "created": "Tableau créé",
+        "detached": "Tableau détaché de son collectif",
+        "externalChange": "Modifié dans Communecter",
+        "milestones": "Jalons modifiés",
+        "updated": "Tableau modifié"
+      },
+      "card": {
+        "archived": "Carte archivée",
+        "created": "Carte créée",
+        "deleted": "Carte supprimée",
+        "moved": "Carte déplacée",
+        "updated": "Carte modifiée"
+      },
+      "column": {
+        "created": "Colonne créée",
+        "deleted": "Colonne supprimée",
+        "moved": "Colonne déplacée",
+        "updated": "Colonne modifiée"
+      },
+      "member": {
+        "added": "Membre ajouté",
+        "removed": "Membre retiré",
+        "role": "Rôle modifié"
+      },
+      "role": {
+        "assigned": "Rôles d'un membre modifiés",
+        "created": "Rôle créé",
+        "deleted": "Rôle supprimé",
+        "updated": "Rôles modifiés"
+      }
+    }
+  },
+  "assignees": {
+    "count": "{{count}} sur {{total}} membres",
+    "filter": "Filtrer les membres",
+    "filterPlaceholder": "Rechercher un membre",
+    "label": "Assigné·es",
+    "noMatch": "Aucun membre ne correspond.",
+    "noMember": "Ce tableau n'a aucun membre à assigner.",
+    "orphanHint": {
+      "communecter": {
+        "organizations": "Ne fait plus partie de l'organisation",
+        "projects": "Ne fait plus partie du projet"
+      },
+      "kanban": "Ne fait plus partie du tableau"
+    }
+  },
+  "board": {
+    "columns": "Colonnes du tableau",
+    "emptyTitle": "Ce tableau n’a pas encore de colonne",
+    "menu": {
+      "label": "Autres vues et options du tableau",
+      "viewsSection": "Autres vues"
+    },
+    "share": {
+      "copied": "Lien copié",
+      "failed": "Copie impossible : sélectionnez l’adresse ci-dessous.",
+      "menu": "Copier le lien de cette vue"
+    }
+  },
+  "boardControls": {
+    "asc": "Croissant",
+    "desc": "Décroissant",
+    "direction": "Sens du tri",
+    "group": "Grouper par",
+    "groupBy": {
+      "assignee": "Assigné·e",
+      "column": "Colonne",
+      "none": "Aucun",
+      "priority": "Priorité",
+      "status": "Statut"
+    },
+    "sort": "Trier",
+    "sortBy": {
+      "dueDate": "Échéance",
+      "priority": "Priorité",
+      "rank": "Ordre du tableau",
+      "status": "Statut",
+      "title": "Titre"
+    }
+  },
+  "boardHeader": {
+    "progress": "{{done}}/{{total}} terminées · {{percent}} %",
+    "progressLabel": "Avancement du tableau"
+  },
+  "boardViews": {
+    "kanban": "Tableau",
+    "label": "Vues du tableau",
+    "list": "Liste",
+    "milestones": "Vue Jalons",
+    "overview": "Vue d’ensemble",
+    "table": "Table",
+    "timeline": "Chronologie",
+    "unavailable": {
+      "kanbanGroup": "Le tableau est déjà groupé par colonne.",
+      "kanbanSort": "L’ordre du tableau se règle en déplaçant les cartes.",
+      "milestonesGroup": "La vue Jalons est déjà groupée par jalon.",
+      "milestonesSort": "Dans un jalon, les cartes se rangent par priorité puis par date de création.",
+      "overviewFilter": "La vue d’ensemble résume tout le tableau, sans filtre.",
+      "overviewGroup": "Les regroupements de la vue d’ensemble sont fixes.",
+      "overviewSort": "Les cartouches de synthèse ont un ordre fixe.",
+      "tableGroup": "La table est une liste à plat : elle se trie, elle ne se groupe pas.",
+      "timelineGroup": "La chronologie a une piste par colonne.",
+      "timelineSort": "La chronologie est ordonnée par échéance."
+    }
+  },
+  "boards": {
+    "archived": "Archivé",
+    "back": "Retour",
+    "cardCount_one": "{{count}} carte",
+    "cardCount_other": "{{count}} cartes",
+    "columnCount_one": "{{count}} colonne",
+    "columnCount_other": "{{count}} colonnes",
+    "count_one": "{{count}} tableau",
+    "count_other": "{{count}} tableaux",
+    "create": "Nouveau tableau",
+    "createAction": "Créer le tableau",
+    "createDescription": "Un tableau regroupe les actions d'un chantier : colonnes, cartes et membres.",
+    "createLinkedAction": "Ouvrir en tableau",
+    "createTitle": "Créer un tableau",
+    "dateFrom": "À partir du {{start}}",
+    "dateRange": "Du {{start}} au {{end}}",
+    "dateUntil": "Jusqu'au {{end}}",
+    "emptyDescription": "Créez votre premier tableau : trois colonnes (À faire, En cours, Terminé) vous attendent déjà.",
+    "emptyTitle": "Aucun tableau pour l'instant",
+    "errors": {
+      "dateRange": "La date de fin doit suivre la date de début.",
+      "elementRequired": "Choisissez un projet ou une organisation dans la liste.",
+      "invalidDate": "Cette date n’existe pas.",
+      "notMember": {
+        "organizations": "Vous n'êtes pas membre de cette organisation Communecter : son tableau ne peut pas s'ouvrir ici.",
+        "projects": "Vous n'êtes pas membre de ce projet Communecter : son tableau ne peut pas s'ouvrir ici."
+      },
+      "parentIdRequired": "Indiquez l'identifiant du collectif à rattacher.",
+      "titleRequired": "Donnez un titre au tableau.",
+      "titleTooLong": "Le titre dépasse {{max}} caractères.",
+      "visibilityRequiresParent": "La visibilité communautaire exige un rattachement."
+    },
+    "fields": {
+      "description": "Description",
+      "endDate": "Date de fin",
+      "parent": "Rattachement (facultatif)",
+      "parentId": "Identifiant du collectif",
+      "parentType": "Type de collectif",
+      "startDate": "Date de début",
+      "title": "Titre du tableau",
+      "visibility": "Visibilité"
+    },
+    "memberCount_one": "{{count}} membre",
+    "memberCount_other": "{{count}} membres",
+    "next": "Continuer",
+    "nextPage": "Suivant",
+    "noDate": "Aucune date définie",
+    "pageStatus": "Page {{page}} sur {{pageCount}}",
+    "pagination": "Pagination des tableaux",
+    "parentHint": "Rattacher le tableau à une organisation ou à un projet Communecter permet d'hériter de ses droits.",
+    "parentNone": "Aucun rattachement",
+    "parentOrganization": "Organisation",
+    "parentProject": "Projet",
+    "previousPage": "Précédent",
+    "progressLabel": "Avancement du tableau",
+    "progressValue": "{{done}} / {{total}} terminées ({{percent}} %)",
+    "source": {
+      "communecter": {
+        "description": "Les actions d'un projet ou d'une organisation dont vous êtes membre, dans les colonnes de Kanban gestion. Rien n'est copié : les changements se voient des deux côtés.",
+        "title": "Projet ou organisation Communecter"
+      },
+      "kanban": {
+        "description": "Un tableau autonome avec trois colonnes (À faire, En cours, Terminé). Vous choisissez ses membres.",
+        "title": "Kanban vide"
+      },
+      "legend": "Que voulez-vous créer ?"
+    },
+    "stepElementDescription": "Choisissez l'un de vos projets ou l'une de vos organisations. Un élément déjà ouvert mène directement à son tableau.",
+    "stepKanbanDescription": "Donnez un titre au tableau. Le reste peut attendre.",
+    "title": "Mes tableaux",
+    "visibilityParent": "Communauté du collectif : ses membres peuvent lire",
+    "visibilityPrivate": "Privé : membres du tableau uniquement"
+  },
+  "card": {
+    "archive": "Archiver la carte",
+    "archiveLabel": "Archiver la carte {{title}}",
+    "assignees": "Assignés :",
+    "checklistSummary": "liste : {{done}} sur {{total}}",
+    "confirmArchive": "Archiver cette carte ? Elle quittera le tableau, sans être supprimée.",
+    "confirmArchiveAction": "Archiver",
+    "confirmDelete": "Supprimer définitivement cette carte ?",
+    "confirmDeleteAction": "Supprimer la carte",
+    "confirmDiscard": "Des modifications ne sont pas enregistrées.",
+    "context": "{{column}} · {{board}}",
+    "creditsOwnerOnly": {
+      "organizations": "Seul un administrateur de l'organisation modifie le montant et le temps passé.",
+      "projects": "Seul un administrateur du projet modifie le montant et le temps passé."
+    },
+    "delete": "Supprimer la carte",
+    "detailError": "Le détail de cette carte n'a pas pu être chargé.",
+    "dialogTitle": "Détail de la carte",
+    "discardAction": "Fermer sans enregistrer",
+    "done": "Terminée",
+    "dragHandle": "Déplacer la carte {{title}}",
+    "due": {
+      "done": "date d'échéance",
+      "later": "date d'échéance",
+      "overdue": "en retard",
+      "soon": "échéance proche",
+      "today": "échéance aujourd'hui"
+    },
+    "errors": {
+      "dateRange": "L'échéance ne peut pas précéder la date de début.",
+      "emptyItem": "Un point de checklist ne peut pas être vide.",
+      "invalidAmount": "Indiquez un montant positif ou nul.",
+      "invalidDate": "Date invalide.",
+      "invalidDuration": "Indiquez un nombre entier de minutes, positif ou nul.",
+      "notMember": "Seuls les membres du tableau peuvent être assignés.",
+      "required": "Ce champ est obligatoire.",
+      "startAfterDue": "La date de début ne peut pas suivre l'échéance.",
+      "summary_one": "Rien n'est enregistré : un champ est à corriger.",
+      "summary_other": "Rien n'est enregistré : {{count}} champs sont à corriger.",
+      "tagDuplicate": "Deux étiquettes portent le même nom.",
+      "tagEmpty": "Une étiquette ne peut pas être vide.",
+      "tagReserved": "« next », « totest » et « discuter » rangent la carte dans une colonne : déplacez la carte plutôt que de l'étiqueter.",
+      "tagTooLong": "Une étiquette dépasse {{max}} caractères.",
+      "tagTooMany": "Une carte porte au plus {{maxTags}} étiquettes.",
+      "tooLong": "Ce texte dépasse {{max}} caractères.",
+      "tooManyItems": "Une checklist compte au plus {{max}} points.",
+      "unknownLabel": "Étiquette inconnue sur ce tableau.",
+      "unknownMilestone": "Ce jalon n'existe plus sur le projet : choisissez-en un autre."
+    },
+    "fields": {
+      "credits": "Montant",
+      "description": "Description",
+      "labels": "Étiquettes",
+      "milestone": "Jalon",
+      "priority": "Priorité",
+      "startDate": "Date de début",
+      "timeSpent": "Temps passé (en minutes)",
+      "timeSpentReadOnly": "Temps passé",
+      "title": "Titre"
+    },
+    "inColumn": "Colonne : {{column}}",
+    "menu": {
+      "label": "Actions de la carte {{title}}"
+    },
+    "meta": {
+      "assigneeAndOthers_one": "{{name}} et {{count}} autre",
+      "assigneeAndOthers_other": "{{name}} et {{count}} autres",
+      "comments_one": "{{count}} commentaire",
+      "comments_other": "{{count}} commentaires",
+      "credits": "Montant : {{amount}}",
+      "links_one": "{{count}} lien",
+      "links_other": "{{count}} liens",
+      "timeSpent": "Temps passé : {{duration}}",
+      "unseen_one": "{{count}} non lu",
+      "unseen_other": "{{count}} non lus"
+    },
+    "milestoneClosed": "{{name}} (clos)",
+    "milestoneNone": "Aucun jalon",
+    "move": {
+      "after": "Après « {{title}} »",
+      "canonicalHint": "Sur un tableau lié à Communecter, une colonne se range par priorité puis par date de création : seule la colonne se choisit.",
+      "column": "Colonne",
+      "milestone": "Jalon",
+      "milestoneHint": "La carte garde son statut ; dans le jalon choisi, elle se range par priorité puis par date de création.",
+      "position": "Position",
+      "submit": "Déplacer",
+      "title": "Déplacer la carte",
+      "top": "En tête de colonne"
+    },
+    "moveAction": "Déplacer {{title}} vers…",
+    "noColumn": "Sans colonne",
+    "noDescription": "Aucune description.",
+    "noDueDate": "Sans échéance",
+    "notSet": "Non renseigné",
+    "openAction": "Ouvrir la carte",
+    "overdue": "En retard",
+    "roleDescription": "carte déplaçable",
+    "saveAndClose": "Enregistrer et fermer",
+    "status": {
+      "complete": "Terminé",
+      "in_research": "En recherche",
+      "not_started": "Non démarré",
+      "on_track": "Sur les rails"
+    },
+    "statusLabel": "Statut",
+    "timeSpentHint": "Soit {{duration}}.",
+    "unassigned": "Aucun",
+    "updatedAt": "Dernière modification : {{date}}",
+    "viewerAssignedHint": "Votre rôle vous permet de cocher la checklist de cette carte, rien d'autre.",
+    "notFound": "Cette carte n'est plus sur le tableau : elle a peut-être été archivée."
+  },
+  "checklist": {
+    "add": "Ajouter",
+    "addLabel": "Nouveau point de checklist",
+    "addPlaceholder": "Ajouter un point…",
+    "empty": "Aucun point pour l'instant.",
+    "itemLabel": "Libellé du point {{position}}",
+    "percent": "{{percent}} %",
+    "progress": "Avancement de la checklist",
+    "remove": "Supprimer le point : {{label}}",
+    "summary": "{{done}} / {{total}}",
+    "title": "Checklist",
+    "toggle": "Cocher : {{label}}"
+  },
+  "column": {
+    "addCard": "Ajouter une tâche",
+    "addCardTo": "Ajouter une tâche à {{title}}",
+    "cardCount_one": "{{count}} carte",
+    "cardCount_other": "{{count}} cartes",
+    "cards": "Cartes de la colonne {{title}}",
+    "composer": {
+      "added": "« {{title}} » ajoutée en position {{position}} sur {{total}} dans {{column}}.",
+      "failed": "La carte n’a pas pu être ajoutée. Réessayez.",
+      "field": "Titre de la tâche à ajouter à {{title}}",
+      "placedAt": "« {{title}} » ajoutée en position {{position}} sur {{total}} dans {{column}} : l’ordre y est automatique.",
+      "placeholder": "Titre de la tâche"
+    },
+    "creditsTotal": "Montant total de la colonne : {{amount}}",
+    "defaults": {
+      "discuter": "À discuter",
+      "doing": "En cours",
+      "done": "Terminé",
+      "next": "Next",
+      "todo": "À faire",
+      "totest": "À tester",
+      "tracking": "En cours"
+    },
+    "emptyFiltered": "Aucune carte ne correspond au filtre.",
+    "emptyHint": "Déposez une carte ici, ou déplacez-en une depuis une autre colonne.",
+    "emptyViewer": "Aucune carte pour le moment.",
+    "menu": {
+      "hide": "Masquer la colonne",
+      "label": "Actions de la colonne {{title}}"
+    },
+    "roleDescription": "colonne déplaçable",
+    "ruler": {
+      "exceeded": "Limite dépassée"
+    },
+    "showMoreDone_one": "{{count}} carte de plus affichée dans {{title}} : {{shown}} sur {{total}}.",
+    "showMoreDone_other": "{{count}} cartes de plus affichées dans {{title}} : {{shown}} sur {{total}}.",
+    "showMoreIn": "dans {{title}}",
+    "showMoreRemaining_one": "· {{count}} non affichée",
+    "showMoreRemaining_other": "· {{count}} non affichées",
+    "showMore_one": "Afficher {{count}} de plus",
+    "showMore_other": "Afficher {{count}} de plus",
+    "wipTitle": "Limite d’en-cours : {{limit}}"
+  },
+  "columnVisibility": {
+    "description": "Masquez les colonnes que vous n’utilisez pas. Ce réglage ne vaut que sur cet appareil : rien ne change pour les autres membres.",
+    "empty": "Aucune colonne à afficher pour le moment.",
+    "hiddenAnnouncement": "Colonne « {{title}} » masquée sur cet appareil.",
+    "hiddenCount_one": "{{count}} colonne masquée · Tout afficher",
+    "hiddenCount_other": "{{count}} colonnes masquées · Tout afficher",
+    "hideAll": "Tout masquer",
+    "menu": "Colonnes affichées",
+    "showAll": "Tout afficher",
+    "shownAllAnnouncement": "Toutes les colonnes sont de nouveau affichées.",
+    "title": "Colonnes affichées"
+  },
+  "comments": {
+    "addLabel": "Ajouter un commentaire",
+    "confirmDelete": "Supprimer définitivement ce commentaire ?",
+    "count_one": "{{count}} commentaire",
+    "count_other": "{{count}} commentaires",
+    "delete": "Supprimer ce commentaire",
+    "empty": "Personne n'a encore commenté cette carte.",
+    "placeholder": "Écrire un commentaire…",
+    "readOnly": "Ce tableau est archivé : le fil est en lecture seule.",
+    "sending": "Envoi en cours…",
+    "submit": "Commenter",
+    "title": "Commentaires",
+    "truncated": "Seuls les {{shown}} messages les plus récents sont affichés sur {{total}}.",
+    "unknownAuthor": "Auteur inconnu"
+  },
+  "common": {
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "loading": "Chargement…",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "required": "obligatoire"
+  },
+  "dnd": {
+    "cancelled": "Déplacement de {{title}} annulé, la place d’origine est conservée.",
+    "cardCanonicalStay": "Ordre automatique : la carte {{title}} reste en position {{position}} sur {{total}} dans la colonne {{column}}.",
+    "cardCanonicalStayEnd": "Carte {{title}} laissée en position {{position}} sur {{total}} dans la colonne {{column}} : l’ordre y est automatique.",
+    "cardEnd": "Carte {{title}} déposée en position {{position}} sur {{total}} dans la colonne {{column}}.",
+    "cardGrabbed": "Carte {{title}} saisie, position {{position}} sur {{total}} dans la colonne {{column}}. Utilisez les flèches pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler.",
+    "cardOver": "Carte {{title}} en position {{position}} sur {{total}} dans la colonne {{column}}.",
+    "cardStart": "Carte {{title}} saisie, position {{position}} sur {{total}} dans la colonne {{column}}. Utilisez les flèches pour la déplacer, Espace pour déposer, Échap pour annuler.",
+    "columnEnd": "Colonne {{title}} déposée en position {{position}} sur {{total}}.",
+    "columnOver": "Colonne {{title}} en position {{position}} sur {{total}}.",
+    "columnStart": "Colonne {{title}} saisie, position {{position}} sur {{total}}. Utilisez les flèches pour la déplacer, Espace pour déposer, Échap pour annuler.",
+    "dropped": "Élément déposé à sa place d’origine.",
+    "howTo": "Appuyez sur Espace ou Entrée pour saisir l’élément qui a le focus : une carte par sa poignée, son premier arrêt au clavier, une colonne par son titre. Utilisez ensuite les flèches pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler. Sans glisser : le menu « ⋯ » de la carte propose « Déplacer vers… », et Entrée sur le titre ouvre la carte.",
+    "howToCanonical": "Appuyez sur Espace ou Entrée pour saisir l’élément qui a le focus : une carte par sa poignée, son premier arrêt au clavier, une colonne par son titre. Utilisez ensuite les flèches pour la déplacer, Espace ou Entrée pour déposer, Échap pour annuler. Sur ce tableau lié à Communecter, l’ordre d’une colonne est automatique (priorité, puis date de création) : seul le changement de colonne compte. Sans glisser : le menu « ⋯ » de la carte propose « Déplacer vers… », et Entrée sur le titre ouvre la carte.",
+    "instructions": "Appuyez sur Espace ou Entrée pour saisir l’élément, puis utilisez les flèches pour le déplacer. Espace ou Entrée pour déposer, Échap pour annuler. Le menu « Déplacer vers… » de chaque carte offre la même opération sans glisser."
+  },
+  "dueDate": {
+    "clear": "Retirer l'échéance",
+    "completed": "Terminée le {{date}}",
+    "label": "Échéance",
+    "later_one": "Dans {{count}} jour",
+    "later_other": "Dans {{count}} jours",
+    "overdue_one": "En retard de {{count}} jour",
+    "overdue_other": "En retard de {{count}} jours",
+    "soon_one": "Dans {{count}} jour",
+    "soon_other": "Dans {{count}} jours",
+    "today": "Échéance aujourd'hui"
+  },
+  "elements": {
+    "type": {
+      "organizations": "Organisation",
+      "projects": "Projet"
+    }
+  },
+  "errorState": {
+    "details": "Détail technique",
+    "detailsHint": "À recopier tel quel dans un signalement : c'est ce qui permet de trouver la panne.",
+    "field": {
+      "code": "Code d'erreur",
+      "message": "Message brut",
+      "status": "Statut HTTP",
+      "url": "Adresse appelée"
+    },
+    "hint": {
+      "canceled": "La demande a été interrompue avant d'aboutir, souvent par un changement de page. Réessayez.",
+      "denied": "Votre session ou vos droits ne couvrent pas cette lecture. Reconnectez-vous, ou demandez l'accès à un administrateur du tableau.",
+      "invalidResponse": "Le serveur a renvoyé autre chose que les données attendues, le plus souvent une page d'erreur. Transmettez le détail technique à un administrateur.",
+      "network": "La requête n'a jamais atteint le serveur. Réessayez ; si l'échec persiste, le service est probablement arrêté : prévenez un administrateur.",
+      "rejected": "Le serveur a compris la demande et l'a refusée. Le code ci-dessous en donne la raison.",
+      "serverError": "La panne est du côté du serveur, pas du vôtre : rien à vérifier sur votre connexion. Réessayez, puis transmettez le détail technique à un administrateur.",
+      "timeout": "Le serveur a dépassé le délai d'attente sans finir de répondre. Réessayez ; s'il recommence, signalez-le avec le détail technique.",
+      "unknown": "L'application a rencontré une erreur qu'elle ne sait pas nommer. Réessayez, puis signalez le détail technique."
+    },
+    "noStatus": "aucune réponse",
+    "title": {
+      "canceled": "Demande interrompue",
+      "denied": "Accès refusé",
+      "invalidResponse": "Réponse illisible du serveur",
+      "network": "Serveur injoignable",
+      "rejected": "Demande refusée",
+      "serverError": "Le serveur a répondu une erreur",
+      "timeout": "Le serveur n'a pas répondu à temps",
+      "unknown": "Erreur inattendue"
+    }
+  },
+  "errors": {
+    "badRequest": "Requête invalide.",
+    "boardArchived": "Ce tableau est archivé : il est en lecture seule.",
+    "columnNotEmpty": "Cette colonne contient encore des cartes.",
+    "conflict": "Cette action entre en conflit avec l'état actuel.",
+    "forbidden": "Votre rôle ne permet pas cette action.",
+    "generic": "Une erreur est survenue. Réessayez, puis signalez-la si elle persiste.",
+    "invalidResponse": "Réponse inattendue du serveur.",
+    "lastOwner": "Il doit rester au moins un propriétaire sur le tableau.",
+    "network": "Serveur injoignable. Vérifiez votre connexion.",
+    "notFound": "Cet élément n'existe plus.",
+    "notMember": "Vous n'êtes pas membre de ce tableau.",
+    "rankExhausted": "Impossible de placer la carte à cet endroit. Rechargez le tableau.",
+    "reasons": {
+      "alreadyMember": "Cette personne est déjà membre du tableau.",
+      "archived": "Cette carte a été archivée.",
+      "concurrentUpdate": "Cette carte vient d'être modifiée par quelqu'un d'autre. Rechargez-la, puis recommencez.",
+      "concurrentUpdateRole": "Les rôles de ce membre viennent d'être modifiés par quelqu'un d'autre : la liste est relue, recommencez.",
+      "contributorsLimit": "Cette action limite son nombre de participants.",
+      "contributorsLimitMax_one": "Cette action n'accepte qu'un seul participant ({{requested}} demandés).",
+      "contributorsLimitMax_other": "Cette action accepte au plus {{count}} participants ({{requested}} demandés).",
+      "contributorsLimitMin_one": "Cette action demande au moins un participant.",
+      "contributorsLimitMin_other": "Cette action demande au moins {{count}} participants.",
+      "inheritedMembership": "Ce droit vient du collectif parent : il se retire sur Communecter.",
+      "invalidRole": "Le nom d'un rôle est obligatoire, sans « < » ni « > », et ne dépasse pas 60 caractères.",
+      "lastColumn": "Un tableau garde au moins une colonne.",
+      "memberWriteFailed": "Le rôle n'a pas pu être écrit sur la fiche du membre : la liste est relue.",
+      "milestonesUnavailable": "Une organisation n'a pas de jalons : ils n'existent que sur un projet.",
+      "notAttached": "Ce tableau n'est rattaché à aucun collectif.",
+      "notBoardMembers": "Seuls les membres du tableau peuvent être assignés.",
+      "notCommentAuthor": "Seul l'auteur du message ou un administrateur peut le supprimer.",
+      "notLinked": "Cette personne ne fait plus partie du projet ou de l'organisation : ses rôles ne se modifient plus ici.",
+      "notOrganization": "Cette fonction n'existe que sur le tableau d'une organisation.",
+      "notOrganizationMembers": "Seuls les membres de l'organisation peuvent être assignés.",
+      "notProjectContributors": "Seuls les contributeurs du projet peuvent être assignés.",
+      "notSourceBoard": "Cette fonction n'existe que sur un tableau lié à un projet ou une organisation Communecter.",
+      "ownerFieldNotAllowed": "Seuls les administrateurs du projet ou de l'organisation modifient le montant et le temps passé.",
+      "ownerOnly": "Seuls les administrateurs de l'organisation accèdent à la liste de ses projets.",
+      "roleManagementNotAllowed": "Seuls les administrateurs peuvent modifier les rôles.",
+      "roleWriteFailed": "La suppression du rôle s'est arrêtée en cours de route : la liste est relue.",
+      "roleWriteFailedCount_one": "La suppression s'est arrêtée : le rôle a été retiré à {{count}} membre, la liste est relue.",
+      "roleWriteFailedCount_other": "La suppression s'est arrêtée : le rôle a été retiré à {{count}} membres, la liste est relue.",
+      "roleWriteFailedCount_zero": "La suppression du rôle s'est arrêtée avant le premier membre : la liste est relue.",
+      "sourceMissing": "Le projet ou l'organisation Communecter de ce tableau n'existe plus.",
+      "unknownLabels": "Une étiquette de la carte n'existe plus sur ce tableau.",
+      "unknownMilestone": "Ce jalon n'existe plus dans le projet.",
+      "viewerFieldNotAllowed": "En lecture seule, seule la checklist d'une carte qui vous est assignée se modifie.",
+      "viewerMoveNotAllowed": "En lecture seule, vous ne déplacez une carte qui vous est assignée que vers ou depuis la colonne de fin.",
+      "viewerNotAssignee": "En lecture seule, vous ne cochez que la checklist des cartes qui vous sont assignées."
+    },
+    "serverError": "Le serveur n'a pas répondu correctement.",
+    "sourceManaged": "Ce réglage se gère sur Communecter, pas dans co-kanban.",
+    "timeout": "Le serveur met trop de temps à répondre.",
+    "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+    "unsupportedMediaType": "Requête refusée par le serveur (format inattendu).",
+    "validation": "Certaines informations sont invalides.",
+    "visibilityRequiresParent": "La visibilité communautaire exige un rattachement.",
+    "wipExceeded": "La limite d'en-cours de la colonne est dépassée."
+  },
+  "filterBar": {
+    "assignees": "Assignés",
+    "clear": "Effacer",
+    "due": "Échéance",
+    "emptyAssignees": "Ce tableau n’a encore aucun membre.",
+    "emptyDue": "Aucune échéance à filtrer.",
+    "emptyPriority": "Aucune priorité à filtrer.",
+    "emptyStatus": "Aucun statut à filtrer.",
+    "label": "Recherche et filtres du tableau",
+    "labels": "Étiquettes",
+    "milestone": "Jalon",
+    "noMatch": "Aucun résultat.",
+    "priority": "Priorité",
+    "reset_one": "Retirer le filtre",
+    "reset_other": "Retirer les {{count}} filtres",
+    "resultAll_one": "Aucun filtre : {{count}} carte au total.",
+    "resultAll_other": "Aucun filtre : {{count}} cartes au total.",
+    "resultCount_one": "{{count}} carte correspond, sur {{total}}.",
+    "resultCount_other": "{{count}} cartes correspondent, sur {{total}}.",
+    "searchIn": "Rechercher dans le filtre {{label}}",
+    "searchPlaceholder": "Rechercher…",
+    "selectedCount_one": "{{count}} valeur cochée",
+    "selectedCount_other": "{{count}} valeurs cochées",
+    "status": "Statut"
+  },
+  "filters": {
+    "due": {
+      "none": "Sans échéance",
+      "overdue": "En retard",
+      "today": "Aujourd'hui",
+      "week": "Cette semaine"
+    },
+    "noMilestone": "Sans jalon",
+    "noneActive": "Aucun filtre actif.",
+    "openOnly": "Cartes en cours seulement",
+    "overdue": "En retard",
+    "reset": "Réinitialiser les filtres",
+    "unassigned": "Non assignées"
+  },
+  "home": {
+    "title": "Kanbans",
+    "lead": "Suivez les actions et répartissez les rôles de {{name}}.",
+    "thisCollective": "ce collectif",
+    "parentType": {
+      "organizations": "Organisation",
+      "projects": "Projet"
+    },
+    "boards": {
+      "actions": {
+        "title": "Actions",
+        "description": "Les actions à faire, en cours et terminées, colonne par colonne."
+      },
+      "roles": {
+        "title": "Rôles",
+        "description": "Qui tient quel rôle parmi les membres, et les rôles à attribuer."
+      }
+    },
+    "stats": {
+      "open_one": "{{count}} ouverte",
+      "open_other": "{{count}} ouvertes",
+      "doneOf_one": "{{count}} terminée sur {{total}}",
+      "doneOf_other": "{{count}} terminées sur {{total}}",
+      "empty": "Aucune action pour le moment",
+      "openByColumn": "Actions ouvertes par colonne",
+      "roles_one": "{{count}} rôle",
+      "roles_other": "{{count}} rôles",
+      "members_one": "{{count}} membre",
+      "members_other": "{{count}} membres",
+      "vacantRoles_one": "{{count}} rôle sans titulaire",
+      "vacantRoles_other": "{{count}} rôles sans titulaire"
+    },
+    "login": "Connectez-vous pour ouvrir les kanbans de {{name}}.",
+    "notMember": {
+      "title": "Réservé aux membres",
+      "body": "Les kanbans de {{name}} sont ouverts à ses membres et contributeurs : rejoignez ce collectif pour y accéder."
+    },
+    "unavailable": {
+      "title": "Pas de kanban sur ce site",
+      "body": "Un kanban suit les actions d'une organisation ou d'un projet, et ce site n'en porte pas."
+    },
+    "breadcrumb": "Fil d'Ariane"
+  },
+  "labels": {
+    "empty": "Aucune étiquette.",
+    "emptyBoard": "Ce tableau n'a pas encore d'étiquette.",
+    "group": "Étiquettes",
+    "none": "Aucune étiquette"
+  },
+  "members": {
+    "add": "Ajouter",
+    "addTitle": "Ajouter un membre",
+    "assignedCards_one": "{{count}} carte assignée",
+    "assignedCards_other": "{{count}} cartes assignées",
+    "confirmLeave": "Quitter ce tableau ?",
+    "confirmRemove": "Retirer {{name}} de ce tableau ?",
+    "count_one": "{{count}} membre",
+    "count_other": "{{count}} membres",
+    "description": "Qui travaille sur ce tableau, et avec quels droits.",
+    "emptyDescription": "Ajoutez les personnes qui travaillent sur ce tableau pour pouvoir leur assigner des cartes.",
+    "emptyTitle": "Aucun membre",
+    "lastOwnerHint": "Dernier propriétaire : désignez quelqu'un d'autre avant de le retirer.",
+    "leave": "Quitter ce tableau",
+    "leaveAction": "Quitter le tableau",
+    "linkRoles": {
+      "editor": {
+        "organizations": "Membre",
+        "projects": "Contributeur"
+      }
+    },
+    "manage_one": "Membres ({{count}})",
+    "manage_other": "Membres ({{count}})",
+    "more": "+{{count}}",
+    "newRoleLabel": "Rôle à donner",
+    "noCandidate": "Aucune personne trouvée.",
+    "originBoard": "Membre du tableau",
+    "originParent": "Droit hérité du collectif",
+    "originParentAdmin": "Administration du collectif",
+    "originParentMember": "Communauté du collectif",
+    "remove": "Retirer {{name}} du tableau",
+    "removeAction": "Retirer du tableau",
+    "removeConsequence": "Ses cartes restent en place, elle ou il en est simplement désassigné·e.",
+    "roleFor": "Rôle de {{name}}",
+    "roles": {
+      "editor": "Contributeur",
+      "owner": "Propriétaire",
+      "viewer": "Lecteur"
+    },
+    "searchHint": "Saisissez un nom pour chercher parmi les personnes de la communauté.",
+    "searchLabel": "Rechercher une personne",
+    "searchPlaceholder": "Nom ou prénom",
+    "sourceManaged": {
+      "organizations": "Ce sont les membres de l'organisation sur Communecter : ils se gèrent depuis la page de l'organisation, pas ici.",
+      "projects": "Ce sont les contributeurs du projet sur Communecter : ils se gèrent depuis la page du projet, pas ici."
+    },
+    "title": "Membres",
+    "unknown": "Membre inconnu",
+    "you": "(vous)"
+  },
+  "milestones": {
+    "cardCount_one": "{{count}} carte",
+    "cardCount_other": "{{count}} cartes",
+    "close": "Clore",
+    "closeLabel": "Clore le jalon {{name}}",
+    "closedSection": "Clos ({{count}})",
+    "create": "Créer le jalon",
+    "createTitle": "Nouveau jalon",
+    "description": "Les jalons découpent le projet en étapes. Ils sont partagés avec Kanban gestion.",
+    "empty": "Aucun jalon ouvert.",
+    "emptyClosed": "Aucun jalon clos.",
+    "errors": {
+      "dateRange": "La date de fin doit suivre la date de début.",
+      "invalidDate": "Cette date n'existe pas.",
+      "required": "Donnez un nom au jalon.",
+      "tooLong": "Le texte dépasse {{max}} caractères."
+    },
+    "fields": {
+      "endDate": "Date de fin",
+      "name": "Nom du jalon",
+      "startDate": "Date de début"
+    },
+    "openSection": "Ouverts ({{count}})",
+    "readOnly": "Seul un administrateur du projet crée et modifie les jalons.",
+    "rename": "Renommer",
+    "renameLabel": "Renommer le jalon {{name}}",
+    "reopen": "Rouvrir",
+    "reopenLabel": "Rouvrir le jalon {{name}}",
+    "title": "Jalons du projet",
+    "trigger": "Gérer les jalons…"
+  },
+  "myCards": {
+    "columns": {
+      "due": "Échéance",
+      "priority": "Priorité",
+      "progress": "Checklist",
+      "title": "Carte"
+    },
+    "fields": {
+      "column": "Colonne"
+    },
+    "noChecklist": "—",
+    "noDue": "Sans échéance",
+    "overdue": "En retard",
+    "sortBy": "Trier par {{column}}",
+    "sortToggle": "Inverser le tri sur {{column}}"
+  },
+  "priority": {
+    "dotLabel": "Priorité : {{priority}}",
+    "long": {
+      "high": "Haute",
+      "low": "Basse",
+      "medium": "Moyenne",
+      "urgent": "Urgente"
+    },
+    "none": "Aucune",
+    "noneGroup": "Sans priorité",
+    "short": {
+      "high": "HAUTE",
+      "low": "BASSE",
+      "medium": "MOY",
+      "urgent": "URG"
+    }
+  },
+  "projects": {
+    "contributors_one": "{{count}} contributeur",
+    "contributors_other": "{{count}} contributeurs",
+    "countUnavailable": "Liste indisponible",
+    "count_one": "{{count}} projet",
+    "count_other": "{{count}} projets",
+    "create": "Nouveau projet",
+    "createdBy": "Créé par {{name}}",
+    "empty": {
+      "active": {
+        "description": "Créez un kanban vide, ou ouvrez en tableau un projet ou une organisation Communecter dont vous êtes membre.",
+        "title": "Aucun projet actif"
+      },
+      "all": {
+        "description": "Créez votre premier projet : un kanban vide, ou un projet ou une organisation Communecter dont vous êtes membre.",
+        "title": "Aucun projet pour l’instant"
+      },
+      "archived": {
+        "description": "Un projet archivé reste consultable en lecture seule. On l’archive depuis son menu « ⋯ ».",
+        "title": "Aucun projet archivé"
+      }
+    },
+    "members_one": "{{count}} membre",
+    "members_other": "{{count}} membres",
+    "myTasks": "Mes tâches",
+    "noMatch": {
+      "description": "Vérifiez l’orthographe, ou cherchez un autre mot du titre ou de la description.",
+      "title": "Aucun projet ne correspond à « {{query}} »"
+    },
+    "progressLabel": "Avancement du projet {{title}}",
+    "searchLabel": "Rechercher un projet",
+    "searchPlaceholder": "Rechercher un projet…",
+    "sourceBadge": {
+      "organizations": "Communecter · Organisation",
+      "projects": "Communecter · Projet"
+    },
+    "status": {
+      "active": "Actifs",
+      "all": "Tous",
+      "archived": "Archivés",
+      "label": "Statut des projets"
+    },
+    "subtitle": "Vos tableaux Kanban et ceux auxquels vous collaborez.",
+    "tasksProgress": "{{done}}/{{total}} tâches",
+    "title": "Mes projets",
+    "truncated": "Les {{shown}} projets les plus récents sont affichés, sur {{total}}."
+  },
+  "search": {
+    "clear": "Effacer la recherche",
+    "close": "Fermer la recherche",
+    "label": "Rechercher dans ce tableau",
+    "placeholder": "Rechercher…"
+  },
+  "tags": {
+    "add": "Ajouter",
+    "empty": "Aucune étiquette.",
+    "errors": {
+      "duplicate": "Cette étiquette est déjà sur la carte.",
+      "empty": "Une étiquette ne peut pas être vide.",
+      "reserved": "Ce mot range la carte dans une colonne : déplacez la carte plutôt que de l'étiqueter.",
+      "tooLong": "Une étiquette fait au plus {{max}} caractères.",
+      "tooMany": "Une carte porte au plus {{maxTags}} étiquettes."
+    },
+    "hint": "Entrée ou virgule pour ajouter. Les étiquettes sont partagées avec Kanban gestion.",
+    "inputLabel": "Nouvelle étiquette",
+    "placeholder": "ex. : web, mobile",
+    "remove": "Retirer l'étiquette {{tag}}"
+  },
+  "toast": {
+    "actionFailed": "Action impossible",
+    "cardArchived": "Carte archivée",
+    "dismiss": "Masquer la notification",
+    "region": "Notifications",
+    "wipExceeded": "Limite d'en-cours dépassée",
+    "wipExceededDetail": "{{cards}} cartes dans cette colonne pour une limite de {{limit}}."
+  },
+  "views": {
+    "doneOf": "{{done}} / {{total}} terminées",
+    "empty": {
+      "filteredHint": "Élargissez la recherche ou retirez un filtre pour revoir les cartes.",
+      "filteredTitle": "Aucune carte ne correspond",
+      "hint": "Ajoutez une première carte depuis la vue Tableau.",
+      "title": "Aucune carte sur ce tableau"
+    },
+    "list": {
+      "allCards": "Toutes les cartes",
+      "emptyGroup": "Aucune carte dans ce groupe.",
+      "unassignedGroup": "Non assignées"
+    },
+    "milestones": {
+      "addMilestone": "Ajouter un jalon",
+      "backToBoard": "Revenir au tableau",
+      "closeMilestone": "Clore le jalon",
+      "closed": "Jalon « {{name}} » clos. Rouvrez-le depuis « Gérer les jalons… » dans le menu ⋯ du tableau.",
+      "doneCount_one": "{{count}} terminée",
+      "doneCount_other": "{{count}} terminées",
+      "hiddenClosed_one": "{{count}} carte rattachée à un jalon clos n’apparaît pas ici.",
+      "hiddenClosed_other": "{{count}} cartes rattachées à des jalons clos n’apparaissent pas ici.",
+      "intro": "Les cartes en cours, par jalon ouvert. Glissez une carte vers un autre jalon pour l’y rattacher.",
+      "introReadOnly": "Les cartes en cours, par jalon ouvert.",
+      "noMilestone": "Sans jalon",
+      "toSchedule": "À planifier",
+      "unavailableHint": "Les jalons découpent un projet Communecter en étapes. Ce tableau n’en a pas.",
+      "unavailableTitle": "Vue réservée aux projets Communecter"
+    },
+    "overview": {
+      "activityHint": "Les dernières écritures sur ce tableau.",
+      "byColumn": "Répartition par colonne",
+      "byColumnHint": "Part des cartes du tableau dans chaque colonne.",
+      "byStatus": "Répartition par statut",
+      "byStatusHint": "Où en est le travail, indépendamment de la colonne.",
+      "columnShare": "Part des cartes dans la colonne {{column}}",
+      "contributorDone_one": "{{count}} terminée sur {{total}}",
+      "contributorDone_other": "{{count}} terminées sur {{total}}",
+      "contributorIdle": "Aucune carte assignée",
+      "contributorOverdue": "{{overdue}} en retard",
+      "contributors": "Charge par contributeur",
+      "contributorsHint": "Une carte à deux personnes compte pour chacune.",
+      "dueThisWeek": "À échéance cette semaine",
+      "dueThisWeekHint": "Dans les sept jours, aujourd’hui compris",
+      "noContributor": "Ce tableau n’a encore aucun membre.",
+      "overdue": "Cartes en retard",
+      "overdueHint": "Échéance dépassée, carte non terminée",
+      "progress": "Avancement du tableau",
+      "statusShare": "Part des cartes au statut {{status}}",
+      "unassigned": "Cartes non assignées",
+      "unassignedHint": "Personne ne s’en est encore chargé"
+    },
+    "roles": {
+      "addRole": "Ajouter un rôle",
+      "admin": "Admin",
+      "alreadyAssigned": "{{name}} a déjà le rôle « {{role}} ».",
+      "alreadyHolds": "Déjà ce rôle",
+      "assign": "Attribuer",
+      "assignRefused": "Le rôle « {{role}} » n'a pas pu être attribué à {{name}}. {{reason}}",
+      "assigned": "Rôle « {{role}} » attribué à {{name}}.",
+      "columnMenu": "Actions du rôle {{role}}",
+      "columns": "Colonnes du kanban des rôles",
+      "columnsDescription": "Masquez les rôles que vous ne suivez pas. Ce réglage ne vaut que sur cet appareil : rien ne change pour les autres membres, et un rôle masqué reste attribuable depuis « Rôles… ».",
+      "create": "Créer le rôle",
+      "created": "Rôle « {{role}} » créé.",
+      "deleteRole": "Supprimer ce rôle",
+      "deleteRoleConfirm_one": "Le rôle « {{role}} » sera retiré de {{count}} membre. Cette action est irréversible.",
+      "deleteRoleConfirm_other": "Le rôle « {{role}} » sera retiré de {{count}} membres. Cette action est irréversible.",
+      "deleteRoleConfirm_zero": "Le rôle « {{role}} » n'est porté par personne : sa colonne disparaît.",
+      "deleted": "Rôle « {{role}} » supprimé.",
+      "dragCancelled": "Attribution annulée : les rôles de {{name}} ne changent pas.",
+      "dragOutside": "Carte relâchée hors d’une colonne de rôle : les rôles de {{name}} ne changent pas.",
+      "dragOver": "Déposer ici attribue le rôle « {{role}} » à {{name}}.",
+      "dragStart": "{{name}} saisi. Déposez la carte sur une colonne de rôle pour lui attribuer ce rôle, ou relâchez-la ailleurs pour annuler.",
+      "dropHint": "Déposez un membre ici pour lui attribuer ce rôle.",
+      "errors": {
+        "roleExists": "Le rôle « {{role}} » existe déjà : déposez le membre dans sa colonne.",
+        "roleInvalid": "Le nom ne peut contenir ni « < », ni « > », ni caractère de contrôle.",
+        "roleRequired": "Nommez le rôle.",
+        "roleTooLong": "Le nom dépasse {{max}} caractères."
+      },
+      "holderCount_one": "{{count}} membre",
+      "holderCount_other": "{{count}} membres",
+      "holdersList": "Membres ayant le rôle {{role}}",
+      "intro": "Les membres, puis une colonne par rôle. Glissez un membre vers un rôle pour le lui attribuer : il reste dans « Membres ».",
+      "matchCount_one": "{{count}} membre correspond.",
+      "matchCount_other": "{{count}} membres correspondent.",
+      "memberMenu": "Actions sur {{name}}",
+      "membersColumn": "Membres",
+      "membersList": "Tous les membres",
+      "noHolders": "Personne n’a ce rôle.",
+      "noMatch": "Aucun membre ni rôle ne correspond à « {{query}} ».",
+      "noMatchInColumn": "Aucun membre ne correspond.",
+      "noMembers": "Aucun membre.",
+      "noMembersHint": "Les membres se gèrent sur Communecter.",
+      "noRolesYet": "Aucun rôle n’existe encore. Créez-en un avec « Ajouter un rôle ».",
+      "organization": "Organisation",
+      "pending": "En attente",
+      "readOnly": "Seuls les administrateurs peuvent modifier les rôles.",
+      "removeRefused": "Le rôle « {{role}} » n'a pas pu être retiré à {{name}}. {{reason}}",
+      "removeRole": "Retirer le rôle",
+      "removeRoleConfirm": "Retirer le rôle « {{role}} » à {{name}} ?",
+      "removeRoleLabel": "Retirer le rôle « {{role}} » à {{name}}",
+      "removed": "Rôle « {{role}} » retiré à {{name}}.",
+      "roleCount_one": "{{count}} rôle",
+      "roleCount_other": "{{count}} rôles",
+      "roleName": "Nom du rôle",
+      "roleNamePlaceholder": "Trésorerie, Communication…",
+      "rolesDialogHint": "Cochez un rôle pour l’attribuer, décochez-le pour le retirer. Chaque changement est enregistré aussitôt.",
+      "rolesMenu": "Rôles…",
+      "rolesOf": "Rôles de {{name}}",
+      "search": "Rechercher un membre ou un rôle",
+      "summary": "{{members}}, {{roles}}"
+    },
+    "table": {
+      "caption": "Toutes les cartes du tableau, triables par colonne.",
+      "region": "Tableau des cartes"
+    },
+    "timeline": {
+      "caption": "Cartes placées à la semaine de leur échéance, une ligne par colonne du tableau.",
+      "cardAt": "{{title}} — échéance {{date}}",
+      "gap": "Semaines sans échéance, masquées.",
+      "noDated": "Aucune carte n’a d’échéance : l’axe des semaines reste vide.",
+      "region": "Chronologie des échéances",
+      "today": "Aujourd’hui",
+      "undated": "Non datées",
+      "undatedHint": "Aucune échéance posée",
+      "week": "Semaine du {{date}}"
+    }
+  }
+}

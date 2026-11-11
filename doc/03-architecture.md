@@ -1147,7 +1147,7 @@ Wrapper typé autour du SDK `@communecter/cocolight-api-client`.
 
 | Composant | Fichier | Rôle |
 |---|---|---|
-| `IntegrationsLoader` | `IntegrationsLoader.tsx` | Injecte GA4 (gtag.js), Intercom, et scripts custom en `<head>` ou `<body>` selon config |
+| `IntegrationsLoader` | `IntegrationsLoader.tsx` | Mesure d'audience `integrations.analytics` (**Matomo** ou GA4, client seulement) : hôte public uniquement, consentement de la catégorie `analytics` (`src/lib/consent.ts`, `opt-out`/`opt-in`), une page vue par navigation client ; plus Intercom et scripts custom en `<head>` ou `<body>` |
 | `GoogleFontsLoader` | `GoogleFontsLoader.tsx` | Injecte les fonts de `config.theme.typography.fontFamily` via `<link rel="stylesheet">` (client-side, évite le double-injecteur SSR) |
 | `ErrorBoundary` | `ErrorBoundary.tsx` | Class component React, accepte `context` pour identifier la source. En dev affiche le message d'erreur ; en prod affiche le `fallback` |
 | `FloatingActionButton` | `FloatingActionButton.tsx` | Bouton flottant configurable (label, icon, position, modal) — utilise `useVisibility(condition)` pour l'affichage conditionnel, ouvre un `DynamicModal` du module profil |

@@ -150,6 +150,46 @@
       "gallery": "aapStep1.image",
       "sections": [
         {
+          "id": "modele",
+          "title": {
+            "fr": "Modèle économique"
+          },
+          "icon": "layers",
+          "field": "answers.aapStep1.aapStep1lpvinn7ld70wbk7w339"
+        },
+        {
+          "id": "gouvernance",
+          "title": {
+            "fr": "Mode de gouvernance"
+          },
+          "icon": "users-round",
+          "field": "answers.aapStep1.aapStep1lpvioouzejcnjy7ffw"
+        },
+        {
+          "id": "juridique",
+          "title": {
+            "fr": "Cadre juridique"
+          },
+          "icon": "scale",
+          "field": "answers.aapStep1.aapStep1lpvip7f9pa6et762ysa"
+        },
+        {
+          "id": "partenariats",
+          "title": {
+            "fr": "Partenariats & coopération"
+          },
+          "icon": "hand-heart",
+          "field": "answers.aapStep1.aapStep1lpvipvzp13vf2jypqgxq"
+        },
+        {
+          "id": "contribution",
+          "title": {
+            "fr": "Modalités de contribution"
+          },
+          "icon": "file-text",
+          "field": "answers.aapStep1.aapStep1lqb428ajrbhwdbmg6qi"
+        },
+        {
           "id": "usages",
           "title": {
             "fr": "Cas d'usages"
@@ -171,7 +211,8 @@
     }
   },
   "cagnotteModuleConfig": {
-    "defaultType": "aac"
+    "defaultType": "aac",
+    "pledgeRetraction": true
   },
   "header": {
     "type": "standard",

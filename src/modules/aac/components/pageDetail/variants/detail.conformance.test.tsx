@@ -353,6 +353,47 @@ describe("interface « editorial » — contenu de démonstration", () => {
   });
 });
 
+describe("interface « editorial » — filtrer sur un jalon montre ses actions", () => {
+  type MilestoneListProps = { onSelectMilestone: (itemId: string | null) => void };
+
+  /** Onglet « Passage à l'action » ouvert, haut de la section « Actions » à `top` px du haut de l'écran. */
+  async function ouvrir(top: number) {
+    await renderVariant("editorial", makeVM());
+    act(() => {
+      fireEvent.mouseDown(screen.getByRole("tab", { name: "editorial.detail.tabs.action" }), { button: 0 });
+    });
+    const actions = document.getElementById("actions")!;
+    actions.getBoundingClientRect = () => ({ top }) as DOMRect;
+    return actions;
+  }
+  const choisir = (itemId: string | null) =>
+    act(() => {
+      (received.actions as MilestoneListProps).onSelectMilestone(itemId);
+    });
+
+  it("actions hors de vue (sous les jalons) : le filtre est posé et la page y défile", async () => {
+    const actions = await ouvrir(window.innerHeight + 400);
+    choisir("it1");
+
+    expect((received["actions-feed"] as { milestoneFilter: string | null }).milestoneFilter).toBe("it1");
+    expect(scrolled).toEqual([actions]);
+  });
+
+  it("actions déjà visibles (carte collée en haut) : pas de défilement", async () => {
+    await ouvrir(96);
+    choisir("it1");
+
+    expect(scrolled).toEqual([]);
+  });
+
+  it("désélectionner un jalon ne fait pas défiler", async () => {
+    await ouvrir(window.innerHeight + 400);
+    choisir(null);
+
+    expect(scrolled).toEqual([]);
+  });
+});
+
 describe("registre des interfaces de fiche", () => {
   it("une clé inconnue retombe sur l'interface par défaut", () => {
     expect(AAC_DETAIL_VARIANTS.get("nexistepas")).toBe(AAC_DETAIL_VARIANTS.get("default"));

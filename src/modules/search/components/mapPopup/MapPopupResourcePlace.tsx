@@ -40,10 +40,7 @@ export default function MapPopupResourcePlace({ item, t, onOpenItem }: MapPopupP
           </p>
         )}
         <p className="text-xs font-medium text-foreground">
-          {t(resources.length > 1 ? "resourceDirectory.placeServices_other" : "resourceDirectory.placeServices").replace(
-            "{{count}}",
-            String(resources.length),
-          )}
+          {t("resourceDirectory.placeServices", undefined, { count: resources.length })}
         </p>
         {/* Défilement au-delà de quelques services : un lieu en porte jusqu'à une vingtaine. */}
         <ul className="max-h-40 space-y-1 overflow-y-auto">

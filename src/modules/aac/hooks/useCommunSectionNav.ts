@@ -11,6 +11,18 @@ export function scrollToSection(sectionId: string) {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/**
+ * Montre une section : son contenu revient en haut, et la page y défile si son haut n'est pas dans
+ * la moitié haute de l'écran.
+ */
+export function revealSection(sectionId: string) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    section.scrollTop = 0;
+    const { top } = section.getBoundingClientRect();
+    if (top < 0 || top > window.innerHeight / 2) section.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export const CommunSectionNavContext = createContext<ShowSection>(scrollToSection);
 
 export function useShowSection(): ShowSection {

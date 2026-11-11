@@ -864,5 +864,32 @@
     "subtitleMultiple": "Vos {{count}} promesses ({{amount}} €) ont bien été enregistrées.",
     "hint": "Vous pourrez régler ce montant à tout moment depuis le bouton de vos promesses.",
     "closeButton": "Fermer"
+  },
+  "PledgeRetract": {
+    "action": "Retirer",
+    "inProgress": "Paiement en cours",
+    "inProgressHint": "Un paiement est en cours ou à rapprocher sur cette promesse : elle ne peut pas être retirée pour l'instant.",
+    "retracted": "Promesse retirée",
+    "notAllowed": "Non autorisée",
+    "notAllowedHint": "Vous ne pouvez pas régler cette promesse au nom de ce financeur.",
+    "aria": "Retirer la promesse de {{financer}}",
+    "confirm": {
+      "title": "Retirer cette promesse ?",
+      "description": "La promesse de {{financer}} ({{amount}}) sur « {{depense}} » sera retirée : ce besoin ne sera plus couvert par cet engagement.",
+      "confirm": "Oui, retirer",
+      "cancel": "Annuler",
+      "locked": "Un paiement est en cours pour cette promesse, jusqu'à {{until}} au plus tard : elle ne peut pas être retirée pour l'instant."
+    },
+    "toasts": {
+      "success": "Promesse retirée",
+      "errorTitle": "Promesse non retirée"
+    },
+    "errors": {
+      "hasPayment": "Un paiement est enregistré ou en cours sur cette promesse : elle ne peut pas être retirée.",
+      "notFound": "Cette promesse est introuvable : elle a peut-être déjà été retirée.",
+      "notAllowed": "Vous ne pouvez pas retirer cette promesse.",
+      "login": "Connectez-vous pour retirer une promesse.",
+      "generic": "Le retrait a échoué, réessayez."
+    }
   }
 }

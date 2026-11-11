@@ -15,6 +15,8 @@ export interface CommunDeletionPlan {
   paymentCount: number;
   /** Somme des versements. Sert au message de refus, jamais à la décision. */
   paymentAmount: number;
+  /** Un paiement est en cours (promesse réservée ou facturée, contribution) : la suppression attend son issue. */
+  paymentInProgress: boolean;
   /**
    * Dès qu'un versement existe, le commun porte une trace comptable : le supprimer effacerait
    * la contrepartie de sommes engagées. Le retrait de l'annuaire (`useCommunSelectionAction`)
@@ -28,6 +30,7 @@ const EMPTY_PLAN: CommunDeletionPlan = {
   actionIds: [],
   paymentCount: 0,
   paymentAmount: 0,
+  paymentInProgress: false,
   isBlocked: false,
 };
 
@@ -39,12 +42,13 @@ const EMPTY_PLAN: CommunDeletionPlan = {
  * clôturé afficherait 0 € et redeviendrait supprimable ; et `funding` seul manquerait les lignes
  * reconstruites depuis les financeurs bruts, le chemin courant d'un AAC.
  *
- * Aucun filtrage par statut : promesse comme versement bloquent la suppression.
+ * Aucun filtrage par statut : promesse comme versement bloquent la suppression, un paiement en cours aussi.
  */
 export function resolveCommunDeletionPlan(
-  resource: CagnotteResource | null | undefined
+  resource: CagnotteResource | null | undefined,
+  paymentInProgress = false,
 ): CommunDeletionPlan {
-  if (!resource) return EMPTY_PLAN;
+  if (!resource) return { ...EMPTY_PLAN, paymentInProgress, isBlocked: paymentInProgress };
 
   const items = Array.isArray(resource.items) ? resource.items : [];
 
@@ -69,6 +73,7 @@ export function resolveCommunDeletionPlan(
     actionIds: [...new Set(actionIds)],
     paymentCount: versements.length,
     paymentAmount,
-    isBlocked: versements.length > 0,
+    paymentInProgress,
+    isBlocked: versements.length > 0 || paymentInProgress,
   };
 }

@@ -121,6 +121,7 @@ function controleur(over: Record<string, unknown> = {}): CommunObjectivesControl
     handleActionDone: vi.fn(),
     handleActionDelete: vi.fn(),
     handleActionEdit: vi.fn(),
+    pledgeRetraction: { depenseInProgress: () => false },
     refetchFundingEnvelope: vi.fn(),
     ...over,
   } as unknown as CommunObjectivesController;
@@ -198,11 +199,13 @@ describe("CommunActionDialogs — édition d'une action", () => {
 
 describe("CommunActionsSection — restauration d'un palier clos", () => {
   const restaurer = () => screen.queryByRole("button", { name: "Restaurer" });
+  const afficherClos = () => fireEvent.click(screen.getByRole("button", { name: "Afficher les paliers clos (1)" }));
 
   it("un palier clos ET financé garde son bouton « Restaurer » — le parcours nominal de clôture", () => {
     // Ni éditable (clos), ni supprimable (financé) : seul le droit de restauration reste.
     const ctrl = controleur();
     poser(ctrl, [palier({ status: "close", currentFunding: 2000, actions: [action({ status: "done" })] })]);
+    afficherClos();
 
     expect(restaurer()).toBeTruthy();
     fireEvent.click(restaurer()!);
@@ -219,7 +222,9 @@ describe("CommunActionsSection — restauration d'un palier clos", () => {
       controleur({ cagnottePerms: { ...DROITS_ADMIN, canRestoreMilestone: () => false } }),
       [palier({ status: "close", currentFunding: 0 })],
     );
+    afficherClos();
 
+    expect(screen.getByText("Prototype")).toBeTruthy();
     expect(restaurer()).toBeNull();
   });
 
@@ -227,5 +232,51 @@ describe("CommunActionsSection — restauration d'un palier clos", () => {
     poser(controleur(), [palier({ status: "open" })]);
     expect(restaurer()).toBeNull();
     expect(screen.getByRole("button", { name: "Clôturer" })).toBeTruthy();
+  });
+});
+
+describe("CommunActionsSection — paliers en cours, puis paliers clos masqués", () => {
+  const bascule = () => screen.getByRole("button", { name: /paliers clos/ });
+  const enTete = (nom: string) => screen.getByText(nom).closest("button") as HTMLButtonElement;
+
+  it("les clos sont masqués par défaut ; le bouton les compte, les affiche puis les masque", () => {
+    poser(controleur(), [
+      palier({ itemId: "it1", milestoneId: "m1", name: "Étude", status: "close" }),
+      palier({ itemId: "it2", milestoneId: "m2", name: "Prototype" }),
+    ]);
+
+    expect(screen.getByText("Prototype")).toBeTruthy();
+    expect(screen.queryByText("Étude")).toBeNull();
+    expect(bascule().textContent).toBe("Afficher les paliers clos (1)");
+    expect(bascule().getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(bascule());
+    expect(screen.getByText("Étude")).toBeTruthy();
+    expect(bascule().textContent).toBe("Masquer les paliers clos (1)");
+    expect(bascule().getAttribute("aria-expanded")).toBe("true");
+
+    fireEvent.click(bascule());
+    expect(screen.queryByText("Étude")).toBeNull();
+  });
+
+  it("sans palier clos, pas de bouton", () => {
+    poser(controleur(), [palier()]);
+    expect(screen.queryByRole("button", { name: /paliers clos/ })).toBeNull();
+  });
+
+  it("chaque palier garde son numéro ; la première carte EN COURS est dépliée", () => {
+    poser(controleur(), [
+      palier({ itemId: "it1", milestoneId: "m1", name: "Étude", status: "close" }),
+      palier({ itemId: "it2", milestoneId: "m2", name: "Prototype" }),
+      palier({ itemId: "it3", milestoneId: "m3", name: "Lancement" }),
+    ]);
+
+    expect(enTete("Prototype").textContent).toContain("Palier 2");
+    expect(enTete("Prototype").getAttribute("aria-expanded")).toBe("true");
+    expect(enTete("Lancement").getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(bascule());
+    expect(enTete("Étude").textContent).toContain("Palier 1");
+    expect(enTete("Étude").getAttribute("aria-expanded")).toBe("false");
   });
 });

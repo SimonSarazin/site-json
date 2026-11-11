@@ -185,6 +185,7 @@ src/modules/profil/
 │   ├── usePoiEquipementMatches.ts  // Détection doublons POI (useSearchQuery + debounce)
 │   ├── useCommentVotes.tsx         // Votes sur commentaires
 │   ├── useConfirmationDialog.tsx   // Dialog de confirmation
+│   ├── useCostumAddModal.ts        // Modale d'ajout d'un type : form costum du site (costumCreateKey) ou add-<type>
 │   ├── useEntityLabels.tsx         // Labels d'entité
 │   ├── useFormatProfileEntity.tsx  // Formatage des données du profil
 │   ├── useFriendsQuery.tsx         // Query amis
@@ -654,12 +655,61 @@ sous-types) — premier match gagne, repli `edit-profile` :
 - ⚠ un champ non PROJETÉ par `baseParams.defaultFields` vaut `undefined` dans les résultats de
   recherche → la règle ne matche jamais, en silence.
 
+### Champs du profil CITOYEN réservés à un costum
+
+Un champ réservé à un seul site sur le profil CITOYEN (ex. parent62 : `territoires`, liste fermée
+de 9 valeurs propres à ce réseau, et `structureRegister`, employeur) suit **exactement la même
+recette qu'une organisation/un POI costum**, pas une clé générique dans `site-schema.ts` :
+
+1. **Backend** : déclarer le champ dans `costum.typeObj.<clé>` du costum concerné (`persons`,
+   `citoyen`, `citoyens` ou `person` — toutes reconnues, `cocolight-api-client/src/costum/
+   liveDigest.ts` `TYPEKEY_TO_COLL`), sous `dynFormCostum.beforeBuild.properties` — même forme que
+   pour `organizations`/`poi`. Donnée de costum (base), pas du code.
+2. **`SCOPE_COLLECTIONS`** (`cocolight-api-client/src/costum/runtime.ts`) inclut `"citoyens"` depuis
+   le SDK `1.0.19x`+ (commit `3a4d7e1`, docs/33 backend côté SDK) : le digest live résout bien les
+   champs costum d'un citoyen, et `_costumCtx.schema` élargit le `DraftProxy` exactement comme pour
+   une fiche (`BaseEntity.ts`, combinedSchema.allOf). ⚠️ Ne pas confondre avec `ScopeCollection`
+   (`runtime.ts`, `"poi"|"organizations"|"projects"|"events"`, SANS `citoyens`) : celle-là ne régit
+   que la **création** par costum (`me.costum(slug).organization(...)`) — la lib ne crée jamais de
+   citoyen par ce biais (inscription seule), mais la LECTURE/ÉCRITURE de champs costum sur un
+   citoyen existant, elle, fonctionne.
+3. **Écriture** : `User._update()` (`cocolight-api-client/src/api/User.ts`) sépare automatiquement
+   les clés costum déclarées (`_costumOnlyKeys()`) des blocs standards et les envoie en UN seul
+   `element/save` collection=`citoyens` (`SAVE_CITOYEN`, `_saveCostumViaElementSave`) — qui passe
+   par `DataValidator::validate` AVEC le costum posté, donc jamais rejeté par le `DraftProxy`. Aucun
+   correctif PHP (`Person::$dataBinding`/`Element::updateBlock`) n'est nécessaire : ce chemin est
+   différent de la liste blanche figée d'`updateBlock`.
+4. **Formulaire côté site-json** : un `costumForm` dédié (`entityType:"citoyens"`), routé par
+   `profiles.citoyens.editModals` (`userContext:"own"` + un `when` qui borne la route) — PAS une
+   option dans le descripteur générique partagé (`editProfileConfig`/`editProfile.descriptor.ts`),
+   qui reste identique pour tous les sites. **La condition du `when` n'est PAS universelle — elle
+   dépend de comment le site peuple ses citoyens** :
+   - `sport-sante-bien-etre`/`maison-sport-sante-la-tampon` (commit `2fe9e545`) : `sourceKeys`/
+     `reference.costum` contient le slug — fonctionne car leurs professionnels s'inscrivent via le
+     flux costum-scopé (`UserApi.register({costumSlug})`, estampille à l'inscription).
+   - `parent62` (`costumForms.parent62-citoyen`) : `links.memberOf.<id de l'organisation porteuse>`
+     validé — ses coordinateur·rices étaient déjà des comptes existants AVANT ce lot, jamais
+     estampillés `source.key`/`reference.costum` (cette estampille n'est jamais posée
+     rétroactivement) ; seule l'adhésion réelle (lien `memberOf` à l'organisation) les identifie.
+
+   Choisir le bon `when` au cas par cas : si le site inscrit ses citoyens via le costum, la
+   provenance (`sourceKeys`/`reference.costum`) suffit ; si ses membres existaient déjà (ou
+   s'inscrivent hors costum), router sur l'adhésion (`links.memberOf`) est la seule option fiable.
+
+⚠️ Composants `_location`/`editSocial` (widgets dédiés d'`editCitoyenDescriptor`, adresse/réseaux
+sociaux) : leur lecture/écriture est câblée dans le pipeline `editProfilePayload.ts`, PAS dispo
+tel quel pour un costumForm autonome — reprendre l'adresse via les champs à plat + `serializeGroups.
+address` (codecs génériques `address:read`/`address:write`, `sharedCodecs.ts`), comme le fait déjà
+le costumForm SSBE/Ekilib.re ; les réseaux sociaux n'y sont pas repris non plus (même choix assumé
+par ce précédent).
+
 ### Menus d'ajout — `addConfig` (builtins costum-aware + items custom)
 
 Sur la section `profile-header` : `addConfig` gouverne le menu « Créer ». Un builtin
 (`organization|project|event|poi`) non désactivé ouvre le **form costum du site** quand il en
-existe exactement UN pour ce type (`costumCreateKey`, `components/add/addModals.ts` — même règle
-que `create: "inherit"` de l'admin : la règle commune `siteCostumAddModal`) ; ≥ 2 forms → modale
+existe exactement UN pour ce type (`costumCreateKey`, `components/add/addModals.ts`, lu par
+`useCostumAddModal` — même règle que `create: "inherit"` de l'admin : la règle commune
+`siteCostumAddModal`) ; ≥ 2 forms → modale
 standard conservée, le site déclare l'entrée voulue via `addConfig.custom`. Le bouton « Ajouter »
 d'un finder coform ne suit PAS cette règle : un formulaire costum n'y sert que déclaré
 (`coform.finderAddNew`, cf. [21-module-coform](21-module-coform.md)) :
@@ -1132,6 +1182,7 @@ Le module profil expose de nombreux hooks specialises :
 | `useProfileEntity` | `hooks/useProfileEntity.tsx` | Accès à l'entité typée depuis le contexte |
 | `useFormatProfileEntity` | `hooks/useFormatProfileEntity.tsx` | Formatage des données pour l'affichage |
 | `useProfilPermissions` | `hooks/useProfilPermissions.ts` | Permissions du profil courant |
+| `useCostumAddModal` | `hooks/useCostumAddModal.ts` | Modale d'ajout d'un type : le form costum du site s'il y en a un seul (`costumCreateKey`), sinon `add-<type>` — `AddEntityDropdown`, agenda d'un commun AAC |
 | `useEntityMutation` | `hooks/useEntityMutation.tsx` | Mutations CRUD **génériques** (create/edit) — remplace `useAddPoi`/`useUpdatePoi`/`useAddTiersLieu`/`useEditTiersLieu`/`useOrganizationMutations`/`useProjectMutations` |
 | `usePoiEquipementMatches` | `hooks/usePoiEquipementMatches.ts` | Détection doublons POI par adresse/type (debounce 400 ms) |
 | `useMembershipQuery` | `hooks/useMembershipQuery.tsx` | Query membership |

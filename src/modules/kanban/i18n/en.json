@@ -1,0 +1,927 @@
+{
+  "activity": {
+    "by": "by {{name}}",
+    "communecterActor": "Communecter",
+    "empty": "No recent activity on this board.",
+    "title": "Recent activity",
+    "unknownActor": "Someone",
+    "verbs": {
+      "board": {
+        "archived": "Board archived",
+        "attached": "Board attached to a collective",
+        "created": "Board created",
+        "detached": "Board detached from its collective",
+        "externalChange": "Changed in Communecter",
+        "milestones": "Milestones changed",
+        "updated": "Board updated"
+      },
+      "card": {
+        "archived": "Card archived",
+        "created": "Card created",
+        "deleted": "Card deleted",
+        "moved": "Card moved",
+        "updated": "Card updated"
+      },
+      "column": {
+        "created": "Column created",
+        "deleted": "Column deleted",
+        "moved": "Column moved",
+        "updated": "Column updated"
+      },
+      "member": {
+        "added": "Member added",
+        "removed": "Member removed",
+        "role": "Role changed"
+      },
+      "role": {
+        "assigned": "Member roles changed",
+        "created": "Role created",
+        "deleted": "Role deleted",
+        "updated": "Roles changed"
+      }
+    }
+  },
+  "assignees": {
+    "count": "{{count}} of {{total}} members",
+    "filter": "Filter members",
+    "filterPlaceholder": "Search a member",
+    "label": "Assignees",
+    "noMatch": "No member matches.",
+    "noMember": "This board has no member to assign.",
+    "orphanHint": {
+      "communecter": {
+        "organizations": "No longer in the organization",
+        "projects": "No longer in the project"
+      },
+      "kanban": "No longer on the board"
+    }
+  },
+  "board": {
+    "columns": "Board columns",
+    "emptyTitle": "This board has no column yet",
+    "menu": {
+      "label": "More views and board options",
+      "viewsSection": "Other views"
+    },
+    "share": {
+      "copied": "Link copied",
+      "failed": "Could not copy: select the address below.",
+      "menu": "Copy link to this view"
+    }
+  },
+  "boardControls": {
+    "asc": "Ascending",
+    "desc": "Descending",
+    "direction": "Sort direction",
+    "group": "Group by",
+    "groupBy": {
+      "assignee": "Assignee",
+      "column": "Column",
+      "none": "None",
+      "priority": "Priority",
+      "status": "Status"
+    },
+    "sort": "Sort",
+    "sortBy": {
+      "dueDate": "Due date",
+      "priority": "Priority",
+      "rank": "Board order",
+      "status": "Status",
+      "title": "Title"
+    }
+  },
+  "boardHeader": {
+    "progress": "{{done}}/{{total}} done · {{percent}}%",
+    "progressLabel": "Board progress"
+  },
+  "boardViews": {
+    "kanban": "Board",
+    "label": "Board views",
+    "list": "List",
+    "milestones": "Milestones view",
+    "overview": "Overview",
+    "table": "Table",
+    "timeline": "Timeline",
+    "unavailable": {
+      "kanbanGroup": "The board is already grouped by column.",
+      "kanbanSort": "The board order is set by moving cards.",
+      "milestonesGroup": "The Milestones view is already grouped by milestone.",
+      "milestonesSort": "Within a milestone, cards are ordered by priority, then creation date.",
+      "overviewFilter": "The overview sums up the whole board, unfiltered.",
+      "overviewGroup": "The overview groupings are fixed.",
+      "overviewSort": "The summary tiles have a fixed order.",
+      "tableGroup": "The table is a flat list: it sorts, it does not group.",
+      "timelineGroup": "The timeline has one track per column.",
+      "timelineSort": "The timeline is ordered by due date."
+    }
+  },
+  "boards": {
+    "archived": "Archived",
+    "back": "Back",
+    "cardCount_one": "{{count}} card",
+    "cardCount_other": "{{count}} cards",
+    "columnCount_one": "{{count}} column",
+    "columnCount_other": "{{count}} columns",
+    "count_one": "{{count}} board",
+    "count_other": "{{count}} boards",
+    "create": "New board",
+    "createAction": "Create board",
+    "createDescription": "A board gathers the actions of one project: columns, cards and members.",
+    "createLinkedAction": "Open as a board",
+    "createTitle": "Create a board",
+    "dateFrom": "From {{start}}",
+    "dateRange": "From {{start}} to {{end}}",
+    "dateUntil": "Until {{end}}",
+    "emptyDescription": "Create your first board: three columns (To do, In progress, Done) are waiting for you.",
+    "emptyTitle": "No board yet",
+    "errors": {
+      "dateRange": "The end date must come after the start date.",
+      "elementRequired": "Choose a project or an organization from the list.",
+      "invalidDate": "That date does not exist.",
+      "notMember": {
+        "organizations": "You are not a member of this Communecter organization: its board cannot be opened here.",
+        "projects": "You are not a member of this Communecter project: its board cannot be opened here."
+      },
+      "parentIdRequired": "Enter the identifier of the group to attach.",
+      "titleRequired": "Give the board a title.",
+      "titleTooLong": "The title exceeds {{max}} characters.",
+      "visibilityRequiresParent": "Community visibility requires an attachment."
+    },
+    "fields": {
+      "description": "Description",
+      "endDate": "End date",
+      "parent": "Attachment (optional)",
+      "parentId": "Group identifier",
+      "parentType": "Group type",
+      "startDate": "Start date",
+      "title": "Board title",
+      "visibility": "Visibility"
+    },
+    "memberCount_one": "{{count}} member",
+    "memberCount_other": "{{count}} members",
+    "next": "Continue",
+    "nextPage": "Next",
+    "noDate": "No date set",
+    "pageStatus": "Page {{page}} of {{pageCount}}",
+    "pagination": "Boards pagination",
+    "parentHint": "Attaching the board to a Communecter organization or project makes it inherit their rights.",
+    "parentNone": "No attachment",
+    "parentOrganization": "Organization",
+    "parentProject": "Project",
+    "previousPage": "Previous",
+    "progressLabel": "Board progress",
+    "progressValue": "{{done}} / {{total}} done ({{percent}}%)",
+    "source": {
+      "communecter": {
+        "description": "The actions of a project or an organization you belong to, in the Kanban gestion columns. Nothing is copied: changes show up on both sides.",
+        "title": "Communecter project or organization"
+      },
+      "kanban": {
+        "description": "A standalone board with three columns (To do, In progress, Done). You choose its members.",
+        "title": "Empty kanban"
+      },
+      "legend": "What do you want to create?"
+    },
+    "stepElementDescription": "Choose one of your projects or organizations. An element that is already open takes you straight to its board.",
+    "stepKanbanDescription": "Give the board a title. Everything else can wait.",
+    "title": "My boards",
+    "visibilityParent": "Group community: its members can read",
+    "visibilityPrivate": "Private: board members only"
+  },
+  "card": {
+    "archive": "Archive card",
+    "archiveLabel": "Archive the card {{title}}",
+    "assignees": "Assignees:",
+    "checklistSummary": "checklist: {{done}} of {{total}}",
+    "confirmArchive": "Archive this card? It will leave the board without being deleted.",
+    "confirmArchiveAction": "Archive",
+    "confirmDelete": "Permanently delete this card?",
+    "confirmDeleteAction": "Delete card",
+    "confirmDiscard": "Some changes are not saved.",
+    "context": "{{column}} · {{board}}",
+    "creditsOwnerOnly": {
+      "organizations": "Only an organization admin can change the amount and the time spent.",
+      "projects": "Only a project admin can change the amount and the time spent."
+    },
+    "delete": "Delete card",
+    "detailError": "This card's details could not be loaded.",
+    "dialogTitle": "Card details",
+    "discardAction": "Close without saving",
+    "done": "Done",
+    "dragHandle": "Move card {{title}}",
+    "due": {
+      "done": "due date",
+      "later": "due date",
+      "overdue": "overdue",
+      "soon": "due soon",
+      "today": "due today"
+    },
+    "errors": {
+      "dateRange": "The due date can't be before the start date.",
+      "emptyItem": "A checklist item cannot be empty.",
+      "invalidAmount": "Enter an amount of zero or more.",
+      "invalidDate": "Invalid date.",
+      "invalidDuration": "Enter a whole number of minutes, zero or more.",
+      "notMember": "Only board members can be assigned.",
+      "required": "This field is required.",
+      "startAfterDue": "The start date can't be after the due date.",
+      "summary_one": "Nothing was saved: one field needs fixing.",
+      "summary_other": "Nothing was saved: {{count}} fields need fixing.",
+      "tagDuplicate": "Two labels have the same name.",
+      "tagEmpty": "A label can't be empty.",
+      "tagReserved": "“next”, “totest” and “discuter” place the card in a column: move the card instead of labelling it.",
+      "tagTooLong": "A label is longer than {{max}} characters.",
+      "tagTooMany": "A card can have at most {{maxTags}} labels.",
+      "tooLong": "This text exceeds {{max}} characters.",
+      "tooManyItems": "A checklist holds at most {{max}} items.",
+      "unknownLabel": "Unknown label on this board.",
+      "unknownMilestone": "This milestone no longer exists on the project: choose another one."
+    },
+    "fields": {
+      "credits": "Amount",
+      "description": "Description",
+      "labels": "Labels",
+      "milestone": "Milestone",
+      "priority": "Priority",
+      "startDate": "Start date",
+      "timeSpent": "Time spent (in minutes)",
+      "timeSpentReadOnly": "Time spent",
+      "title": "Title"
+    },
+    "inColumn": "Column: {{column}}",
+    "menu": {
+      "label": "Actions for card {{title}}"
+    },
+    "meta": {
+      "assigneeAndOthers_one": "{{name}} and {{count}} other",
+      "assigneeAndOthers_other": "{{name}} and {{count}} others",
+      "comments_one": "{{count}} comment",
+      "comments_other": "{{count}} comments",
+      "credits": "Amount: {{amount}}",
+      "links_one": "{{count}} link",
+      "links_other": "{{count}} links",
+      "timeSpent": "Time spent: {{duration}}",
+      "unseen_one": "{{count}} unread",
+      "unseen_other": "{{count}} unread"
+    },
+    "milestoneClosed": "{{name}} (closed)",
+    "milestoneNone": "No milestone",
+    "move": {
+      "after": "After “{{title}}”",
+      "canonicalHint": "On a board linked to Communecter, a column is ordered by priority then creation date: only the column can be chosen.",
+      "column": "Column",
+      "milestone": "Milestone",
+      "milestoneHint": "The card keeps its status; within the chosen milestone it is ordered by priority, then creation date.",
+      "position": "Position",
+      "submit": "Move",
+      "title": "Move card",
+      "top": "To the top of the column"
+    },
+    "moveAction": "Move {{title}} to…",
+    "noColumn": "No column",
+    "noDescription": "No description.",
+    "noDueDate": "No due date",
+    "notSet": "Not set",
+    "openAction": "Open card",
+    "overdue": "Overdue",
+    "roleDescription": "draggable card",
+    "saveAndClose": "Save and close",
+    "status": {
+      "complete": "Complete",
+      "in_research": "In research",
+      "not_started": "Not started",
+      "on_track": "On track"
+    },
+    "statusLabel": "Status",
+    "timeSpentHint": "That is {{duration}}.",
+    "unassigned": "None",
+    "updatedAt": "Last updated: {{date}}",
+    "viewerAssignedHint": "Your role lets you tick this card's checklist, nothing else.",
+    "notFound": "This card is no longer on the board: it may have been archived."
+  },
+  "checklist": {
+    "add": "Add",
+    "addLabel": "New checklist item",
+    "addPlaceholder": "Add an item…",
+    "empty": "No item yet.",
+    "itemLabel": "Label of item {{position}}",
+    "percent": "{{percent}}%",
+    "progress": "Checklist progress",
+    "remove": "Delete item: {{label}}",
+    "summary": "{{done}} / {{total}}",
+    "title": "Checklist",
+    "toggle": "Tick: {{label}}"
+  },
+  "column": {
+    "addCard": "Add a task",
+    "addCardTo": "Add a task to {{title}}",
+    "cardCount_one": "{{count}} card",
+    "cardCount_other": "{{count}} cards",
+    "cards": "Cards in column {{title}}",
+    "composer": {
+      "added": "“{{title}}” added at position {{position}} of {{total}} in {{column}}.",
+      "failed": "The card could not be added. Try again.",
+      "field": "Title of the task to add to {{title}}",
+      "placedAt": "“{{title}}” added at position {{position}} of {{total}} in {{column}}: the order there is automatic.",
+      "placeholder": "Task title"
+    },
+    "creditsTotal": "Column total amount: {{amount}}",
+    "defaults": {
+      "discuter": "To discuss",
+      "doing": "In progress",
+      "done": "Done",
+      "next": "Next",
+      "todo": "To do",
+      "totest": "To test",
+      "tracking": "In progress"
+    },
+    "emptyFiltered": "No card matches the filter.",
+    "emptyHint": "Drop a card here, or move one over from another column.",
+    "emptyViewer": "No card yet.",
+    "menu": {
+      "hide": "Hide the column",
+      "label": "Actions for column {{title}}"
+    },
+    "roleDescription": "draggable column",
+    "ruler": {
+      "exceeded": "Limit exceeded"
+    },
+    "showMoreDone_one": "{{count}} more card shown in {{title}}: {{shown}} of {{total}}.",
+    "showMoreDone_other": "{{count}} more cards shown in {{title}}: {{shown}} of {{total}}.",
+    "showMoreIn": "in {{title}}",
+    "showMoreRemaining_one": "· {{count}} not shown",
+    "showMoreRemaining_other": "· {{count}} not shown",
+    "showMore_one": "Show {{count}} more",
+    "showMore_other": "Show {{count}} more",
+    "wipTitle": "Work-in-progress limit: {{limit}}"
+  },
+  "columnVisibility": {
+    "description": "Hide the columns you do not use. This setting only applies to this device: nothing changes for other members.",
+    "empty": "No column to show yet.",
+    "hiddenAnnouncement": "Column “{{title}}” hidden on this device.",
+    "hiddenCount_one": "{{count}} hidden column · Show all",
+    "hiddenCount_other": "{{count}} hidden columns · Show all",
+    "hideAll": "Hide all",
+    "menu": "Shown columns",
+    "showAll": "Show all",
+    "shownAllAnnouncement": "All columns are shown again.",
+    "title": "Shown columns"
+  },
+  "comments": {
+    "addLabel": "Add a comment",
+    "confirmDelete": "Permanently delete this comment?",
+    "count_one": "{{count}} comment",
+    "count_other": "{{count}} comments",
+    "delete": "Delete this comment",
+    "empty": "Nobody has commented on this card yet.",
+    "placeholder": "Write a comment…",
+    "readOnly": "This board is archived: the thread is read-only.",
+    "sending": "Sending…",
+    "submit": "Comment",
+    "title": "Comments",
+    "truncated": "Only the {{shown}} most recent messages are shown out of {{total}}.",
+    "unknownAuthor": "Unknown author"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "save": "Save",
+    "required": "required"
+  },
+  "dnd": {
+    "cancelled": "Move of {{title}} cancelled, the original place is kept.",
+    "cardCanonicalStay": "Automatic order: card {{title}} stays at position {{position}} of {{total}} in column {{column}}.",
+    "cardCanonicalStayEnd": "Card {{title}} left at position {{position}} of {{total}} in column {{column}}: the order there is automatic.",
+    "cardEnd": "Card {{title}} dropped at position {{position}} of {{total}} in column {{column}}.",
+    "cardGrabbed": "Card {{title}} picked up, position {{position}} of {{total}} in column {{column}}. Use the arrow keys to move it, Space or Enter to drop, Escape to cancel.",
+    "cardOver": "Card {{title}} at position {{position}} of {{total}} in column {{column}}.",
+    "cardStart": "Card {{title}} picked up, position {{position}} of {{total}} in column {{column}}. Use the arrow keys to move it, Space to drop, Escape to cancel.",
+    "columnEnd": "Column {{title}} dropped at position {{position}} of {{total}}.",
+    "columnOver": "Column {{title}} at position {{position}} of {{total}}.",
+    "columnStart": "Column {{title}} picked up, position {{position}} of {{total}}. Use the arrow keys to move it, Space to drop, Escape to cancel.",
+    "dropped": "Item dropped back where it started.",
+    "howTo": "Press Space or Enter to pick up the focused item: a card by its handle, its first keyboard stop, a column by its title. Then use the arrow keys to move it, Space or Enter to drop, Escape to cancel. Without dragging: the card’s “⋯” menu offers “Move to…”, and Enter on the title opens the card.",
+    "howToCanonical": "Press Space or Enter to pick up the focused item: a card by its handle, its first keyboard stop, a column by its title. Then use the arrow keys to move it, Space or Enter to drop, Escape to cancel. On this board linked to Communecter, the order within a column is automatic (priority, then creation date): only a change of column counts. Without dragging: the card’s “⋯” menu offers “Move to…”, and Enter on the title opens the card.",
+    "instructions": "Press Space or Enter to pick the item up, then use the arrow keys to move it. Space or Enter to drop, Escape to cancel. The “Move to…” menu on each card offers the same operation without dragging."
+  },
+  "dueDate": {
+    "clear": "Clear the due date",
+    "completed": "Completed on {{date}}",
+    "label": "Due date",
+    "later_one": "In {{count}} day",
+    "later_other": "In {{count}} days",
+    "overdue_one": "{{count}} day overdue",
+    "overdue_other": "{{count}} days overdue",
+    "soon_one": "In {{count}} day",
+    "soon_other": "In {{count}} days",
+    "today": "Due today"
+  },
+  "elements": {
+    "type": {
+      "organizations": "Organization",
+      "projects": "Project"
+    }
+  },
+  "errorState": {
+    "details": "Technical details",
+    "detailsHint": "Copy this as-is into a bug report: it is what pins the failure down.",
+    "field": {
+      "code": "Error code",
+      "message": "Raw message",
+      "status": "HTTP status",
+      "url": "Requested address"
+    },
+    "hint": {
+      "canceled": "The request stopped before it completed, usually because the page changed. Try again.",
+      "denied": "Your session or your rights do not cover this read. Sign in again, or ask a board administrator for access.",
+      "invalidResponse": "The server sent back something other than the expected data, most often an error page. Pass the technical details to an administrator.",
+      "network": "The request never reached the server. Try again; if it keeps failing the service is most likely down, so tell an administrator.",
+      "rejected": "The server understood the request and turned it down. The code below says why.",
+      "serverError": "The failure is on the server side, not yours: there is nothing to check on your connection. Try again, then pass the technical details to an administrator.",
+      "timeout": "The server ran past the time limit without finishing its reply. Try again; if it happens again, report it with the technical details.",
+      "unknown": "The application hit an error it cannot name. Try again, then report the technical details."
+    },
+    "noStatus": "no reply",
+    "title": {
+      "canceled": "Request interrupted",
+      "denied": "Access denied",
+      "invalidResponse": "Unreadable server reply",
+      "network": "Server unreachable",
+      "rejected": "Request refused",
+      "serverError": "The server returned an error",
+      "timeout": "The server did not reply in time",
+      "unknown": "Unexpected error"
+    }
+  },
+  "errors": {
+    "badRequest": "Invalid request.",
+    "boardArchived": "This board is archived: it is read-only.",
+    "columnNotEmpty": "This column still holds cards.",
+    "conflict": "This action conflicts with the current state.",
+    "forbidden": "Your role does not allow this action.",
+    "generic": "Something went wrong. Retry, then report it if it persists.",
+    "invalidResponse": "Unexpected answer from the server.",
+    "lastOwner": "At least one owner must remain on the board.",
+    "network": "Server unreachable. Check your connection.",
+    "notFound": "This item no longer exists.",
+    "notMember": "You are not a member of this board.",
+    "rankExhausted": "The card cannot be placed there. Reload the board.",
+    "reasons": {
+      "alreadyMember": "This person is already a member of the board.",
+      "archived": "This card has been archived.",
+      "concurrentUpdate": "Someone else just changed this card. Reload it, then try again.",
+      "concurrentUpdateRole": "Someone else just changed this member's roles: the list is being reloaded, try again.",
+      "contributorsLimit": "This action limits its number of participants.",
+      "contributorsLimitMax_one": "This action accepts a single participant ({{requested}} requested).",
+      "contributorsLimitMax_other": "This action accepts at most {{count}} participants ({{requested}} requested).",
+      "contributorsLimitMin_one": "This action needs at least one participant.",
+      "contributorsLimitMin_other": "This action needs at least {{count}} participants.",
+      "inheritedMembership": "This access comes from the parent collective: remove it on Communecter.",
+      "invalidRole": "A role name is required, without “<” or “>”, and no longer than 60 characters.",
+      "lastColumn": "A board keeps at least one column.",
+      "memberWriteFailed": "The role could not be written on the member's profile: the list is being reloaded.",
+      "milestonesUnavailable": "An organization has no milestones: they only exist on a project.",
+      "notAttached": "This board is not attached to any collective.",
+      "notBoardMembers": "Only board members can be assigned.",
+      "notCommentAuthor": "Only the author of the message or an administrator can delete it.",
+      "notLinked": "This person is no longer part of the project or organization: their roles can no longer be changed here.",
+      "notOrganization": "This only exists on an organization's board.",
+      "notOrganizationMembers": "Only organization members can be assigned.",
+      "notProjectContributors": "Only project contributors can be assigned.",
+      "notSourceBoard": "This only exists on a board linked to a Communecter project or organization.",
+      "ownerFieldNotAllowed": "Only project or organization administrators can change the amount and the time spent.",
+      "ownerOnly": "Only the organization's administrators can access the list of its projects.",
+      "roleManagementNotAllowed": "Only administrators can change roles.",
+      "roleWriteFailed": "Deleting the role stopped partway: the list is being reloaded.",
+      "roleWriteFailedCount_one": "Deleting stopped: the role was removed from {{count}} member, the list is being reloaded.",
+      "roleWriteFailedCount_other": "Deleting stopped: the role was removed from {{count}} members, the list is being reloaded.",
+      "roleWriteFailedCount_zero": "Deleting the role stopped before the first member: the list is being reloaded.",
+      "sourceMissing": "The Communecter project or organization of this board no longer exists.",
+      "unknownLabels": "One of the card's labels no longer exists on this board.",
+      "unknownMilestone": "This milestone no longer exists in the project.",
+      "viewerFieldNotAllowed": "As a viewer, you can only change the checklist of a card assigned to you.",
+      "viewerMoveNotAllowed": "As a viewer, you can only move a card assigned to you into or out of the done column.",
+      "viewerNotAssignee": "As a viewer, you can only tick the checklist of cards assigned to you."
+    },
+    "serverError": "The server did not answer properly.",
+    "sourceManaged": "This is managed on Communecter, not in co-kanban.",
+    "timeout": "The server is taking too long to answer.",
+    "unauthorized": "Your session expired. Please sign in again.",
+    "unsupportedMediaType": "Request refused by the server (unexpected format).",
+    "validation": "Some information is invalid.",
+    "visibilityRequiresParent": "Community visibility requires an attachment.",
+    "wipExceeded": "The column work-in-progress limit is exceeded."
+  },
+  "filterBar": {
+    "assignees": "Assignees",
+    "clear": "Clear",
+    "due": "Due date",
+    "emptyAssignees": "This board has no member yet.",
+    "emptyDue": "No due date to filter.",
+    "emptyPriority": "No priority to filter.",
+    "emptyStatus": "No status to filter.",
+    "label": "Board search and filters",
+    "labels": "Labels",
+    "milestone": "Milestone",
+    "noMatch": "No result.",
+    "priority": "Priority",
+    "reset_one": "Remove the filter",
+    "reset_other": "Remove the {{count}} filters",
+    "resultAll_one": "No filter: {{count}} card in total.",
+    "resultAll_other": "No filter: {{count}} cards in total.",
+    "resultCount_one": "{{count}} card matches, out of {{total}}.",
+    "resultCount_other": "{{count}} cards match, out of {{total}}.",
+    "searchIn": "Search in the {{label}} filter",
+    "searchPlaceholder": "Search…",
+    "selectedCount_one": "{{count}} value selected",
+    "selectedCount_other": "{{count}} values selected",
+    "status": "Status"
+  },
+  "filters": {
+    "due": {
+      "none": "No due date",
+      "overdue": "Overdue",
+      "today": "Today",
+      "week": "This week"
+    },
+    "noMilestone": "No milestone",
+    "noneActive": "No active filter.",
+    "openOnly": "Open cards only",
+    "overdue": "Overdue",
+    "reset": "Reset filters",
+    "unassigned": "Unassigned"
+  },
+  "home": {
+    "title": "Kanbans",
+    "lead": "Track actions and share out roles for {{name}}.",
+    "thisCollective": "this group",
+    "parentType": {
+      "organizations": "Organization",
+      "projects": "Project"
+    },
+    "boards": {
+      "actions": {
+        "title": "Actions",
+        "description": "Actions to do, in progress and done, column by column."
+      },
+      "roles": {
+        "title": "Roles",
+        "description": "Who holds which role among the members, and the roles still to assign."
+      }
+    },
+    "stats": {
+      "open_one": "{{count}} open",
+      "open_other": "{{count}} open",
+      "doneOf_one": "{{count}} of {{total}} done",
+      "doneOf_other": "{{count}} of {{total}} done",
+      "empty": "No actions yet",
+      "openByColumn": "Open actions by column",
+      "roles_one": "{{count}} role",
+      "roles_other": "{{count}} roles",
+      "members_one": "{{count}} member",
+      "members_other": "{{count}} members",
+      "vacantRoles_one": "{{count}} role without a holder",
+      "vacantRoles_other": "{{count}} roles without a holder"
+    },
+    "login": "Log in to open the kanbans of {{name}}.",
+    "notMember": {
+      "title": "Members only",
+      "body": "The kanbans of {{name}} are open to its members and contributors: join this group to access them."
+    },
+    "unavailable": {
+      "title": "No kanban on this site",
+      "body": "A kanban follows the actions of an organization or a project, and this site has neither."
+    },
+    "breadcrumb": "Breadcrumb"
+  },
+  "labels": {
+    "empty": "No label.",
+    "emptyBoard": "This board has no label yet.",
+    "group": "Labels",
+    "none": "No label"
+  },
+  "members": {
+    "add": "Add",
+    "addTitle": "Add a member",
+    "assignedCards_one": "{{count}} assigned card",
+    "assignedCards_other": "{{count}} assigned cards",
+    "confirmLeave": "Leave this board?",
+    "confirmRemove": "Remove {{name}} from this board?",
+    "count_one": "{{count}} member",
+    "count_other": "{{count}} members",
+    "description": "Who works on this board, and with what rights.",
+    "emptyDescription": "Add the people working on this board so you can assign cards to them.",
+    "emptyTitle": "No member",
+    "lastOwnerHint": "Last owner: appoint someone else before removing them.",
+    "leave": "Leave this board",
+    "leaveAction": "Leave the board",
+    "linkRoles": {
+      "editor": {
+        "organizations": "Member",
+        "projects": "Contributor"
+      }
+    },
+    "manage_one": "Members ({{count}})",
+    "manage_other": "Members ({{count}})",
+    "more": "+{{count}}",
+    "newRoleLabel": "Role to grant",
+    "noCandidate": "Nobody found.",
+    "originBoard": "Board member",
+    "originParent": "Right inherited from the group",
+    "originParentAdmin": "Collective administration",
+    "originParentMember": "Collective community",
+    "remove": "Remove {{name}} from the board",
+    "removeAction": "Remove from board",
+    "removeConsequence": "Their cards stay in place, they are simply unassigned.",
+    "roleFor": "Role of {{name}}",
+    "roles": {
+      "editor": "Editor",
+      "owner": "Owner",
+      "viewer": "Viewer"
+    },
+    "searchHint": "Type a name to search the community.",
+    "searchLabel": "Search a person",
+    "searchPlaceholder": "First or last name",
+    "sourceManaged": {
+      "organizations": "These are the organization members on Communecter: manage them from the organization page, not here.",
+      "projects": "These are the project contributors on Communecter: manage them from the project page, not here."
+    },
+    "title": "Members",
+    "unknown": "Unknown member",
+    "you": "(you)"
+  },
+  "milestones": {
+    "cardCount_one": "{{count}} card",
+    "cardCount_other": "{{count}} cards",
+    "close": "Close",
+    "closeLabel": "Close milestone {{name}}",
+    "closedSection": "Closed ({{count}})",
+    "create": "Create milestone",
+    "createTitle": "New milestone",
+    "description": "Milestones split the project into stages. They are shared with Kanban gestion.",
+    "empty": "No open milestones.",
+    "emptyClosed": "No closed milestones.",
+    "errors": {
+      "dateRange": "The end date must come after the start date.",
+      "invalidDate": "This date doesn't exist.",
+      "required": "Give the milestone a name.",
+      "tooLong": "The text is longer than {{max}} characters."
+    },
+    "fields": {
+      "endDate": "End date",
+      "name": "Milestone name",
+      "startDate": "Start date"
+    },
+    "openSection": "Open ({{count}})",
+    "readOnly": "Only a project admin can create and edit milestones.",
+    "rename": "Rename",
+    "renameLabel": "Rename milestone {{name}}",
+    "reopen": "Reopen",
+    "reopenLabel": "Reopen milestone {{name}}",
+    "title": "Project milestones",
+    "trigger": "Manage milestones…"
+  },
+  "myCards": {
+    "columns": {
+      "due": "Due date",
+      "priority": "Priority",
+      "progress": "Checklist",
+      "title": "Card"
+    },
+    "fields": {
+      "column": "Column"
+    },
+    "noChecklist": "—",
+    "noDue": "No due date",
+    "overdue": "Overdue",
+    "sortBy": "Sort by {{column}}",
+    "sortToggle": "Reverse sorting on {{column}}"
+  },
+  "priority": {
+    "dotLabel": "Priority: {{priority}}",
+    "long": {
+      "high": "High",
+      "low": "Low",
+      "medium": "Medium",
+      "urgent": "Urgent"
+    },
+    "none": "None",
+    "noneGroup": "No priority",
+    "short": {
+      "high": "HIGH",
+      "low": "LOW",
+      "medium": "MED",
+      "urgent": "URG"
+    }
+  },
+  "projects": {
+    "contributors_one": "{{count}} contributor",
+    "contributors_other": "{{count}} contributors",
+    "countUnavailable": "List unavailable",
+    "count_one": "{{count}} project",
+    "count_other": "{{count}} projects",
+    "create": "New project",
+    "createdBy": "Created by {{name}}",
+    "empty": {
+      "active": {
+        "description": "Create an empty Kanban, or open a Communecter project or organization you belong to as a board.",
+        "title": "No active project"
+      },
+      "all": {
+        "description": "Create your first project: an empty Kanban, or a Communecter project or organization you belong to.",
+        "title": "No project yet"
+      },
+      "archived": {
+        "description": "An archived project stays readable, in read-only mode. Archive one from its “⋯” menu.",
+        "title": "No archived project"
+      }
+    },
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "myTasks": "My tasks",
+    "noMatch": {
+      "description": "Check the spelling, or search for another word from the title or description.",
+      "title": "No project matches “{{query}}”"
+    },
+    "progressLabel": "Progress of {{title}}",
+    "searchLabel": "Search projects",
+    "searchPlaceholder": "Search projects…",
+    "sourceBadge": {
+      "organizations": "Communecter · Organization",
+      "projects": "Communecter · Project"
+    },
+    "status": {
+      "active": "Active",
+      "all": "All",
+      "archived": "Archived",
+      "label": "Project status"
+    },
+    "subtitle": "Your Kanban boards and the ones you contribute to.",
+    "tasksProgress": "{{done}}/{{total}} tasks",
+    "title": "My projects",
+    "truncated": "Showing the {{shown}} most recent projects out of {{total}}."
+  },
+  "search": {
+    "clear": "Clear search",
+    "close": "Close search",
+    "label": "Search this board",
+    "placeholder": "Search…"
+  },
+  "tags": {
+    "add": "Add",
+    "empty": "No labels.",
+    "errors": {
+      "duplicate": "This label is already on the card.",
+      "empty": "A label can't be empty.",
+      "reserved": "This word places the card in a column: move the card instead of labelling it.",
+      "tooLong": "A label is at most {{max}} characters long.",
+      "tooMany": "A card can have at most {{maxTags}} labels."
+    },
+    "hint": "Press Enter or comma to add. Labels are shared with Kanban gestion.",
+    "inputLabel": "New label",
+    "placeholder": "e.g. web, mobile",
+    "remove": "Remove label {{tag}}"
+  },
+  "toast": {
+    "actionFailed": "Action failed",
+    "cardArchived": "Card archived",
+    "dismiss": "Dismiss notification",
+    "region": "Notifications",
+    "wipExceeded": "Work-in-progress limit exceeded",
+    "wipExceededDetail": "{{cards}} cards in this column for a limit of {{limit}}."
+  },
+  "views": {
+    "doneOf": "{{done}} / {{total}} done",
+    "empty": {
+      "filteredHint": "Broaden the search or drop a filter to see the cards again.",
+      "filteredTitle": "No matching card",
+      "hint": "Add a first card from the Board view.",
+      "title": "No cards on this board"
+    },
+    "list": {
+      "allCards": "All cards",
+      "emptyGroup": "No card in this group.",
+      "unassignedGroup": "Unassigned"
+    },
+    "milestones": {
+      "addMilestone": "Add a milestone",
+      "backToBoard": "Back to the board",
+      "closeMilestone": "Close milestone",
+      "closed": "Milestone “{{name}}” closed. Reopen it from “Manage milestones…” in the board’s ⋯ menu.",
+      "doneCount_one": "{{count}} done",
+      "doneCount_other": "{{count}} done",
+      "hiddenClosed_one": "{{count}} card attached to a closed milestone is not shown here.",
+      "hiddenClosed_other": "{{count}} cards attached to closed milestones are not shown here.",
+      "intro": "Open cards, by open milestone. Drag a card to another milestone to move it there.",
+      "introReadOnly": "Open cards, by open milestone.",
+      "noMilestone": "No milestone",
+      "toSchedule": "To schedule",
+      "unavailableHint": "Milestones split a Communecter project into stages. This board has none.",
+      "unavailableTitle": "Only available for Communecter projects"
+    },
+    "overview": {
+      "activityHint": "The latest writes on this board.",
+      "byColumn": "Breakdown by column",
+      "byColumnHint": "Share of the board’s cards in each column.",
+      "byStatus": "Breakdown by status",
+      "byStatusHint": "Where the work stands, regardless of the column.",
+      "columnShare": "Share of cards in the {{column}} column",
+      "contributorDone_one": "{{count}} done out of {{total}}",
+      "contributorDone_other": "{{count}} done out of {{total}}",
+      "contributorIdle": "No card assigned",
+      "contributorOverdue": "{{overdue}} overdue",
+      "contributors": "Workload per contributor",
+      "contributorsHint": "A card assigned to two people counts for each of them.",
+      "dueThisWeek": "Due this week",
+      "dueThisWeekHint": "Within seven days, today included",
+      "noContributor": "This board has no member yet.",
+      "overdue": "Overdue cards",
+      "overdueHint": "Past due and not completed",
+      "progress": "Board progress",
+      "statusShare": "Share of cards with status {{status}}",
+      "unassigned": "Unassigned cards",
+      "unassignedHint": "Nobody has taken them on yet"
+    },
+    "roles": {
+      "addRole": "Add a role",
+      "admin": "Admin",
+      "alreadyAssigned": "{{name}} already has the role “{{role}}”.",
+      "alreadyHolds": "Already holds it",
+      "assign": "Assign",
+      "assignRefused": "The role “{{role}}” could not be assigned to {{name}}. {{reason}}",
+      "assigned": "Role “{{role}}” assigned to {{name}}.",
+      "columnMenu": "Actions for role {{role}}",
+      "columns": "Roles kanban columns",
+      "columnsDescription": "Hide the roles you do not follow. This setting only applies to this device: nothing changes for other members, and a hidden role can still be assigned from “Roles…”.",
+      "create": "Create role",
+      "created": "Role “{{role}}” created.",
+      "deleteRole": "Delete this role",
+      "deleteRoleConfirm_one": "The role “{{role}}” will be removed from {{count}} member. This cannot be undone.",
+      "deleteRoleConfirm_other": "The role “{{role}}” will be removed from {{count}} members. This cannot be undone.",
+      "deleteRoleConfirm_zero": "Nobody holds the role “{{role}}”: its column disappears.",
+      "deleted": "Role “{{role}}” deleted.",
+      "dragCancelled": "Assignment cancelled: {{name}}’s roles are unchanged.",
+      "dragOutside": "Card released outside a role column: {{name}}’s roles are unchanged.",
+      "dragOver": "Dropping here assigns the role “{{role}}” to {{name}}.",
+      "dragStart": "{{name}} picked up. Drop the card on a role column to assign that role, or release it elsewhere to cancel.",
+      "dropHint": "Drop a member here to assign this role.",
+      "errors": {
+        "roleExists": "The role “{{role}}” already exists: drop the member into its column.",
+        "roleInvalid": "The name cannot contain “<”, “>” or control characters.",
+        "roleRequired": "Name the role.",
+        "roleTooLong": "The name exceeds {{max}} characters."
+      },
+      "holderCount_one": "{{count}} member",
+      "holderCount_other": "{{count}} members",
+      "holdersList": "Members holding the role {{role}}",
+      "intro": "The members, then one column per role. Drag a member onto a role to assign it: the member stays in “Members”.",
+      "matchCount_one": "{{count}} member matches.",
+      "matchCount_other": "{{count}} members match.",
+      "memberMenu": "Actions on {{name}}",
+      "membersColumn": "Members",
+      "membersList": "All members",
+      "noHolders": "Nobody holds this role.",
+      "noMatch": "No member or role matches “{{query}}”.",
+      "noMatchInColumn": "No member matches.",
+      "noMembers": "No member.",
+      "noMembersHint": "Members are managed on Communecter.",
+      "noRolesYet": "No role exists yet. Create one with “Add a role”.",
+      "organization": "Organization",
+      "pending": "Pending",
+      "readOnly": "Only administrators can change roles.",
+      "removeRefused": "The role “{{role}}” could not be removed from {{name}}. {{reason}}",
+      "removeRole": "Remove role",
+      "removeRoleConfirm": "Remove the role “{{role}}” from {{name}}?",
+      "removeRoleLabel": "Remove the role “{{role}}” from {{name}}",
+      "removed": "Role “{{role}}” removed from {{name}}.",
+      "roleCount_one": "{{count}} role",
+      "roleCount_other": "{{count}} roles",
+      "roleName": "Role name",
+      "roleNamePlaceholder": "Treasury, Communication…",
+      "rolesDialogHint": "Tick a role to assign it, untick it to remove it. Each change is saved immediately.",
+      "rolesMenu": "Roles…",
+      "rolesOf": "Roles of {{name}}",
+      "search": "Search a member or a role",
+      "summary": "{{members}}, {{roles}}"
+    },
+    "table": {
+      "caption": "Every card on the board, sortable by column.",
+      "region": "Cards table"
+    },
+    "timeline": {
+      "caption": "Cards placed on the week of their due date, one row per board column.",
+      "cardAt": "{{title}} — due {{date}}",
+      "gap": "Weeks without any due date, hidden.",
+      "noDated": "No card has a due date: the week axis stays empty.",
+      "region": "Due-date timeline",
+      "today": "Today",
+      "undated": "Undated",
+      "undatedHint": "No due date set",
+      "week": "Week of {{date}}"
+    }
+  }
+}

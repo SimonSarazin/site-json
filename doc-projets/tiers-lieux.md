@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -217,6 +217,97 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 04/11 — `/services` et hero : suites de la revue de la MR 119
+
+- **Pas de squelette à chaque page de ressources** : la requête des lieux porteurs
+  (`useResourceParentsQuery`) change de clé à chaque page chargée ; elle garde désormais les lieux déjà
+  lus pendant le rechargement (`placeholderData: keepPreviousData`). Sans cela, au-delà de 500
+  ressources, la liste repassait en squelette avec une facette lieu active, et la sentinelle du scroll
+  infini, restée visible, enchaînait les pages jusqu'à la dernière.
+- **Hero en mode services** : flèche haut depuis la 1re suggestion revient à « aucune sélection » ;
+  Entrée lance alors la recherche au lieu d'ouvrir le 1er service. Test ajouté dans
+  `HeroSearch.test.tsx`, vérifié en échec sans le correctif.
+- **Popup de la carte** : l'adresse copiée sur la réponse reste en repli quand le lieu résolu n'a ni
+  rue ni commune en base.
+
+**Vérifié.** `test:unit` ✅ hors les 3 tests du module kanban, qui attendent le SDK 1.0.205 (le SDK
+local est en 1.0.204) · `typecheck` ✅ hors ce même module · `eslint` ✅ · `test:preflight` ✅. Le cas
+des 500 ressources n'est pas reproductible en local (62 ressources).
+
+### 28/10bis — fiche événement : onglet « Participants », onglet « Lieu » et « Autres événements » retirés
+
+**Fait** : `profiles.events.tabs` gagne un onglet `participants`, entre « Organisateur » et « Galerie » :
+liste des participants (`profile-members`, rôles et gestion) et colonne d'infos (dates, adresse,
+organisateur). Config seule, même gabarit que l'onglet « Contributeurs » des projets.
+
+Retirés : l'onglet « Lieu » (carte de l'événement ; l'adresse reste dans la colonne Informations de
+« À propos ») et, dans l'onglet « Organisateur », le bloc « Autres événements » (`profile-related`,
+`relationType: "events"`) : sur un événement, il liste les événements liés à l'événement lui-même, que ni
+le moteur ni le SDK ne fournissent — il affichait toujours « Aucun événement lié ».
+
+**Vérifié** : `config:validate` ; au navigateur (backend local), `/profil/<événement>/participants`
+s'ouvre sur ordinateur et sur mobile, sans erreur.
+
+### 28/10 — `/services` : nettoyage après relecture (pluriel, mémoïsation, adresse de la popup)
+
+**Fait** :
+- popup d'un lieu : le pluriel « N services » est choisi par i18next (`{ count }`) ;
+- la carte ne recalcule plus ses repères à chaque frappe dans le champ de recherche, et ne recadre plus
+  sur un nouveau rendu (conf de carte stable) ;
+- adresse de la popup lue sur le lieu porteur chargé, la copie de la réponse ne servant que de repli ;
+- aide du champ de recherche rangée avec les autres libellés de facettes (`RESOURCE_SEARCH_PLACEHOLDER`) ;
+- config : `scrollTarget` retiré du hero de l'accueil, sans effet dès que `searchHref` est posé.
+
+**Vérifié** au navigateur (backend local) : popup avec adresse du lieu et « 1 service », repères
+immobiles pendant la frappe. Test de la popup sur le vrai `fr.json` vérifié en échec (pluriel sans
+`count`).
+
+### 27/10quater — carte de `/services` : un repère par lieu porteur, et non par point
+
+**Fait** : les services étaient regroupés par coordonnées exactes. Deux lieux au même point (même
+bâtiment, ou géocodés au centre de leur commune) donnaient un seul repère, au nom du premier ; un lieu
+dont un service a sa propre position en donnait deux. Ils sont désormais regroupés par lieu porteur
+(`groupServicesByPlace`) : repère à la position du lieu, sinon à celle de son premier service ; un
+service sans lieu reste regroupé par point.
+
+**Vérifié** au navigateur (backend local) : vue Carte de `/services`, 15 services placés, 10 signalés
+sous la carte, aucune clé React dupliquée. Tests de `groupServicesByPlace` (lieux superposés, lieu
+éclaté, repli par point) vérifiés en échec.
+
+### 27/10ter — `/reservation?resourceType=<id inconnu>` n'affiche plus une liste vide
+
+**Fait** : un type d'URL inconnu élargissait bien la requête à tous les types, mais la liste le
+refiltrait ensuite et n'affichait rien. Le type venu de l'URL ne filtre plus que la requête ; seule la
+facette cochée filtre côté navigateur.
+
+**Vérifié** au navigateur (backend local) : `/reservation?resourceType=salle` → aperçu complet
+(coworkings et salles) ; `?resourceType=coworking` → coworkings seuls ; `?resourceType=meeting-room` →
+salles seules.
+
+### 27/10bis — `/reservation` : Entrée lance la recherche, même suggestions ouvertes
+
+**Fait** : avec les suggestions de services ouvertes, Entrée ouvrait la fiche du 1er service suggéré
+au lieu de lancer la recherche. Aucune ligne n'est désormais présélectionnée : Entrée mène à
+`/services?search=…` comme le bouton « Rechercher » ; flèche bas puis Entrée ouvre le service choisi.
+Les suggestions de fiches (sans `serviceSuggestions`) sont inchangées.
+
+**Vérifié** au navigateur (backend local) : sur `/reservation`, « Lille » puis Entrée →
+`/services?search=Lille` ; « corout », flèche bas, Entrée → fiche du service. Test de `HeroSearch`
+ajouté, vérifié en échec.
+
+### 27/10 — `/services` : plus de « Aucun résultat » faux avec une typologie ou un texte
+
+**Fait** : la typologie et la recherche texte se jugent sur le lieu porteur, comme la zone. Tant que les
+lieux porteurs ne sont pas lus, la liste affiche le chargement ; s'ils n'ont pas pu l'être, le message
+d'erreur et « Réessayer » (`judgesOnParentPlace`), au lieu d'« Aucun résultat trouvé. ». Le message
+d'erreur cite désormais les trois filtres (zone, typologie, recherche), et plus seulement le filtre
+géographique.
+
+**Vérifié** au navigateur (backend local, lecture des lieux ralentie) : arrivée sur
+`/services?typologies=Ateliers%2520artisanaux%2520partag%25C3%25A9s` et `/services?search=lille` sans
+« Aucun résultat » transitoire (6 et 14 ressources) ; lecture des lieux bloquée → message d'erreur et
+« Réessayer ». Tests de `judgesOnParentPlace` vérifiés en échec.
+
 ### 21-23/10 — bouton « Mes promesses » dans le header (`aac-dev`)
 
 - `header.utilities.pledge: true` : bouton « Mes promesses » (promesses à régler, paiements) pour un
@@ -240,7 +331,9 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 liens de la config suivent : menu « Les services » et ses entrées par type, bandeaux de l'accueil et de
 `/reservation`, recherche du hero et ses suggestions de services. L'exemple `header-mega-menu` du skill
 config-assistant suit l'en-tête. Les ids de sections (`annuaire-ressources-tl`…) sont inchangés.
-L'ancienne adresse n'est pas redirigée : le moteur n'a pas de redirection déclarative.
+L'ancienne adresse n'est pas redirigée : le moteur n'a pas de redirection déclarative. Précision : la
+clé `redirects` existe au schéma de config, mais aucun serveur ne la lit. Aucune redirection n'est
+nécessaire : `/annuaire-ressources` n'a jamais été partagée.
 
 **Vérifié** au navigateur (backend local) : `/services` → 25 ressources, titre « Services » ;
 `/services?typologies=Autre%2520famille%2520de%2520tiers-lieux` → 8. `config:validate` ✅ — 19 pages,

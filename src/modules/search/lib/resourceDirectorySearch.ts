@@ -47,9 +47,10 @@ export function matchesResourceSearch(texts: ReadonlyArray<string | null | undef
   return words.every((w) => haystack.includes(w));
 }
 
-/** Point de carte d'un service : ses coordonnées, celles de son lieu porteur. */
+/** Point de carte d'un service : ses coordonnées (les siennes ou celles de son lieu porteur), son lieu. */
 export interface ServicePoint {
   id: string;
+  parentId?: string;
   lng: number;
   lat: number;
 }
@@ -74,23 +75,33 @@ export function resolveServicePoints(
   }
   return services.flatMap((s) => {
     const pos = s.own ?? s.parent ?? (s.parentId ? parSoeur.get(s.parentId) : undefined);
-    return pos ? [{ id: s.id, lng: pos.lng, lat: pos.lat }] : [];
+    return pos ? [{ id: s.id, ...(s.parentId ? { parentId: s.parentId } : {}), lng: pos.lng, lat: pos.lat }] : [];
   });
 }
 
 /**
- * Un repère par LIEU, et non par service : les services d'un même lieu partagent ses coordonnées (le
- * backend leur reporte celles du lieu porteur) et des repères superposés restent indissociables même au
- * zoom maximal — un lieu en porte jusqu'à une vingtaine. Regroupe les services par point exact, dans
- * l'ordre d'arrivée ; la popup du repère les liste (`MapPopupResourcePlace`).
+ * Un repère par LIEU, et non par service : un lieu porte jusqu'à une vingtaine de services, dont des
+ * repères superposés resteraient indissociables même au zoom maximal. Regroupe par LIEU PORTEUR
+ * (`parentId`) et non par point : deux lieux d'un même bâtiment (ou géocodés au centre de leur commune)
+ * restent deux repères, et un lieu dont un service a sa propre position n'en donne qu'un. Repère placé
+ * à la position du lieu quand elle est connue (`placeCoords`), sinon à celle de son premier service.
+ * Service sans lieu : regroupé par point exact. Ordre d'arrivée ; la popup du repère les liste
+ * (`MapPopupResourcePlace`).
  */
-export function groupServicesByPoint(points: readonly ServicePoint[]): Array<{ lng: number; lat: number; ids: string[] }> {
-  const groupes = new Map<string, { lng: number; lat: number; ids: string[] }>();
+export function groupServicesByPlace(
+  points: readonly ServicePoint[],
+  placeCoords: (parentId: string) => { lng: number; lat: number } | null | undefined = () => null,
+): Array<{ parentId?: string; lng: number; lat: number; ids: string[] }> {
+  const groupes = new Map<string, { parentId?: string; lng: number; lat: number; ids: string[] }>();
   for (const p of points) {
-    const cle = `${p.lng},${p.lat}`;
+    const cle = p.parentId ? `lieu:${p.parentId}` : `point:${p.lng},${p.lat}`;
     const g = groupes.get(cle);
-    if (g) g.ids.push(p.id);
-    else groupes.set(cle, { lng: p.lng, lat: p.lat, ids: [p.id] });
+    if (g) {
+      g.ids.push(p.id);
+      continue;
+    }
+    const pos = (p.parentId ? placeCoords(p.parentId) : null) ?? p;
+    groupes.set(cle, { ...(p.parentId ? { parentId: p.parentId } : {}), lng: pos.lng, lat: pos.lat, ids: [p.id] });
   }
   return [...groupes.values()];
 }

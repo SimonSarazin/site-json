@@ -185,6 +185,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     logoIcon: "Icône de marque : nom Lucide kebab-case OU SVG inline — l'alternative sans asset logo.",
     logoIconTone: "Ton du logoIcon (rendu currentColor) : foreground suit l'ink du thème (marque monochrome) ; défaut selon le header.",
     logoSize: "Taille du logo : sm (défaut historique), md ≈40px, lg ≈48px desktop ; sur standard, lg suppose height md|lg.",
+    navFontSize: "Header stacked seulement : taille du texte de nav (sm/md/lg, défaut lg historique) — fait rentrer une barre pleine sans raccourcir les libellés.",
     logoSubtitle: "Sous-titre sous le titre du logo (marque sur 2 lignes : titre + baseline/localité).",
     entityLogoOverride: "Opt-in : remplace logo/titre par ceux de l'entité costum au runtime (plateforme transparentCommune).",
     nav: "Arbre de navigation (NavItem récursif) — chaque item exige path | href | children | megaMenu (refinement non exportable).",
@@ -254,6 +255,30 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "entitySearch.itemActionBySubType": "Surcharge par SOUS-TYPE POI (clé = serverData.type) — PLUS PRIORITAIRE que ByType ; seul moyen de router recoveryCenter→resource et affiche→testimonial.",
     "articleSearch.costumSlug": "Slug du costum dont on cherche les articles (scope source.key) — REQUIS pour activer la source blog.",
     "articleSearch.detailBasePath": "Base de l'URL du reader (défaut code /blog) — détail à <base>/:slug (+ <base>/id/:id).",
+  },
+
+  integrations: {
+    analytics: "Mesure d'audience, côté client seulement (IntegrationsLoader). Providers CÂBLÉS : matomo et ga4 — les autres valeurs de l'enum sont ignorées (avertissement en dev).",
+    "analytics.provider": "matomo ou ga4. plausible/posthog/mixpanel/amplitude sont acceptés par le schéma mais rien ne les charge.",
+    "analytics.id": "Matomo : idSite NUMÉRIQUE (un placeholder non numérique désactive la mesure, sans erreur) ; GA4 : identifiant de mesure G-….",
+    "analytics.url": "Matomo : URL de l'instance avec slash final (https://communecter.matomo.cloud/). Absente ou invalide → mesure désactivée.",
+    "analytics.scriptUrl": "Matomo : surcharge de l'URL du script. Sans elle : cdn.matomo.cloud/<hôte>/matomo.js pour une instance *.matomo.cloud, sinon <url>matomo.js.",
+    "analytics.cookies": "Matomo : cookies de suivi. Repli CODE false = sans cookie (mesure exemptée CNIL si l'instance anonymise l'IP — réglage Matomo, pas config).",
+    "analytics.respectDnt": "Honorer Do Not Track (setDoNotTrack). Repli CODE true.",
+    "analytics.consent": "opt-out (repli CODE) : mesure jusqu'au refus de la catégorie `analytics` (droit d'opposition) ; opt-in : rien sans acceptation — exige un bandeau (config.consent ou section cookieConsent).",
+    "analytics.publicHostOnly": "Repli CODE true : seul l'hôte de VITE_SITE_PUBLIC_URL mesure (ni dev, ni amorce *.00.re, ni hôte jumeau). false = partout.",
+    "map.styleLight": "Id de style MapTiler en thème clair (repli code streets-v4) ; la clé d'API vit en env VITE_MAPTILER_API_KEY, jamais ici.",
+    "map.styleDark": "Id de style MapTiler en thème sombre (repli code streets-v4-dark).",
+  },
+
+  "section:cookieConsent": {
+    "props.message": "Texte du bandeau ou du panneau. Dire ce qui est mesuré et comment s'y opposer — c'est le seul texte lu.",
+    "props.policyUrl": "Lien « En savoir plus » (NavLink : interne en navigation client, externe en nouvel onglet). Typiquement /politique-cookies.",
+    "props.inline": "true : panneau de préférences DANS la page, toujours visible (page cookies, droit d'opposition). Absent : bandeau flottant caché dès qu'un choix existe.",
+    "props.position": "Bandeau seulement : bottom (repli code), top, bottom-left, bottom-right.",
+    "props.categories": "Catégories cochables. La mesure d'audience lit la catégorie d'id EXACT `analytics` ; une catégorie `required` est toujours vraie et grisée.",
+    "props.categories[].defaultOn": "Pré-cochée tant qu'aucun choix n'est enregistré — pour la mesure exemptée en opt-out, afin que le panneau reflète la mesure active.",
+    "props.settingsLabel": "Bandeau : bouton qui ouvre la modale des catégories ; sans lui ni categories, le bandeau n'a que Accepter/Refuser.",
   },
 
   "section:searchPro": {
@@ -521,6 +546,11 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "tabs[].icon": "Icône de l'onglet : nom lucide kebab-case (ex. database).",
   },
 
+  costum: {
+    mainTag: "Tag observatoire principal du costum porteur (dimension `data-observatory`), pas un slug.",
+    compagnon: "Tag observatoire secondaire, au même usage que mainTag.",
+  },
+
   auth: {
     variant: "Discriminant du registry de variants de design (formulaires login/register/recover + modal) résolu par resolveAuthVariant ; absent ou inconnu → set default (seul variant existant aujourd'hui).",
     menu: "Présentation du widget de compte <AuthMenu> des headers — bascule TOUS les headers d'un coup (prioritaire sur les props du header) ; tone/layout/loginVariant restent des props de design du header.",
@@ -529,6 +559,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "menu.showDropdownHeader": "Ajoute un en-tête nom + email en tête du dropdown du compte ; surcharge le choix du header (activé d'office sur mega-menu et transparent-scroll, masqué ailleurs).",
     "menu.loginLabel": "Libellé du bouton de connexion (déconnecté) — ⚠ précédence INVERSE : la prop du header (souvent header.ctaButton.label) gagne sur la config ; défaut i18n « Se connecter ».",
     "menu.kanban": "Opt-in : entrée « Kanban » du menu avatar — nouvel onglet vers la vue actions de la plateforme ; admins du costum seulement (gate isKanbanEntryVisible), indépendante de config.admin, aucune entrée sans slug résolu.",
+    "menu.rocketChat": "Entrée « Chat » du menu avatar, ACTIVE PAR DÉFAUT (false explicite pour désactiver) — lien nouvel onglet vers le chat de la plateforme (Rocket.Chat) ; admins du costum seulement, indépendante de config.admin.",
     hideHeader: "Masque le SiteHeader sur les pages auth (/login, /register, /recover-password) — mode page uniquement, sans effet sur le modal global ; défaut code : affiché.",
     hideFooter: "Masque le SiteFooter sur les pages auth — même logique que hideHeader (mode page seulement) ; défaut code : affiché.",
     login: "Textes de l'écran de connexion (titre/sous-titre) — utilisés par le formulaire en mode page /login ET dans le modal global (même composant lazy).",

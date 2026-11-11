@@ -120,5 +120,14 @@
   "Définir un mot de passe": "Définir un mot de passe",
   "Ce compte n'a pas encore de mot de passe. Définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code": "Ce compte n'a pas encore de mot de passe. Définissez-en un avec « Mot de passe oublié », puis connectez-vous avec votre mot de passe et un code",
   "Ce compte n'a pas encore de mot de passe. Demandez-en un avec « Mot de passe oublié », il vous sera envoyé par e-mail, puis connectez-vous avec ce mot de passe et un code": "Ce compte n'a pas encore de mot de passe. Demandez-en un avec « Mot de passe oublié », il vous sera envoyé par e-mail, puis connectez-vous avec ce mot de passe et un code",
-  "Recevoir un mot de passe": "Recevoir un mot de passe"
+  "Recevoir un mot de passe": "Recevoir un mot de passe",
+  "Ne plus recevoir de mails": "Ne plus recevoir de mails",
+  "Confirmez votre choix : vous ne recevrez plus les e-mails envoyés par les responsables de ce site.": "Confirmez votre choix : vous ne recevrez plus les e-mails envoyés par les responsables de ce site.",
+  "Ne plus recevoir les e-mails de ce site": "Ne plus recevoir les e-mails de ce site",
+  "Ne plus recevoir aucun e-mail de la plateforme": "Ne plus recevoir aucun e-mail de la plateforme",
+  "Confirmer": "Confirmer",
+  "Votre choix est enregistré.": "Votre choix est enregistré.",
+  "Ce lien de désinscription est invalide ou a expiré.": "Ce lien de désinscription est invalide ou a expiré.",
+  "Ce lien de désinscription est incomplet. Ouvrez-le depuis l'e-mail reçu.": "Ce lien de désinscription est incomplet. Ouvrez-le depuis l'e-mail reçu.",
+  "Préférence enregistrée": "Préférence enregistrée"
 }

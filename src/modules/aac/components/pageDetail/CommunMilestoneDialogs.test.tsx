@@ -19,6 +19,7 @@ vi.mock("@/components/shared/ConfirmDialog", () => ({ ConfirmDialog: () => null 
 vi.mock("@/modules/cagnotte/components/sections/parts/MilestoneEditDialog", () => ({
   MilestoneEditDialog: () => null,
 }));
+vi.mock("@/modules/cagnotte/components/parts/RetractPledgeDialog", () => ({ RetractPledgeDialog: () => null }));
 
 /** Le stub expose le callback `onCreated` — ce que le vrai dialogue joue après un succès. */
 vi.mock("@/modules/cagnotte/components/sections/CreateMilestoneDialog", () => ({
@@ -54,6 +55,7 @@ function makeCtrl(): CommunObjectivesController {
     handleMilestoneEditSuccess: vi.fn(),
     loadingIds: { deletingItemId: "", closingItemId: "", restoringItemId: "" },
     refetchFundingEnvelope,
+    pledgeRetraction: { request: null, close: vi.fn(), extraInvalidate: [] },
   } as unknown as CommunObjectivesController;
 }
 

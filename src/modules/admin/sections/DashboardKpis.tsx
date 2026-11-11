@@ -1,12 +1,12 @@
 import { useMemo, type ReactNode } from "react";
-import { ChartLine, Database, Minus, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, ChartLine, Database, Minus, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { Link } from "react-router";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
+import NavLink from "@/components/layout/NavLink";
 import { useEntityMembers } from "@/modules/profil/hooks/useMembersQuery";
 import { useSearchAllResults } from "@/modules/search/hooks/useSearchAllResults";
 import "@/modules/admin/i18n";
@@ -50,10 +50,12 @@ function KpiTileShell({
     </Card>
   );
   if (!kpi.linkTo) return card;
+  // `NavLink` (jamais un `<Link>` brut, cf. bonnes-pratiques-code.md #20) : `linkTo` vient de la
+  // config JSON — un lien externe posé là tomberait sinon sur le catch-all plutôt que de s'ouvrir.
   return (
-    <Link to={kpi.linkTo} className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+    <NavLink to={kpi.linkTo} className="rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
       {card}
-    </Link>
+    </NavLink>
   );
 }
 
@@ -130,6 +132,19 @@ function KpiAnalyticsTile({ kpi }: { kpi: AdminDashboardKpi }) {
   );
 }
 
+/** Tuile de pur raccourci (`linkTo`), sans métrique — cf. le commentaire du schéma. */
+function KpiLinkTile({ kpi }: { kpi: AdminDashboardKpi }) {
+  const tAdmin = useT("modules/admin");
+  return (
+    <KpiTileShell kpi={kpi} fallbackIcon={<ArrowRight className="h-4 w-4 text-muted-foreground" />}>
+      <p className="flex items-center gap-1 text-sm font-medium text-primary">
+        {tAdmin("DashboardKpis.openLink")}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </p>
+    </KpiTileShell>
+  );
+}
+
 export function DashboardKpis({ kpis }: { kpis: readonly AdminDashboardKpi[] }) {
   return (
     <>
@@ -137,6 +152,7 @@ export function DashboardKpis({ kpis }: { kpis: readonly AdminDashboardKpi[] }) 
         const key = `kpi-${index}-${kpi.type}`;
         if (kpi.type === "searchCount") return <KpiSearchCountTile key={key} kpi={kpi} index={index} />;
         if (kpi.type === "membersPending") return <KpiMembersPendingTile key={key} kpi={kpi} />;
+        if (kpi.type === "link") return <KpiLinkTile key={key} kpi={kpi} />;
         return <KpiAnalyticsTile key={key} kpi={kpi} />;
       })}
     </>

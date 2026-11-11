@@ -20,6 +20,7 @@ import type { CagnotteResource } from "@/modules/cagnotte/types";
  */
 
 const mocks = vi.hoisted(() => ({
+  retractionParams: null as null | { answerId: string; isCommunAdmin: boolean; inProgressFallback: unknown },
   meProject: vi.fn<(args: { id: string }) => Promise<unknown>>(),
   useFundingEnvelope: vi.fn<
     (answerId: string, opts?: { enabled?: boolean; form?: { id: string; answerId?: string } | null }) => { data: undefined; refetch: () => void }
@@ -34,6 +35,12 @@ vi.mock("@/hooks/useCocolight", () => ({
     apiClient: {},
     me: { id: "u1", serverData: { id: "u1" }, project: mocks.meProject },
   }),
+}));
+vi.mock("@/modules/aac/hooks/useCommunPledgeRetraction", () => ({
+  useCommunPledgeRetraction: (params: NonNullable<typeof mocks.retractionParams>) => {
+    mocks.retractionParams = params;
+    return { stateFor: () => null, request: null, open: () => {}, close: () => {}, extraInvalidate: [] };
+  },
 }));
 vi.mock("@/modules/profil/hooks/useProfileEntity", () => ({
   useOptionalProfileEntity: () => null,
@@ -185,5 +192,35 @@ describe("useCommunObjectivesController — enveloppe du commun", () => {
       "answer-1",
       expect.objectContaining({ enabled: true, form: { id: "form-annuaire", answerId: "answer-1" } }),
     );
+  });
+});
+
+describe("useCommunObjectivesController — paiements en cours", () => {
+  it("transmet l'enveloppe du commun en repli de la relecture", () => {
+    const enveloppe = { paymentsInProgress: { "answer-1": { pledges: [], depenses: [] } } };
+    mocks.useFundingEnvelope.mockReturnValue({ data: { rawEnvelope: enveloppe }, refetch: vi.fn() } as never);
+    renderController();
+
+    expect(mocks.retractionParams?.answerId).toBe("answer-1");
+    expect(mocks.retractionParams?.inProgressFallback).toBe(enveloppe);
+    mocks.useFundingEnvelope.mockReturnValue({ data: undefined, refetch: vi.fn() });
+  });
+
+  it("admin de l'organisation parente du projet lié : admin du commun pour le retrait", async () => {
+    const project = { ...makeProject(), isAdmin: (options?: { checkHierarchy?: boolean }) => options?.checkHierarchy === true };
+    mocks.meProject.mockResolvedValue(project);
+    const { result } = renderController();
+
+    await waitFor(() => expect(result.current.projectEntity).toBe(project));
+    expect(mocks.retractionParams?.isCommunAdmin).toBe(true);
+  });
+
+  it("ni admin du projet ou de son parent, ni porteur : pas admin du commun", async () => {
+    const project = { ...makeProject(), isAdmin: () => false };
+    mocks.meProject.mockResolvedValue(project);
+    const { result } = renderController();
+
+    await waitFor(() => expect(result.current.projectEntity).toBe(project));
+    expect(mocks.retractionParams?.isCommunAdmin).toBe(false);
   });
 });

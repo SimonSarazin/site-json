@@ -1,4 +1,4 @@
-import { Search, UserPlus } from "lucide-react";
+import { Mail, Search, UserPlus } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,11 @@ import { useEntityMembers } from "@/modules/profil/hooks/useMembersQuery";
 import "@/modules/admin/i18n";
 import "@/modules/profil/i18n";
 
+import { AdminMailingDialog } from "../components/AdminMailingDialog";
 import { ScrollableTabsList } from "../components/ScrollableTabsList";
+import { recipientFromEntity, uniqueRecipients } from "../lib/mailing";
+
+import type { Organization, User } from "@communecter/cocolight-api-client";
 
 import type { AdminMembersSection, AdminSection } from "../schema";
 
@@ -49,6 +53,23 @@ export default function MembersSection({ section }: { section: AdminSection }) {
   const showSearch = !cfg.filters || cfg.filters.includes("text");
   // `actions` absent → tout (historique) ; sinon `invite` gate le bouton (champ mort câblé — audit config).
   const canInvite = !cfg.actions || cfg.actions.includes("invite");
+  // `mail` : mode « Envoyer un e-mail » (reprise de l'écran legacy userMailing.php, backend docs/36) — cases
+  // à cocher sur la liste, puis dialogue objet/message ; les MEMBRES partent par _id (e-mail résolu serveur).
+  const canMail = !cfg.actions || cfg.actions.includes("mail");
+  const [mailMode, setMailMode] = useState(false);
+  const [mailOpen, setMailOpen] = useState(false);
+  const [mailSelected, setMailSelected] = useState<Map<string, User | Organization>>(new Map());
+  const toggleMail = (member: User | Organization) => {
+    const id = member.id ?? "";
+    if (!id) return;
+    setMailSelected((m) => { const n = new Map(m); if (n.has(id)) n.delete(id); else n.set(id, member); return n; });
+  };
+  const mailRecipients = uniqueRecipients(
+    [...mailSelected.values()]
+      .map((m) => recipientFromEntity(undefined, { id: m.id ?? undefined, serverData: m.serverData as Record<string, unknown> | undefined }))
+      .filter((r): r is NonNullable<typeof r> => r !== null),
+  );
+  const quitterMailMode = () => { setMailMode(false); setMailSelected(new Map()); };
   // Requêtes GATÉES par la config (entity:null = hook inerte) : un onglet non configuré ne
   // fetche plus — la section lançait systématiquement les 4 requêtes (audit perf).
   const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: debouncedSearch });
@@ -84,14 +105,38 @@ export default function MembersSection({ section }: { section: AdminSection }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-lg">{labels.managementTitle}</CardTitle>
-        {canInvite && (
-          <Button size="sm" onClick={() => setInviteOpen(true)}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            {tAdmin("MembersSection.invite")}
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {canMail && !mailMode && (
+            <Button size="sm" variant="outline" onClick={() => setMailMode(true)} data-testid="members-mail-mode">
+              <Mail className="mr-2 h-4 w-4" />
+              {tAdmin("MembersSection.mail")}
+            </Button>
+          )}
+          {canInvite && (
+            <Button size="sm" onClick={() => setInviteOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              {tAdmin("MembersSection.invite")}
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {mailMode && (
+          <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2" data-testid="members-mail-bar">
+            <span className="text-sm">
+              {mailSelected.size === 0
+                ? tAdmin("MembersSection.selectHint")
+                : tAdmin("MembersSection.selectedCount", undefined, { count: String(mailSelected.size) })}
+            </span>
+            <Button size="sm" disabled={mailRecipients.length === 0} onClick={() => setMailOpen(true)} data-testid="members-mail-open">
+              <Mail className="mr-2 h-4 w-4" />
+              {tAdmin("MembersSection.mail")}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={quitterMailMode}>
+              {tAdmin("MembersSection.cancelSelection")}
+            </Button>
+          </div>
+        )}
         {showSearch && (
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -123,6 +168,7 @@ export default function MembersSection({ section }: { section: AdminSection }) {
                 lastItemRef={tab.q.lastItemRef}
                 isFetchingNextPage={tab.q.isFetchingNextPage}
                 showConfirmation={showConfirmation}
+                selection={mailMode ? { selected: new Set(mailSelected.keys()), onToggle: toggleMail } : undefined}
               />
             </TabsContent>
           ))}
@@ -131,6 +177,13 @@ export default function MembersSection({ section }: { section: AdminSection }) {
 
       <ConfirmationDialog confirmation={confirmation} onOpenChange={hideConfirmation} onConfirm={executeAction} />
       <InviteMemberDialog entity={entity} open={inviteOpen} onOpenChange={setInviteOpen} />
+      <AdminMailingDialog
+        open={mailOpen}
+        onOpenChange={setMailOpen}
+        recipients={mailRecipients}
+        onRemove={(key) => setMailSelected((m) => { const n = new Map(m); n.delete(key); return n; })}
+        onSent={quitterMailMode}
+      />
     </Card>
   );
 }

@@ -31,6 +31,7 @@ const plan = (over: Partial<CommunDeletionPlan> = {}): CommunDeletionPlan => ({
   actionIds: [],
   paymentCount: 0,
   paymentAmount: 0,
+  paymentInProgress: false,
   isBlocked: false,
   ...over,
 });
@@ -123,6 +124,20 @@ describe("CommunDeleteDialog — commun financé", () => {
   it("n'offre pas non plus la cascade, même si un projet est lié", () => {
     poser({ plan: { ...finance, projectId: "p1", actionIds: ["a1"] } });
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  });
+});
+
+describe("CommunDeleteDialog — paiement en cours", () => {
+  it("sans versement enregistré : refus motivé par le paiement en cours, sans validation", () => {
+    poser({ plan: plan({ isBlocked: true, paymentInProgress: true }) });
+    expect(valider()).toBeNull();
+    expect(screen.getByText(/delete\.blocked\.paymentInProgress/)).toBeInTheDocument();
+    expect(screen.queryByText(/delete\.blocked\.description/)).toBeNull();
+  });
+
+  it("avec des versements : le motif reste le montant financé", () => {
+    poser({ plan: plan({ isBlocked: true, paymentInProgress: true, paymentCount: 1, paymentAmount: 300 }) });
+    expect(screen.getByText(/delete\.blocked\.description/)).toBeInTheDocument();
   });
 });
 

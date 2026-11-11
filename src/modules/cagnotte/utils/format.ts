@@ -60,6 +60,16 @@ export function formatDate(value: number | string): string {
 }
 
 /**
+ * Formate l'heure d'une date (timestamp ms ou string ISO) en heures et minutes.
+ *
+ * @example
+ *   formatTime(new Date(2024, 4, 14, 14, 30).getTime()) // "14:30" en fr, "02:30 PM" en en
+ */
+export function formatTime(value: number | string): string {
+  return new Date(value).toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" });
+}
+
+/**
  * Formate un nombre (sans devise) selon la locale active.
  *
  * @example

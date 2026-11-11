@@ -1,0 +1,83 @@
+/*
+ * Géométrie du kanban, reprise de co-kanban (`styles/tokens.css`, relevée sur ses maquettes),
+ * et couleurs REBRANCHÉES sur les jetons du site (RFC §5.3, Q3) : la colonne, la carte et la
+ * réglette gardent leur anatomie, mais prennent la marque de chaque site (`SiteTheme.tsx`).
+ *
+ * Portée par la classe racine `.kanban-module` (posée par `KanbanPageFrame`) : rien ne fuit
+ * dans le reste du site. Les composants lisent ces variables par des valeurs arbitraires
+ * Tailwind (`w-[var(--ck-column-width)]`) ; aucune n'a besoin d'un utilitaire global.
+ */
+.kanban-module {
+  --ck-board-padding: 16px;
+  --ck-column-width: 288px;
+  --ck-column-gutter: 16px;
+  --ck-column-padding: 12px;
+  --ck-column-header: 44px;
+  --ck-card-padding: 12px;
+  --ck-card-gap: 8px;
+
+  /* Mouvement : 150-220 ms, la sortie à ~70 % de l'entrée. */
+  --ck-duration-in: 200ms;
+  --ck-duration-out: 140ms;
+
+  /*
+   * Remplissage TRANSLUCIDE des colonnes : la surface du site transparaît, comme le fond
+   * d'aurore de co-kanban. Le contour reste celui du site (`--border`).
+   */
+  --ck-column-fill: color-mix(in oklab, var(--muted) 72%, transparent);
+  /* Filet d'un emplacement (pointillé) et barre de défilement : lisibles sur la colonne. */
+  --ck-border-strong: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
+  --ck-scrollbar: var(--ck-border-strong);
+  --ck-shadow-drag: 0 2px 4px rgb(16 18 24 / 8%), 0 14px 32px rgb(16 18 24 / 18%);
+
+  /*
+   * Teintes à SENS FIXE, gardées de co-kanban (`styles/tokens.css`) : la priorité (basse vert,
+   * moyenne bleu, haute orange, urgente rouge) et la coche de fin ne disent pas la marque du
+   * site. Encres >= 3:1 sur une carte claire ; les `--success`/`--warning` du site sont des
+   * teintes de fond, trop pâles pour un tracé. La FORME du point dit aussi la priorité.
+   * `--ck-warn-ink` est une encre de TEXTE (échéance proche dans la fiche) : >= 4.5:1.
+   */
+  --ck-prio-low: #16a34a;
+  --ck-prio-medium: #0284c7;
+  --ck-prio-high: #ea580c;
+  --ck-prio-urgent: #e11d48;
+  --ck-success-ink: #16a34a;
+  --ck-warn-ink: #b45309;
+}
+
+/* Thème sombre : les mêmes teintes, éclaircies pour tenir 3:1 sur une carte sombre. */
+.dark .kanban-module {
+  --ck-prio-low: #22c55e;
+  --ck-prio-medium: #049df6;
+  --ck-prio-high: #ff8a1f;
+  --ck-prio-urgent: #ff4d6d;
+  --ck-success-ink: #22c55e;
+  --ck-warn-ink: #fbbf24;
+}
+
+/*
+ * Défilement horizontal de la rangée de colonnes : barre FINE mais VISIBLE, seul repère de
+ * position d'un tableau large de plusieurs écrans.
+ */
+.kanban-module .ck-scroll-x {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ck-scrollbar) transparent;
+}
+
+/*
+ * Sous 768 px, les colonnes du tableau défilent par à-coups, une colonne à la fois. La borne est
+ * posée ICI et non par une variante `md:` : ces règles sont émises après les utilitaires
+ * Tailwind et l'emporteraient, à spécificité égale, sur un `md:[scroll-snap-type:none]`.
+ */
+@media (width < 48rem) {
+  .kanban-module .ck-snap-x {
+    scroll-snap-type: x mandatory;
+    /* La colonne accrochée garde la gouttière de la liste au lieu de coller au bord. */
+    scroll-padding-inline: 1rem;
+  }
+
+  .kanban-module .ck-snap-item {
+    scroll-snap-align: start;
+  }
+}

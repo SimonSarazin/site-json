@@ -153,14 +153,15 @@ describe("useStripeCharge", () => {
     expect(result.current.phase).toBe("idle");
   });
 
-  it("3-D Secure refusé : toast avec le message de Stripe, pas de rejeu ; la tentative suivante a une nouvelle clé", async () => {
+  it("3-D Secure refusé : intention annulée, toast avec le message de Stripe, pas de rejeu ; la tentative suivante a une nouvelle clé", async () => {
     const handleNextAction = vi.fn(async () => ({ error: { message: "Authentification refusée" } }));
-    const { result, submit, onSettled } = monter([AUTHENTIFICATION, ENREGISTRE], handleNextAction);
+    const { result, submit, onSettled } = monter([AUTHENTIFICATION, { success: 1, cancelled: true }, ENREGISTRE], handleNextAction);
 
     await act(async () => {
       await result.current.charge(PAYLOAD, SNAPSHOT);
     });
-    expect(submit).toHaveBeenCalledTimes(1);
+    expect(submit).toHaveBeenCalledTimes(2);
+    expect(submit).toHaveBeenNthCalledWith(2, "cagnotteCancel", { bill: "b1" });
     expect(onSettled).not.toHaveBeenCalled();
     expect(result.current.phase).toBe("idle");
     expect(toasts.error).toHaveBeenCalledWith(
@@ -172,7 +173,7 @@ describe("useStripeCharge", () => {
     await act(async () => {
       await result.current.charge(PAYLOAD, SNAPSHOT);
     });
-    const [premier, second] = envois(submit);
+    const [premier, second] = submit.mock.calls.filter(([action]) => action === "stripePay").map(([, payload]) => payload);
     expect(second.key).not.toBe(premier.key);
   });
 
@@ -180,7 +181,7 @@ describe("useStripeCharge", () => {
     const handleNextAction = vi.fn(async () => {
       throw new Error("Failed to fetch");
     });
-    const { result, onSettled } = monter([AUTHENTIFICATION], handleNextAction);
+    const { result, submit, onSettled } = monter([AUTHENTIFICATION], handleNextAction);
 
     await act(async () => {
       await result.current.charge(PAYLOAD, SNAPSHOT);
@@ -189,6 +190,8 @@ describe("useStripeCharge", () => {
     expect(result.current.phase).toBe("unconfirmed");
     expect(result.current.lastError).toBe("Failed to fetch");
     expect(onSettled).not.toHaveBeenCalled();
+    // Issue inconnue : l'intention n'est pas annulée, le paiement a pu passer.
+    expect(submit).not.toHaveBeenCalledWith("cagnotteCancel", expect.anything());
   });
 
   it("tentative sans issue connue : reprise à la réouverture, en « non confirmé », avec la même requête", async () => {

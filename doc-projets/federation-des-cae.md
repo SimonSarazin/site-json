@@ -16,10 +16,12 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et poussées : la
-tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans tenir compte de la
-casse — cf. §10 23/10). Précédent : **2026-10-12** (revue de la MR !83 : depuis un finder, « Créer
-votre CAE » ne s'ouvre plus que pour la question qui le déclare — cf. §10 12/10).
+Dernière mise à jour : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
+cf. §10 29/10). Précédent : **2026-10-28** (module `admin` activé : onglets Membres, Annuaire et
+Référencement des CAE, cf. §10 28/10). Précédent : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et
+poussées : la tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans
+tenir compte de la casse — cf. §10 23/10). Précédent : **2026-10-12** (revue de la MR !83 : depuis un
+finder, « Créer votre CAE » ne s'ouvre plus que pour la question qui le déclare — cf. §10 12/10).
 
 ---
 
@@ -71,6 +73,8 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 12/10 | Schumann + Claude, sur la revue de la MR !83 | Depuis un finder, un formulaire costum ne s'ouvre plus que déclaré ; déclaration erronée = pas de bouton ; pastille de statut commune à l'annuaire et à la fiche (cf. §10 12/10) |
 | 22-23/10 | Aboire + Claude, retour terrain de la Fédération | Inscription SSO : le lien de vérification d'e-mail aboutissait sur Communecter, compte non connecté — retour hors popup `/sso/callback`, `source.key` posé sur le compte créé, onglet d'origine connecté (branche `feat/sso-callback-hors-popup`, lib 1.0.203 ; cf. §10 22/10) |
 | 23/10 | Claude, sur la revue de la MR `aac-dev` | Tirelire et « Mes promesses » : enveloppe lue sur le formulaire de l'AAC (`aac.formId`), une seule lecture pour les deux boutons, plus de recherche des projets de l'organisation en type `aac` ; « terminée » lu sans tenir compte de la casse du statut (« n/m tâches », « Clôturer ») — commitées et poussées (§10) |
+| 28/10 | Mirana + Claude | Module `admin` activé : onglets Membres, Annuaire et Référencement des CAE (cf. §10 28/10) |
+| 29/10 | Mirana + Claude | Bouton « Ajouter une organisation » retiré de `/annuaire`, seul « Créer votre CAE » reste (cf. §10 29/10) |
 
 ---
 
@@ -124,7 +128,7 @@ RELIEF : tout changement s'y répercute sur trois sites (cf. §10 31/08 et §13)
 | `/` | 4 | `hero` · `aac-highlight` · `aac-directory` · `aac-highlight` |
 | `/aac/communs` | 1 | `aac-directory` — annuaire complet des communs déposés |
 | `/usages` | 1 | `toolsCatalog` — catalogue des besoins et solutions |
-| `/annuaire` | 2 | `searchHeader` (titre, recherche, bouton « Ajouter une organisation ») · `searchProStatic` — annuaire de la communauté (cf. §10 24/09) |
+| `/annuaire` | 2 | `searchHeader` (titre, recherche, bouton « Créer votre CAE » seul depuis le 29/10) · `searchProStatic` — annuaire de la communauté (cf. §10 24/09 et §10 29/10) |
 | `/mentions-legales` | 1 | `html` — mentions légales (LCEN) : faits établis seulement, le reste en `[à compléter]` (cf. §10 14/09) |
 | `/confidentialite` | 1 | `html` — politique de confidentialité (RGPD), même règle |
 | `/profil/:slug` | — | servie par le module `profil`, pas déclarée dans `pages[]` — cf. §10 09/09 |
@@ -134,9 +138,10 @@ Blocs racine présents : `meta`, `theme` (dont `customCSS` depuis le 24/09 : la 
 `searchHeader` suit la charte du site, cf. §7), `header` (`standard` ; `utilities` : `auth`, `themeSwitch`,
 `piggyBank`, `pledge`), `footer` (`sidebar-columns`), `aac`, `cagnotteModuleConfig`
 (`defaultType: "aac"`), `profiles` (`default`, `projects`, et depuis le 28/09 `organizations`,
-cf. §10 28/09).
-**Absents** : `auth`, `admin`, `commandPalette`, `costumForms` — le site est en lecture publique,
-l'enrichissement d'un outil reposant sur le droit admin du costum côté backend.
+cf. §10 28/09), `coform`, `costumForms` (formulaire « Créer votre CAE », sous-type
+`organizationsTls`), et depuis le 28/10 `admin` (onglets Membres, Annuaire et Référencement, cf. §10 28/10).
+**Absents** : `commandPalette` — le site reste public en lecture pour un visiteur anonyme,
+l'enrichissement d'un outil et l'administration de l'annuaire restant soumis au droit admin.
 
 **Largeur** : les 6 pages n'ont pas de `layout` (gabarit `default`, 1280 px) et les deux profils sont
 en `layout: "default"`. Ce gabarit enveloppe aussi le header et le footer ; les pages de module (fiche
@@ -274,6 +279,7 @@ taguées dépasse largement le périmètre costum. L'annuaire lit ce dernier ens
 | 18 | « Rejoindre une autre CAE » — demande d'adhésion / de droits admin | ✅ | 30/09 — réparée (`d99f1997`) ; vérifiée au navigateur avec un serveur **simulé** (requête et contenu exacts, rien écrit) — la vraie écriture n'a pas été jouée (cf. §10 30/09) |
 | 19 | Ajouter une CAE depuis le finder « Partenaires du commun » (dépôt) | ✅ | 06/10 — revérifié au navigateur sur `jdev` fusionné (SDK 1.0.196), **création réelle avec horaires** puis base restaurée : mots-clés, téléphone et horaires stockés dans la forme du legacy (cf. §10 06/10). Commité le 01/10 (`259164b5`) |
 | 20 | Modale de recherche des finders sans saut pendant la frappe | ✅ | 01/10 — mesuré : 3 sauts de 84 px avant, 0 après. Commité le 01/10 (`259164b5`) |
+| 21 | Admin — onglets Membres, Annuaire et Référencement | ✅ | 28/10 — module `admin` activé pour la première fois sur ce site ; rendu vérifié anonyme (accès bloqué). **Actions d'un admin connecté non vérifiées** (valider un membre, éditer/supprimer une CAE, rechercher et référencer depuis le réseau), aucun compte de test disponible, cf. §10 28/10. **05/11 — rendu des trois onglets et actions vérifiés par un admin connecté** (backend local) : valider un membre, éditer/supprimer une CAE, référencer, cf. §10 05/11 |
 
 **Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
 préexistants) · `test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅
@@ -288,6 +294,100 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 05/11bis — entrée « Kanban » dans le menu du compte
+
+**Config seule** : `"auth": { "menu": { "kanban": true } }`, comme tiers-lieux. Le module `kanban`
+n'est pas activé (pas de bloc `"kanban"`) : l'entrée mène donc, dans un nouvel onglet, à la vue
+actions de la plateforme (`https://www.communecter.org/#@federationDesCae.view.actions`), pour les
+admins du costum.
+
+**Vérifié au navigateur** (serveur dev, backend local, admin connecté) : le menu du compte affiche
+Profil · Administration · Chat · **Kanban** · Se déconnecter. `config:validate` ✅ · `audit:config` ✅
+RAS · `test:preflight` ✅.
+
+### 05/11 — admin : les trois onglets vus par un admin connecté
+
+**Vérifié au navigateur** (serveur dev, backend local, compte admin du site, Playwright) :
+
+| Onglet | Rendu |
+|---|---|
+| Membres | « Gestion de l'organisation » sur l'entité de la Fédération : membres, admins, demandes en attente, bouton « Inviter » |
+| Annuaire | table « CAE » — colonnes Nom, Commune, Tags, Contact, Mise à jour, Statut ; bouton « Créer », filtre de statut |
+| Référencement | « Référencer une CAE existante » : recherche sur tout le réseau, onglets « Rechercher & référencer » / « Référencés », bouton « Référencer » par ligne |
+
+Aucune erreur applicative dans la console. Accès anonyme toujours bloqué (« Accès réservé aux
+administrateurs. »).
+
+**Actions vérifiées avec succès** par un admin connecté (backend local) : valider un membre,
+éditer et supprimer une CAE, référencer une organisation depuis le réseau.
+
+### 04/11 — admin : `enabled` et `access` écrits en config
+
+Le bloc `admin` reçoit `"enabled": true` et `"access": { "min": "siteAdmin" }`, comme les autres
+configs du parc qui ont un admin. Comportement inchangé : sans ces clés, le code retombait déjà sur
+`enabled !== false` et `siteAdmin` (les `.default()` du schéma ne s'appliquent pas au runtime) ; la
+config dit maintenant explicitement qui a accès. `config:validate` ✅ · `test:preflight` ✅.
+
+### 29/10 — bouton « Ajouter une organisation » retiré de `/annuaire`
+
+**Le besoin.** Le `searchHeader` de `/annuaire` portait deux boutons côte à côte : « Créer votre
+CAE » (primaire, le formulaire costum dédié, `add-cae`) et « Ajouter une organisation » (secondaire,
+la modale générique `add-organization`, sans aucune contrainte CAE). Le second faisait doublon et
+pouvait laisser entrer une organisation non qualifiée CAE dans l'annuaire — retiré.
+
+**Ce qui change (config seule, aucun code).** Le bouton « Ajouter une organisation » supprimé du
+tableau `buttons` de la section `searchHeader` de `/annuaire`. Seul « Créer votre CAE » reste.
+L'entrée « Ajouter une organisation » du menu « + Ajouter » d'un profil citoyen (`profiles.default`)
+n'est pas concernée — hors périmètre de cette demande.
+
+**Vérifié.** `config:validate` ✅ 6 pages / 10 sections. `audit:config` ✅ RAS. `test:preflight` ✅
+(aucune fixture à mettre à jour). `typecheck` ✅, `eslint` ✅. Navigateur (Playwright, Chromium) :
+`/annuaire` n'affiche plus que « Créer votre CAE ».
+
+**Gates (29/10, arbre de travail non commité)** : `config:validate` ✅ · `audit:config` ✅ RAS ·
+`test:preflight` ✅ · `typecheck` ✅ · `eslint` ✅ · navigateur ✅. `test:unit` complet,
+`test:integration`, `test:e2e`, `build` non relancés : aucun fichier de code touché.
+
+### 28/10 — admin : gestion des membres, de l'annuaire et référencement des CAE
+
+**Le besoin.** Donner aux admins de la Fédération un accès `/admin` : gérer les membres de
+l'entité, voir et gérer l'annuaire des CAE (celles affichées sur `/annuaire`), et pouvoir y faire
+entrer une CAE existante créée ailleurs sur le réseau.
+
+**Ce qui change (config seule, aucun code).** Bloc racine `admin` ajouté — absent jusqu'ici sur ce
+site — avec trois onglets (accès `siteAdmin`, défaut du module) :
+
+- **Membres** : section `members` par défaut (filtres à-valider/admins + recherche, invitation) —
+  même périmètre que l'onglet « Membres » du profil de l'entité (`profiles.organizations`).
+- **Annuaire** : section `resource` sur `organizations`, `source.sourceKey: ["federationDesCae"]`
+  (même périmètre que `searchProStatic` de `/annuaire`, cf. §10 24/09) — colonnes nom / commune /
+  tags / contact / mise à jour, création via `add-cae` (le formulaire costum « Créer votre CAE »,
+  sous-type `organizationsTls`, déjà en place), édition héritée, actions `edit`/`delete`/`validate`/
+  `reference` par ligne, `validate`/`export`/`delete` en masse.
+- **Référencement** : section `reference` sur `organizations` — recherche réseau entier (hors
+  périmètre costum) et rattachement/retrait via `reference.costum`, même mécanisme que
+  `tiers-lieux.tabs.referencement`. Une organisation référencée reçoit automatiquement l'annotation
+  de sous-type `reference.costumTypes.federationDesCae: "organizationsTls"` (vérifié dans la
+  projection `referencement` de la fixture) et entre alors dans le périmètre `sourceKey` de
+  l'annuaire et de la table ci-dessus, sans qu'aucun tag ne soit posé.
+
+**Vérifié.** `config:validate` ✅ 6 pages / 10 sections. `audit:config` ✅ RAS. `config:probe` :
+périmètre `/annuaire` inchangé, 9 résultats. `test:preflight` ✅ (fixture
+`__effective__/federationDesCae.json` mise à jour : nouvelles projections `adminResources` et
+`referencement`). `typecheck` ✅, `eslint` ✅. Navigateur (Playwright, Chromium) : `/admin` anonyme
+bloque avec « Accès réservé aux administrateurs. », sans erreur — l'entrée « Administration » du
+menu compte (`AuthMenu`) est automatique dès que `admin` existe en config, aucun lien de header à
+ajouter.
+
+**Non vérifié.** Le rendu des trois onglets et leurs actions (valider un membre, éditer/supprimer
+une CAE, rechercher et référencer depuis le réseau) pour un admin connecté — aucun compte admin de
+test disponible.
+
+**Gates (28/10, arbre de travail non commité)** : `config:validate` ✅ · `audit:config` ✅ RAS ·
+`config:probe` ✅ · `test:preflight` ✅ · `typecheck` ✅ · `eslint` ✅ · navigateur ✅ (anonyme).
+`test:unit` complet, `test:integration`, `test:e2e`, `build` non relancés : aucun fichier de code
+touché.
 
 ### 23/10 — suites de la revue de la MR `aac-dev` (commité et poussé)
 

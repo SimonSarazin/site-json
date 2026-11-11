@@ -864,5 +864,32 @@
     "subtitleMultiple": "Your {{count}} pledges ({{amount}} €) have been successfully recorded.",
     "hint": "You can pay this amount at any time using the pledges button.",
     "closeButton": "Close"
+  },
+  "PledgeRetract": {
+    "action": "Withdraw",
+    "inProgress": "Payment in progress",
+    "inProgressHint": "A payment is in progress or awaiting reconciliation on this pledge: it cannot be withdrawn for now.",
+    "retracted": "Pledge withdrawn",
+    "notAllowed": "Not allowed",
+    "notAllowedHint": "You cannot pay this pledge on behalf of this funder.",
+    "aria": "Withdraw the pledge of {{financer}}",
+    "confirm": {
+      "title": "Withdraw this pledge?",
+      "description": "The pledge of {{financer}} ({{amount}}) on “{{depense}}” will be withdrawn: this need will no longer be covered by it.",
+      "confirm": "Yes, withdraw",
+      "cancel": "Cancel",
+      "locked": "A payment is in progress for this pledge, until {{until}} at the latest: it cannot be withdrawn for now."
+    },
+    "toasts": {
+      "success": "Pledge withdrawn",
+      "errorTitle": "Pledge not withdrawn"
+    },
+    "errors": {
+      "hasPayment": "A payment is recorded or in progress on this pledge: it cannot be withdrawn.",
+      "notFound": "This pledge cannot be found: it may already have been withdrawn.",
+      "notAllowed": "You cannot withdraw this pledge.",
+      "login": "Log in to withdraw a pledge.",
+      "generic": "The withdrawal failed, please try again."
+    }
   }
 }

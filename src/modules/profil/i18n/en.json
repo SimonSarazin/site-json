@@ -67,8 +67,6 @@
     "typeAction": "Type of action",
     "publicCible": "Target audience",
     "territoires": "Territories",
-    "publics": "Audiences",
-    "themes": "Topics",
     "socialNetworks": "Social networks",
     "accessibility": "Access / parking",
     "provisionResources": "Resources available",
@@ -806,7 +804,8 @@
       "imageUploadSuccess": "Profile picture uploaded successfully",
       "imageUploadError": "Unable to upload profile picture",
       "bannerUploadSuccess": "Banner uploaded successfully",
-      "bannerUploadError": "Unable to upload banner"
+      "bannerUploadError": "Unable to upload banner",
+      "extraFieldsError": "Some fields could not be saved — try again from your profile"
     },
     "friends": {
       "requestSent": "Friend request sent successfully",

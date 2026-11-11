@@ -5,8 +5,7 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { useProfilePageIntent } from "../../hooks/useUrlIntent";
-import { useSite } from "@/hooks/useSite";
-import { useCocolight } from "@/hooks/useCocolight";
+import { useCostumAddModal } from "../../hooks/useCostumAddModal";
 import { useT } from "@/hooks/useT";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
@@ -19,7 +18,7 @@ import {
 import type { AddConfig } from "../../schema";
 
 import { DynamicModal } from "../add/ModalRegistry";
-import { costumCreateKey, type AddEntityType, type CostumFormRef } from "../add/addModals";
+import type { AddEntityType } from "../add/addModals";
 import { useVisibilityList } from "@/lib/visibility";
 
 type AddOpenState = AddEntityType | { kind: "custom"; modalKey: string } | null;
@@ -57,9 +56,7 @@ interface AddOption {
 export function AddEntityDropdown({ entity, config, label, variant = "outline", size, className }: AddEntityDropdownProps) {
   const permissions = useProfilPermissions(entity);
   const t = useT("modules/profil");
-  const { config: siteConfig } = useSite();
-  const costumForms = (siteConfig as { costumForms?: Record<string, CostumFormRef> } | undefined)?.costumForms;
-  const siteSlug = (useCocolight().entity as { slug?: string } | null)?.slug;
+  const modalFor = useCostumAddModal();
 
   // État du modal ouvert
   const [openModal, setOpenModal] = useState<AddOpenState>(null);
@@ -87,23 +84,22 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
   // inchangées — seule la modale ouverte peut être celle du costum du site.
   const availableOptions = useMemo(() => {
     const options: AddOption[] = [];
-    const modal = (type: AddEntityType) => costumCreateKey(type, costumForms, siteSlug) ?? `add-${type}`;
 
     if (config?.organization !== false && permissions.canAddOrganization) {
-      options.push({ type: "organization", label: t("AddEntity.organization"), icon: Building2, modalKey: modal("organization") });
+      options.push({ type: "organization", label: t("AddEntity.organization"), icon: Building2, modalKey: modalFor("organization") });
     }
     if (config?.project !== false && permissions.canAddProject) {
-      options.push({ type: "project", label: t("AddEntity.project"), icon: Briefcase, modalKey: modal("project") });
+      options.push({ type: "project", label: t("AddEntity.project"), icon: Briefcase, modalKey: modalFor("project") });
     }
     if (config?.event !== false && permissions.canAddEvent) {
-      options.push({ type: "event", label: t("AddEntity.event"), icon: Calendar, modalKey: modal("event") });
+      options.push({ type: "event", label: t("AddEntity.event"), icon: Calendar, modalKey: modalFor("event") });
     }
     if (config?.poi !== false && permissions.canAddPoi) {
-      options.push({ type: "poi", label: t("AddEntity.poi"), icon: MapPin, modalKey: modal("poi") });
+      options.push({ type: "poi", label: t("AddEntity.poi"), icon: MapPin, modalKey: modalFor("poi") });
     }
 
     return options;
-  }, [permissions, config, t, costumForms, siteSlug]);
+  }, [permissions, config, t, modalFor]);
 
   // `?ajouter=<type>` dans l'URL de la fiche (lien posé par un site tiers, cf. doc/08) : la modale
   // de création de ce type s'ouvre directement — si et seulement si l'option figure dans le menu,

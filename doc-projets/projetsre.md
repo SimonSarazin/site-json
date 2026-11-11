@@ -12,7 +12,10 @@
 > [Fédération des CAE](federation-des-cae.md) (le seul autre site AAC, modèle de config).
 > Mémoire : `[[project-projetsre]]`. Plan approuvé : `plan-d-tail-pour-integrer-iterative-lemon.md`.
 
-Dernière mise à jour : **2026-10-23** — suites de la revue de la MR `aac-dev`, commitées et poussées (§10) :
+Dernière mise à jour : **2026-11-03** — sections de prose et onglet « Financement » commités et poussés
+sur `aac-dev`. Précédent : **2026-11-02** — fiche : les 7 sections de prose de la Fédération, avec les
+5 questions manquantes copiées du formulaire tiers-lieux (DEV seulement, § 6). Précédent :
+**2026-10-23** — suites de la revue de la MR `aac-dev`, commitées et poussées (§10) :
 « terminée » lu sans tenir compte de la casse du statut, date des actions dans la langue active,
 tirelire et « Mes promesses » sur le formulaire de l'annuaire. Précédent : **2026-10-21**, revue avant
 commit du lot 11 (onglet « Passage à l'action » de l'interface editorial en deux blocs, **Jalons** |
@@ -63,6 +66,8 @@ footer, pages de contenu) reste piloté par la config SiteForge.
 | 21/10 | Claude | Revue avant commit du lot 11 : date des actions, dialogues d'action dans la coquille de la page, dédoublonnage partagé, ancre `actions`, commentaires condensés — non commités |
 | 22/10 | Claude | Lot 11 commité et poussé sur `aac-dev` ; fusion à blanc avec `main` sans conflit, portes vertes sur le résultat |
 | 23/10 | Claude | Suites de la revue de la MR `aac-dev` : « terminée » lu sans tenir compte de la casse (compteurs, filtre, « Clôturer ») ; date des actions dans la langue active ; tirelire et « Mes promesses » sur le formulaire de l'annuaire, sans charger les projets de l'organisation — commitées et poussées (§10) |
+| 02/11 | Anatole + Claude | Fiche : les 7 sections de prose de la Fédération et des tiers-lieux (`detail.sections`) ; les 5 questions manquantes copiées du formulaire tiers-lieux dans le formulaire projets.re, base **DEV** seulement (§ 6) — config non commitée |
+| 03/11 | Claude | Sections de prose et onglet « Financement » commités et poussés sur `aac-dev` |
 
 ## 2. Objectifs de la configuration
 
@@ -96,7 +101,7 @@ par le chunk d'entrée (piège mesuré, § 10 21/09).
 | Fiche : 7 onglets | fiche · action · argent · communauté · vie réels (blocs AAC ; vie = actus et agenda du projet lié, lot 9) ; maturation · coopérations en démo |
 | Carte « Financement réuni » + « Soutenir ce projet » | la **vraie** `CommunFinancingCard` en `layout="hero"` : grille de la maquette au rapport 7/12 – 5/12 de la fiche federation-des-cae, résumé « N cofinanceurs · X restant à financer » ; les réactions (absentes de la maquette) sont un composant à part, `CommunReactionStats` : à partir de `lg`, à droite du titre, dans la colonne d'Exporter / Soutenir (même bord, même largeur) ; sous la description en dessous |
 | `DossierExport` | bouton désactivé, au-dessus de « Soutenir » (emplacement `secondaryAction` de la carte) |
-| Onglet « Argent et transparence » : `Expense` · `Funder` | deux colonnes, **dépenses à gauche, cofinanceurs à droite** (inverse de la maquette, voulu) : `CommunFinancingSection` et `CommunCofinancersTable` en `layout="list"` ; le clic sur une dépense déplie ses financements reçus (financeur, date, montant, Payé / Partiel / Promesse) |
+| Onglet « Financement » : `Expense` · `Funder` | deux colonnes, **dépenses à gauche, cofinanceurs à droite** (inverse de la maquette, voulu) : `CommunFinancingSection` et `CommunCofinancersTable` en `layout="list"` ; le clic sur une dépense déplie ses financements reçus (financeur, date, montant, Payé / Partiel / Promesse) |
 
 ## 5. Cahier des charges (intégré)
 
@@ -119,9 +124,13 @@ Toutes les questions déclarées par la config existent sur ce formulaire, **sau
   (`tpls.forms.cplx.address`, sans libellé) ;
 - la config pointe sur elle depuis le 15/10.
 
-Comme le formulaire du 21/09, celui-ci n'a pas les questions de prose « modèle économique »,
+**02/11 — questions de prose.** Le formulaire n'avait pas les questions « modèle économique »,
 « gouvernance », « cadre juridique », « partenariats » et « modalités de contribution » que déclare la
-config de la Fédération.
+config de la Fédération. Elles sont copiées du formulaire tiers-lieux (`6438366673d20a0de1533c77`),
+**avec les mêmes ids**, dans le document d'étape `aapStep1` de projets.re (collection `inputs`,
+`formParent` = le formulaire), en positions 51 à 55 : la fin de l'étape, sans renuméroter les
+questions existantes. L'étape 1 compte désormais **31 questions**. Fait en **DEV seulement** : en
+PROD, il faut repasser le même ajout avant que les 5 sections aient leur question.
 
 | Mesure (`directoryproposal`, anonyme, 15/10) | DEV | PROD |
 |---|---|---|
@@ -147,7 +156,7 @@ sélection est l'organisation `6abb847d…`, la 1ʳᵉ entrée de `form.parent`.
 | Filtre **Stade** | `aapStep1m2ucu54mopm33osqxpd` — « Le commun est-il suffisamment mature… » (`radioNew`, 4 options) | `directory.fields.maturity` |
 | Filtre **Besoin** | — aucune question d'usages catégorisés | **masqué** (règle : filtre résolu sans option) |
 | Filtre **Commune** | `aapStep1mumh6n3r1f11d73gwbn` — question adresse (`tpls.forms.cplx.address`, **sans libellé** sur le formulaire) | `directory.fields.adresse` — la commune s'affiche aussi sur la carte, la ligne et la fiche |
-| Prose | `aapStep1lusoklfzokkn4svl1ei` « Cas d'usages » · `aapStep1m0w49vpl5jm001xwvsv` « Décrivez l'équipe ou la communauté » | `detail.sections` (`usages`, `equipe`) |
+| Prose | `aapStep1lpvinn7ld70wbk7w339` « Modèle économique » · `aapStep1lpvioouzejcnjy7ffw` « Mode de gouvernance » · `aapStep1lpvip7f9pa6et762ysa` « Choix juridiques » · `aapStep1lpvipvzp13vf2jypqgxq` « Partenariats et coopération » · `aapStep1lqb428ajrbhwdbmg6qi` « Modalités de contribution » (copiées des tiers-lieux le 02/11) · `aapStep1lusoklfzokkn4svl1ei` « Cas d'usages » · `aapStep1m0w49vpl5jm001xwvsv` « Décrivez l'équipe ou la communauté » | `detail.sections` (`modele`, `gouvernance`, `juridique`, `partenariats`, `contribution`, `usages`, `equipe`) — mêmes ids et même ordre que la Fédération |
 | Galerie | documents `aapStep1.image` | `detail.gallery` |
 | Sélection | `aapStep2.choose` | `directory.fields.choose` |
 | Financement | `depense`, `aapStep3.financer`, `aapStep3.generateproject` | rôles résolus |
@@ -303,7 +312,7 @@ qu'à fournir sa table. Le test de conformité l'impose désormais : pour chaque
 lien de la carte doit trouver son ancre au moment du défilement.
 
 **Gates (23/09)** : `typecheck` ✅ · `lint` ✅ sur les fichiers touchés · suite `src/modules/aac`
-**646 tests / 60 fichiers** ✅ · vérifié dans le navigateur (onglet « Argent et transparence »
+**646 tests / 60 fichiers** ✅ · vérifié dans le navigateur (onglet « Financement »
 ouvert, besoins financiers calés sous l'en-tête).
 
 **28/09 — réactions au-dessus d'Exporter / Soutenir.** Les trois réactions sortent de `CommunFinancingCard` dans
@@ -337,7 +346,7 @@ builds Vite client + SSR ✅ · **non vérifié dans le navigateur** : aucun com
 de communecter-dev n'a de projet avec actus ou événements (0 réponse projetsre, 2 réponses
 FédéCAE avec projet, sans actus ni événements).
 
-**29/09 — onglet « Argent et transparence » au plus près de la maquette.** Les grandes cartes de
+**29/09 — onglet « Financement » au plus près de la maquette.** Les grandes cartes de
 paliers et le tableau des cofinanceurs, empilés, deviennent les deux listes sobres de la maquette
 côte à côte (`lg:grid-cols-2`) : « Dépenses engagées » à gauche, « Cofinanceurs » à droite. Pas de
 fork : les deux blocs reçoivent une mise en page `layout="list"` (même principe que
@@ -509,7 +518,8 @@ retombent sur les identifiants (accents perdus).
 | Domaine : `projetsre.00.re` ? (puis `coolifyApp`, `deploy:create/env/dns`) | à confirmer |
 | Logo : le logotype SVG texte provisoire convient-il ? | à confirmer |
 | Relecture des textes d'accueil et remplissage des « [à compléter] » des pages légales | commanditaire |
-| Questions de prose à ajouter au formulaire (modèle économique, gouvernance…) ? | commanditaire |
+| ~~Questions de prose à ajouter au formulaire~~ | **tranché le 02/11** — les 5 questions des tiers-lieux, mêmes ids, ajoutées en DEV (§ 6) |
+| Ajouter les 5 questions de prose au formulaire en PROD | Anatole |
 | `getformbyid` en 500 sur ce formulaire aussi (communecter-dev) — correctif legacy à déployer | backend |
 | ~~Filtre Commune~~ | **tranché le 23/09** — livré au lot 8 (rôle `directory.fields.adresse`) |
 | ~~Actus et agenda en démo~~ | **tranché le 29/09** — livrés au lot 9 (données du projet lié) |

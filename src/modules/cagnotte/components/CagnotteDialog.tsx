@@ -52,6 +52,7 @@ import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import PaymentReceivedScreen from "@/modules/cagnotte/components/PaymentReceivedScreen.tsx";
 import PledgeConfirmedScreen from "@/modules/cagnotte/components/PledgeConfirmedScreen.tsx";
+import { readPledgesLockedForSelection } from "@/modules/cagnotte/utils/pledgeRetraction";
 
 /**
  * Palier financier déclenchant une célébration (toast + confetti à venir).
@@ -142,6 +143,7 @@ const CagnotteDialog = ({children, ...props}: CagnotteDialogProps) => {
                                     setOpenPromesses(false); // Ferme les promesses
                                     setOpen(true);           // Réouvre la cagnotte
                                 }}
+                                onRetracted={() => void props.onRefresh?.()}
                             />
                         </Suspense>
                     )}
@@ -258,7 +260,7 @@ const CagnotteDialogContent = ({
     const userAdminOrganizations = useUserAdminOrganizations(currentUserEntity, {});
     const orgsIds =  userAdminOrganizations?.map(user => user.id);
     //computedPledges : Promesses de financement non payé
-    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
+    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds, readPledgesLockedForSelection(fundingEnvelope?.rawEnvelope)) , [resources, me?.serverData?.id, orgsIds, fundingEnvelope?.rawEnvelope]);
 
     // Permissions cagnotte calculées sur l'ORGA (entity Cocolight), pas sur le
     // projet visité. La modale CagnotteDialog est rendue dans 2 contextes :

@@ -2,14 +2,18 @@ import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react"
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useDocumentHidden } from "@/hooks/useReducedMotion";
 import { asRecord, toId, toString } from "@/modules/cagnotte/utils/dataTransform";
 import { openHelloAssoPopup, readHelloAssoCheckout } from "@/modules/cagnotte/services/helloAssoCheckoutIntent";
 import { readHelloAssoStatus, type HelloAssoStatus } from "@/modules/cagnotte/services/helloAssoVerification";
 import type { SubmitFundingEnvelopeAction } from "@/modules/cagnotte/hooks/useFundingEnvelopeAction";
 import type { PaymentSettlement } from "@/modules/cagnotte/hooks/usePaymentSettlement";
 
-/** Intervalle entre deux vérifications du checkout. */
+/** Intervalle entre deux vérifications du checkout, pendant ses 2 premières minutes et pendant l'arrêt. */
 export const HELLOASSO_POLL_INTERVAL_MS = 5_000;
+/** Durée du suivi rapproché ; au-delà, une vérification toutes les 15 s. */
+export const HELLOASSO_FAST_POLL_MS = 2 * 60_000;
+export const HELLOASSO_SLOW_POLL_INTERVAL_MS = 15_000;
 /** Attente maximale ; le lien HelloAsso expire au bout de 15 min. */
 export const HELLOASSO_MAX_WAIT_MS = 20 * 60_000;
 /** Délai max d'une vérification ; au-delà, elle échoue et la suivante peut partir. */
@@ -41,11 +45,13 @@ function withTimeout<R>(promise: Promise<R>, ms: number, message: string): Promi
 
 /**
  * Paiement HelloAsso : crée le checkout avec la commande, l'ouvre en popup et interroge le serveur jusqu'à
- * l'enregistrement. Tout arrêt passe par une dernière vérification.
+ * l'enregistrement (5 s pendant 2 min, puis 15 s ; aucun minuteur page masquée). Le retour sur la page et le
+ * message de la popup vérifient aussitôt ; tout arrêt passe par une dernière vérification.
  */
 export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheckoutOptions<T>) {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
+  const visible = !useDocumentHidden();
   const [phase, setPhase] = useState<HelloAssoCheckoutPhase>("idle");
   const [checkoutIntentId, setCheckoutIntentId] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
@@ -56,6 +62,8 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
   const trackedRef = useRef<{ bill: string; snapshot: T } | null>(null);
   const deadlineRef = useRef(0);
   const checkDeadlineRef = useRef(0);
+  /** Ouverture du checkout suivi : règle le rythme des vérifications. */
+  const startedAtRef = useRef(0);
   /** Checkout dont une vérification est en vol. */
   const inFlightRef = useRef<string | null>(null);
   const stopReasonRef = useRef<StopReason | null>(null);
@@ -120,6 +128,7 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
       popup.location.href = checkout.redirectUrl;
       trackedIdRef.current = checkout.checkoutIntentId;
       trackedRef.current = { bill: toId(response.bill), snapshot };
+      startedAtRef.current = Date.now();
       deadlineRef.current = Date.now() + HELLOASSO_MAX_WAIT_MS;
       setCheckoutIntentId(checkout.checkoutIntentId);
       setPhase("waiting");
@@ -203,17 +212,29 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
     else void verify(id);
   });
 
+  /** Un tour de suivi : échéance dépassée, arrêt ; sinon, vérification. */
+  const onTick = useEffectEvent((id: string, waiting: boolean) => {
+    if (trackedIdRef.current !== id) return;
+    if (waiting && Date.now() > deadlineRef.current) requestStop("timeout");
+    else if (!waiting && Date.now() > checkDeadlineRef.current) abandon();
+    else void verify(id);
+  });
+
   useEffect(() => {
     if ((phase !== "waiting" && phase !== "checking") || !checkoutIntentId) return;
     const id = checkoutIntentId;
     const waiting = phase === "waiting";
     if (!waiting) void verify(id);
-    const interval = window.setInterval(() => {
-      if (waiting && Date.now() > deadlineRef.current) requestStop("timeout");
-      else if (!waiting && Date.now() > checkDeadlineRef.current) abandon();
-      else void verify(id);
-    }, HELLOASSO_POLL_INTERVAL_MS);
-    if (!waiting) return () => window.clearInterval(interval);
+    let timer: number | undefined;
+    const schedule = () => {
+      const fast = !waiting || Date.now() - startedAtRef.current < HELLOASSO_FAST_POLL_MS;
+      timer = window.setTimeout(() => {
+        onTick(id, waiting);
+        schedule();
+      }, fast ? HELLOASSO_POLL_INTERVAL_MS : HELLOASSO_SLOW_POLL_INTERVAL_MS);
+    };
+    if (visible) schedule();
+    if (!waiting) return () => window.clearTimeout(timer);
 
     const handleMessage = (event: MessageEvent) => onCallback(event);
     // Retour sur la page : vérification immédiate (le message de la popup est souvent bloqué par COOP).
@@ -224,12 +245,12 @@ export function useHelloAssoCheckout<T>({ submit, onSettled }: UseHelloAssoCheck
     window.addEventListener("focus", handleReturn);
     document.addEventListener("visibilitychange", handleReturn);
     return () => {
-      window.clearInterval(interval);
+      window.clearTimeout(timer);
       window.removeEventListener("message", handleMessage);
       window.removeEventListener("focus", handleReturn);
       document.removeEventListener("visibilitychange", handleReturn);
     };
-  }, [phase, checkoutIntentId, requestStop, abandon]);
+  }, [phase, checkoutIntentId, visible]);
 
   // Démontage : réponses tardives ignorées, popup laissée ouverte.
   useEffect(() => () => {

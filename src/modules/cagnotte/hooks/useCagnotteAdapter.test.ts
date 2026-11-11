@@ -279,6 +279,44 @@ describe("computePledgesFromResources — le panier des promesses", () => {
 
     expect(pledges).toHaveLength(0);
   });
+
+  it("`retractable` lu sur la ligne brute : sans versement ni finkey manquante", () => {
+    const pledges = computePledgesFromResources(
+      [
+        ressource([
+          { id: "u1", financerId: "u1", finkey: "a-libre", amount: 250, payment: { logs: [] } },
+          { id: "u1", financerId: "u1", finkey: "a-entame", amount: 1000, payment: { logs: [{ amount: 400, confirmation: "validated" }] } },
+          { id: "u1", financerId: "u1", amount: 250 },
+          { id: "u1", financerId: "u1", finkey: "a-cofi", amount: 250, iscofinancementftl: true },
+        ]),
+      ],
+      "u1",
+    );
+
+    expect(pledges.map((p) => [p.finkey, p.retractable])).toEqual([
+      ["a-libre", true],
+      ["a-entame", false],
+      [undefined, false],
+      ["a-cofi", false],
+    ]);
+  });
+
+  it("`paymentInProgress` lu par le lecteur de l'enveloppe, par réponse et finkey", () => {
+    const pledges = computePledgesFromResources(
+      [ressource([
+        { id: "u1", financerId: "u1", finkey: "a-encours", amount: 250, payment: { logs: [] } },
+        { id: "u1", financerId: "u1", finkey: "a-libre", amount: 250, payment: { logs: [] } },
+      ])],
+      "u1",
+      [],
+      (answerId, finkey) => answerId === "ans1" && finkey === "a-encours",
+    );
+
+    expect(pledges.map((p) => [p.finkey, p.paymentInProgress])).toEqual([
+      ["a-encours", true],
+      ["a-libre", false],
+    ]);
+  });
 });
 
 describe("generateMilestoneId — pourquoi il ne peut PAS servir de clé de garde", () => {

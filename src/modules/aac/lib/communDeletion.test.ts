@@ -51,8 +51,17 @@ describe("resolveCommunDeletionPlan", () => {
       actionIds: [],
       paymentCount: 0,
       paymentAmount: 0,
+      paymentInProgress: false,
       isBlocked: false,
     });
+  });
+
+  it("un paiement en cours bloque, même sans versement enregistré ni enveloppe", () => {
+    const plan = resolveCommunDeletionPlan(resource({ items: [item()] }), true);
+    expect(plan.isBlocked).toBe(true);
+    expect(plan.paymentCount).toBe(0);
+    expect(plan.paymentInProgress).toBe(true);
+    expect(resolveCommunDeletionPlan(null, true).isBlocked).toBe(true);
   });
 
   it("un commun sans versement reste supprimable", () => {

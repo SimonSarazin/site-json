@@ -1,13 +1,20 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router";
-import { CalendarDays } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { CalendarDays, CalendarPlus } from "lucide-react";
+import type { Project } from "@communecter/cocolight-api-client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n";
+import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
+import { useCostumAddModal } from "@/modules/profil/hooks/useCostumAddModal";
+import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
+import { useCommunProjectEntityQuery } from "@/modules/aac/hooks/useCommunProjectEntity";
 import { useCommunProjectEvents, type CommunEventsBucket } from "@/modules/aac/hooks/useCommunProjectEvents";
+import { isProjectAdmin } from "@/modules/aac/lib/communContributors";
 import { toCommunEventRow } from "@/modules/aac/lib/communEvents";
 import { SectionBodySkeleton } from "./CommunSkeletons";
 
@@ -96,15 +103,48 @@ function CommunEventList({ projectId, bucket }: { projectId: string; bucket: Com
     );
 }
 
+/**
+ * « Ajouter un événement » organisé par le projet (form costum du site s'il y en a un) ; l'agenda est relu
+ * après la création.
+ */
+function AddProjectEventButton({ project }: { project: Project }) {
+    useLoadNamespace("modules/profil");
+    const t = useT("modules/aac");
+    const queryClient = useQueryClient();
+    const modalFor = useCostumAddModal();
+    const [open, setOpen] = useState(false);
+
+    return (
+        <div className="flex justify-end">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpen(true)}>
+                <CalendarPlus className="size-3.5" aria-hidden="true" />
+                {String(t("detail.agendaSection.addCta"))}
+            </Button>
+            {open && (
+                <DynamicModal
+                    modalName={modalFor("event")}
+                    open
+                    onOpenChange={setOpen}
+                    parent={project}
+                    onCreated={() => void queryClient.invalidateQueries({ queryKey: AAC_QUERY_KEYS.COMMUN_EVENTS_PREFIX() })}
+                />
+            )}
+        </div>
+    );
+}
+
 /** L'agenda du projet d'un commun : événements à venir, puis passés. */
 export function CommunAgendaSection({ projectId }: CommunAgendaSectionProps) {
     useLoadNamespace("modules/aac");
     useLoadNamespace("modules/search");
+    const { project } = useCommunProjectEntityQuery(projectId);
 
     if (!projectId) return null;
 
     return (
         <div className="space-y-6">
+            {/* Droit de « Ajouter > Événement » du profil : admin du projet ou de son parent. */}
+            {project && isProjectAdmin(project, { checkHierarchy: true }) && <AddProjectEventButton project={project} />}
             <CommunEventList projectId={projectId} bucket="upcoming" />
             <CommunEventList projectId={projectId} bucket="past" />
         </div>

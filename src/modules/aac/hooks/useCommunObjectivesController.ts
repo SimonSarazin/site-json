@@ -33,6 +33,8 @@ import { useCommunFundingHost } from "@/modules/aac/hooks/useCommunFundingHost";
 import { useCommunProjectEntity } from "@/modules/aac/hooks/useCommunProjectEntity";
 import { AAC_QUERY_KEYS } from "@/modules/aac/constants/queryKeys";
 import { useCommunRawDepensesDocument, COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
+import { useCommunPledgeRetraction } from "@/modules/aac/hooks/useCommunPledgeRetraction";
+import { isProjectAdmin } from "@/modules/aac/lib/communContributors";
 import type { MilestoneSyncDocs } from "@/modules/cagnotte/lib/milestoneSyncContext";
 import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
 
@@ -124,6 +126,16 @@ export function useCommunObjectivesController({
 
   const { data: rawDepensesDocument, isLoading: isDepensesLoading } =
     useCommunRawDepensesDocument(resolvedAnswerId, depenseStepKey ?? undefined);
+
+  const pledgeRetraction = useCommunPledgeRetraction({
+    answerId: resolvedAnswerId,
+    depensesDocument: rawDepensesDocument,
+    depenseStepKey,
+    isCommunAdmin: cagnottePerms.isAdmin || isProjectAdmin(projectEntity, { checkHierarchy: true }),
+    isConnected,
+    currentUserId,
+    inProgressFallback: fundingEnvelopeData?.rawEnvelope,
+  });
 
   /**
    * Les LECTURES du contrôleur, distinctes de `loadingIds` qui suit les mutations.
@@ -390,6 +402,8 @@ export function useCommunObjectivesController({
     isLoadingData,
     // Les dépenses telles que le document les porte, CLÉS comprises (la liste affichée les perd).
     depensesDocument: rawDepensesDocument,
+    // Retrait d'une promesse : bouton par ligne et demande en attente de confirmation.
+    pledgeRetraction,
 
     // Dialogs : etat d'ouverture
     isCreateActionOpen,

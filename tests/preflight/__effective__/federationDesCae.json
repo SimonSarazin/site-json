@@ -30,7 +30,23 @@
       ]
     }
   },
-  "adminResources": {},
+  "adminResources": {
+    "annuaire/organizations": {
+      "source": {
+        "sourceKey": [
+          "federationDesCae"
+        ],
+        "defaultSortBy": {
+          "updated": -1
+        }
+      },
+      "create": "add-cae",
+      "edit": {
+        "enabled": true,
+        "modalName": null
+      }
+    }
+  },
   "pages": {
     "/annuaire/searchProStatic": {
       "baseParams": {
@@ -89,7 +105,14 @@
       }
     ]
   },
-  "referencement": {},
+  "referencement": {
+    "organizations": {
+      "sousTypes": [
+        "organizationsTls"
+      ],
+      "annotation": "reference.costumTypes.federationDesCae"
+    }
+  },
   "membership": {},
   "profileRelated": {}
 }

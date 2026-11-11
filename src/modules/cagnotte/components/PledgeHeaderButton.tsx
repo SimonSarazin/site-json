@@ -17,6 +17,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import "@/modules/cagnotte/i18n";
 import {isUser} from "@/lib/getTypedEntity.ts";
 import type {User} from "@communecter/cocolight-api-client";
+import { readPledgesLockedForSelection } from "@/modules/cagnotte/utils/pledgeRetraction";
 const PromessesDialog = React.lazy(() => import("./PromessesDialog"));
 
 export function PledgeHeaderButton() {
@@ -51,7 +52,7 @@ export function PledgeHeaderButton() {
     );
 
     // calcule du tableau complet des promesses (pour la modale)
-    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds) , [resources, me?.serverData?.id, orgsIds]);
+    const computedPledges = useMemo<Pledge[]>(() => computePledgesFromResources(resources, me?.serverData?.id, orgsIds, readPledgesLockedForSelection(envelope?.rawEnvelope)) , [resources, me?.serverData?.id, orgsIds, envelope?.rawEnvelope]);
 
     // Total à régler, affiché sur le bouton.
     const totalPledgesAmount = useMemo(() => totalARegler(computedPledges), [computedPledges]);

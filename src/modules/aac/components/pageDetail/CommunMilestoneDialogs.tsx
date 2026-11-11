@@ -4,6 +4,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { MilestoneEditDialog } from "@/modules/cagnotte/components/sections/parts/MilestoneEditDialog";
 import CreateMilestoneDialog from "@/modules/cagnotte/components/sections/CreateMilestoneDialog";
+import { RetractPledgeDialog } from "@/modules/cagnotte/components/parts/RetractPledgeDialog";
 import type { EditMilestoneParams } from "@/modules/cagnotte/actions/mutations/milestone";
 import type { useCommunObjectivesController } from "@/modules/aac/hooks/useCommunObjectivesController";
 import { COMMUN_RAW_DEPENSES_QUERY_KEY } from "@/modules/aac/hooks/useCommunRawDepenses";
@@ -97,6 +98,12 @@ export function CommunMilestoneDialogs({ ctrl }: { ctrl: CommunObjectivesControl
                 onRefetch={async () => {
                     await ctrl.refetchFundingEnvelope();
                 }}
+            />
+
+            <RetractPledgeDialog
+                request={ctrl.pledgeRetraction.request}
+                onClose={ctrl.pledgeRetraction.close}
+                extraInvalidate={ctrl.pledgeRetraction.extraInvalidate}
             />
         </>
     );

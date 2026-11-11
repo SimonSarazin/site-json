@@ -128,9 +128,29 @@ h1, h2, h3, h4, .font-serif, .font-display { font-weight: normal !important; }
    `<div>`, pas un `<nav>`) — sûr car ce fichier CSS n'est chargé que pour le site parent62. */
 footer nav { font-family: var(--font-serif); }
 
-/* Mini-prose : les sections `html` (mentions légales, confidentialité) posent
-   class="prose …" mais le plugin typography n'est pas chargé — on donne ici
-   la hiérarchie minimale. */
+/* Prose des sections `html` (mentions légales, confidentialité, cookies). Le plugin
+   `@tailwindcss/typography` EST chargé (`.prose` et `.prose-<palette>` sortent dans le bundle) :
+   une palette comme `prose-slate` fige la couleur du texte en gris foncé quel que soit le mode —
+   illisible sur le fond sombre (vu en prod le 09/11). On rebranche donc les variables du plugin sur
+   les tokens du thème, qui suivent le mode clair/sombre ; les configs écrivent `class="prose …"` sans
+   palette. Règles hors `@layer`, donc prioritaires sur les utilitaires. */
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--secondary-foreground);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+  color: var(--foreground);
+}
 .prose h1, .prose h2, .prose h3 { font-family: var(--font-serif); margin: 1.4em 0 0.5em; }
 .prose h1 { font-size: 1.9rem; }
 .prose h2 { font-size: 1.5rem; }

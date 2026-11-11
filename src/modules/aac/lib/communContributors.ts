@@ -46,12 +46,14 @@ export function toContributorRoles(link: unknown): string[] {
   return roles;
 }
 
+/** `checkHierarchy` : un admin du parent du projet compte aussi (`isAdmin({ checkHierarchy })` du SDK). */
 export function isProjectAdmin(
-  project: { isAdmin?: (options?: { silent?: boolean }) => boolean } | null | undefined,
+  project: { isAdmin?: (options?: { silent?: boolean; checkHierarchy?: boolean }) => boolean } | null | undefined,
+  options?: { checkHierarchy?: boolean },
 ): boolean {
   if (typeof project?.isAdmin !== "function") return false;
   try {
-    return project.isAdmin({ silent: true }) === true;
+    return project.isAdmin(options?.checkHierarchy ? { silent: true, checkHierarchy: true } : { silent: true }) === true;
   } catch {
     // `isAdmin()` lève quand l'entité n'a pas de contexte utilisateur exploitable.
     // Pas de lien vérifiable = pas de droit, jamais de page cassée.

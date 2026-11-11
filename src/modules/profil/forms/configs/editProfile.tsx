@@ -18,6 +18,11 @@ const typeOf = (ctx: EntityModalCtx): string =>
 
 export const editProfileConfig: EntityModalConfig = {
   // UN SEUL descripteur fusionné (rendu + read/write) par type — cf. profilMerged / mergeRenderPipeline.
+  // Un champ réservé à un seul costum (ex. parent62) ne passe PAS par ce descripteur générique partagé :
+  // il va dans un costumForm dédié + `profiles.citoyens.editModals` scopé au costum (cf. config
+  // sport-sante-bien-etre/maison-sport-sante-la-tampon, commit 2fe9e545) — le champ costum est alors
+  // ouvert nativement par `User._update()`/`_costumCtx.schema` (cocolight-api-client/src/api/User.ts),
+  // sans toucher à ce descripteur ni au backend PHP legacy.
   descriptor: (ctx) => MERGED_EDIT_DESCRIPTORS[typeOf(ctx)],
   title: { add: "ProfileEdit.title", edit: "ProfileEdit.title" },
   submitLabel: { add: "ProfileEdit.save", edit: "ProfileEdit.save" },
@@ -51,5 +56,7 @@ export const editProfileConfig: EntityModalConfig = {
   },
 
   // Slug changé → recharger sur la nouvelle URL (effet hors moteur, parité ancien modal).
-  afterSubmit: ({ entity }, values) => reloadOnSlugChange((entity as EntityTypes | null)?.slug, values.slug),
+  afterSubmit: (ctx, values) => {
+    reloadOnSlugChange((ctx.entity as EntityTypes | null)?.slug, values.slug);
+  },
 };

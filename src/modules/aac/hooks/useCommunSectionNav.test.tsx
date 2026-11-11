@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CommunSectionNavContext, tabbedSectionNav, useShowSection } from "./useCommunSectionNav";
+import { CommunSectionNavContext, revealSection, tabbedSectionNav, useShowSection } from "./useCommunSectionNav";
 
 /** Navigation vers une section, défilement simple et onglets (vrais onglets Radix : contenu fermé non rendu). */
 
@@ -108,6 +108,46 @@ describe("tabbedSectionNav — interface à onglets", () => {
     fireEvent.click(screen.getByRole("button", { name: "vers-inconnue" }));
 
     expect(screen.getByRole("tab", { name: "A" }).getAttribute("aria-selected")).toBe("true");
+    expect(scrolled).toEqual([]);
+  });
+});
+
+describe("revealSection", () => {
+  /** Une section dont le haut est à `top` px du haut de l'écran (768 px de haut sous jsdom). */
+  function section(top: number): HTMLElement {
+    render(<section id="actions" />);
+    const el = document.getElementById("actions")!;
+    el.getBoundingClientRect = () => ({ top }) as DOMRect;
+    return el;
+  }
+
+  it("haut de la section sous la moitié de l'écran : la page y défile", () => {
+    section(window.innerHeight);
+    revealSection("actions");
+    expect(scrolled.map((el) => el.id)).toEqual(["actions"]);
+  });
+
+  it("haut de la section au-dessus de l'écran : la page y défile", () => {
+    section(-40);
+    revealSection("actions");
+    expect(scrolled.map((el) => el.id)).toEqual(["actions"]);
+  });
+
+  it("haut de la section dans la moitié haute : pas de défilement", () => {
+    section(96);
+    revealSection("actions");
+    expect(scrolled).toEqual([]);
+  });
+
+  it("le contenu de la section revient en haut", () => {
+    const el = section(96);
+    el.scrollTop = 120;
+    revealSection("actions");
+    expect(el.scrollTop).toBe(0);
+  });
+
+  it("une section absente : rien, sans erreur", () => {
+    revealSection("absente");
     expect(scrolled).toEqual([]);
   });
 });

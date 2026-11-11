@@ -6,6 +6,8 @@ import {
   resolveCommunOwnerIds,
   fundableItemToMilestone,
   fundableItemToMilestoneRef,
+  isClosedMilestone,
+  splitOpenAndClosedMilestones,
   toMilestoneStatus,
   uniqueActionRows,
 } from "./objectiveHelpers";
@@ -136,6 +138,34 @@ describe("toMilestoneStatus", () => {
     expect(toMilestoneStatus(undefined)).toBe("open");
     expect(toMilestoneStatus("")).toBe("open");
     expect(toMilestoneStatus("archivé")).toBe("open");
+  });
+});
+
+describe("isClosedMilestone", () => {
+  it("clos ou terminé : fermé ; ouvert ou inconnu : en cours", () => {
+    expect(isClosedMilestone({ status: "close" })).toBe(true);
+    expect(isClosedMilestone({ status: "done" })).toBe(true);
+    expect(isClosedMilestone({ status: "open" })).toBe(false);
+    expect(isClosedMilestone({ status: "archivé" })).toBe(false);
+  });
+});
+
+describe("splitOpenAndClosedMilestones", () => {
+  const item = (itemId: string, status: string) => ({ itemId, status }) as unknown as CagnotteFundableItem;
+
+  it("en cours puis clos, chacun dans son ordre, avec sa position dans la liste complète", () => {
+    const { open, closed } = splitOpenAndClosedMilestones([
+      item("a", "close"),
+      item("b", "open"),
+      item("c", "done"),
+      item("d", "open"),
+    ]);
+    expect(open.map(({ item: it, index }) => `${it.itemId}:${index}`)).toEqual(["b:1", "d:3"]);
+    expect(closed.map(({ item: it, index }) => `${it.itemId}:${index}`)).toEqual(["a:0", "c:2"]);
+  });
+
+  it("liste vide : deux groupes vides", () => {
+    expect(splitOpenAndClosedMilestones([])).toEqual({ open: [], closed: [] });
   });
 });
 

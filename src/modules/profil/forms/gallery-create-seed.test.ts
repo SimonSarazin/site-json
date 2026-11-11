@@ -15,7 +15,10 @@ import type { CostumFormSchema } from "./costum/compileCostumSchema";
 
 import parent62 from "../../../../config.prod.parent62.json";
 
-const doc = (parent62 as { costumForms: Record<string, CostumFormSchema> }).costumForms["parent62-article"];
+// Cast scopé à CE SEUL document (pas à toute la map `costumForms`) : les autres costumForms du
+// parc n'ont pas forcément le même shape (ex. `parent62-citoyen`, sans `chrome.title.add`, un
+// citoyen n'étant jamais créé par ce formulaire — cf. `doc/08-module-profil.md`).
+const doc = (parent62.costumForms as Record<string, unknown>)["parent62-article"] as CostumFormSchema;
 
 // Mêmes clés que `isGalleryFieldValue` de useEntityMutation (object + added[] + removedDocIds[] + contentKey:string).
 function isGalleryFieldValue(v: unknown): boolean {

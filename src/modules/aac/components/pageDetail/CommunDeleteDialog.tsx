@@ -89,12 +89,14 @@ export function CommunDeleteDialog({
               ) : plan.isBlocked ? (
                 <>
                   <span className="block">
-                    {String(
-                      t("delete.blocked.description", undefined, {
-                        amount: formatAacAmount(plan.paymentAmount),
-                        count: String(plan.paymentCount),
-                      })
-                    )}
+                    {plan.paymentCount === 0 && plan.paymentInProgress
+                      ? String(t("delete.blocked.paymentInProgress"))
+                      : String(
+                          t("delete.blocked.description", undefined, {
+                            amount: formatAacAmount(plan.paymentAmount),
+                            count: String(plan.paymentCount),
+                          })
+                        )}
                   </span>
                   {/* Un refus nomme le geste réversible qui répond au même besoin. */}
                   <span className="block">{String(t("delete.blocked.hint"))}</span>

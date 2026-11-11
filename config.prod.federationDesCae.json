@@ -210,7 +210,8 @@
     }
   },
   "cagnotteModuleConfig": {
-    "defaultType": "aac"
+    "defaultType": "aac",
+    "pledgeRetraction": true
   },
   "header": {
     "type": "standard",
@@ -464,15 +465,6 @@
                 "icon": "handshake",
                 "modal": "add-cae",
                 "variant": "primary",
-                "requiresAdmin": false
-              },
-              {
-                "label": {
-                  "fr": "Ajouter une organisation"
-                },
-                "icon": "plus",
-                "action": "add-organization",
-                "variant": "outline",
                 "requiresAdmin": false
               }
             ]
@@ -1872,5 +1864,146 @@
         }
       }
     }
+  },
+  "auth": {
+    "menu": {
+      "kanban": true
+    }
+  },
+  "admin": {
+    "enabled": true,
+    "title": {
+      "fr": "Administration"
+    },
+    "access": {
+      "min": "siteAdmin"
+    },
+    "tabs": [
+      {
+        "id": "membres",
+        "label": {
+          "fr": "Membres"
+        },
+        "icon": "users",
+        "sections": [
+          {
+            "type": "members"
+          }
+        ]
+      },
+      {
+        "id": "annuaire",
+        "label": {
+          "fr": "Annuaire"
+        },
+        "icon": "building-2",
+        "sections": [
+          {
+            "type": "resource",
+            "entityType": "organizations",
+            "label": {
+              "fr": "CAE"
+            },
+            "source": {
+              "sourceKey": [
+                "federationDesCae"
+              ],
+              "defaultSortBy": {
+                "updated": -1
+              }
+            },
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune"
+                }
+              },
+              {
+                "path": "tags",
+                "label": {
+                  "fr": "Tags"
+                }
+              },
+              {
+                "path": "email",
+                "label": {
+                  "fr": "Contact"
+                }
+              },
+              {
+                "path": "updated",
+                "label": {
+                  "fr": "Mise à jour"
+                }
+              }
+            ],
+            "create": "add-cae",
+            "edit": "inherit",
+            "rowActions": [
+              "edit",
+              "delete",
+              "validate",
+              "reference"
+            ],
+            "bulkActions": [
+              "validate",
+              "export",
+              "delete"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "referencement",
+        "label": {
+          "fr": "Référencement"
+        },
+        "icon": "search",
+        "sections": [
+          {
+            "type": "reference",
+            "title": {
+              "fr": "Référencer une CAE existante"
+            },
+            "entityTypes": [
+              "organizations"
+            ],
+            "columns": [
+              {
+                "path": "name",
+                "label": {
+                  "fr": "Nom"
+                }
+              },
+              {
+                "path": "address.addressLocality",
+                "label": {
+                  "fr": "Commune"
+                }
+              },
+              {
+                "path": "tags",
+                "label": {
+                  "fr": "Tags"
+                }
+              },
+              {
+                "path": "source.key",
+                "label": {
+                  "fr": "Provenance"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }
