@@ -3762,22 +3762,22 @@
       }
     ],
     "copyright": {
-      "fr": "Creative Commons CC BY-SA 4.0",
-      "en": "Creative Commons CC BY-SA 4.0"
+      "fr": "Contenu CC BY-SA 4.0",
+      "en": "Content CC BY-SA 4.0"
     },
     "legalLinks": [
       {
-        "href": "https://gitlab.adullact.net/pixelhumain/site-json/-/tree/main",
+        "href": "https://notes.tiers-lieux.org/docs/df00073c-770d-4c2b-a2ab-642886be3c72/",
         "label": {
           "fr": "Logiciel libre",
           "en": "Free software"
         }
       },
       {
-        "href": "https://gitlab.adullact.net/pixelhumain/site-json/-/tree/main/doc?ref_type=heads",
+        "href": "https://notes.tiers-lieux.org/docs/1386d23b-51d4-4310-81d4-a1abb6954921/",
         "label": {
-          "fr": "Doc",
-          "en": "Docs"
+          "fr": "Documentation",
+          "en": "Documentation"
         }
       }
     ]
@@ -3925,7 +3925,7 @@
         "shadow2xl": "0px 20px 48px 0px hsl(0 0% 0% / 0.50)"
       }
     },
-    "customCSS": "#a-propos-licoop .prose > p:last-child { text-align: center; }"
+    "customCSS": "#a-propos-licoop .prose > p:last-child { text-align: center; }\n@media (min-width: 640px) { footer > .container > div:last-child { justify-content: flex-end; } }"
   },
   "auth": {
     "variant": "default",
