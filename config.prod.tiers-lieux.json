@@ -278,6 +278,17 @@
           },
           {
             "label": {
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
+          },
+          {
+            "label": {
               "fr": "API et données ouvertes",
               "en": "API and open data"
             },
@@ -360,6 +371,7 @@
           "en": "Cooperate"
         },
         "icon": "handshake",
+        "path": "/cooperer",
         "children": [
           {
             "label": {
@@ -404,17 +416,6 @@
               "en": "The support community that takes care of this resource"
             },
             "path": "/communaute"
-          },
-          {
-            "label": {
-              "fr": "La plateforme d'aiguillage",
-              "en": "The guidance platform"
-            },
-            "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
-              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
-            },
-            "path": "https://aiguillage.tiers-lieux.org/"
           }
         ]
       },
@@ -2966,8 +2967,8 @@
               "en": "About Tiers-Lieux.org"
             },
             "subtitle": {
-              "fr": "Le réseau social par et pour les tiers-lieux",
-              "en": "The social network by and for third places"
+              "fr": "Plateforme de coopération par et pour les tiers-lieux",
+              "en": "A cooperation platform by and for third places"
             },
             "align": "center",
             "size": "xl"
@@ -2977,13 +2978,14 @@
           "type": "content",
           "id": "a-propos-introduction",
           "props": {
+            "className": "py-10",
             "title": {
               "fr": "Bienvenue sur cette plateforme dédiée à la coopération entre lieux",
               "en": "Welcome to this platform dedicated to cooperation between places"
             },
             "description": {
-              "fr": "Ici, vous pouvez communiquer entre tiers-lieux, utiliser de super outils libres pour vous faciliter la vie et profiter de nombreux services proposés par les tiers-lieux eux-mêmes. Mais qu'est-ce qui fait l'originalité de Tiers-Lieux.org ? On vous dit tout ci-dessous !",
-              "en": "Here, you can connect with other third places, use great free tools to make everyday life easier, and benefit from services offered by third places themselves. So what makes Tiers-Lieux.org unique? Read on to find out."
+              "fr": "Ici, vous pouvez communiquer entre tiers-lieux, utiliser de super outils libres pour vous faciliter la vie et profiter de nombreux services proposés par les tiers-lieux eux-mêmes.\n\nVoici les services actuellement proposés :\n\n- **[Service](/services)** — Le moteur de recherche dans les services proposés par les lieux (salles de réunion, hébergements, espaces de coworking, etc..), avec aussi une page dédiée aux professionnels : [tiers-lieux.org/reservation](/reservation).\n- **[Lieux](/lieux)** — Les lieux et leurs fiches (avec événements, actualités, données, etc.) et leur observatoire.\n- **[Outils](/outils-ressources)** — Les outils pour un lieu (en partenariat avec [Lasuite.coop](https://Lasuite.coop)), mais aussi pour échanger entre lieux avec le forum et le chat, et capitaliser les connaissances avec notre wiki Movilab.\n- **[Communs](/communs)** — La base des communs globaux à l’écosystème, la possibilité de les cofinancer et de suivre les améliorations, mais aussi de remonter nos usages pour créer plus de mutualisation.\n- **[Coopérer](/cooperer)** — Un espace pour organiser la gouvernance et la vie de [Tiers-Lieux.org](http://Tiers-Lieux.org), avec notamment le diagnostic Licoop (Lieu comme commun de proximité), un espace de décision collectif et le suivi de nos événements. Mais qu’est-ce qui fait l’originalité de [Tiers-Lieux.org](http://Tiers-Lieux.org) ? On vous dit tout ci-dessous !",
+              "en": "Here, you can connect with other third places, use great free tools to make life easier, and benefit from many services offered by third places themselves.\n\nHere are the services currently available:\n\n- **[Service](/services)** — Search services offered by places (meeting rooms, accommodation, coworking spaces, etc.), with a dedicated page for professionals: [tiers-lieux.org/reservation](/reservation).\n- **[Places](/lieux)** — Places and their profiles (including events, news and data) as well as their observatory.\n- **[Tools](/outils-ressources)** — Tools for a place (in partnership with [Lasuite.coop](https://Lasuite.coop)), ways to connect with other places through the forum and chat, and a way to build shared knowledge through our Movilab wiki.\n- **[Commons](/communs)** — A directory of commons across the ecosystem, with ways to co-fund them, track improvements and share our uses to foster greater mutualisation.\n- **[Cooperate](/cooperer)** — A space to organise the governance and life of [Tiers-Lieux.org](http://Tiers-Lieux.org), including the Licoop (Place as a Local Commons) diagnosis, a collective decision-making space and event tracking. But what makes [Tiers-Lieux.org](http://Tiers-Lieux.org) unique? Find out below!"
             },
             "imagePosition": "right",
             "width": "wide"
@@ -2993,6 +2995,7 @@
           "type": "content",
           "id": "a-propos-histoire",
           "props": {
+            "className": "py-10",
             "category": {
               "fr": "Depuis 2010",
               "en": "Since 2010"
@@ -3002,8 +3005,8 @@
               "en": "A story of commons and connection"
             },
             "description": {
-              "fr": "À l'origine de Tiers-Lieux.org, nous sommes un groupe d'acteurs des tiers-lieux et des communs, attaché à l'idée de mettre les tiers-lieux en lien et d'organiser ce réseau de la façon la plus démocratique possible.\n\nDepuis 2010, nous produisons des communs, des outils, des travaux et des recherches pour permettre le développement de tiers-lieux ouverts, libres, conviviaux et partagés, pensés et pratiqués comme des communs physiques et sociaux de proximité.\n\nAvec peu de financements publics, notamment sur la question des communs, nous sommes convaincus que des pratiques démocratiques fortes et la mutualisation entre nos lieux nous permettront de dépasser les obstacles.",
-              "en": "Tiers-Lieux.org was started by a group of people involved in third places and the commons, committed to connecting third places and organising this network as democratically as possible.\n\nSince 2010, we have been creating commons, tools, projects and research to support the development of open, free, welcoming and shared third places, conceived and practised as local physical and social commons.\n\nWith limited public funding, especially for the commons, we believe that strong democratic practices and mutual support between our places can help us overcome these challenges."
+              "fr": "À l'origine de Tiers-Lieux.org, nous sommes un groupe d'acteurs des tiers-lieux et des communs, attaché à l'idée de mettre les tiers-lieux en lien et d'organiser ce réseau de la façon la plus démocratique possible.\n\nDepuis 2010, nous produisons des communs, des outils, des travaux et des recherches pour permettre le développement de tiers-lieux ouverts, libres, conviviaux et partagés, pensés et pratiqués comme des communs physiques et sociaux de proximité.\n\nNous sommes convaincus que des pratiques démocratiques fortes et plus de coopération et de mutualisation entre nos lieux permettront de dépasser les obstacles, notamment le peu de financement public sur nos communs.",
+              "en": "Tiers-Lieux.org was started by a group of people involved in third places and the commons, committed to connecting third places and organising this network as democratically as possible.\n\nSince 2010, we have been creating commons, tools, projects and research to support the development of open, free, welcoming and shared third places, conceived and practised as local physical and social commons.\n\nWe believe that strong democratic practices and greater cooperation and mutualisation between our places will help us overcome the challenges, including the lack of public funding for our commons."
             },
             "imagePosition": "right",
             "width": "wide"
@@ -3013,6 +3016,7 @@
           "type": "content",
           "id": "a-propos-naissance",
           "props": {
+            "className": "py-10",
             "title": {
               "fr": "Remettre les tiers-lieux aux commandes",
               "en": "Putting third places in the driving seat"
@@ -3029,6 +3033,7 @@
           "type": "content",
           "id": "a-propos-missions",
           "props": {
+            "className": "py-10",
             "category": {
               "fr": "Nos missions",
               "en": "Our mission"
@@ -3038,8 +3043,8 @@
               "en": "Connecting, supporting and cooperating"
             },
             "description": {
-              "fr": "- **Créer du lien** entre les tiers-lieux.\n- **Valoriser et soutenir les lieux** en donnant de la visibilité à leurs services : coworking, restauration, location de salles, hébergement et bien d'autres.\n- **Faciliter le quotidien et la coopération** grâce à une suite d'outils variés, performants et libres.\n- **Favoriser l'entraide** en proposant des outils, des moments et des lieux pour se retrouver, échanger et se soutenir.\n- **Construire une gouvernance démocratique et participative** où les lieux sont au cœur des décisions.",
-              "en": "- **Build connections** between third places.\n- **Showcase and support places** by making their services visible: coworking, food, room hire, accommodation and more.\n- **Make everyday work and cooperation easier** with a diverse suite of effective free tools.\n- **Encourage mutual support** with tools, gatherings and spaces to meet, exchange and help one another.\n- **Develop democratic, participatory governance** with places at the heart of decision-making."
+              "fr": "- **Créer du lien** entre les tiers-lieux.\n- **Valoriser et soutenir les lieux** en donnant de la visibilité à leurs services : coworking, restauration, location de salles, hébergement et bien d'autres.\n- **Faciliter le quotidien et la coopération** grâce à une suite d'outils variés, performants et libres.\n- **Favoriser l’entraide** en mutualisant des outils, en proposant des moments et des lieux pour se retrouver, échanger et se soutenir.\n- **Construire une gouvernance démocratique et participative** où les lieux sont au cœur des décisions.",
+              "en": "- **Build connections** between third places.\n- **Showcase and support places** by making their services visible: coworking, food, room hire, accommodation and more.\n- **Make everyday work and cooperation easier** with a diverse suite of effective free tools.\n- **Encourage mutual support** by sharing tools and offering opportunities and spaces to meet, exchange and support one another.\n- **Develop democratic, participatory governance** with places at the heart of decision-making."
             },
             "imagePosition": "right",
             "width": "wide"
@@ -3065,6 +3070,7 @@
           "type": "content",
           "id": "a-propos-licoop",
           "props": {
+            "className": "py-10",
             "category": {
               "fr": "La mention Licoop",
               "en": "The Licoop designation"
@@ -3074,8 +3080,8 @@
               "en": "Supporting places committed to the commons"
             },
             "description": {
-              "fr": "Pour défendre l'idée des tiers-lieux et éviter son dévoiement marchand ou institutionnel, nous proposons la mention « Licoop ». Les Licoop sont des tiers-lieux engagés dans les communs, la gouvernance partagée et l'Économie sociale et solidaire. Par leurs pratiques, ils défendent l'idée même de tiers-lieu (au sens d'Oldenburg et Burret) et contribuent à rendre ces lieux accessibles à toutes et tous.\n\nLa qualification s'inspire du [système participatif de garantie (SPG)](https://fr.wikipedia.org/wiki/Syst%C3%A8me_participatif_de_garantie), utilisé notamment par Nature & Progrès.\n\n**Première étape : l'auto-diagnostic.** Les membres du tiers-lieu répondent à un questionnaire qui permet d'évaluer les pratiques collectives autour de trois thèmes : le lieu pensé comme un commun, le lieu de sociabilité et le respect du manifeste convivialiste. C'est aussi un outil pour prendre du recul, se poser les bonnes questions et progresser ensemble. L'auto-diagnostic situe le lieu sur l'échelle Licoop.\n\n**Prochaine étape : la validation par les pairs.** L'auto-diagnostic sera étudié par deux lieux déjà Licoop qui connaissent le lieu candidat. La validation du niveau Licoop lui donnera des droits de participation aux décisions de Tiers-Lieux.org. Un lieu est certifié Licoop à partir du niveau 2 et vise le niveau 3 sur la plupart des questions.",
-              "en": "To defend the idea of third places and prevent it from being diverted for commercial or institutional purposes, we propose the “Licoop” designation. Licoop places are committed to the commons, shared governance and the social and solidarity economy. Through their practices, they uphold the very idea of a third place (as described by Oldenburg and Burret) and help make these places accessible to everyone.\n\nThe designation is inspired by the [Participatory Guarantee System (PGS)](https://en.wikipedia.org/wiki/Participatory_guarantee_system), used for example by Nature & Progrès.\n\n**First step: self-assessment.** Members of a third place answer a questionnaire about collective practices across three themes: the place as a commons, the place as a space for social connection, and respect for the convivialist manifesto. It is also a chance to reflect, ask the right questions and improve together. The self-assessment positions the place on the Licoop scale.\n\n**Next step: peer review.** The self-assessment will be reviewed by two Licoop places that know the applicant. Validation of the Licoop level will grant the place rights to participate in Tiers-Lieux.org decisions. A place is certified Licoop from level 2 and aims for level 3 on most questions."
+              "fr": "Pour défendre l'idée des tiers-lieux et éviter son dévoiement marchand ou institutionnel, nous proposons la mention « Licoop ». Les Licoop sont des tiers-lieux engagés dans les communs, la gouvernance partagée et l'Économie sociale et solidaire. Par leurs pratiques, ils défendent l'idée même de tiers-lieu (au sens d'Oldenburg et Burret) et contribuent à rendre ces lieux accessibles à toutes et tous.\n\nLa qualification Licoop s’inspire du **[système participatif de garantie (SPG)](https://fr.wikipedia.org/wiki/Syst%C3%A8me_participatif_de_garantie)**, utilisé notamment par Nature & Progrès. Elle s'obtient en 2 étapes :\n\n**Première étape : l'auto-diagnostic.** Les membres du tiers-lieu répondent à un questionnaire qui permet d'évaluer les pratiques collectives autour de trois thèmes : le lieu pensé comme un commun, le lieu de sociabilité et le respect du manifeste convivialiste. C'est aussi un outil pour prendre du recul, se poser les bonnes questions et progresser ensemble. L'auto-diagnostic situe le lieu sur l'échelle Licoop.\n\n**Seconde étape : la validation par les pairs.** L'auto-diagnostic sera étudié par deux lieux déjà Licoop qui connaissent le lieu candidat. La validation du niveau Licoop lui donnera des droits de participation aux décisions de Tiers-Lieux.org. Un lieu obtient la mention Licoop à partir du niveau 2 et si il vise le niveau 3 sur la plupart des questions.\n\n**[Pour rejoindre les lieux Licoop, remplissez votre diagnostic](/coform/6876c3e58fa8df3c7f024253/place)**",
+              "en": "To defend the idea of third places and prevent it from being diverted for commercial or institutional purposes, we propose the “Licoop” designation. Licoop places are committed to the commons, shared governance and the social and solidarity economy. Through their practices, they uphold the very idea of a third place (as described by Oldenburg and Burret) and help make these places accessible to everyone.\n\nThe Licoop designation is inspired by the **[Participatory Guarantee System (PGS)](https://en.wikipedia.org/wiki/Participatory_guarantee_system)**, used for example by Nature & Progrès. It is obtained in two steps:\n\n**First step: self-assessment.** Members of a third place answer a questionnaire about collective practices across three themes: the place as a commons, the place as a space for social connection, and respect for the convivialist manifesto. It is also a chance to reflect, ask the right questions and improve together. The self-assessment positions the place on the Licoop scale.\n\n**Next step: peer review.** The self-assessment will be reviewed by two Licoop places that know the applicant. Validation of the Licoop level will grant the place rights to participate in Tiers-Lieux.org decisions. A place is certified Licoop from level 2 and aims for level 3 on most questions.\n\n**[To join the Licoop places, complete your self-assessment](/coform/6876c3e58fa8df3c7f024253/place)**"
             },
             "links": [
               {
@@ -3094,6 +3100,7 @@
           "type": "content",
           "id": "a-propos-gouvernance",
           "props": {
+            "className": "py-10",
             "category": {
               "fr": "Gouvernance partagée",
               "en": "Shared governance"
@@ -3123,6 +3130,7 @@
           "type": "content",
           "id": "a-propos-contact",
           "props": {
+            "className": "py-10",
             "category": {
               "fr": "Contact",
               "en": "Contact"
@@ -3148,14 +3156,14 @@
                   "fr": "Nous contacter sur le forum",
                   "en": "Contact us on the forum"
                 },
-                "href": "https://forum.tiers-lieux.org/g/Tiers-lieux.org"
+                "href": "https://forum.tiers-lieux.org/new-message?username=Tiers-lieux.org"
               },
               {
                 "label": {
                   "fr": "Nous contacter sur le chat Tiers-lieux.org",
                   "en": "Contact us on the Tiers-lieux.org chat"
                 },
-                "href": "https://chat.tiers-lieux.org/#/room/!bmKeDvkHQzfhlRHpUc:tiers-lieux.org?via=tiers-lieux.org&via=matrix.org&via=lamyne.org"
+                "href": "https://chat.tiers-lieux.org/#/room/!bmKeDvkHQzfhlRHpUc:tiers-lieux.org?via=tiers-lieux.org"
               }
             ],
             "imagePosition": "right",
@@ -3571,6 +3579,97 @@
           }
         }
       ]
+    },
+    {
+      "path": "/cooperer",
+      "title": {
+        "fr": "Coopérer",
+        "en": "Cooperate"
+      },
+      "seo": {
+        "title": {
+          "fr": "Coopérer - Tiers-Lieux.org",
+          "en": "Cooperate - Tiers-Lieux.org"
+        },
+        "description": {
+          "fr": "Les espaces pour participer à la gouvernance, à la vie collective et à la coopération de Tiers-Lieux.org.",
+          "en": "Ways to take part in the governance, community life and cooperation of Tiers-Lieux.org."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "cooperer-title",
+          "props": {
+            "title": {
+              "fr": "Coopérer",
+              "en": "Cooperate"
+            },
+            "subtitle": {
+              "fr": "Gouvernance, entraide et vie collective autour de Tiers-Lieux.org.",
+              "en": "Governance, mutual support and community life around Tiers-Lieux.org."
+            }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "cooperer-menu",
+          "props": {
+            "columns": 3,
+            "layout": "grid",
+            "showHeader": false,
+            "items": [
+              {
+                "title": {
+                  "fr": "Auto-diagnostic du lieu comme Licoop",
+                  "en": "Place self-diagnosis as Licoop"
+                },
+                "text": {
+                  "fr": "Un diagnostic dédié aux lieux comme communs de proximité (Licoop)",
+                  "en": "A diagnosis dedicated to places as local commons (Licoop)"
+                },
+                "href": "/coform/6876c3e58fa8df3c7f024253/place"
+              },
+              {
+                "title": {
+                  "fr": "Actus & événements",
+                  "en": "News & events"
+                },
+                "text": {
+                  "fr": "L'actualité et les événements autour de tiers-lieux.org",
+                  "en": "News and events around tiers-lieux.org"
+                },
+                "href": "/actualites"
+              },
+              {
+                "title": {
+                  "fr": "Décider ensemble",
+                  "en": "Decide together"
+                },
+                "text": {
+                  "fr": "Bientôt : Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu",
+                  "en": "Learning to collectively govern our shared infrastructure and the third-place topic"
+                },
+                "href": "#"
+              },
+              {
+                "title": {
+                  "fr": "La communauté support",
+                  "en": "The support community"
+                },
+                "text": {
+                  "fr": "La communauté support qui prend soin de cette ressource",
+                  "en": "The support community that takes care of this resource"
+                },
+                "href": "/communaute"
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "footer": {
@@ -3826,7 +3925,7 @@
         "shadow2xl": "0px 20px 48px 0px hsl(0 0% 0% / 0.50)"
       }
     },
-    "customCSS": ""
+    "customCSS": "#a-propos-licoop .prose > p:last-child { text-align: center; }"
   },
   "auth": {
     "variant": "default",
