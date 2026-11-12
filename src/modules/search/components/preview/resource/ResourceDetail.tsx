@@ -29,7 +29,7 @@ export interface ResourceDetailProps {
 /**
  * Détail d'une ressource de tiers-lieu (salle, poste de coworking, hébergement) — UNE présentation pour
  * la fiche du lieu (`ProfilTiersLieuxAbout`) et l'annuaire des ressources (`PreviewResourceDirectory`) :
- * photos + pastille de capacité, puis nom, tarifs, surface, listes, textes libres, actions. Purement
+ * photos + pastille de capacité, puis nom, tarifs, surface, textes libres, listes, actions. Purement
  * visuel : chaque appelant traduit et met en forme ses propres données.
  */
 export function ResourceDetail({
