@@ -1314,11 +1314,15 @@ const CookieConsentSectionSchema = z.object({
     settingsLabel: LocalizedString.optional(),
     policyUrl: z.string().optional(),
     position: z.enum(["bottom", "top", "bottom-left", "bottom-right"]).default("bottom"),
+    /** `true` : panneau de préférences DANS le flux de la page (page cookies, opposition), toujours affiché ; sinon bandeau flottant, caché dès qu'un choix est enregistré. */
+    inline: z.boolean().optional(),
     categories: z.array(z.object({
       id: z.string(),
       label: LocalizedString,
       description: LocalizedString,
       required: z.boolean().default(false),
+      /** Pré-cochée tant qu'aucun choix n'est enregistré — pour une catégorie en OPPOSITION (mesure d'audience exemptée, `consent: "opt-out"`), afin que le panneau reflète la mesure active. */
+      defaultOn: z.boolean().optional(),
     })).optional(),
   }),
 });
@@ -2215,9 +2219,28 @@ export type Footer = z.infer<typeof Footer>;
 /*───────────────────────────────────────────────────────────────*/
 /* 6. Intégrations externes & features                           */
 /*───────────────────────────────────────────────────────────────*/
+/**
+ * Mesure d'audience, chargée côté client par `IntegrationsLoader` (jamais au SSR).
+ * Providers CÂBLÉS : `matomo` et `ga4` ; les autres valeurs sont acceptées par le
+ * schéma mais ignorées (avertissement console en dev). Les replis indiqués sont
+ * ceux DU CODE — la config n'est jamais parsée par Zod au runtime (gotcha #13).
+ */
 const AnalyticsIntegration = z.object({
   provider: z.enum(["ga4", "matomo", "plausible", "posthog", "mixpanel", "amplitude"]),
+  /** Matomo : `idSite` numérique ; GA4 : identifiant de mesure `G-…`. Un id Matomo non numérique désactive la mesure. */
   id: z.string(),
+  /** Matomo : URL de l'instance, slash final compris (`https://communecter.matomo.cloud/`). */
+  url: z.string().optional(),
+  /** Matomo : URL du script si elle diffère de `${url}matomo.js` — une instance `*.matomo.cloud` est servie depuis `cdn.matomo.cloud` sans rien préciser. */
+  scriptUrl: z.string().optional(),
+  /** Matomo : cookies de suivi. Repli code `false` = sans cookie (mesure exemptée de consentement au sens CNIL, avec IP anonymisée côté instance). */
+  cookies: z.boolean().optional(),
+  /** Honorer l'en-tête Do Not Track du navigateur. Repli code `true`. */
+  respectDnt: z.boolean().optional(),
+  /** `opt-out` (repli code) : mesure active jusqu'au refus explicite de la catégorie `analytics` ; `opt-in` : rien tant qu'elle n'est pas acceptée (bandeau `consent` requis). */
+  consent: z.enum(["opt-out", "opt-in"]).optional(),
+  /** Ne mesurer que sur l'hôte de `VITE_SITE_PUBLIC_URL` (repli code `true`) : exclut le dev, l'amorce `*.00.re` et tout hôte jumeau. */
+  publicHostOnly: z.boolean().optional(),
   config: z.record(z.string(), z.any()).optional(),
 });
 
@@ -2456,6 +2479,12 @@ export const SiteConfig = z.object({
     }),
   footer: Footer,
   integrations: Integrations.optional(),
+  /**
+   * Bandeau de consentement GLOBAL (mêmes props que la section `cookieConsent`), monté par
+   * `SiteShell` sur toutes les pages après hydratation. Son choix pour la catégorie `analytics`
+   * pilote `integrations.analytics` (clé `cookie-consent` du localStorage, `src/lib/consent.ts`).
+   */
+  consent: CookieConsentSectionSchema.shape.props.optional(),
   features: z.array(FeatureFlag).optional(),
   theme: ThemeConfig.optional(),
   performance: PerformanceConfig.optional(),

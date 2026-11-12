@@ -20,7 +20,11 @@
   "MembersSection": {
     "invite": "Inviter",
     "invitedTab": "Invités ({{count}})",
-    "noCarrier": "Aucune entité porteuse (carrier) : la gestion des membres nécessite un costum porteur."
+    "noCarrier": "Aucune entité porteuse (carrier) : la gestion des membres nécessite un costum porteur.",
+    "mail": "Envoyer un e-mail",
+    "selectHint": "Cochez les membres destinataires puis cliquez sur « Envoyer un e-mail ».",
+    "selectedCount": "{{count}} sélectionné(s)",
+    "cancelSelection": "Annuler la sélection"
   },
   "AdminResourceTable": {
     "preview": "Aperçu",
@@ -33,6 +37,9 @@
     "badgePending": "En attente",
     "badgeValidated": "Validé",
     "edit": "Éditer",
+    "duplicate": "Dupliquer",
+    "duplicateNamePrefix": "Copie de {{name}}",
+    "duplicateFilesPartial": "Fiche dupliquée, mais {{failed}} fichier(s) sur {{total}} n'ont pas pu être recopiés — à rajouter manuellement.",
     "validate": "Valider",
     "invalidate": "Dévalider",
     "reference": "Référencer",
@@ -72,7 +79,9 @@
     "statusUnset": "Non renseigné",
     "statusSuccess": "Statut mis à jour : {{state}}",
     "statusError": "Échec de la mise à jour du statut",
-    "bulkTransfer": "Migrer la propriété"
+    "bulkTransfer": "Migrer la propriété",
+    "bulkMail": "Envoyer un e-mail",
+    "bulkMailNoEmail": "{{count}} fiche(s) sans adresse e-mail ne recevront pas le message."
   },
   "AdminExportSection": {
     "title": "Export CSV",
@@ -209,7 +218,8 @@
   "DashboardKpis": {
     "trendMonthly": "+{{added}} ce mois-ci · {{delta}} vs mois précédent",
     "membersPending": "en attente de validation",
-    "analyticsPending": "Mesure d'audience à raccorder (outil RGPD à venir)"
+    "analyticsPending": "Mesure d'audience à raccorder (outil RGPD à venir)",
+    "openLink": "Ouvrir"
   },
   "AdminOwnershipMigration": {
     "title": "Migration d'appropriation",
@@ -308,5 +318,23 @@
     "error": "Échec de la copie de « {{name}} »",
     "noApi": "API non initialisée",
     "badResponse": "Réponse inattendue du serveur"
+  },
+  "AdminMailing": {
+    "title": "Envoi d'e-mail",
+    "subtitle": "Le message sera envoyé séparément à chaque destinataire sélectionné.",
+    "recipients": "Destinataires",
+    "noRecipient": "Aucun destinataire sélectionné",
+    "remove": "Retirer {{name}}",
+    "tooMany": "{{max}} destinataires maximum par envoi.",
+    "subject": "Objet",
+    "subjectPlaceholder": "Objet du mail",
+    "message": "Message",
+    "unsubscribeNote": "Un lien « ne plus recevoir de mail » est ajouté automatiquement au pied du message.",
+    "cancel": "Annuler",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "sent": "Votre e-mail a bien été envoyé à {{count}} destinataire(s)",
+    "error": "Envoi impossible",
+    "failed": "Un problème s'est produit, l'envoi du mail est interrompu."
   }
 }

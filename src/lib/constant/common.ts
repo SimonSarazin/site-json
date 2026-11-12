@@ -88,3 +88,5 @@ export const getMaptilerApiKey = () => readEnv("VITE_MAPTILER_API_KEY", "");
  * la variable n'est pas déployée.
  */
 export const getSitePublicUrl = () => readEnv("VITE_SITE_PUBLIC_URL", "") || getServerUrl();
+/** La même variable SANS repli : `""` quand elle n'est pas déployée (mesure d'audience : un hôte public inconnu ne mesure pas). */
+export const getSitePublicUrlConfigured = () => readEnv("VITE_SITE_PUBLIC_URL", "");

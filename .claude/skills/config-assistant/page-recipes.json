@@ -144,13 +144,13 @@
     "title",
     "content",
     "content",
-    "title",
+    "content",
+    "content",
     "categories-grid",
-    "features-glass",
-    "title",
+    "cta",
     "content"
    ],
-   "rythme": "`title` ouvre, puis on ALTERNE les registres : texte fondateur (`content`, avec le lien vers le document d'origine) → l'équipe en texte + visuel cliquable (`content`) → les familles d'acteurs en cartes (`categories-grid`) → les valeurs en cartes-icônes (`features-glass`, libellés courts qui renvoient à la page portant le texte intégral) → la lettre d'information, visuel à gauche (`content`). Les deux ÉNONCÉS de la page — l'objectif du réseau, la définition de la parentalité — partagent le même moule : un `title` centré, titre + paragraphe unique. Une phrase seule porte mieux en énoncé qu'en corps de page, et deux énoncés traités pareil se répondent. Trois `content` d'affilée fatiguent ; DEUX à la suite passent. Pas de `cta` ici : la page se termine sur un bloc qui porte déjà son propre lien — un appel à l'action de plus ferait doublon."
+   "rythme": "`title` (hero) ouvre, puis QUATRE `content` d'affilée portent tout le texte de la page, non centrés comme le reste du site : texte fondateur (avec le lien vers le document d'origine) → définition de la parentalité → objectif du réseau (seul des quatre à porter une vraie liste à puces markdown, les autres registres n'en acceptent pas) → l'équipe en texte + visuel cliquable. Puis les familles d'acteurs en cartes (`categories-grid`) → un `cta` unique vers la page qui porte le détail des valeurs (la Charte), plutôt que de les dupliquer ici → la lettre d'information, visuel à gauche (`content`). Décision explicite du client (relecture du 09/11) : la lecture continue d'un bloc à l'autre prime sur la variation des registres."
   },
   {
    "id": "page-observatoire",

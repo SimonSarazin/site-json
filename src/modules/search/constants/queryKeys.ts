@@ -156,6 +156,13 @@ export const SEARCH_QUERY_KEYS = {
   RESOURCES_IN_PERIMETER: (ids: readonly string[], perimeter: Record<string, unknown>) =>
     ["search-resources-in-perimeter", ids, perimeter] as const,
   /**
+   * Type de la fiche de chaque organisation usagère (`reservations.usage.schoolOrgTypes`).
+   *
+   * Producteur : `useUsagerTypesQuery`. Données publiques. Identifiants TRIÉS par l'appelant : même
+   * ensemble, même clé.
+   */
+  USAGER_TYPES: (ids: readonly string[]) => ["search-usager-types", ids] as const,
+  /**
    * Réservations d'un FORMULAIRE qui pointent une ressource, d'où le filtre créneau du bandeau
    * (`searchHeader.slotFilter`) déduit les ressources occupées.
    *

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 import type { Reservation, ReservationSlot } from "./reservations";
 import { DAY_KEYS } from "./schedules";
-import { EXCLUDE_TYPE } from "./searchByFieldsToQuery";
+import { EXCLUDE_TYPE, INCLUDE_TYPE } from "./searchByFieldsToQuery";
 import {
   activeSlotParam,
   amplitudeLabels,
@@ -324,6 +324,13 @@ describe("slotFilter — état partagé", () => {
     });
     expect(activeSlotParam(next, "creneau")).toBe("monday.thursday_15h00-18h00");
     expect(activeSlotParam(next, "autre")).toBeNull();
+  });
+
+  it("publie au besoin une restriction (filtre de statut) : même entrée, autre type", () => {
+    const next = withSlotEntry({}, "statut", "open", [A], INCLUDE_TYPE);
+    expect(next).toEqual({ "statut:open": { field: "_id", type: INCLUDE_TYPE, value: [A] } });
+    expect(withSlotEntry(next, "statut", "open", [A], INCLUDE_TYPE)).toBe(next);
+    expect(withSlotEntry(next, "statut", "open", [A])).not.toBe(next);
   });
 
   it("rend l'état LUI-MÊME quand rien ne change", () => {

@@ -2,7 +2,7 @@ import { Suspense, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { lazy } from "vite-preload";
 import { useQueryClient } from "@tanstack/react-query";
-import { Building2, CalendarClock, Pencil, Plus } from "lucide-react";
+import { Building2, CalendarClock, History, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -18,13 +18,15 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
-import { formatHours } from "@/modules/observatoire/installation";
+import { formatHours, weeklyAmplitudeMinutes } from "@/modules/observatoire/installation";
+import { computePoiUsage } from "@/modules/observatoire/usage";
 import { KpiCard } from "@/modules/observatoire/components/KpiCard";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { useBookingChecks } from "../../hooks/useBookingChecks";
 import { usePeriodFilter } from "../../hooks/usePeriodFilter";
 import { resourcesReservations, useReservationsQuery } from "../../hooks/useReservationsQuery";
 import { useUpdateSlotHours } from "../../hooks/useUpdateSlotHours";
+import { useUsageMeasure } from "../../hooks/useUsageMeasure";
 import { DAY_KEYS, type DayKey } from "../../lib/schedules";
 import {
   buildBookingGrid,
@@ -42,7 +44,13 @@ import {
 import type { PeriodRange } from "../../lib/reservationBooking";
 import { buildReservationPrefill } from "../../lib/reservationPrefill";
 import { formatPeriodShort, formatReservationPeriod, slotHoursContext } from "../../lib/reservationPeriod";
-import { formatReservationHours, sumReservationHours, weeklyReferenceDay } from "../../lib/reservationHours";
+import {
+  formatReservationHours,
+  formatUsageShare,
+  formatUsageSummary,
+  sumReservationHours,
+  weeklyReferenceDay,
+} from "../../lib/reservationHours";
 import { localIsoDay } from "../../lib/slotFilter";
 import { DEFAULT_PREVIEW_PARAM, type ReservationsConf } from "../../schema";
 import { PeriodFilter } from "./PeriodFilter";
@@ -51,6 +59,10 @@ import { SlotHoursDialog } from "./SlotHoursDialog";
 // Modale CoForm en lazy : le chunk coform ne doit être tiré qu'à la première
 // demande de réservation, jamais à l'affichage de la fiche.
 const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal"));
+// Historique d'une réservation (`answerChanges`), ouvert par un gestionnaire : même règle de chargement.
+const AnswerActivityDialog = lazy(() =>
+  import("@/modules/coform/components/AnswerActivityDialog").then((m) => ({ default: m.AnswerActivityDialog })),
+);
 
 type Translate = ReturnType<typeof useT>;
 
@@ -119,7 +131,8 @@ function SlotBlock({ block, t, fill = false }: { block: WeeklySlotBlock; t: Tran
   );
 }
 
-/** Case libre de la grille de réservation : bouton d'ouverture du formulaire. */
+/** Case libre de la grille de réservation : bouton d'ouverture du formulaire — ou, sans `onBook`, la
+ *  mention « Libre » non cliquable que la mesure d'usage (`conf.usage`) montre à tout visiteur. */
 function FreeCell({
   cell,
   t,
@@ -127,8 +140,15 @@ function FreeCell({
 }: {
   cell: BookingCell;
   t: Translate;
-  onBook: (cell: BookingCell) => void;
+  onBook?: (cell: BookingCell) => void;
 }) {
+  if (!onBook) {
+    return (
+      <div className="flex h-full min-h-8 w-full items-center justify-center rounded-md border border-dashed border-border/50 text-[11px] text-muted-foreground/80">
+        {t("PreviewReservations.freeShort")}
+      </div>
+    );
+  }
   return (
     <button
       type="button"
@@ -296,6 +316,25 @@ export default function PreviewReservations({
     [adding, conf, resourceId, resourceName],
   );
 
+  // Mesure d'usage (opt-in `conf.usage`) : occupé, école / clubs, libre et taux de l'équipement, sur les
+  // créneaux affichés et la même date de départ que les heures — visible de tous, comme les cases libres.
+  const usageConf = conf.usage;
+  const usageMeasure = useUsageMeasure(shown, usageConf);
+  const usagerTypes = usageMeasure.types;
+  // Résumé montré une fois les types des fiches arrivés, jamais sans eux : la part école / clubs serait
+  // fausse (réservations sans type d'usager comptées « non précisées »).
+  const usageReady = !usageMeasure.loading && !usageMeasure.failed;
+  const usage = useMemo(
+    () =>
+      usageConf
+        ? computePoiUsage(shown, [resourceId], range?.periodStart ?? today, usagerTypes, usageConf).get(resourceId)
+        : undefined,
+    [usageConf, shown, resourceId, range, today, usagerTypes],
+  );
+  const amplitudeMinutes = usageConf ? weeklyAmplitudeMinutes(usageConf.referenceAmplitude) : 0;
+  // Historique d'une réservation (réponse CoForm) ouvert par un gestionnaire : identifiant de la réponse.
+  const [historyFor, setHistoryFor] = useState<string | null>(null);
+
   // Contrôles de la saisie (`periods`), communs à tous les formulaires d'ajout : avertissement EN DIRECT sous
   // chaque créneau, puis refus d'ENREGISTRER rejoué sur ce que le formulaire envoie vraiment — heures modifiées,
   // créneaux ajoutés — contre les réservations RELUES de l'équipement ; après l'enregistrement, les fiches et le
@@ -355,6 +394,8 @@ export default function PreviewReservations({
                     <td key={cell.cell.key} className="align-top">
                       {canBook ? (
                         <FreeCell cell={cell.cell} t={t} onBook={handleBook} />
+                      ) : usageConf ? (
+                        <FreeCell cell={cell.cell} t={t} />
                       ) : (
                         <div className="h-full min-h-8 rounded-md border border-dashed border-border/40" />
                       )}
@@ -408,6 +449,9 @@ export default function PreviewReservations({
             size="lg"
           />
         </div>
+      )}
+      {usage && usageReady && !isLoading && !isError && (
+        <p className="mt-3 text-sm text-muted-foreground">{formatUsageSummary(usage, t)}</p>
       )}
 
       {periods && (
@@ -496,7 +540,12 @@ export default function PreviewReservations({
                       les rapproche du nom à travers le `py-4` du déclencheur. */}
                   {(hours || (periodsByGroup && periodsByGroup[gi].length > 0)) && (
                     <div className="col-span-2 -mt-5 space-y-0.5 pb-4 pl-[1.125rem] text-xs text-muted-foreground">
-                      {hours && <p>{formatReservationHours(hours.byGroup[gi], t)}</p>}
+                      {hours && (
+                        <p>
+                          {formatReservationHours(hours.byGroup[gi], t)}
+                          {usageConf && ` · ${formatUsageShare(hours.byGroup[gi].weeklyMinutes, amplitudeMinutes, t)}`}
+                        </p>
+                      )}
                       {periodsByGroup && periodsByGroup[gi].length > 0 && (
                         <p>{periodsByGroup[gi].map((p) => formatReservationPeriod(p, t)).join(" · ")}</p>
                       )}
@@ -513,6 +562,20 @@ export default function PreviewReservations({
                         <div className="flex flex-wrap items-center gap-2">
                           {r.activity && <span className="font-medium">{r.activity}</span>}
                           {r.bookingType && <Badge variant="secondary">{r.bookingType}</Badge>}
+                          {/* Historique des modifications (date, auteur) — les gestionnaires qui peuvent
+                              modifier les heures, seuls à en avoir l'usage. */}
+                          {canEditHours && r.id && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="ml-auto h-6 gap-1 px-1.5 text-xs text-muted-foreground"
+                              onClick={() => setHistoryFor(r.id)}
+                            >
+                              <History className="h-3 w-3" aria-hidden />
+                              {t("PreviewReservations.history")}
+                            </Button>
+                          )}
                         </div>
                         {(r.periodStart || r.periodEnd) && (
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -674,6 +737,17 @@ export default function PreviewReservations({
           onCheck={checkHoursLive}
           t={t}
         />
+      )}
+
+      {historyFor && (
+        <Suspense fallback={null}>
+          <AnswerActivityDialog
+            open
+            onOpenChange={(next) => { if (!next) setHistoryFor(null); }}
+            answerId={historyFor}
+            stepNames={{ [conf.step]: t("PreviewReservations.historyStep") }}
+          />
+        </Suspense>
       )}
     </section>
   );

@@ -6,6 +6,14 @@ import { TOKEN_MATCH_TYPE, tokenMatchPattern } from "./tokenMatch";
  *  `$nin`. Défini ICI, chez le traducteur, et non chez son producteur (`slotFilter.ts`) : ce module est
  *  chargé par toutes les listes, il ne doit pas tirer la logique des réservations. */
 export const EXCLUDE_TYPE = "exclude";
+/** Type d'entrée `searchByFields` : RESTRICTION calculée par son producteur (filtre de statut d'ouverture :
+ *  les équipements d'un statut) → `$in`, en intersection avec le `$in` que posent les autres entrées du
+ *  champ, quel que soit leur ordre — une restriction n'élargit jamais la liste. Même raison d'être ici que
+ *  `EXCLUDE_TYPE`. */
+export const INCLUDE_TYPE = "include";
+/** Identifiant qui n'existe pas : seule façon de dire « aucun résultat », le backend ignorant un `$in` vide
+ *  (il rendrait TOUT). */
+export const NO_MATCH_ID = "000000000000000000000000";
 
 /**
  * Traduit le `searchByFields` du `PageFilters` (filtres dynamiques : answers
@@ -46,6 +54,9 @@ export function searchByFieldsToQuery(
   // Champs MULTI-VALEURS (`match: "token"`) : valeurs cochées regroupées par champ, comparées
   // élément par élément d'une liste « a, b » au lieu d'à l'identique (cf. tokenMatch.ts).
   const tokenGroups = new Map<string, string[]>();
+  // Restrictions calculées (`INCLUDE_TYPE`), par champ : appliquées APRÈS la boucle, sur le `$in` final — une
+  // entrée ordinaire traitée après une restriction l'élargirait sinon (son `$in` s'ajoute à l'existant).
+  const includes = new Map<string, string[][]>();
 
   for (const { field, type, value } of Object.values(searchByFields)) {
     if (type === "scopeList") {
@@ -91,6 +102,10 @@ export function searchByFieldsToQuery(
       }
       continue;
     }
+    if (type === INCLUDE_TYPE) {
+      if (Array.isArray(value)) includes.set(field, [...(includes.get(field) ?? []), value as string[]]);
+      continue;
+    }
     if (type === EXCLUDE_TYPE) {
       // Exclusion CALCULÉE par son producteur (filtre créneau : ressources occupées) → `$nin`, cumulée
       // avec une exclusion du même champ et compatible avec un `$in` (le backend applique les deux).
@@ -109,6 +124,13 @@ export function searchByFieldsToQuery(
         filters[field].$in = Array.from(new Set([...existing, ...value]));
       }
     }
+  }
+
+  for (const [field, restrictions] of includes) {
+    // Liste VIDE = aucun équipement retenu (le producteur ne publie qu'une fois calculé) : aucun résultat.
+    let ids = (filters[field]?.$in as string[] | undefined) ?? restrictions[0];
+    for (const allowed of restrictions) ids = ids.filter((v) => allowed.includes(v));
+    filters[field] = { ...(filters[field] ?? {}), $in: ids.length > 0 ? ids : [NO_MATCH_ID] };
   }
 
   // ET de OU : un `$or` par champ de réponse (les valeurs cochées d'un groupe sont

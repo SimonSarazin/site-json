@@ -209,6 +209,14 @@ describe("parseReservationAnswer", () => {
     expect(r.periodEnd).toBeUndefined();
   });
 
+  it("lit le type d'usager de l'import, valeurs accumulées gardées telles quelles, seulement si fields.userType est configuré", () => {
+    const sd = answerData({ fUserType: "Etablissement scolaire | Association" });
+
+    const conf = { step: STEP, fields: { ...FIELDS, userType: "fUserType" } };
+    expect(parseReservationAnswer(sd, conf)!.userType).toBe("Etablissement scolaire | Association");
+    expect(parseReservationAnswer(sd, CONF)!.userType).toBeUndefined();
+  });
+
   it("ne filtre pas une answer selon un statut de validation", () => {
     // Le rôle « validé » n'existe pas dans le mapping : une answer avec un
     // champ Valide="Non" en base est parsée normalement (décision actée).

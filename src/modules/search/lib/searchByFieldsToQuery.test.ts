@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { EXCLUDE_TYPE, searchByFieldsToQuery } from "./searchByFieldsToQuery";
+import { EXCLUDE_TYPE, INCLUDE_TYPE, NO_MATCH_ID, searchByFieldsToQuery } from "./searchByFieldsToQuery";
 
 import type { SearchByFieldValue } from "../contexts/pageFilters";
 
@@ -63,6 +63,34 @@ describe("searchByFieldsToQuery", () => {
       services: entry({ field: "_id", value: ["x"] }),
     });
     expect(out.filters).toEqual({ _id: { $nin: ["b", "a", "c"], $in: ["x"] } });
+  });
+
+  it("restriction calculée (filtre de statut) → $in, en intersection avec un $in déjà posé", () => {
+    expect(searchByFieldsToQuery({ "statut:open": entry({ field: "_id", type: INCLUDE_TYPE, value: ["a", "b"] }) }).filters)
+      .toEqual({ _id: { $in: ["a", "b"] } });
+    const out = searchByFieldsToQuery({
+      services: entry({ field: "_id", value: ["b", "c"] }),
+      "statut:open": entry({ field: "_id", type: INCLUDE_TYPE, value: ["a", "b"] }),
+    });
+    expect(out.filters).toEqual({ _id: { $in: ["b"] } });
+  });
+
+  it("l'ordre des entrées n'y change rien : une entrée posée APRÈS la restriction ne l'élargit pas", () => {
+    const out = searchByFieldsToQuery({
+      "statut:open": entry({ field: "_id", type: INCLUDE_TYPE, value: ["a", "b"] }),
+      services: entry({ field: "_id", value: ["b", "c"] }),
+    });
+    expect(out.filters).toEqual({ _id: { $in: ["b"] } });
+  });
+
+  it("restriction vide ou intersection vide → aucun résultat (le backend ignorerait un $in vide)", () => {
+    expect(searchByFieldsToQuery({ "statut:open": entry({ field: "_id", type: INCLUDE_TYPE, value: [] }) }).filters)
+      .toEqual({ _id: { $in: [NO_MATCH_ID] } });
+    const out = searchByFieldsToQuery({
+      services: entry({ field: "_id", value: ["c"] }),
+      "statut:open": entry({ field: "_id", type: INCLUDE_TYPE, value: ["a"] }),
+    });
+    expect(out.filters).toEqual({ _id: { $in: [NO_MATCH_ID] } });
   });
 
   it("exclusion vide (rien d'occupé) → aucune clause", () => {

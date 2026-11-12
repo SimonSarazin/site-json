@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { fetchResourceIdsInPerimeter, searchCostumIds, type PoiSearchHost } from "./useResourcesInPerimeterQuery";
+import { fetchResourceIdsInPerimeter, searchCostumEach, searchCostumIds, type PoiSearchHost } from "./useResourcesInPerimeterQuery";
 
 const page = (ids: string[], next?: Record<string, unknown>) => ({
   results: ids.map((id) => ({ id })),
@@ -7,6 +7,16 @@ const page = (ids: string[], next?: Record<string, unknown>) => ({
   next: () => Promise.resolve(next),
 });
 const host = (mock: ReturnType<typeof vi.fn>) => ({ searchCostum: mock }) as unknown as PoiSearchHost;
+
+describe("searchCostumEach — chaque résultat d'une recherche, pages suivies", () => {
+  it("remet chaque résultat, page après page ; les champs du demandeur remplacent le défaut", async () => {
+    const search = vi.fn().mockResolvedValue(page(["o1"], page(["o2"])));
+    const vus: unknown[] = [];
+    await searchCostumEach(host(search), { fields: ["collection", "type"] }, (r) => vus.push(r));
+    expect(vus).toEqual([{ id: "o1" }, { id: "o2" }]);
+    expect(search.mock.calls[0][0]).toMatchObject({ name: "", indexMin: 0, fields: ["collection", "type"] });
+  });
+});
 
 describe("searchCostumIds — identifiants d'une recherche scopée au costum du site", () => {
   it("garde `fields: [\"collection\"]` sous les paramètres du demandeur, suit les pages, sans sourceKey imposé", async () => {

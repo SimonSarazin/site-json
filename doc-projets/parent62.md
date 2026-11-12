@@ -14,9 +14,32 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-11-03** — « Ajouter un acteur » corrigé : champs `type`/`role` manquants
-au contrat `ADD_ORGANIZATION`, ajoutés en `hidden` + `subType:"acteur"` pour ne pas casser le
-discriminant de sous-type costum — détail §9sedecies. Plus tôt le même jour : retrait complet du
+Dernière mise à jour : **2026-11-10** — reprise éditoriale `/reseau`/`/equipe`/`/charte` sur PDF de
+relecture client, page « Nos champs d'actions » retirée, retrait du bloc CAF sur `/equipe` — détail
+§9novodecies.
+
+**2026-11-09** — renommage admin « Actualités » → « Article », décalage de la
+bulle « Ternois Bruaysis » sur la carte (chevauchement de label à 150 % de zoom) et activation du
+bouton **export PDF** sur `/agenda` (`agenda.showPdfExport`) — détail §9octodecies. Même jour :
+mesure d'audience **Matomo en production** sur `www.parent62.org` : branche `feat/analytics-matomo`
+fusionnée dans `main` (`b8bfa570`), puis correctif `da7e244c` (après le premier déploiement, seule la
+première page vue partait : `matomo.js` remplace `window._paq` par son proxy) ; vérification
+navigateur du 09/11 : un hit `matomo.php` par navigation client (URL, titre, référent), aucun cookie,
+`parent62.00.re` muet — détail §10bis. Anonymisation des IP activée sur l'instance par Thomas le 09/11.
+Même jour : les trois pages légales étaient illisibles en mode sombre (`prose-slate` fige un gris
+foncé ; le plugin typography EST chargé, contrairement au commentaire du CSS) → variables
+`--tw-prose-*` rebranchées sur les tokens du thème dans `src/index-parent62.css`, palette retirée de
+la config ; `/mentions-legales` et `/confidentialite` rédigées (FR/EN), avec 5 marqueurs ambre à
+compléter par le réseau (éditeur, siège, téléphone, direction de publication, responsable de
+traitement ; hébergeur OVH posé, durées exprimées en critères sans chiffre sur décision de Thomas) —
+détail §10ter. SDK monté en `1.0.207` (`44f62a80`, 06/11). **2026-11-05** : bouton **« Dupliquer »**
+sur les tableaux admin Actualités et Agenda (ouvre la création pré-remplie, nom préfixé « Copie
+de … », rien écrit tant que rien n'est soumis) — champs simples, adresse et horaires couverts
+nativement ; galerie/documents recopiés en best-effort post-création (point CORS non vérifiable ici) —
+détail §9septdecies. **03/11** : « Ajouter un acteur » corrigé : champs `type`/`role` manquants au
+contrat `ADD_ORGANIZATION`, injectés via `mutation.inject.extraFields` (patron déjà en usage,
+`federationDesCae`/`cae`) pour ne pas casser le discriminant de sous-type costum — détail §9sedecies.
+Plus tôt le même jour : retrait complet du
 concept « partenaire » (page `/annuaire`, formulaire costum, onglet admin, tag) au profit de
 l'annuaire des acteurs du soutien à la parentalité, déjà doté du filtre territoire — détail
 §9quindecenties. Plus tôt encore :
@@ -512,6 +535,8 @@ Embarqué dans le document de l'orga (`organizations.costum`). Au 20/07, `typeOb
 | **Double entrée parents / pro rétablie sur l'accueil (02/09)** | `config.prod.parent62.json` (section `action-tiles` `home-double-entree` réinsérée sur `pages[/].sections[1]`) ; `.claude/skills/config-assistant/page-recipes.json` (recette `home-a-la-une` resynchronisée : séquence + `titre`/`quand`/`rythme`) — gate `tests/preflight/page-recipes.test.ts` (§9septendecies) |
 | **Types de ressources — 2 ajouts + renommage (03/09)** | `config.prod.parent62.json` : `costumForms.parent62-recovery-center.fields.category.enum` (6 → 8 valeurs) et les 3 blocs `list.resource.badge` (`/ressources`, `/recherche` via `itemRules[2]`, `commandPalette.entitySearch.itemActionBySubType.recoveryCenter`) ; snapshots `.claude/skills/config-assistant/examples/{command-palette,list-item-rules,list-resource}.json` resynchronisés (§9octodecies) |
 | **Annuaire des partenaires + filtre « Villes » (22/09)** | `config.prod.parent62.json` : page `/annuaire`, `costumForms.parent62-partenaire`, `profiles.organizations.editModals`, onglet `admin.tabs` « partenaires », entrée de menu, page `/communaute` et son entrée de menu retirées, case « Rejoindre le réseau » de `/pro` vers `/annuaire`, villes au survol de « Entre Mer et Terres », `costumSlug` sur la liste de `/recherche`, champ `villes` de `parent62-article` et filtre de `/blog` ; `tests/preflight/filter-form-values.test.ts` (neuf) ; `e2e/parent62.spec.ts` ; skill `config-assistant` : `page-recipes.json` (recette `page-communaute-onglets` → eXtremeDefiAdeme), exemples `admin.json` et `list-item-rules.json` ; instantané `tests/preflight/__effective__/parent62.json` ; base locale : `costum.typeObj.organizations` et `typeObj.article.villes` (§9octotricies) |
+| **Mesure d'audience Matomo (06/11)** | **Moteur** (générique) : `src/lib/consent.ts` (+ `.test`), `src/lib/analytics/matomo.ts` (+ `.test`), `src/lib/analytics/ga4.ts` (+ `.test`), `src/components/layout/IntegrationsLoader.tsx` (+ `.test.tsx`), `src/components/sections/CookieConsentSection.tsx` (mode `inline`, `defaultOn`), `src/RootLayout.tsx` (bandeau global `config.consent`), `src/types/site-schema.ts` (`AnalyticsIntegration`, `consent`), `src/lib/constant/common.ts` (`getSitePublicUrlConfigured`) ; **config** : `integrations.analytics`, page `/politique-cookies`, `footer.bottomLinks` ; doc moteur `doc/03`, `doc/04`, `doc/06` (§10bis) |
+| **Pages légales (09/11)** | `src/index-parent62.css` (bloc `.prose` → tokens), `config.prod.parent62.json` (pages `/mentions-legales`, `/confidentialite`, `/politique-cookies`) (§10ter) |
 | **Tests** | `e2e/parent62.spec.ts`, `src/modules/search/lib/colorBy.test.ts`, `src/modules/profil/forms/costum/__fixtures__/configCostum.ts` |
 | **Déploiement** | `server/prod-server.js`, `server/lib/sitemap.js`, `.env` (`VITE_SLUG`, `VITE_BASE_URL_BACKEND`, `SITE_CONFIG_PATH`, `VITE_SITE_PUBLIC_URL`) — dérivable via `npm run deploy:env` (`scripts/lib/sites.ts`) |
 
@@ -4270,9 +4295,9 @@ rôle à l'invitation » (onglets « users » et « emails ») en hérite. Non r
 `useAgendaPdfExport` (`endpointApi.agendaGetPdf`, scope le costum PORTEUR entier via
 `getSiteCostumContext({contextId, contextType})` — jamais les filtres de la vue). Téléchargement par
 `Blob` + `<a download>` transitoire (aucun pattern de blob-download réutilisable trouvé — `downloadCsv.ts`
-est CSV-only, non généralisé pour un seul 2ᵉ usage). **Non activé sur `/agenda`** : la prop reste à son
-défaut `false`, conformément à la convention moteur (nouveauté = option, jamais un nouveau défaut pour
-un site en marche).
+est CSV-only, non généralisé pour un seul 2ᵉ usage). **Activé sur `/agenda` le 09/11** (demande client) :
+`showPdfExport: true` posé sur la section `agenda-parent62` dans `config.prod.parent62.json` — seule
+cette config change, le défaut moteur reste `false` pour tout le reste du parc.
 
 ### 9quinquadragies.1 Vérifications
 
@@ -5387,6 +5412,156 @@ sur le flux réel.
 | `npm run typecheck` / `npm run lint` | ✅ 0 erreur |
 | `tests/preflight/` (suite complète) | ✅ 906 tests, 0 échec |
 
+## 9septdecies. Bouton « Dupliquer » (actualités + agenda, tableaux admin)
+
+**Demande client (04-05/11)** : dupliquer une actualité ou un événement depuis l'admin — récupérer
+ses données SANS les enregistrer, ouvrir le formulaire de création pré-rempli (nom préfixé « Copie
+de … »), rien écrit tant que la création n'est pas soumise.
+
+**Mécanisme (moteur, opt-in par `rowActions:["duplicate"]`)** : `AdminResourceTable.tsx` recharge
+l'entité complète (même recette que « Éditer ») puis construit le seed via **le VRAI pipeline de
+lecture du formulaire** (`seedFromEntity`, `@/modules/formEngine`), appliqué au descripteur costum
+RÉELLEMENT compilé pour ce formulaire (résolu par id dans le registre `getDescriptor`/
+`getCostumModalSpec`, enregistré par `registerCostumForms.ts`) — pas une copie brute ni des cas
+particuliers maintenus à la main. Repli sur une copie brute (`seedBrut`, sans `id`/`_id`/`slug`)
+pour un type STANDARD sans costumForm (hors périmètre de ce lot). Injecté dans `createDefaults` de
+la modale de création — mécanisme DÉJÀ existant (jusque-là nourri seulement par une valeur STATIQUE
+de config), appliqué ici dynamiquement. `applyCreateDefaults` ne retient que les clés connues du
+formulaire : un champ absent du formulaire de création est silencieusement ignoré, jamais une erreur.
+
+**Révision du 09/11 (relecture)** : la 1ʳᵉ version (05/11) codait à la main 2 cas (`openingHours`,
+`address`) et copiait tout le reste tel quel — bug confirmé en relecture : `category`
+(`parent62-article`, `multiselect` au `write:"joinCsv"` SANS codec de lecture propre, donc
+`coerce:stringArray` par défaut de widget) est stocké en CSV serveur (`"appel-projet, offre-emploi"`)
+et aurait été semé TEL QUEL, lu par `ValueSelectField` comme une seule option bogue au lieu d'être
+splitté — le type d'actualité (et ses mots-clés dérivés) silencieusement perdu à la duplication, sans
+toucher à `openingHours`/`address` qui restaient corrects par hasard. Remplacé par l'appel au VRAI
+pipeline ci-dessus, qui couvre `category` ET tout champ futur à codec de lecture sans cas particulier
+à ajouter à la main. Testé (`AdminResourceTable.test.tsx`, costum RÉEL `parent62-article`/
+`parent62-event` enregistrés via `registerCostumForm`, pas une fixture synthétique).
+
+**3 autres constats de la relecture du 09/11, corrigés** :
+- La tuile KPI dashboard `type:"link"` (§9octodecies) rendait son `linkTo` via un `<Link>` brut
+  plutôt que `NavLink`/`classifyHref` (règle #20 des bonnes pratiques pour tout `href` venu de la
+  config) — un `linkTo` externe serait tombé sur le catch-all au lieu de s'ouvrir. `linkTo` posé
+  REQUIS (et non plus optionnel) pour ce type précis dans `AdminDashboardKpiSchema`.
+- Anti-double-clic sur « Dupliquer » (`isDuplicating`, bouton désactivé pendant l'attente réseau) :
+  sans lui, cliquer « Dupliquer » sur une 2ᵉ ligne avant la fin du 1ᵉʳ chargement aurait mélangé le
+  seed d'une ligne et la galerie de l'autre.
+- Défense supplémentaire : les champs d'identité (`id`/`_id`/`slug`) sont retirés du seed même après
+  le VRAI pipeline (`seedFromEntity`), qui ne les exclut pas lui-même — aucun des costumForms
+  dupliquables actuels ne déclare ces champs en écriture, mais rien ne le garantit pour un futur.
+
+**Champs composites, couverts au-delà des champs simples (05/11, révisé 09/11)** :
+- **Adresse** — **bug trouvé et corrigé le 05/11 : « le lieu n'est pas dupliqué » (retour client)**.
+  `serverData` ne porte PAS les champs plats `addressCountry`/`addressLocality`/`postalCode`/
+  `streetAddress`/`localityId` : le serveur stocke un objet composite UNIQUE `address`
+  (`serializeGroups.address`, `serverKey:"address"`), que `EditLocationTab` ne lit jamais
+  directement (il lit les champs plats via `form.watch`). Couvert nativement par `seedFromEntity`
+  (étape GROUPE du pipeline, `address:read`).
+- **Horaires** (`openingHours`, `parent62-event` seulement — `parent62-article` n'a pas ce champ) —
+  **affirmation du 05/11 corrigée le 09/11** : ce champ est `widget:"hidden"` SANS codec de lecture
+  (seule `eventOpeningHours:write` normalise à l'ÉCRITURE, selon `recurrency`) — AUCUN widget visible
+  n'attend un modèle 7 jours en lecture, contrairement à ce qu'affirmait la version précédente de
+  cette ligne. Le tableau brut (jours cochés, partiel) EST la forme correcte à semer ; `seedFromEntity`
+  le relaie inchangé (pas de `field.read` déclaré).
+- **Galerie/documents** (`parent62-article` seulement — `parent62-event` n'en a pas) : ce ne sont
+  PAS des champs de formulaire (uploadés APRÈS la création, qui exige un `id`) — recopiés via un
+  nouveau passage `onCreated` (déjà prévu par `EntityFormModal`, jusque-là inutilisé par l'admin) :
+  `fetch` de chaque fichier existant (`docPath`/`imagePath`) puis `uploadDocument` sur la fiche
+  neuve. **Best-effort, par fichier** : un échec individuel n'empêche jamais les autres ni la
+  création elle-même ; un toast résume `{{failed}}/{{total}}` si au moins un fichier a manqué.
+  ⚠️ **Point non vérifiable depuis cet environnement** : le `fetch` est CROISÉ (fichiers servis par
+  `www.communecter.org`, appelés depuis le domaine du site) — fonctionne seulement si ce serveur
+  envoie un en-tête CORS permissif sur `/upload/…`. Aucune session navigateur authentifiée
+  disponible ici pour le constater ; **à confirmer par un essai réel avec des pièces jointes**.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 51 pages/183 sections |
+| `npm run typecheck` / `npm run lint` | ✅ 0 erreur, 0 nouveau warning (hors `src/modules/kanban` et les 23 warnings React Compiler préexistants d'`EntityFormModal.tsx`, fichier non touché) |
+| `npm run test:unit` (suite complète) | ✅ 10 005 tests, 0 échec |
+| `AdminResourceTable.test.tsx` | ✅ 18 tests (seed sans id/slug, openingHours relayé tel quel [corrigé 09/11], dépliage adresse, **décodage `category` CSV→tableau [bug du 05/11, corrigé 09/11]**, copie galerie/documents, échec partiel non bloquant) |
+| `ContentSection.test.tsx` | ✅ 3 tests (externe, interne, **protocole-relatif `//hôte` [corrigé 09/11]**) |
+| Vérification navigateur réelle | ✅ **adresse confirmée en défaut par le client (05/11)**, corrigée depuis — reste à reconfirmer en réel, ainsi que `category` (bug du 05/11, jamais visible car non testé en réel avant ce lot) et le KPI `type:"link"`/l'anti-double-clic « Dupliquer » (09/11) ; le point CORS galerie/documents ci-dessus reste lui non vérifié |
+
+## 9octodecies. Renommage admin « Actualités » → « Article », carte à bulles, export PDF agenda
+
+**Admin (05/11)** : sur demande, le libellé de l'onglet admin et de sa section tableau passent
+d'« Actualités »/« News » à « Article »/« Article » (fr/en) — `admin.tabs[id="actualites"].label` et
+`admin.tabs[id="actualites"].sections[0].label` dans `config.prod.parent62.json`. Changement de
+libellé pur, sans impact fonctionnel (le `id` de l'onglet reste `actualites`).
+
+**Carte à bulles, chevauchement de labels (09/11)** : signalé par le client à 150 % de zoom
+navigateur — le label « Ternois Bruaysis » (texte long, bulle `size:19`) chevauchait celui de « FSM
+Lens-Liévin » (bulle `size:10`, proche en `x` : 50 contre 74, même `y:60`). Cause : dans
+`MapBubbles.tsx`, le label est ancré à droite du rond (`md:right-1/3`) sans détection de collision
+entre labels voisins — sa largeur suit la longueur du texte, pas la taille du rond. Le composant porte
+un avertissement explicite (commentaire) à ne pas retoucher les positions `x`/`y`/`size` pour
+compenser un AUTRE problème (chevauchement bloc titre/bulles sur carte étroite) ; ce nouveau cas est
+différent et le client a confirmé vouloir un décalage direct. **Corrigé en déplaçant uniquement
+`Ternois Bruaysis` vers le bas** (`y: 60 → 66`, `x`/`size` inchangés) dans `config.prod.parent62.json`
+— écarte verticalement son label de celui de FSM Lens-Liévin (resté à `y:60`).
+
+**Export PDF de l'agenda, activation (09/11)** — voir §9quinquadragies et checklist 2.4 : la prop
+opt-in `agenda.showPdfExport` (code déjà livré, SDK ≥ 1.0.196) est posée à `true` sur la section
+`agenda-parent62`.
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 51 pages / 182 sections, après chacun des 3 changements |
+| `tests/preflight/` | ✅ 919 passés (2 échecs préexistants, non liés : snapshot archétype agenda à resynchroniser, dossier d'images non déclaré — hérités de lots antérieurs) |
+| Vérification navigateur réelle | ⬜ à faire : renommage admin, décalage de bulle à 150 % de zoom, bouton PDF agenda sur `/agenda` |
+
+## 9novodecies. Reprise éditoriale `/reseau`, `/equipe`, `/charte` ; page « Nos champs d'actions » retirée (09-10/11)
+
+**`/equipe` (09/11)** : retrait du bloc « Le contact à la CAF du Pas-de-Calais » (section `title`
+`equipe-caf-titre` + section `member` `equipe-caf`, rôle « Conseillère thématique Parentalité CAF ») ;
+`equipe-terr` (« L'équipe de Coordonnateurs (trices) »), devenue la dernière section de la page, reçoit
+`className: "mb-16"` pour conserver l'espacement bas que portait le bloc retiré. Les deux variables CSS
+`--p62-caf`/`--p62-caf-encre` (`src/index-parent62.css:326-327`) restent orphelines — non retirées, pas
+demandé.
+
+**`/reseau` (10/11, sur demande client avec PDF de relecture)** : titre de page « Du REAAP au Réseau
+Parentalité » → **« Le Réseau Parentalité »** (page + hero), sous-titre allégé (« 25 ans » au lieu de
+« Vingt-cinq ans », espace en trop corrigé) ; équipe du réseau → **« coordonnat·eurs·ices »** (au lieu
+de « coordonnatrices »), parenthèse « (ADS) Caf » recalée (avant : « ADS Caf) » fermait après Caf) ;
+carte « Les membres du Réseau » → sous-titre et cartes Professionnels/Institutions réécrits sur le texte
+du PDF (retrait UDAF/EPDEF/liste détaillée, ajout « l'État »/« la MSA ») ; section « 8 valeurs au
+service de la « cause des parents » » **remplacée par un lien direct** vers `/charte` (type `cta`, la
+page qui porte déjà le détail des 8 valeurs).
+
+**Alignement et mise en forme (10/11)** : les sections « Qu'est-ce que la parentalité ? » et
+« L'objectif du Réseau Parentalité 62 » étaient en type `title` (rendu texte brut, centré, sans gras ni
+puces possibles — `TitleSection.tsx` rend le sous-titre via `<T>`, un `<span>`/`<p>` sans parseur
+markdown). Passées en type `content` (comme le reste de la page, aligné à gauche, markdown) pour
+respecter les consignes du client : **pas de centrage**, et **« L'objectif »** porte désormais une
+vraie liste à puces markdown pour ses 4 axes (pauvreté, ruptures familiales, handicap, violences
+intra-familiales). Même conversion `title` → `content` pour « Adhérer à la Charte du REAAP 62, c'est : »
+sur `/charte`, afin de respecter le **gras** (phrases-clés du PDF) et les **sauts de ligne** entre
+paragraphes (qui peut adhérer / travail de réflexion en cours / adhésions suspendues) — impossibles en
+`title`. Les 4 sections `content` désormais consécutives de `/reseau` (histoire, parentalité, objectif,
+équipe) ont aussi reçu `className: "py-10"` (au lieu du `py-16` par défaut du composant) pour resserrer
+l'espacement entre elles, sur demande.
+
+**`/charte` (10/11)** : bloc « Votre dossier de candidature doit comporter » (3 étapes : courrier,
+délibération, statuts — section `steps` `charte-adherer-steps`) et bloc « Votre dossier doit être
+adressé à la CAF… » (section `cta` `charte-cta`, bouton « Écrire au service Action Sociale ») **retirés
+en totalité** — les nouvelles adhésions à la Charte sont temporairement suspendues (texte ajouté sur
+`charte-adherer-titre`).
+
+**Page « Nos champs d'actions » (10/11)** : **page retirée en totalité** (`/champs-actions`, présentait
+REAAP/CLAS/LAEP) ainsi que son entrée de nav (sous « Le Réseau parentalité »). Aucun autre lien interne
+ne pointait vers `/champs-actions` (vérifié par recherche texte et par l'audit `lien-mort`).
+
+| Gate | Résultat |
+|---|---|
+| `config:validate` | ✅ 50 pages / 174 sections (49/169 à mi-lot, le temps de retrouver la page `/equipe`) |
+| `audit:config` | ✅ RAS |
+| `tests/preflight/` | ✅ 920/928 passés (8 skip), recette `page-editoriale` (config-assistant) resynchronisée avec la nouvelle séquence de sections de `/reseau` |
+| `typecheck` | ✅ |
+| Vérification navigateur réelle | ⬜ à faire : `/reseau`, `/equipe`, `/charte`, disparition de `/champs-actions` |
+
 ## 10. Checklist d'avancement
 
 ### Partie 1 (3 000 €)
@@ -5394,7 +5569,7 @@ sur le flux réel.
 | # | Fonctionnalité | État | Détail |
 |---|---|---|---|
 | 1.1 | Site `reseau.parent62.org`, nav + graphisme proches du WP | 🟡 | config réconciliée (24/07) ; doublon nav `/blog` **résolu** (§9.5) ; **06/08 (committé sur `parents62`)** : accueil, header (`stacked`) et footer (`minimal-centered`) entièrement refondus, nav passée à 5 dropdowns dont un nouveau « Publics » (§9quater) ; double entrée `/parents`/`/pro` **rétablie le 02/09** (1.4, §9septendecies), la recette visuelle et le déploiement → 1.10. **09-10/09** : haut de page resserré — bandeau au quart de l'écran, « Territoires » et « à la une » côte à côte dans un `gridLayout` qui tient dans le premier écran jusqu'à **150 % de zoom** ; page `/contact` retirée au profit de `/equipe`, qui portait déjà la même section (§9sexvicies.1, §9sexvicies.6) |
-| 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/champs-actions` `/equipe` ; arbitrage éditorial réseau ouvert (§13). **10/09** : **deux pages reprises mot pour mot** à la source officielle — `/champs-actions` (5 valeurs du REAAP, charte et 5 objectifs du CLAS, âges du LAEP, 3 liens documentaires, actu d'Olhain tirée par son slug, §9sexvicies.3) et `/reseau` (l'équipe nommée, la définition intégrale du CNSP, les 3 familles de membres, la circulaire de 1999 et la plaquette du réseau en PDF ; frise chronologique retirée, §9sexvicies.5). **Reste à faire** : les 8 valeurs de `/charte` sont **tronquées** à leur première phrase alors que la source les donne en entier |
+| 1.2 | Pages statiques réseau / charte / équipe / champs d'action | ✅ | `/reseau` `/charte` `/equipe` ; arbitrage éditorial réseau ouvert (§13). **10/09** : **deux pages reprises mot pour mot** à la source officielle — `/champs-actions` (5 valeurs du REAAP, charte et 5 objectifs du CLAS, âges du LAEP, 3 liens documentaires, actu d'Olhain tirée par son slug, §9sexvicies.3) et `/reseau` (l'équipe nommée, la définition intégrale du CNSP, les 3 familles de membres, la circulaire de 1999 et la plaquette du réseau en PDF ; frise chronologique retirée, §9sexvicies.5). **10/11, relecture client sur PDF** : `/champs-actions` **retirée en totalité** (contenu obsolète) ; `/reseau` et `/charte` réécrites sur le texte du PDF — les 8 valeurs de `/charte` restent donc complètes (le point « tronquées » ci-dessus visait le texte d'origine, caduc depuis) (§9novodecies) |
 | 1.3 | Page par territoire : contact + **liste des communes** | ✅ | cards coordo + accordéon 887 communes + fil filtré + CTA ; navigation depuis l'accueil désormais via `map-bubbles` (carte à bulles, §9quater) au lieu des cartes d'accès rapide ; **03/09** : haut de page refondu — **3 prochaines réunions du comité local** juste après le bandeau, carte « Comptes rendus des réunions » (Drive) et **3 ressources du territoire** avec bouton « Voir toutes les ressources » ; carte « Le comité local » et blocs de liens externes retirés ; saisie des réunions par l'onglet `/admin` dédié (§9novodecies). Les deux blocs de données sont **câblés** ; leur remplissage dépend de la saisie côté costum (§9novodecies.5) ; **22-23/09** : coordination lue en UNE requête serveur (`filters`+`fields`, SDK 1.0.194), plus d'appel par carte, `card.rattachement` obligatoire, gate labels exacts (§9septvicies.6-7) |
 | 1.4 | Double entrée parents / pro | ✅ *(était 🟡, régression du 06/08)* | **Rétablie le 02/09** : la section `action-tiles` `home-double-entree` (« Vous êtes… » → `/parents` / `/pro`) est réinsérée sur l'accueil, en 2ᵉ position — juste après le carrousel « à la une », sa place d'origine dans le rythme de la page. Les deux pages existaient toujours mais **n'étaient liées de nulle part** depuis la refonte du 06/08 (vérifié : une seule occurrence de chaque chemin dans la config, sa propre déclaration de page). Elles coexistent avec le dropdown « Publics » (7 pages `/public/*`), qui ne les remplace donc pas — question §13 tranchée |
 | 1.5 | Moteur de recherche : types d'info, public, âges, dates, territoire coloré, carte, thèmes | 🟡 | `/recherche` : types d'info (**searchTargets 6** depuis le 25/07 — « Ressources » ajoutée —, défaut « Actualités »), public, thèmes, territoire coloré, **carte** (`enableMap:true`), `dateRange` **borne début seule**. **25/07** : chaque famille a désormais sa carte et son action au clic (`list.itemRules`, §9bis) ; tri `created:-1` et projection explicite ajoutés. **Âges : livré sur `/temoignages` + form affiche, mais PAS encore dans le groupe de filtres `/recherche`** (à ajouter — `ages` est projeté, il ne manque que le groupe). Borne de fin des dates = demande backend `$lt/$lte` (§11) |
@@ -5411,7 +5586,7 @@ sur le flux réel.
 | 2.1 | Module actualités + interop WordPress | ✅ / 🟡 interop | 6 434 articles, `/blog`, `/actualites`, 9 `/theme/*`, admin, RSS, ⌘K. **Interop WP = import batch one-shot** (`tools/wp-migration/`), pas de sync live/webhook ; « ajout de post » = form `parent62-article` admin (le module `interop/` = Discourse/Mediawiki, pas WP). **06/08** : 2 pages de contenu tagué ajoutées sur le même patron, `/appels-a-projets` et `/offres-emploi` (`articleFeed` filtré par tag WordPress libre, zéro impact backend, §9quater). **02/09** : champ **« Type d'actualité »** (`category` : Article simple / Appel à projets / Offre d'emploi) dans le formulaire d'ajout d'article, avec un `mutation.stamps` `$mapLabels` qui pose le mot-clé public à la création ET à l'édition, + 2 onglets `/admin` filtrés par `defaultTags` (§9sexdecies). **09/09** : boutons **Modifier / Supprimer** sur la fiche `/blog/:slug`, gardés par `canEditProfile` (admin du costum ou auteur) et réutilisant la modale `edit-parent62-article` déjà en place — hérité par les **4 sites** déclarant une page `/blog`, à charge pour eux de router leur propre `editModals` (§9sexvicies.2). **17/09** : types **« À la une »** et **« Zoom sur le réseau »**, type en **choix multiple** ; le mot-clé suit désormais le type (codecs à la place du stamp) ; section d'accueil « Zoom sur le réseau » filtrée sur `Zoom` ; territoires/publics/thèmes facultatifs (§9octovicies.3-4). **22/09** : filtre **« Villes »** sur `/blog` (33 villes du survol des territoires, **23/09** : sur la ville de l'adresse) et champ adresse du formulaire (§9octotricies.1, §9novotricies). **30/09** : les 33 fils passent en **pagination numérotée** (12/page) au lieu du scroll infini, réglée une seule fois via `config.blog.defaultPagination` (§9tresquadragies) |
 | 2.2 | Actualités filtrables dans le moteur de recherche | ✅ *(était ✅ config, 🟡 UX)* | cible `searchTargets` « Actualités » (`type:article`) dans `/recherche` + filtres territoire/public/thème/dates. **25/07 — UX unifiée** : une actualité de `/recherche` rend une carte dédiée et son clic ouvre le **reader canonique** `/blog/:slug` (repli `/blog/id/:id`), plus un drawer générique |
 | 2.3 | Module événementiel (agenda) + affichage territoire | 🟡 *(diagnostiqué le 14-19/08)* | module agenda complet (calendrier + liste, filtre territoire) ; testé avec des **événements de test locaux** (dev, pas de la production — cf. §9sexies), a révélé 3 bugs backend, **tous corrigés** (§9sexies.1) ; **0 donnée `events` en production, toujours à confirmer** ; pas de carte agenda (`enableMap:false`) |
-| 2.4 | Impression de l'agenda | ✅ *(code prêt, non activé)* | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` (défaut `false`, vérifié en direct avec l'option forcée à `true` puis retirée — §9quinquadragies) — à activer sur `/agenda` quand souhaité |
+| 2.4 | Impression de l'agenda | ✅ activé | export PDF via le SDK (`endpointApi.agendaGetPdf`, SDK ≥ 1.0.196), bouton opt-in `agenda.showPdfExport` posé à `true` sur `/agenda` le 09/11 (défaut moteur resté `false` ailleurs, vérifié en direct — §9quinquadragies) |
 | 2.5 | Événements récurrents | ✅ *(était « config+code, non observable » le 24/07)* | `parent62-event` : `recurrency` + `openingHours` + `eventDates` + codecs/validators + calendrier « récurrents dépliés ». **Testé le 14-19/08 avec des événements de test locaux (dev, pas la production)** — a révélé 3 bugs backend dans `AgendaAction.php`, **tous corrigés** : matching par jour de semaine, mode LISTE excluant les récurrents, occurrence du jour en cours jamais renvoyée / onglet « En cours ». Front `site-json` entièrement corrigé et testé (899/899) — cf. §9sexies et les 2 documents de spécification à la racine du monorepo |
 | 2.6 | Ajout partenaires + **modération a priori** | ✅ *(était ❌, confirmé le 19/08)* | bouton public `requiresAdmin:false`, form injecte `preferences.toBeValidated:true`, onglet admin Agenda `validate` + « Proposé le ». `searchEventsCostum` masque bien les events *pending* côté public — confirmé (cf. §9sexies, §12) |
 | 2.7 | Annuaire partenaires (référencement + cartographie) | ✅ *(était 🟡)* | cible `searchTargets` « Structures & partenaires » (`organizations`) + carte + templates profils ; **25/07** : règle de rendu dédiée (`image-cover`, `imageFit:"contain"` pour des logos hétérogènes) ; **22/09** : page **`/annuaire`** (filtres territoire / type / public / thèmes, vue carte), formulaire `parent62-partenaire` modéré (dispense pour les admins du site), onglet admin « Partenaires » ; page « La communauté » retirée (§9octotricies.2). **0 organisation rattachée** à la livraison. **13/10** : page **`/annuaire-acteurs-parentalite`** distincte, 38 organisations importées (`source.key:"youthCare"`), preview et fiche profil sur les vrais champs du formulaire, formulaire d'édition dédié `parent62-acteur` (§9septquadragies). **03/11** : page `/annuaire`, formulaire `parent62-partenaire` et onglet admin « Partenaires » **RETIRÉS** — toute organisation passe désormais par `parent62-acteur`, bouton « Ajouter un acteur » posé sur `/annuaire-acteurs-parentalite` (§9quindecenties) |
@@ -5428,10 +5603,111 @@ Hors périmètre engagé : publication RS, mailing, migration GoGoCarto, fiches 
 
 ---
 
+## 10bis. Impacts — mesure d'audience Matomo et politique de cookies (06/11, en production le 09/11)
+
+**Demande** : statistiques de fréquentation pour parent62. **Choix** : Matomo (l'instance du réseau,
+`https://communecter.matomo.cloud/`, déjà déclarée dans la config legacy de communecter) plutôt que
+Google Analytics — en mode **exempté de consentement** au sens CNIL (sans cookie, IP anonymisée,
+pas de recoupement, Do Not Track honoré), donc **pas de bandeau bloquant** : un droit d'opposition
+suffit, porté par la page `/politique-cookies`.
+
+**Ce que fait le code (partagé, `src/`)** — `IntegrationsLoader` ne câblait que GA4 et sans suivi
+des navigations ; il gère désormais `matomo` et `ga4`, n'émet rien au SSR, ne mesure que sur l'hôte
+de `VITE_SITE_PUBLIC_URL` (`www.parent62.org` — ni `parent62.00.re`, ni `parent62.org` avant sa
+redirection, ni le dev), envoie **une page vue par navigation client** (URL du routeur, titre Helmet,
+page précédente en référent), et obéit à la catégorie `analytics` du consentement
+(`src/lib/consent.ts`, clé `cookie-consent` du localStorage — jusqu'ici écrite par la section
+`cookieConsent` et lue par personne). La section `cookieConsent` gagne un mode `inline` (panneau de
+préférences dans la page) et `defaultOn` par catégorie ; `config.consent` monte le même composant
+en bandeau global pour les sites qui en veulent un (pas parent62).
+
+**Ce que dit la config** (`config.prod.parent62.json`) :
+
+| Clé | Valeur | Pourquoi |
+|---|---|---|
+| `integrations.analytics` | `matomo`, `url` cloud, `cookies: false`, `respectDnt: true`, `consent: "opt-out"`, `publicHostOnly: true` | mode exempté ; toutes les clés écrites (gotcha #13) |
+| `integrations.analytics.id` | `"29"` | idSite créé par Thomas le 06/11 dans l'instance (snippet Matomo vérifié : même tracker, même CDN). Un idSite non numérique désactiverait la mesure |
+| `/politique-cookies` | `html` (texte réel) + `cookieConsent` `inline` (`necessary` requis, `analytics` `defaultOn`) | droit d'opposition ; remplace « page en construction » |
+| `footer.bottomLinks` | + `/politique-cookies` | la page n'était reliée nulle part |
+
+**Mise en production** (commits `b0a000ee` → `6d643fd6` (sept constats de la review corrigés) →
+`1e33f955` (idSite 29) ; fusion dans `main` `b8bfa570` ; correctif `da7e244c`, tous du 06/11).
+Le premier déploiement a révélé un défaut invisible en recette locale : **seule la première page vue
+partait**. `matomo.js` consomme la file `_paq` initiale puis **remplace `window._paq` par son propre
+objet** ; le loader écrivait toujours dans l'ancien tableau, et la recette dev, qui bloquait le script,
+gardait ce tableau vivant. `da7e244c` relit `window._paq` à chaque commande (test ajouté au loader).
+Vérification du 09/11 dans un navigateur réel (`matomo.js` chargé, hits `matomo.php` interceptés) :
+
+| Hôte / parcours | Résultat |
+|---|---|
+| `www.parent62.org` accueil | 1 hit `idsite=29`, `url=https://www.parent62.org/`, **aucun cookie** |
+| → `/reseau` (navigation client) | 1 hit : URL `/reseau`, titre « Du REAAP au Réseau Parentalité », `urlref` = accueil |
+| → retour accueil | 1 hit : URL `/`, `urlref=/reseau` |
+| `parent62.org` | 301 vers `www.` (redirection canonique, §8) |
+| `parent62.00.re` | aucun script, aucun hit, avertissement `[analytics] hôte … ≠ VITE_SITE_PUBLIC_URL` en console |
+
+**Reste à faire, côté Thomas** :
+1. ~~créer le site parent62 dans Matomo et reporter l'`idSite`~~ — fait le 06/11 (`29`) ;
+2. ~~vérifier sur l'instance : *Administration → Vie privée → Anonymiser les données*~~ — fait par
+   Thomas le 09/11 (anonymisation des IP activée sur `communecter.matomo.cloud`) ; la rétention des
+   journaux bruts reste à regarder au même endroit si on veut borner la conservation ;
+3. ~~`/confidentialite` est toujours un placeholder~~ — rédigée le 09/11 (§10ter), mentionne la mesure
+   d'audience et renvoie à `/politique-cookies` ; restent ses marqueurs ambre à compléter ;
+4. ~~après déploiement, vérifier une requête `matomo.php` par navigation~~ — fait le 09/11 (tableau
+   ci-dessus) ; les visites doivent désormais apparaître dans le tableau de bord du site 29.
+
+**Vérifié** : unitaires `src/lib/consent.test.ts`, `src/lib/analytics/matomo.test.ts`,
+`src/components/layout/IntegrationsLoader.test.tsx` (11, dont le remplacement de `_paq` par le
+proxy) ; `config:validate` ; lint, typecheck, préflight (voir les commits) ; production le 09/11.
+
+---
+
+## 10ter. Impacts — pages légales lisibles en sombre, mentions légales et confidentialité rédigées (09/11)
+
+**Constat** (Thomas, 09/11, sur www.parent62.org) : `/politique-cookies`, `/mentions-legales` et
+`/confidentialite` « pas trop lisibles » en mode sombre, et les deux dernières encore des placeholders
+(« Contenu à compléter »).
+
+**Cause mesurée** (Playwright sur la prod, `getComputedStyle`) : le texte des trois pages restait en
+`oklch(0.372 …)` quel que soit le mode. Les sections `html` portaient `class="prose prose-slate …"` ; le
+commentaire du CSS parent62 affirmait que le plugin typography n'était pas chargé, or le bundle contient
+bien `.prose` et `.prose-slate` — une palette typography fige `--tw-prose-body` en gris ardoise foncé,
+d'où un texte sombre sur fond sombre. La classe `prose-theme` utilisée ailleurs dans la config n'existe
+nulle part (inerte).
+
+**Correctif** :
+
+| Fichier | Changement |
+|---|---|
+| `src/index-parent62.css` | bloc `.prose` **hors `@layer`** (prioritaire sur les utilitaires) qui rebranche les variables du plugin (`--tw-prose-body/headings/links/bullets/hr/…`) sur `--foreground`, `--muted-foreground`, `--secondary-foreground`, `--border` ; commentaire corrigé |
+| `config.prod.parent62.json` | `prose-slate` retiré des 3 pages (6 occurrences FR/EN) ; `/mentions-legales` et `/confidentialite` rédigées FR/EN ; titre de page `Politique de confidentialité(UE)` → `Politique de confidentialité` |
+
+Mesuré en dev (`SITE_CONFIG_PATH=config.prod.parent62.json`, port 5198) : sombre = texte `oklch(0.94)` sur
+fond `oklch(0.22)`, clair = `oklch(0.26)` sur `oklch(0.976)`, liens teal dans les deux modes.
+
+**Contenu des pages** — seuls des faits lus dans le dépôt ou sur le site y figurent : réseau animé par la
+Fédération des Centres Sociaux Nord Pas-de-Calais avec la CAF du Pas-de-Calais (page `/equipe`),
+`contact@parent62.org`, plateforme Communecter / Open Atlas (sous-traitant), Matomo sans cookie (§10bis),
+images de l'ancien WordPress sur OVHcloud (`tools/wp-migration/README.md`), catégories de données réelles
+tirées des `costumForms` (compte, contributions, paroles avec `paroleConsentement`, coordonnées des
+acteurs). **Rien d'inventé** : 8 marqueurs `[…]` sur fond ambre restent à remplir par le réseau —
+mentions légales : raison sociale/forme/SIRET, siège, téléphone, direction de la publication (l'hébergeur a été posé le 09/11 : OVH SAS, Roubaix — IP de `www.parent62.org` dans le réseau OVH Public Cloud de Gravelines, vérifiée par RDAP ; « Réalisation : Open Atlas » sur décision de Thomas, mention SiteForge retirée) ;
+confidentialité : responsable de traitement (renvoi aux mentions). Les durées de conservation des journaux et des
+messages de contact sont exprimées en **critères** (RGPD art. 13 : durée ou critères), sans chiffre, sur décision de
+Thomas le 09/11 — un chiffre aurait engagé une purge que personne ne vérifie. L'ancien WordPress n'était plus consultable (archive.org refuse l'accès depuis ce poste) pour
+en reprendre les mentions d'origine.
+
+**Vérifié** : `config:validate` (51 pages / 183 sections) ; `test:preflight` 927/929 — les 2 échecs sont
+les préexistants hors lot (`lazy-entry-facades`, `site-assets` sur des dossiers locaux non suivis) ;
+rendu dev des 3 pages dans les deux modes (captures `legal-*-dark.png`). Pas encore commité ni déployé.
+
+---
+
 ## 11. Dépendances site-json ↔ cocolight-api-client
 
 Le SDK est en **lecture seule** : toute évolution passe par une spec `.md` transmise à Aboire
-(`spec-cocolight-api-parents62.md`). Version courante au 23/09 : **1.0.194 installée** (`^1.0.194` dans
+(`spec-cocolight-api-parents62.md`). Version courante au 09/11 : **1.0.207 installée** (`44f62a80`, 06/11,
+bump sans changement de config parent62). Au 23/09 : **1.0.194 installée** (`^1.0.194` dans
 `package.json`, publiée le 22/09 — §9septvicies.6). Historique : **1.0.172, publiée sur npm** (`^1.0.172`,
 commit `09e145a0` du 03/08, résolue depuis `registry.npmjs.org` dans le lockfile — fini le tarball
 `npm pack` local). La 1.0.172 règle notamment la **pose du scope costum côté back-office**
@@ -5537,6 +5813,9 @@ les **paroles ne sont plus muettes** dans le moteur (§9bis.1).
 
 | Évolution / question | Pour qui |
 |---|---|
+| ~~**[09/11] Matomo — anonymisation des IP**~~ — **FAIT le 09/11** par Thomas sur `communecter.matomo.cloud` (*Vie privée → Anonymiser les données*) ; la condition CNIL du mode sans bandeau est remplie. Reste, si voulu, à borner la rétention des journaux bruts au même endroit (§10bis) | — |
+| **[09/11] Compléter les 5 marqueurs ambre des pages légales** (§10ter) — mentions légales : raison sociale, forme juridique et SIRET/RNA de la structure éditrice, siège, téléphone, directeur·rice de la publication ; confidentialité : responsable de traitement (la même structure éditrice). Hébergeur OVH posé et durées en critères le 09/11. Puis retirer les `<span class="not-prose …">` qui les encadrent | réseau / Thomas |
+| **[09/11] Footer : « Politique de cookies » figure deux fois** (menu du footer et `bottomLinks`) depuis l'ajout du 06/11 — garder une seule entrée ? | Peterson |
 | **[23/09] `ArticleBody` — profil strict ou permissif ?** — le corps d'article est en `sanitizeProse` (pas de `style`/`class`/`id`) ; impact mesuré : 5 `style=` et 4 `class=` résiduels sur 2 000 articles, 0 ancre (§9septvicies.7). Assumer (recommandé), ou rétablir via `source` | Thomas / Peterson |
 | **[23/09] Quatre constats de revue à arbitrer** — `validators.ts` : contrôle `start ≤ end` en récurrent ; `GridLayoutSection` mode rangée : `wrapperClass` propre ou retrait de `rightWrapperClass`/`leftColumns`/`rightColumns` du contrat ; `ActionTiles` : `accentTextColor` (schéma + `prop-descriptions` + doc) ; `sectionBadge` : rétablir la taille historique du badge `sticker` du carousel | Peterson |
 | **[23/09] Rejouer « Audomarois → Ludivine » sur le backend qui porte le réseau** — ni `:5080` ni `www.communecter.org` n'ont les 10 membres / 5 coordinations de §9septvicies.4 ; vérifié localement sur un semis (§9septvicies.6) | Thomas |

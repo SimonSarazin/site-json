@@ -17,14 +17,16 @@ export interface PoiPerimeter {
 }
 
 /**
- * Identifiants de TOUS les résultats d'une recherche `searchCostum`, pages suivies — scopée au costum
- * du site (sourceKey injecté par le SDK) sauf `sourceKey` explicite. Partagé par les périmètres :
- * équipements (ci-dessous) et organisations rattachées au costum (`useReservationUsersQuery`).
+ * TOUS les résultats d'une recherche `searchCostum`, pages suivies, remis un à un à `onResult` — scopée au
+ * costum du site (sourceKey injecté par le SDK) sauf `sourceKey` explicite ou `notSourceKey`. Seul parcours
+ * des pages du module : identifiants d'un périmètre (`searchCostumIds`), type des fiches usagères
+ * (`fetchUsagerTypes`).
  */
-export async function searchCostumIds(
+export async function searchCostumEach(
   entity: PoiSearchHost,
   params: Partial<GlobalAutocompleteCostumData>,
-): Promise<Set<string>> {
+  onResult: (result: unknown) => void,
+): Promise<void> {
   let page: PaginatorPage<unknown> = await entity.searchCostum({
     name: "",
     indexMin: 0,
@@ -34,19 +36,27 @@ export async function searchCostumIds(
     fields: ["collection"],
     ...params,
   });
-
-  const found = new Set<string>();
-  const collect = (p: PaginatorPage<unknown>) => {
-    for (const r of p.results) {
-      const id = (r as { id?: unknown }).id;
-      if (typeof id === "string") found.add(id);
-    }
-  };
-  collect(page);
+  for (const r of page.results) onResult(r);
   while (page.hasNext && typeof page.next === "function") {
     page = await page.next();
-    collect(page);
+    for (const r of page.results) onResult(r);
   }
+}
+
+/**
+ * Identifiants de TOUS les résultats d'une recherche `searchCostum`, pages suivies — scopée au costum
+ * du site (sourceKey injecté par le SDK) sauf `sourceKey` explicite. Partagé par les périmètres :
+ * équipements (ci-dessous) et organisations rattachées au costum (`useReservationUsersQuery`).
+ */
+export async function searchCostumIds(
+  entity: PoiSearchHost,
+  params: Partial<GlobalAutocompleteCostumData>,
+): Promise<Set<string>> {
+  const found = new Set<string>();
+  await searchCostumEach(entity, params, (r) => {
+    const id = (r as { id?: unknown }).id;
+    if (typeof id === "string") found.add(id);
+  });
   return found;
 }
 

@@ -335,6 +335,9 @@ export const ReservationsConfSchema = z.object({
     periodStart: z.string().optional(),
     periodEnd: z.string().optional(),
     bookingType: z.string().optional(),
+    /** Type d'usager porté par la réponse (« Etablissement scolaire », « Association sportive »…) : posé
+     *  par l'import des plannings, valeurs d'un même regroupement accumulées « a | b ». Lu par `usage`. */
+    userType: z.string().optional(),
   }),
   /** Plafond d'answers chargées (garde de pagination) par la fiche ORGANISATION (`useOrgaReservationsQuery`,
    *  défaut 200) ; taille de page du tableau de bord d'installation (défaut 500). Les lectures par équipement —
@@ -402,6 +405,39 @@ export const ReservationsConfSchema = z.object({
       (b) => b.startHour === undefined || b.endHour === undefined || b.startHour < b.endHour,
       { message: "booking.startHour doit être strictement inférieur à booking.endHour", path: ["startHour"] },
     )
+    .optional(),
+  /**
+   * Mesure d'USAGE des créneaux (OPT-IN) : statut d'ouverture, heures scolaires / clubs, heures libres et
+   * taux d'occupation de chaque équipement, sur sa semaine type (`modules/observatoire/usage.ts`). Lue par la
+   * fiche équipement (résumé, cases « Libre » visibles de tous), par l'observatoire (champs `__usage.*` des
+   * items) et par le filtre de statut du bandeau (`searchHeader.usageFilter`). Absent = rien ne change.
+   */
+  usage: z.object({
+    /** Plage de référence du taux et des heures libres (ex. 8 h → 22 h × 7 j = 98 h/sem). */
+    referenceAmplitude: z.object({
+      startHour: z.number().int().min(0).max(24),
+      endHour: z.number().int().min(0).max(24),
+      days: z.number().int().min(1).max(7),
+    }),
+    /** Valeurs SCOLAIRES de `fields.userType` — ESS974 : « Etablissement scolaire » et « Association sportive
+     *  scolaire », le CDC de la DRAJES mesurant l'ouverture « hors EPS et AS ». Une réponse qui accumule
+     *  plusieurs types n'est scolaire que si TOUS le sont. */
+    schoolUserTypes: z.array(z.string()).min(1),
+    /** Types de FICHE usagère (organisation du finder `userOrga`) scolaires, lus quand la réponse ne porte pas
+     *  de `userType` — ex. « GovernmentOrganization » ; toute autre fiche compte comme club. Une réponse sans
+     *  `userType` ni fiche usagère n'est ni scolaire ni club (« non précisé »). */
+    schoolOrgTypes: z.array(z.string()).optional(),
+    /** Seuils CROISSANTS des tranches lues par les filtres : taux d'occupation en %, heures clubs par
+     *  semaine (ex. `[0, 25, 50, 75]` → 0 %, 1 à 25 %, 26 à 50 %, 51 à 75 %, plus de 75 %). */
+    bands: z.object({
+      rate: z.array(z.number()).min(1),
+      clubHours: z.array(z.number()).min(1),
+    }).optional(),
+  })
+    .refine((u) => u.referenceAmplitude.startHour < u.referenceAmplitude.endHour, {
+      message: "usage.referenceAmplitude.startHour doit être strictement inférieur à endHour",
+      path: ["referenceAmplitude", "startHour"],
+    })
     .optional(),
 })
   // Sans les deux champs de dates, une réservation n'a pas de période : le filtre ne pourrait que tout
@@ -843,6 +879,10 @@ export const CardConfSchema = z.object({
      *  renoncer au détail. Le clic sur la ligne ouvre la fiche comme d'habitude ;
      *  seul le chevron déplie. Honoré aujourd'hui par `poi-amenities`. */
     collapsible: z.boolean().optional(),
+    /** Commune de RATTACHEMENT sous l'adresse (`poi-amenities`) : libellé de l'option du filtre déroulant
+     *  désigné qui interroge le code postal de la fiche (ex. `poi-postalCode` d'ESS974, codes regroupés en
+     *  communes) — l'adresse ne donne que le lieu-dit. Absent ou code inconnu = pas de ligne. */
+    communeFrom: z.object({ filter: z.string() }).optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource", "resource-directory"]).default("default"),
@@ -1800,6 +1840,27 @@ export const SlotFilterSchema = z.object({
 });
 export type SlotFilterConf = z.infer<typeof SlotFilterSchema>;
 
+/**
+ * Filtre « Statut d'ouverture » du bandeau (OPT-IN) : un statut choisi — ouvert, non ouvert, sans planning,
+ * calculé par la mesure d'usage (`reservations.usage`, `modules/observatoire/usage.ts`) — restreint la liste.
+ * Règles et traduction en requête : `lib/usageFilter.ts`. Même rangée, même URL, mêmes pastilles et même
+ * réinitialisation que le filtre créneau.
+ */
+export const UsageFilterSchema = z.object({
+  /** Param d'URL (`?<id>=open`) et préfixe de l'entrée `searchByFields` — distinct des `id` de `dropdownFilters`. */
+  id: z.string(),
+  /** Libellé du sélecteur dans le bandeau (« Statut d'ouverture »). */
+  label: LocalizedString,
+  /** Formulaire des réservations ET mesure d'usage — même bloc que `list.preview.reservations` de la liste. */
+  reservations: ReservationsConfSchema,
+})
+  // Sans mesure d'usage, aucun statut à calculer : à `config:validate` de le dire, pas au rendu.
+  .refine((c) => Boolean(c.reservations.usage), {
+    message: "usageFilter.reservations.usage est requis (mesure d'usage qui calcule le statut)",
+    path: ["reservations", "usage"],
+  });
+export type UsageFilterConf = z.infer<typeof UsageFilterSchema>;
+
 // Props partagées entre le type canonique `searchHeader` et son alias.
 const SearchHeaderProps = z.object({
   /** Fond du bandeau. Défaut : le dégradé du thème (`--gradient-section`). `page-accent` = l'aplat de
@@ -1834,6 +1895,8 @@ const SearchHeaderProps = z.object({
   dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
   /** Filtre « créneau » (disponibilité), à droite des dropdowns — cf. {@link SlotFilterSchema}. */
   slotFilter: SlotFilterSchema.optional(),
+  /** Filtre « statut d'ouverture », à côté du filtre créneau — cf. {@link UsageFilterSchema}. */
+  usageFilter: UsageFilterSchema.optional(),
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),

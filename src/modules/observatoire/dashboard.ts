@@ -255,7 +255,8 @@ export function colorFor(def: ChartDef, name: string, fallbackIndex: number): st
   return CATEGORICAL_COLORS[fallbackIndex % CATEGORICAL_COLORS.length];
 }
 
-/** Décomptes {name, value} triés décroissants pour une dimension. */
+/** Décomptes {name, value} triés décroissants pour une dimension — ou, avec `def.value`, la somme / la
+ *  moyenne d'une dimension numérique par valeur de la dimension (`aggregateBy`). */
 export function itemsFor(
   def: ChartDef,
   data: ObservatoryItem[],
@@ -265,11 +266,43 @@ export function itemsFor(
   const dim = def.dimension ? dims[def.dimension] : undefined;
   if (!dim) return [];
   const dimLabels = def.dimension ? labels?.[def.dimension] : undefined;
+  if (def.value) {
+    const valueDim = dims[def.value.dimension];
+    return valueDim ? aggregateBy(data, dim, valueDim, def.value.kind, dimLabels) : [];
+  }
   const counts =
     dim.kind === "list"
       ? countBy(data.flatMap((d) => dimensionList(d, dim)), (v) => v)
       : countBy(data, (d) => dimensionValue(d, dim, dimLabels));
   return counts.sort((a, b) => b.value - a.value);
+}
+
+/**
+ * Somme ou moyenne de `valueDim` (numérique) par valeur de `groupDim`, arrondie au dixième et triée
+ * décroissante — ex. heures clubs par commune. Un item sans valeur numérique ne compte pas dans la
+ * moyenne ; un item sans groupe est ignoré (`countBy` fait de même).
+ */
+export function aggregateBy(
+  data: readonly ObservatoryItem[],
+  groupDim: DimensionDef,
+  valueDim: DimensionDef,
+  kind: "sum" | "avg",
+  groupLabels?: LabelMaps[string],
+): Array<{ name: string; value: number }> {
+  const acc = new Map<string, { sum: number; n: number }>();
+  for (const d of data) {
+    const groups = groupDim.kind === "list" ? dimensionList(d, groupDim) : [dimensionValue(d, groupDim, groupLabels)];
+    const v = dimensionNumber(d, valueDim);
+    if (v === undefined) continue;
+    for (const g of groups) {
+      if (!g) continue;
+      const cur = acc.get(g) ?? { sum: 0, n: 0 };
+      acc.set(g, { sum: cur.sum + v, n: cur.n + 1 });
+    }
+  }
+  return [...acc]
+    .map(([name, { sum, n }]) => ({ name, value: Math.round((kind === "sum" ? sum : sum / n) * 10) / 10 }))
+    .sort((a, b) => b.value - a.value);
 }
 
 /** Titre d'un graphe : label (config) > labelKey (i18n) > label de la dimension. */
@@ -278,6 +311,25 @@ export function chartTitle(def: ChartDef, dims: DimensionsConfig, t: T): string 
   if (def.labelKey) return t(def.labelKey);
   if (def.dimension) return dimensionLabel(t, dims, def.dimension);
   return "";
+}
+
+/** Dimensions LUES par un graphe : la sienne, celle de sa valeur (`value`, somme ou moyenne) et celles d'un
+ *  `booleanGroups` — un graphe attend une mesure en calcul dès qu'il en lit une seule. */
+export function chartDimensionIds(def: ChartDef): string[] {
+  return [def.dimension, def.value?.dimension, ...(def.dimensions ?? [])].filter((id): id is string => Boolean(id));
+}
+
+/** Libellé d'un KPI, même règle que le titre d'un graphe — partagé par les cartes et l'export des chiffres clés. */
+export function kpiLabel(def: KpiDef, dims: DimensionsConfig, t: T): string {
+  if (def.label) return t(def.label);
+  if (def.labelKey) return t(def.labelKey);
+  if (def.dimension) return dimensionLabel(t, dims, def.dimension);
+  return "";
+}
+
+/** Export CSV des chiffres clés (`export.kpis`) : une ligne par KPI, libellé et valeur telle qu'affichée. */
+export function buildKpiCsv(rows: ReadonlyArray<{ label: string; value: string }>, headers: readonly [string, string]): string {
+  return [headers, ...rows.map((r) => [r.label, r.value])].map((cells) => cells.map(csvEscape).join(";")).join("\n");
 }
 
 /** Appairage par layout : les `half` consécutifs vont par deux, les `full`

@@ -257,6 +257,30 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "articleSearch.detailBasePath": "Base de l'URL du reader (défaut code /blog) — détail à <base>/:slug (+ <base>/id/:id).",
   },
 
+  integrations: {
+    analytics: "Mesure d'audience, côté client seulement (IntegrationsLoader). Providers CÂBLÉS : matomo et ga4 — les autres valeurs de l'enum sont ignorées (avertissement en dev).",
+    "analytics.provider": "matomo ou ga4. plausible/posthog/mixpanel/amplitude sont acceptés par le schéma mais rien ne les charge.",
+    "analytics.id": "Matomo : idSite NUMÉRIQUE (un placeholder non numérique désactive la mesure, sans erreur) ; GA4 : identifiant de mesure G-….",
+    "analytics.url": "Matomo : URL de l'instance avec slash final (https://communecter.matomo.cloud/). Absente ou invalide → mesure désactivée.",
+    "analytics.scriptUrl": "Matomo : surcharge de l'URL du script. Sans elle : cdn.matomo.cloud/<hôte>/matomo.js pour une instance *.matomo.cloud, sinon <url>matomo.js.",
+    "analytics.cookies": "Matomo : cookies de suivi. Repli CODE false = sans cookie (mesure exemptée CNIL si l'instance anonymise l'IP — réglage Matomo, pas config).",
+    "analytics.respectDnt": "Honorer Do Not Track (setDoNotTrack). Repli CODE true.",
+    "analytics.consent": "opt-out (repli CODE) : mesure jusqu'au refus de la catégorie `analytics` (droit d'opposition) ; opt-in : rien sans acceptation — exige un bandeau (config.consent ou section cookieConsent).",
+    "analytics.publicHostOnly": "Repli CODE true : seul l'hôte de VITE_SITE_PUBLIC_URL mesure (ni dev, ni amorce *.00.re, ni hôte jumeau). false = partout.",
+    "map.styleLight": "Id de style MapTiler en thème clair (repli code streets-v4) ; la clé d'API vit en env VITE_MAPTILER_API_KEY, jamais ici.",
+    "map.styleDark": "Id de style MapTiler en thème sombre (repli code streets-v4-dark).",
+  },
+
+  "section:cookieConsent": {
+    "props.message": "Texte du bandeau ou du panneau. Dire ce qui est mesuré et comment s'y opposer — c'est le seul texte lu.",
+    "props.policyUrl": "Lien « En savoir plus » (NavLink : interne en navigation client, externe en nouvel onglet). Typiquement /politique-cookies.",
+    "props.inline": "true : panneau de préférences DANS la page, toujours visible (page cookies, droit d'opposition). Absent : bandeau flottant caché dès qu'un choix existe.",
+    "props.position": "Bandeau seulement : bottom (repli code), top, bottom-left, bottom-right.",
+    "props.categories": "Catégories cochables. La mesure d'audience lit la catégorie d'id EXACT `analytics` ; une catégorie `required` est toujours vraie et grisée.",
+    "props.categories[].defaultOn": "Pré-cochée tant qu'aucun choix n'est enregistré — pour la mesure exemptée en opt-out, afin que le panneau reflète la mesure active.",
+    "props.settingsLabel": "Bandeau : bouton qui ouvre la modale des catégories ; sans lui ni categories, le bandeau n'a que Accepter/Refuser.",
+  },
+
   "section:searchPro": {
     "props.placeholder": "Placeholder de la barre de recherche (REQUIS sur cette section).",
     "props.useFilter": "Active la sidebar/les filtres de la page.",

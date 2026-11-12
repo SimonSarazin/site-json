@@ -136,6 +136,13 @@ export const AdminDashboardKpiSchema = z.discriminatedUnion("type", [
   }),
   z.object({ ...kpiBase, type: z.literal("membersPending") }),
   z.object({ ...kpiBase, type: z.literal("analyticsVisitors") }),
+  // Tuile de pur RACCOURCI (aucune métrique) : `linkTo` de `kpiBase` existait déjà pour rendre une
+  // tuile KPI cliquable — ce type réutilise la même coquille (KpiTileShell) sans valeur chiffrée,
+  // pour un lien de navigation simple (ex. vers un onglet de profil qui porte une gestion déjà
+  // existante ailleurs, plutôt que dupliquer cette gestion dans l'admin). `linkTo` REQUIS ici (optionnel
+  // dans `kpiBase`, qui ne porte que le raccourci FACULTATIF des autres types) : sans lui, `KpiTileShell`
+  // n'enveloppe pas la carte d'un `<Link>` et l'affordance « Ouvrir → » ne mènerait nulle part.
+  z.object({ ...kpiBase, type: z.literal("link"), linkTo: z.string() }),
 ]);
 export type AdminDashboardKpi = z.infer<typeof AdminDashboardKpiSchema>;
 
@@ -155,8 +162,9 @@ const AdminMembersSectionSchema = z.object({
    *  text (barre de recherche). Absent → à-valider + admins + recherche (l'onglet « tous » est
    *  toujours présent). */
   filters: z.array(z.enum(["isAdmin", "toBeValidated", "isInviting", "text"])).optional(),
-  /** Actions proposées. Absent → tout (comportement historique). `invite` gate le bouton « Inviter ». */
-  actions: z.array(z.enum(["invite"])).optional(),
+  /** Actions proposées. Absent → tout (comportement historique). `invite` gate le bouton « Inviter »,
+   *  `mail` le mode « Envoyer un e-mail » (sélection de membres → ADMIN_MAILING_SEND, backend docs/36). */
+  actions: z.array(z.enum(["invite", "mail"])).optional(),
 });
 export type AdminMembersSection = z.infer<typeof AdminMembersSectionSchema>;
 
@@ -203,7 +211,12 @@ const AdminResourceSectionSchema = z.object({
    */
   createDefaults: z.record(z.string(), z.unknown()).optional(),
   edit: AdminFormRefSchema.default("inherit"),
-  rowActions: z.array(z.enum(["edit", "delete", "validate", "reference", "setFeatured"])).optional(),
+  /** `duplicate` : rouvre la modale de CRÉATION pré-remplie depuis la ligne (seeding via
+   *  `createDefaults`, donc restreint aux champs simples déclarés par le formulaire — adresse,
+   *  téléphone, galerie/documents, horaires ne sont PAS repris, ce sont des groupes composites
+   *  sans clé directe dans `descriptor.fields`). Le nom reçoit le préfixe `AdminResourceTable.
+   *  duplicateNamePrefix`. Annuler n'écrit rien (la modale de création n'enregistre qu'au submit). */
+  rowActions: z.array(z.enum(["edit", "delete", "validate", "reference", "setFeatured", "duplicate"])).optional(),
   /**
    * Gating par APPARTENANCE (opt-in) : sur une ligne NON possédée (`source.keys` ∌ slug du site —
    * référencée ou étrangère), seules la lecture et l'action `reference` restent ; `edit`/`delete`/
@@ -217,7 +230,9 @@ const AdminResourceSectionSchema = z.object({
   restrictActionsToOwned: z.boolean().optional(),
   /** `transfer` requiert `transferFrom` (le bouton reste caché sans lui) — ouvre le dialog de
    *  migration d'appropriation en mode ids[] sur la sélection (mêmes contrôles/gate serveur). */
-  bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer"])).optional(),
+  /** `mail` : « Envoyer un e-mail » aux fiches cochées (citoyens → par _id résolu serveur ; autres → champ
+   *  `email` de la fiche, les lignes sans e-mail sont ignorées) — ADMIN_MAILING_SEND, backend docs/36. */
+  bulkActions: z.array(z.enum(["export", "validate", "delete", "transfer", "mail"])).optional(),
   /** Slug du costum CÉDANT pour la bulkAction `transfer` (les fiches cochées lui appartiennent). */
   transferFrom: z.string().min(1).optional(),
   status: AdminStatusConfigSchema.optional(),

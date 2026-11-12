@@ -79,6 +79,7 @@
         "editError": "Impossible de charger cette fiche. Cliquez de nouveau sur « Modifier » pour réessayer."
     },
     "CardPoiAmenities": {
+        "commune": "Commune : {{commune}}",
         "amenities": "Aménagement",
         "pmrAccess": "Accès PMR",
         "publicTransport": "Transport en commun",
@@ -240,6 +241,9 @@
         "hourColumn": "Horaire",
         "gridCaption": "Créneaux de réservation, par jour et par heure",
         "free": "Créneau libre",
+        "freeShort": "Libre",
+        "history": "Historique",
+        "historyStep": "Créneaux",
         "bookAria": "Réserver le {{day}} de {{start}} à {{end}}",
         "bookTitle": "Réserver un créneau",
         "addSlot": "Ajouter un créneau",
@@ -281,7 +285,19 @@
     },
     "ReservationHours": {
         "summary": "{{weekly}} h/sem · {{cumulative}} h cumulées",
-        "total": "Total : {{weekly}} h/sem · {{cumulative}} h cumulées"
+        "total": "Total : {{weekly}} h/sem · {{cumulative}} h cumulées",
+        "usage": "Occupé {{occupied}} h/sem (école {{school}} h · clubs {{club}} h) · libre {{free}} h/sem · taux d'occupation {{rate}} %",
+        "usageUnknown": "non précisé {{unknown}} h",
+        "share": "{{share}} % de la plage de référence"
+    },
+    "UsageFilter": {
+        "all": "Tous les statuts",
+        "open": "Ouvert",
+        "closed": "Non ouvert",
+        "noPlanning": "Sans planning",
+        "pending": "Calcul du statut…",
+        "retry": "Réessayer",
+        "chip": "Statut : {{status}}"
     },
     "SlotFilter": {
         "from": "De",

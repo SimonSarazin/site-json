@@ -1518,6 +1518,7 @@ export const CardConfSchema = z.object({
   imageFit:        z.enum(["cover", "contain"]).optional(),
   servicePricing:  z.object({ /* meeting / coworking / accommodation */ }).optional(),
   installationFilter: InstallationFilterConfSchema.optional(),
+  communeFrom: z.object({ filter: z.string() }).optional(), // poi-amenities : commune de rattachement
   type:    z.enum([...15 designs...]).default("default"),
   variant: z.enum([...11 designs...]).optional(),
 }).partial();
@@ -2257,6 +2258,7 @@ const SearchHeaderProps = z.object({
   ).optional(),
   dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
   slotFilter: SlotFilterSchema.optional(),
+  usageFilter: UsageFilterSchema.optional(),
   buttons: z.array(ActionButtonSchema).optional(),
   showSearch: z.boolean().optional(),
   searchPlaceholder: LocalizedString.optional(),
@@ -2282,6 +2284,7 @@ export const SearchHeaderSectionSchema = z.object({
 | `types`            | `array?`          | Types de filtre (id, label)            |
 | `dropdownFilters`  | `array?`          | Filtres en menu deroulant (`id`, `label`, `field?`, `multiple?`, `match?` — `exact` \| `token`, `allLabel?`, `options[]` — dont `values?`, `optionsFrom?` — `{list: string \| string[], costumSlug?, withDeclared?}`, cf. `doc/07-module-search.md`) |
 | `slotFilter`       | `object?`         | Filtre « créneau » (disponibilité) : une plage horaire, des jours de la semaine (aucun = les 7) et une période facultative ; retire les ressources réservées sur ce créneau hebdomadaire (`id`, `label`, `reservations` — même bloc que `list.preview.reservations`, `amplitude?` — `{startHour?, endHour?}`, défaut 8 → 22). Combiné en ET aux dropdowns, même URL, pastilles et réinitialisation — cf. `doc/07-module-search.md`, « Filtre créneau » |
+| `usageFilter`      | `object?`         | Filtre « statut d'ouverture » : un statut à la fois — ouvert, non ouvert, sans planning — calculé par la mesure d'usage (`id`, `label`, `reservations` — même bloc que `list.preview.reservations`, `usage` requis). Restriction sur `_id` (`$in` / `$nin`), même URL, pastilles et réinitialisation que `slotFilter` — cf. `doc/07-module-search.md`, « Filtre statut d'ouverture » |
 | `buttons`          | `ActionButton[]?` | Boutons d'action. Un bouton de modale (`action: "add-*"` ou `modal`) est réservé aux admins du site sauf `requiresAdmin: false` (un visiteur non connecté passe alors par la connexion, puis la modale s'ouvre). `createDefaults` sème des valeurs dans la modale d'ajout (ex. `{ "type": "Cooperative" }`) ; une clé que le formulaire ne déclare pas est ignorée |
 | `showSearch`       | `boolean?`        | Afficher le champ de recherche         |
 | `searchPlaceholder` | `LocalizedString?` | Placeholder de la recherche          |

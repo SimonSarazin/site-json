@@ -159,3 +159,22 @@ describe("AdminSectionSchema — answerCopy", () => {
     expect(AdminSectionSchema.safeParse({ type: "answerCopy", sourceForm: SRC }).success).toBe(false);
   });
 });
+
+/**
+ * Mailing d'admin (ADMIN_MAILING_SEND, backend docs/36) : `mail` est une bulkAction de table ET une action de
+ * la section membres. Test de contrat : une valeur absente de l'enum serait refusée par `config:validate`, et
+ * un bouton ne s'afficherait jamais sans qu'on sache pourquoi.
+ */
+describe("AdminSectionSchema — action `mail`", () => {
+  it("resource.bulkActions accepte `mail`", () => {
+    const r = AdminSectionSchema.safeParse({ type: "resource", entityType: "organizations", bulkActions: ["export", "mail"] });
+    expect(r.success).toBe(true);
+  });
+  it("members.actions accepte `mail` (et `invite`)", () => {
+    const r = AdminSectionSchema.safeParse({ type: "members", actions: ["invite", "mail"] });
+    expect(r.success).toBe(true);
+  });
+  it("rejette une action inconnue", () => {
+    expect(AdminSectionSchema.safeParse({ type: "members", actions: ["sms"] }).success).toBe(false);
+  });
+});

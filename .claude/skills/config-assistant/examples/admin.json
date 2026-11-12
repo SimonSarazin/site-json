@@ -18,7 +18,22 @@
         },
         "sections": [
           {
-            "type": "dashboard"
+            "type": "dashboard",
+            "kpis": [
+              {
+                "type": "link",
+                "label": {
+                  "fr": "Documents de l'organisation",
+                  "en": "Organisation documents"
+                },
+                "hint": {
+                  "fr": "Ajouter, consulter ou supprimer les fichiers du Réseau Parentalité 62",
+                  "en": "Add, view or remove Réseau Parentalité 62's files"
+                },
+                "linkTo": "/profil/parent62/gallery",
+                "icon": "folder-open"
+              }
+            ]
           }
         ]
       },
@@ -44,8 +59,8 @@
       {
         "id": "actualites",
         "label": {
-          "fr": "Actualités",
-          "en": "News"
+          "fr": "Article",
+          "en": "Article"
         },
         "access": "siteAdmin",
         "sections": [
@@ -53,8 +68,8 @@
             "type": "resource",
             "entityType": "poi",
             "label": {
-              "fr": "Actualités",
-              "en": "News"
+              "fr": "Article",
+              "en": "Article"
             },
             "source": {
               "defaultFilters": {
@@ -86,6 +101,7 @@
             ],
             "rowActions": [
               "edit",
+              "duplicate",
               "delete",
               "validate"
             ],
@@ -565,6 +581,7 @@
             ],
             "rowActions": [
               "edit",
+              "duplicate",
               "delete",
               "validate"
             ],

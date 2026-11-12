@@ -4,6 +4,7 @@ import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../../../tests/test-utils-ui";
 import "../i18n";
 import { KpiCards } from "./KpiCards";
+import { PLACEHOLDER } from "../dashboard";
 import type { KpiDef } from "../schema";
 
 /**
@@ -31,5 +32,44 @@ describe("KpiCards — disposition en ligne", () => {
     );
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(screen.getByText("12,5 h")).toBeInTheDocument();
+  });
+});
+
+describe("KpiCards — mesure d'usage en cours de calcul", () => {
+  it("le KPI d'une dimension encore en calcul montre le sablier, les autres leur valeur", () => {
+    const kpis: KpiDef[] = [
+      { kind: "sum", dimension: "heuresClubs", unit: "h", label: { fr: "Heures clubs", en: "Club hours" } },
+      { kind: "count", label: { fr: "Équipements", en: "Facilities" } },
+    ];
+    renderWithProviders(
+      <KpiCards
+        data={[{}, {}]}
+        dimensions={{ heuresClubs: { paths: ["__usage.clubHours"], kind: "number" } }}
+        kpis={kpis}
+        layout="inline"
+        loadingDimensions={new Set(["heuresClubs"])}
+      />,
+    );
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+    expect(screen.getByText("2")).toBeInTheDocument();
+  });
+
+  it("dimension indisponible (mesure en échec) → « — », ni sablier ni 0 % trompeur", () => {
+    const kpis: KpiDef[] = [
+      { kind: "percentTrue", dimension: "ouvert", label: { fr: "Part des ouverts", en: "Open share" } },
+      { kind: "count", label: { fr: "Équipements", en: "Facilities" } },
+    ];
+    renderWithProviders(
+      <KpiCards
+        data={[{}, {}]}
+        dimensions={{ ouvert: { paths: ["__usage.open"], kind: "anyTrue" } }}
+        kpis={kpis}
+        layout="inline"
+        unavailableDimensions={new Set(["ouvert"])}
+      />,
+    );
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByText(PLACEHOLDER)).toBeInTheDocument();
+    expect(screen.queryByText("0%")).toBeNull();
   });
 });

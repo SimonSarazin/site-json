@@ -21,7 +21,8 @@
   },
   "charts": {
     "yes": "oui",
-    "no": "non"
+    "no": "non",
+    "unavailable": "Mesure indisponible pour le moment."
   },
   "table": {
     "title": "Données détaillées",
@@ -30,7 +31,8 @@
     "empty": "Aucun élément ne correspond aux filtres.",
     "page": "Page {{current}} / {{total}}",
     "prev": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "exportKpis": "Chiffres clés"
   },
   "list": {
     "title": "Liste",
@@ -72,5 +74,22 @@
     "unknownActivity": "Activité non renseignée",
     "noReservations": "Aucun créneau de réservation pour cette installation.",
     "error": "Impossible de charger les données de l'installation."
+  },
+  "export": {
+    "kpiLabel": "Indicateur",
+    "kpiValue": "Valeur",
+    "kpiFile": "chiffres-cles"
+  },
+  "usage": {
+    "status": {
+      "open": "Ouvert",
+      "closed": "Non ouvert",
+      "noPlanning": "Sans planning"
+    },
+    "band": {
+      "zero": "0 {{unit}}",
+      "range": "{{min}}–{{max}} {{unit}}",
+      "over": "plus de {{min}} {{unit}}"
+    }
   }
 }

@@ -125,6 +125,12 @@ export const ChartDefSchema = z.object({
   dimensions: z.array(z.string()).optional(),
   /** `barsHorizontal` : nombre de valeurs retenues (tri décroissant). */
   top: z.number().int().positive().optional(),
+  /** Valeur portée par chaque part ou barre : le nombre d'items (défaut), ou la somme / la moyenne d'une
+   *  dimension NUMÉRIQUE pour chaque valeur de `dimension` (ex. heures clubs par commune — `aggregateBy`). */
+  value: z.object({
+    kind: z.enum(["sum", "avg"]),
+    dimension: z.string(),
+  }).optional(),
   label: LocalizedString.optional(),
   labelKey: z.string().optional(),
   /** Couleur par VALEUR de dimension (jeton de thème). */

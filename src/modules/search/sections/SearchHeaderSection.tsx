@@ -11,6 +11,8 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useDynamicFilterOptions } from "@/modules/search/hooks/useDynamicFilterOptions";
 import { useSlotFilter } from "@/modules/search/hooks/useSlotFilter";
 import { SlotFilterControl } from "@/modules/search/components/SlotFilterControl";
+import { useUsageFilter } from "@/modules/search/hooks/useUsageFilter";
+import { UsageFilterControl } from "@/modules/search/components/UsageFilterControl";
 import { resolveFilterHydration } from "@/modules/search/lib/hydrateDropdownFilter";
 import { dropdownOptionEntry } from "@/modules/search/lib/dropdownFilters";
 import { formatReservationPeriod } from "@/modules/search/lib/reservationPeriod";
@@ -96,7 +98,9 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     // Filtre « créneau » (opt-in `slotFilter`) : même rangée, même compteur, même réinitialisation et
     // mêmes pastilles que les dropdowns. Sans lui, `hasFilters` vaut `hasDropdownFilters` : rendu inchangé.
     const slotFilter = useSlotFilter(props.slotFilter);
-    const hasFilters = hasDropdownFilters || slotFilter.enabled;
+    // Filtre « statut d'ouverture » (opt-in `usageFilter`) : mêmes règles que le créneau.
+    const usageFilter = useUsageFilter(props.usageFilter);
+    const hasFilters = hasDropdownFilters || slotFilter.enabled || usageFilter.enabled;
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
 
@@ -256,7 +260,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const activeFilterCount = visibleDropdownFilters.reduce(
         (sum, filter) => sum + getDropdownSelectedValues(filter).length,
         0
-    ) + (slotFilter.applied ? 1 : 0);
+    ) + (slotFilter.applied ? 1 : 0) + (usageFilter.applied ? 1 : 0);
 
     // Titre reflétant la valeur active d'un filtre (`headlineFromFilter`) — cherché dans la liste
     // COMPLÈTE, un filtre `hidden` devant pouvoir titrer sa page. Repli : le `headline` déclaré.
@@ -275,6 +279,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         writeParams((params) => {
             filters.forEach((filter) => params.delete(filter.id));
             if (props.slotFilter) params.delete(props.slotFilter.id);
+            if (props.usageFilter) params.delete(props.usageFilter.id);
         });
         filters.forEach((filter) => {
             if (filter.field) {
@@ -389,6 +394,21 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
             onApply={slotFilter.apply}
             onRetry={() => void slotFilter.retry()}
             triggerClassName={FILTER_TRIGGER_CLASS}
+        />
+    ) : null;
+
+    const usageTagLabel = usageFilter.applied
+        ? t("UsageFilter.chip", undefined, { status: t(`UsageFilter.${usageFilter.applied}`) })
+        : null;
+    const usageControl = usageFilter.enabled && props.usageFilter ? (
+        <UsageFilterControl
+            label={t(props.usageFilter.label)}
+            status={usageFilter.status}
+            pending={usageFilter.pending}
+            error={usageFilter.error}
+            onApply={usageFilter.apply}
+            onRetry={() => void usageFilter.retry()}
+            t={t}
         />
     ) : null;
 
@@ -520,6 +540,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                 <div className="hidden w-full flex-wrap items-center justify-center gap-3 lg:flex">
                                     {visibleDropdownFilters.map(renderDropdownFilter)}
                                     {slotControl}
+                                    {usageControl}
                                     {activeFilterCount > 0 && (
                                         <>
                                             <Badge className="rounded-full px-2">{activeFilterCount}</Badge>
@@ -566,6 +587,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                             <div className="flex flex-col gap-3 overflow-y-auto p-4">
                                                 {visibleDropdownFilters.map(renderDropdownFilter)}
                                                 {slotControl}
+                                                {usageControl}
                                             </div>
                                             <SheetFooter className="flex-row gap-2 border-t border-border">
                                                 {activeFilterCount > 0 && (
@@ -591,7 +613,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                     {/* Tags de filtres actifs — supprimables individuellement.
                         `showActiveFiltersTags` : true/absent = partout · "desktop" =
                         ≥ lg seulement · "mobile" = < lg seulement · false = masqués. */}
-                    {props.showActiveFiltersTags !== false && (activeFilterTags.length > 0 || slotTagLabel) && (
+                    {props.showActiveFiltersTags !== false && (activeFilterTags.length > 0 || slotTagLabel || usageTagLabel) && (
                         <div
                             className={`${
                                 props.showActiveFiltersTags === "mobile"
@@ -610,6 +632,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                 })
                             )}
                             {slotTagLabel && renderActiveTag(`slot:${props.slotFilter?.id}`, slotTagLabel, () => slotFilter.apply(null))}
+                            {usageTagLabel && renderActiveTag(`usage:${props.usageFilter?.id}`, usageTagLabel, () => usageFilter.apply(null))}
                         </div>
                     )}
                 </div>
