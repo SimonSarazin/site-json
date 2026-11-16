@@ -767,9 +767,9 @@ listes et textes du détail → boutons.
 **Listes et textes du détail** — avec `resourceTypes[].detailSuffixes`, les MÊMES champs que
 la fiche du lieu (`roomPath`/`coworkingPath`/`bedRoomPath` de `profile-about-tl`), dans le
 même ordre et sous les mêmes libellés (`lib/resourceDetails.ts`, partagé avec la fiche) :
-listes `equipments`, `catering` (Restauration), `services`, `roomType` ; textes `moreInfo`
-(Bon à savoir), `about` (À propos du lieu), `tip` (Le petit truc en plus), rendus en
-markdown/HTML sanitisé. Sans `detailSuffixes` (rendu historique) : **À propos**
+textes `tip` (Le petit truc en plus), `about` (À propos du lieu), `moreInfo` (Bon à savoir),
+rendus en markdown/HTML sanitisé, puis listes `equipments`, `catering` (Restauration),
+`services`, `roomType`. Sans `detailSuffixes` (rendu historique) : **À propos**
 (`descriptionSuffix`, texte brut, sauts de ligne gardés) → **Équipements** (`fieldSuffixes.equipments`) → **Services
 proposés** (`servicesSuffix`). ⚠️ `fieldSuffixes.equipments` est COMMUN aux 3 formulaires :
 pour les salles de réunion il désigne en réalité la Restauration — d'où `detailSuffixes`.

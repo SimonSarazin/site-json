@@ -254,6 +254,17 @@
           },
           {
             "label": {
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
+          },
+          {
+            "label": {
               "fr": "API et données ouvertes",
               "en": "API and open data"
             },
@@ -336,6 +347,7 @@
           "en": "Cooperate"
         },
         "icon": "handshake",
+        "path": "/cooperer",
         "children": [
           {
             "label": {
@@ -380,17 +392,6 @@
               "en": "The support community that takes care of this resource"
             },
             "path": "/communaute"
-          },
-          {
-            "label": {
-              "fr": "La plateforme d'aiguillage",
-              "en": "The guidance platform"
-            },
-            "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
-              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
-            },
-            "path": "https://aiguillage.tiers-lieux.org/"
           }
         ]
       },
