@@ -309,10 +309,10 @@ const AdminReferenceSectionSchema = z.object({
    */
   moderateReferenced: z.boolean().optional(),
   /**
-   * Panneau de filtres (opt-in) à gauche des deux tables — MÊMES props que la section `filters`
-   * d'une page (ex. recopiées de `/lieux`). Les choix s'ajoutent aux deux recherches (tags, zones,
+   * Panneau de filtres (opt-in) à gauche des tables — MÊMES props que la section `filters`
+   * d'une page (ex. recopiées de `/lieux`). Les choix s'ajoutent à chaque recherche (tags, zones,
    * facettes), derrière les garde-fous : un `$nin` de garde reste, composé avec la facette. Les groupes `filterType: "sourceKey"`
-   * (réseaux) ne s'affichent et ne s'appliquent que sur « Référencés » : la recherche de candidates
+   * (réseaux) ne s'affichent et ne s'appliquent que sur « Référencés » et « Sourcés » : la recherche de candidates
    * porte sur ce qui n'a PAS la source du site, un filtre par source y contredirait le vivier.
    */
   filters: FiltersSectionSchema.shape.props.optional(),

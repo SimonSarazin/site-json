@@ -13,7 +13,7 @@ export interface ReferenceFacetSelection {
 }
 
 /**
- * Ajoute la sélection du panneau aux `baseParams` d'une des deux recherches de la section `reference`
+ * Ajoute la sélection du panneau aux `baseParams` d'une des recherches de la section `reference`
  * — même traduction que `SearchProStatic` (`searchByFieldsToQuery`) :
  *  - tags cochés → `searchTags` ;
  *  - facettes → `defaultFilters`, composées SOUS ceux de la section (`mergeMongoFilters`) : sur une clé
@@ -47,4 +47,15 @@ export function applyReferenceFacets<P extends { defaultFilters?: Record<string,
     delete out.notSourceKey;
   }
   return { baseParams: out, searchTags };
+}
+
+/**
+ * Groupes du panneau affichés sur un sous-onglet : les réseaux (`filterType: "sourceKey"`) sont retirés
+ * de « Rechercher & référencer » — `applyReferenceFacets` y ignore les sources (`ignoreSourceKeys`), un
+ * filtre visible sans effet tromperait. Présents sur « Référencés » et « Sourcés ».
+ * Renvoie le MÊME tableau hors recherche (référence stable pour l'effet de `FiltersSection`).
+ */
+export function referenceFilterGroups<G>(groups: G[], tab: "search" | "referenced" | "sourced"): G[] {
+  if (tab !== "search") return groups;
+  return groups.filter((g) => (g as { filterType?: string }).filterType !== "sourceKey");
 }

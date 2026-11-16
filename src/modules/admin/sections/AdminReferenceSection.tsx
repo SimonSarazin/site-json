@@ -29,7 +29,7 @@ import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } fr
 import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection } from "../schema";
 import { formatCell, getPath, normalizeColumns } from "./resourceHelpers";
-import { applyReferenceFacets } from "../lib/referenceFacets";
+import { applyReferenceFacets, referenceFilterGroups, type ReferenceFacetSelection } from "../lib/referenceFacets";
 
 // Panneau de filtres : chargé seulement quand la section en déclare un (`filters`, opt-in).
 const FiltersSection = lazy(() => import("@/modules/search/sections/FiltersSection"));
@@ -95,7 +95,7 @@ const DEFAULT_COLUMNS = [
  * source.keys OU reference.costum). Un élément DÉTACHÉ (source retiré) redevient référençable ici.
  */
 export default function AdminReferenceSection({ section }: { section: AdminSection }) {
-  // Le panneau et les deux recherches partagent l'état de filtres de la SECTION (provider local).
+  // Le panneau et les recherches des sous-onglets partagent l'état de filtres de la SECTION (provider local).
   if ((section as AdminReferenceSectionConfig).filters) {
     return (
       <PageFiltersProvider>
@@ -104,6 +104,35 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
     );
   }
   return <ReferenceSection section={section} />;
+}
+
+/**
+ * Une liste d'un sous-onglet : périmètre de la section (`base`) + sélection du panneau, sur le type
+ * choisi. Tenu une fois pour les trois sous-onglets (Rechercher, Référencés, Sourcés).
+ */
+function useReferenceList(
+  queryKeyPrefix: Parameters<typeof useSearchQuery>[0]["queryKeyPrefix"],
+  type: string,
+  searchText: string,
+  base: { notSourceKey: boolean; defaultFilters: Record<string, unknown> },
+  selection: ReferenceFacetSelection | null,
+  opts: { ignoreSourceKeys?: boolean; enabled?: boolean } = {},
+) {
+  const { ignoreSourceKeys, enabled } = opts;
+  const query = useMemo(
+    () => applyReferenceFacets({ ...base, defaultTypes: [type] as SearchType[] }, selection, { ignoreSourceKeys }),
+    [base, type, selection, ignoreSourceKeys],
+  );
+  return useSearchQuery({
+    queryKeyPrefix,
+    searchText,
+    searchTags: query.searchTags,
+    searchType: { type: [type] },
+    mapUsed: false,
+    baseParams: query.baseParams,
+    variant: "admin",
+    ...(enabled === undefined ? {} : { enabled }),
+  });
 }
 
 function ReferenceSection({ section }: { section: AdminSection }) {
@@ -157,10 +186,7 @@ function ReferenceSection({ section }: { section: AdminSection }) {
       ...cfg.filters,
       // Le champ texte est celui de la section, au-dessus.
       hideSearch: true,
-      // Réseaux (`sourceKey`) : seulement sur « Référencés » — cf. schema `filters`.
-      filterGroups: tab === "search"
-        ? cfg.filters.filterGroups.filter((g) => (g as { filterType?: string }).filterType !== "sourceKey")
-        : cfg.filters.filterGroups,
+      filterGroups: referenceFilterGroups(cfg.filters.filterGroups, tab),
     };
   }, [cfg.filters, tab]);
   const [q, setQ] = useState("");
@@ -168,56 +194,29 @@ function ReferenceSection({ section }: { section: AdminSection }) {
 
   // ── Recherche « à référencer » : ciblage + politique open-data configurables (cfg.search),
   //    garde-fous du déjà-rattaché non configurables — défaut = fidèle referenceTable legacy.
-  const searchQuery = useMemo(() => applyReferenceFacets({
-    defaultTypes: [type] as SearchType[],
-    notSourceKey: true,
-    defaultFilters: buildOpenSearchFilters(cfg.search, type, costumSlug),
-  }, selection, { ignoreSourceKeys: true }), [cfg.search, type, costumSlug, selection]);
-
-  const global = useSearchQuery({
-    queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_SEARCH_PREFIX(type),
-    searchText,
-    searchTags: searchQuery.searchTags,
-    searchType: { type: [type] },
-    mapUsed: false,
-    baseParams: searchQuery.baseParams,
-    variant: "admin",
+  const searchBase = useMemo(
+    () => ({ notSourceKey: true, defaultFilters: buildOpenSearchFilters(cfg.search, type, costumSlug) }),
+    [cfg.search, type, costumSlug],
+  );
+  const global = useReferenceList(ADMIN_QUERY_KEYS.REFERENCE_SEARCH_PREFIX(type), type, searchText, searchBase, selection, {
+    ignoreSourceKeys: true,
   });
 
   // ── Référencés (reference.costum ∋ slug) ───────────────────────────────────────────────────────
-  const referencedQuery = useMemo(() => applyReferenceFacets({
-    defaultTypes: [type] as SearchType[],
-    notSourceKey: true, // désactive le scope auto ($or source/reference) → on filtre reference SEUL
-    defaultFilters: { "reference.costum": { $in: [costumSlug] } },
-  }, selection), [type, costumSlug, selection]);
-
-  const referenced = useSearchQuery({
-    queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_LISTED_PREFIX(type),
-    searchText,
-    searchTags: referencedQuery.searchTags,
-    searchType: { type: [type] },
-    mapUsed: false,
-    baseParams: referencedQuery.baseParams,
-    variant: "admin",
-  });
+  const referencedBase = useMemo(
+    // notSourceKey : désactive le scope auto ($or source/reference) → on filtre reference SEUL
+    () => ({ notSourceKey: true, defaultFilters: { "reference.costum": { $in: [costumSlug] } } }),
+    [costumSlug],
+  );
+  const referenced = useReferenceList(ADMIN_QUERY_KEYS.REFERENCE_LISTED_PREFIX(type), type, searchText, referencedBase, selection);
 
   // ── Sourcés (source.keys ∋ slug), opt-in `showSourced` ─────────────────────────────────────────
-  // Même construction que « Référencés » (périmètre explicite, filtres du panneau) ; requête
-  // désactivée sans l'option.
-  const sourcedQuery = useMemo(() => applyReferenceFacets({
-    defaultTypes: [type] as SearchType[],
-    notSourceKey: true, // désactive le scope auto ($or source/reference) → on filtre source SEUL
-    defaultFilters: { "source.keys": { $in: [costumSlug] } },
-  }, selection), [type, costumSlug, selection]);
-
-  const sourced = useSearchQuery({
-    queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_SOURCED_PREFIX(type),
-    searchText,
-    searchTags: sourcedQuery.searchTags,
-    searchType: { type: [type] },
-    mapUsed: false,
-    baseParams: sourcedQuery.baseParams,
-    variant: "admin",
+  // Même construction que « Référencés », filtrée sur la source ; requête désactivée sans l'option.
+  const sourcedBase = useMemo(
+    () => ({ notSourceKey: true, defaultFilters: { "source.keys": { $in: [costumSlug] } } }),
+    [costumSlug],
+  );
+  const sourced = useReferenceList(ADMIN_QUERY_KEYS.REFERENCE_SOURCED_PREFIX(type), type, searchText, sourcedBase, selection, {
     enabled: !!cfg.showSourced,
   });
   const [toDetach, setToDetach] = useState<{ id: string; type: string; label: string } | null>(null);

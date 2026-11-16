@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-11-13** (onglet « Événements » des fiches organisation et projet : même agenda que `/actualites`, cf. §9 13/11). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-16** (hero en débord, filtres et onglet « Sourcés » au référencement, périmètre source + référencement à la place du tag `TiersLieux`, cf. §9 16/11). Précédent : **2026-11-13** (onglet « Événements » des fiches organisation et projet : même agenda que `/actualites`, cf. §9 13/11). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -58,6 +58,7 @@ lieux**, pas un plan de rattrapage.
 | 23/10 | Claude | Suites de la revue de la MR `aac-dev` : en type `aac`, « Mes promesses » ne charge plus les projets de l'organisation et lit l'enveloppe du formulaire de l'annuaire (`aac.formId`) — commitées et poussées (§9) |
 | 23/10 | Simon (MR 111) + Thomas | Menu « Communs » (icône `puzzle`, chemin `/communs`) sorti de « Coopérer », avec « Annuaire de nos communs », « Appel à communs », « Usages » et « Comm'un Lundi » ; la page `aac-directory` passe de `/aac/communs` à **`/communs`** (le module aac garde ses routes propres `/aac` et `/aac/commun/:answerId`, rien dans le code ne dépendait de l'ancien chemin ; la page n'était pas encore en ligne, pas de redirection à poser). Le header de tiers-lieux étant un archétype du skill config-assistant, deux gardes suivent ce changement : snapshot `examples/header-mega-menu.json` régénéré (`config:example -- header-mega-menu --write`) et constat assumé « Décider ensemble » réindexé `header.nav.4.children.2.path` dans `archetypes.json`. Repris depuis le fork de Simon sur `fix/menu-communs` |
 | 13/11 | Mirana | Onglet « Événements » des fiches organisation et projet : section `agenda` de `/actualites`, bornée à la fiche par l'option moteur `scopeToProfile` (cf. §9 13/11) |
+| 16/11 | Mirana | Hero de l'accueil et de `/reservation` en débord sous la section suivante (`overlapNextSection`) ; filtres de `/lieux` et sous-onglet « Sourcés » dans l'admin Référencement ; `/lieux`, accueil, `/reservation` et observatoire scopés par source + référencement au lieu du tag `TiersLieux` (cf. §9 16/11) |
 
 ---
 
@@ -217,6 +218,38 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 16/11 — hero en débord, filtres et « Sourcés » au référencement, fin du filtre par tag `TiersLieux`
+
+- **Hero (accueil, `/reservation`)** : l'illustration s'affiche entière sous la barre de recherche ET
+  sous la section suivante (cartes), sans bande blanche entre les deux. Nouvelles options moteur de
+  `heroSearch` : `overlapNextSection` (opt-in, défaut `false`, aucun autre site touché) et
+  `overlapNextSectionDepth` (profondeur du débord en px, défaut 192 ; 144 sur l'accueil pour garder
+  l'intervalle avant « Découvrir les lieux »). Options documentées dans
+  [Schémas des sections](../doc/05-schemas-sections.md).
+- **Admin › Référencement — filtres** : le panneau de filtres de `/lieux` (réseaux régionaux,
+  typologies, pays, régions, portage) s'applique aux sous-onglets. Sur « Rechercher & référencer »,
+  le filtre « Réseaux régionaux » est retiré (il borne par source, ce qui contredit une recherche hors
+  costum). Options `filters` et `showSourced` de la section `reference`, documentées dans
+  [Module Admin](../doc/30-module-admin.md).
+- **Admin › Référencement — « Sourcés »** : nouveau sous-onglet listant les organisations dont la
+  source est le costum (`source.keys ∋ navigatorDesTierslieux`), avec l'action « Retirer la source »
+  après confirmation, comme la vue `admin.view.reference` du legacy. Le retrait est définitif depuis
+  le site : le backend refuse l'ajout d'une source, il ne se répare pas en un clic.
+- **Périmètre** : `/lieux`, le hero et « Découvrir les lieux » de l'accueil, le hero de `/reservation`
+  et l'observatoire ne filtrent plus sur le tag `TiersLieux` ni `notSourceKey` : ils prennent le
+  périmètre costum par défaut, organisations sourcées OU référencées. L'observatoire exclut en plus les
+  réseaux (`tags $nin RéseauTiersLieux`). `costum.mainTag` reste posé à la création.
+- **Vérifié** : tests unitaires des facettes (5 cas, vérifiés en échec), `config:validate`,
+  `audit:config`, snapshot preflight `__effective__/tiers-lieux.json` régénéré ; au navigateur :
+  `/lieux`, accueil et observatoire à 4 313 lieux ; référencement 23 470 / 4 319 / 25 sans filtre et
+  0 / 367 / 0 avec la typologie « Ateliers artisanaux partagés » ; dialogue de retrait de source
+  ouvert puis annulé. Non vérifiés : mode sombre, mobile.
+- **Relecture** : les trois sous-onglets passent par une seule requête paramétrée (`useReferenceList`),
+  le retrait des réseaux sur « Rechercher » est une fonction testée (`referenceFilterGroups`), l'image en
+  débord est tenue une fois pour les deux variantes du hero ; `showSourced` et le sens de `filters` pour
+  `reference` sont déclarés au registre des descriptions de props. Chiffres de l'admin revérifiés au
+  navigateur après ces changements.
 
 ### 13/11 — fiches organisation et projet : l'onglet « Événements » reprend l'agenda de `/actualites`
 

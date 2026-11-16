@@ -447,12 +447,12 @@ d'élément : le Node durci refuserait). Échec visible (toast `referencedUnmode
 
 **Panneau de filtres** (`filters`, opt-in) : mêmes props que la section `filters` d'une page
 (`filterGroups`, `filtersByAnswers`, `filtersByPath`, `defaultOpenGroups`…) — typiquement recopiées
-de la page annuaire du site. Le panneau s'affiche à gauche des deux sous-onglets (son champ texte est
-masqué : celui de la section sert) et ses choix s'ajoutent aux DEUX recherches, avec la même
+de la page annuaire du site. Le panneau s'affiche à gauche des sous-onglets (son champ texte est
+masqué : celui de la section sert) et ses choix s'ajoutent à CHAQUE recherche, avec la même
 traduction que `searchProStatic` (`searchByFieldsToQuery`, `lib/referenceFacets.ts`) : tags cochés →
 `searchTags`, facettes → `defaultFilters` composés sous ceux de la section (un `$nin` de garde reste,
 composé avec le `$in` de la facette), zones → `locality`. Les groupes **réseaux**
-(`filterType: "sourceKey"`) ne s'affichent et ne s'appliquent que sur « Référencés » : la recherche de
+(`filterType: "sourceKey"`) ne s'affichent et ne s'appliquent que sur « Référencés » et « Sourcés » : la recherche de
 candidates porte sur ce qui n'a pas la source du site, un filtre par source y contredirait le vivier.
 L'état est propre à la section (provider local) et se reflète dans l'URL de `/admin`, comme sur une page.
 Consommateur : `config.prod.tiers-lieux.json` (filtres de `/lieux`).

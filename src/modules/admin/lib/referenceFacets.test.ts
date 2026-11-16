@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { applyReferenceFacets } from "./referenceFacets";
+import { applyReferenceFacets, referenceFilterGroups } from "./referenceFacets";
 
 const guard = { "reference.costum": { $nin: ["tl"] }, "source.keys": { $nin: ["tl"] } };
 
@@ -57,5 +57,18 @@ describe("applyReferenceFacets", () => {
       { ignoreSourceKeys: true },
     );
     expect(out.baseParams).toBe(bp);
+  });
+});
+
+describe("referenceFilterGroups", () => {
+  const groups = [{ id: "reseaux", filterType: "sourceKey" }, { id: "typo", filterType: "tags" }];
+
+  it("retire les réseaux (sourceKey) sur la recherche", () => {
+    expect(referenceFilterGroups(groups, "search").map((g) => g.id)).toEqual(["typo"]);
+  });
+
+  it("garde tous les groupes, même tableau, sur Référencés et Sourcés", () => {
+    expect(referenceFilterGroups(groups, "referenced")).toBe(groups);
+    expect(referenceFilterGroups(groups, "sourced")).toBe(groups);
   });
 });

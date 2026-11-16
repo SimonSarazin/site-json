@@ -74,6 +74,19 @@ const buttonMatchesParams = (btn: HeroSearchCtaButton, searchParams: URLSearchPa
   });
 };
 
+/**
+ * Illustration en mode `overlapNextSection` : ENTIÈRE, dans le flux, à sa hauteur naturelle (`h-auto`),
+ * jamais recadrée par une hauteur fixe. `-mt-14` la glisse SOUS le bloc de recherche (positionné `z-10`),
+ * et la section suivante en recouvre le bas (`overlapNextSectionDepth`) : l'image est entre les deux.
+ */
+function OverlapIllustration({ src }: { src: string }) {
+  return (
+    <div className="pointer-events-none w-full -mt-14">
+      <HeroBackgroundImage src={src} className="block w-full h-auto" />
+    </div>
+  );
+}
+
 export function HeroSearch({ id, props }: HeroSearchProps) {
   const { t } = useLocalization();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -444,12 +457,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
         {props.backgroundImage && (
           overlapNext ? (
-            // Image ENTIÈRE, dans le flux, à sa hauteur naturelle (`h-auto`) : ni recadrée par une
-            // hauteur fixe. `-mt-14` la glisse SOUS le bloc de recherche (positionné `z-10`), et les cartes
-          // de la section suivante en recouvrent le bas (`overlapNextSectionDepth`) : l'image est entre les deux.
-            <div className="pointer-events-none w-full -mt-14">
-              <HeroBackgroundImage src={props.backgroundImage} className="block w-full h-auto" />
-            </div>
+            <OverlapIllustration src={props.backgroundImage} />
           ) : (
             <div className="absolute bottom-0 left-0 right-0 h-64 overflow-hidden">
               <HeroBackgroundImage
@@ -595,12 +603,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
       {props.backgroundImage && (
         overlapNext ? (
-          // Image ENTIÈRE, dans le flux, à sa hauteur naturelle (`h-auto`) : ni recadrée par une
-          // hauteur fixe. `-mt-14` la glisse SOUS le bloc de recherche (positionné `z-10`), et les cartes
-          // de la section suivante en recouvrent le bas (`overlapNextSectionDepth`) : l'image est entre les deux.
-          <div className="pointer-events-none w-full -mt-14">
-            <HeroBackgroundImage src={props.backgroundImage} className="block w-full h-auto" />
-          </div>
+          <OverlapIllustration src={props.backgroundImage} />
         ) : (
           <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden">
             <HeroBackgroundImage
