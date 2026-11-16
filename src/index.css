@@ -476,3 +476,10 @@ html {
 @layer utilities {
 
 }
+
+/* hero-search `overlapNextSection` : la section qui suit le hero remonte sur le bas de son illustration
+   (marge basse négative du hero, `overlapNextSectionDepth`) ; positionnée au-dessus, elle la recouvre au lieu de passer dessous. */
+[data-section-index]:has([data-overlap-next]) + [data-section-index] {
+  position: relative;
+  z-index: 10;
+}

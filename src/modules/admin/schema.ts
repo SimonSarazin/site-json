@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { PreviewConfSchema, SearchBaseParamsSchema } from "@/modules/search/schema";
+import { FiltersSectionSchema, PreviewConfSchema, SearchBaseParamsSchema } from "@/modules/search/schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 import { LocalizedString } from "../../types/locale-schema";
@@ -308,6 +308,21 @@ const AdminReferenceSectionSchema = z.object({
    * a priori du site comme un natif, au lieu d'être publié d'office. Échec-tolérant.
    */
   moderateReferenced: z.boolean().optional(),
+  /**
+   * Panneau de filtres (opt-in) à gauche des deux tables — MÊMES props que la section `filters`
+   * d'une page (ex. recopiées de `/lieux`). Les choix s'ajoutent aux deux recherches (tags, zones,
+   * facettes), derrière les garde-fous : un `$nin` de garde reste, composé avec la facette. Les groupes `filterType: "sourceKey"`
+   * (réseaux) ne s'affichent et ne s'appliquent que sur « Référencés » : la recherche de candidates
+   * porte sur ce qui n'a PAS la source du site, un filtre par source y contredirait le vivier.
+   */
+  filters: FiltersSectionSchema.shape.props.optional(),
+  /**
+   * Opt-in : 3e sous-onglet « Sourcés » — les éléments dont `source.keys` contient le slug du site
+   * (créés ou rattachés par lui), avec l'action « Retirer la source » (SET_SOURCE remove/source,
+   * confirmation). Port de l'onglet du referenceTable legacy. ⚠ Le site ne peut pas reposer une source
+   * retirée (add/source est refusé) : l'élément ne revient que par référencement.
+   */
+  showSourced: z.boolean().optional(),
 });
 export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
 const AdminModerationSectionSchema = z.object({ ...sectionAccess, type: z.literal("moderation"), title: LocalizedString.optional() });

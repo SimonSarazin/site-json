@@ -1,7 +1,9 @@
-import { Link2, Link2Off, Plus, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Database, Link2, Link2Off, Plus, Search, Unlink } from "lucide-react";
+import { Suspense, useMemo, useState } from "react";
+import { lazy } from "vite-preload";
 
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +17,7 @@ import SearchTextInput from "@/modules/search/components/SearchTextInput";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { formsDeCollection, cheminAnnotation, type CostumFormSubTypeLike } from "@/modules/search/lib/costumSubType";
 import { useSite } from "@/hooks/useSite";
+import { PageFiltersProvider, usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 
 import { AdminTableShell } from "../components/AdminTableShell";
 import { ScrollableTabsList } from "../components/ScrollableTabsList";
@@ -26,6 +29,10 @@ import { useReferenceElement, type AnnotableEntity, type ReferencingCarrier } fr
 import { ensureCostumScope } from "@/lib/ensureCostumScope";
 import type { AdminReferenceSection as AdminReferenceSectionConfig, AdminSection } from "../schema";
 import { formatCell, getPath, normalizeColumns } from "./resourceHelpers";
+import { applyReferenceFacets } from "../lib/referenceFacets";
+
+// Panneau de filtres : chargé seulement quand la section en déclare un (`filters`, opt-in).
+const FiltersSection = lazy(() => import("@/modules/search/sections/FiltersSection"));
 
 const DEFAULT_TYPES = ["organizations", "projects", "events", "poi"];
 
@@ -88,7 +95,26 @@ const DEFAULT_COLUMNS = [
  * source.keys OU reference.costum). Un élément DÉTACHÉ (source retiré) redevient référençable ici.
  */
 export default function AdminReferenceSection({ section }: { section: AdminSection }) {
+  // Le panneau et les deux recherches partagent l'état de filtres de la SECTION (provider local).
+  if ((section as AdminReferenceSectionConfig).filters) {
+    return (
+      <PageFiltersProvider>
+        <ReferenceSection section={section} />
+      </PageFiltersProvider>
+    );
+  }
+  return <ReferenceSection section={section} />;
+}
+
+function ReferenceSection({ section }: { section: AdminSection }) {
   const cfg = section as AdminReferenceSectionConfig;
+  const pageFilters = usePageFiltersOptional();
+  const filterNames = pageFilters?.filterNames;
+  const searchByFields = pageFilters?.searchByFields;
+  const selection = useMemo(
+    () => (cfg.filters && filterNames && searchByFields ? { filterNames, searchByFields } : null),
+    [cfg.filters, filterNames, searchByFields],
+  );
   const t = useT();
   const tAdmin = useT("modules/admin");
   const { entity: carrier, contextId, contextType } = useCocolight();
@@ -98,7 +124,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
   // Type (badge collection) et Action restent structurelles.
   const columns = normalizeColumns(cfg.columns, DEFAULT_COLUMNS);
 
-  const [tab, setTab] = useState<"search" | "referenced">("search");
+  const [tab, setTab] = useState<"search" | "referenced" | "sourced">("search");
   const [type, setType] = useState(types[0] ?? "poi");
 
   // ── SOUS-TYPE de rattachement ─────────────────────────────────────────────────────────────────
@@ -123,47 +149,83 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
     const f = candidats.find((c) => c.subType === st);
     return f?.subTypeLabel ? t(f.subTypeLabel as never) : (st ?? "");
   };
+  // Props du panneau MÉMOÏSÉES : `FiltersSection` recalcule ses groupes dans un effet dépendant de
+  // `props.filterGroups` et met à jour son état — un nouveau tableau à chaque rendu boucle à l'infini.
+  const filtersPanelProps = useMemo(() => {
+    if (!cfg.filters) return null;
+    return {
+      ...cfg.filters,
+      // Le champ texte est celui de la section, au-dessus.
+      hideSearch: true,
+      // Réseaux (`sourceKey`) : seulement sur « Référencés » — cf. schema `filters`.
+      filterGroups: tab === "search"
+        ? cfg.filters.filterGroups.filter((g) => (g as { filterType?: string }).filterType !== "sourceKey")
+        : cfg.filters.filterGroups,
+    };
+  }, [cfg.filters, tab]);
   const [q, setQ] = useState("");
   const searchText = useDebounce(q, 300);
 
   // ── Recherche « à référencer » : ciblage + politique open-data configurables (cfg.search),
   //    garde-fous du déjà-rattaché non configurables — défaut = fidèle referenceTable legacy.
-  const searchParams = useMemo(() => ({
+  const searchQuery = useMemo(() => applyReferenceFacets({
     defaultTypes: [type] as SearchType[],
     notSourceKey: true,
     defaultFilters: buildOpenSearchFilters(cfg.search, type, costumSlug),
-  }), [cfg.search, type, costumSlug]);
+  }, selection, { ignoreSourceKeys: true }), [cfg.search, type, costumSlug, selection]);
 
   const global = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_SEARCH_PREFIX(type),
     searchText,
-    searchTags: {},
+    searchTags: searchQuery.searchTags,
     searchType: { type: [type] },
     mapUsed: false,
-    baseParams: searchParams,
+    baseParams: searchQuery.baseParams,
     variant: "admin",
   });
 
   // ── Référencés (reference.costum ∋ slug) ───────────────────────────────────────────────────────
-  const referencedParams = useMemo(() => ({
+  const referencedQuery = useMemo(() => applyReferenceFacets({
     defaultTypes: [type] as SearchType[],
     notSourceKey: true, // désactive le scope auto ($or source/reference) → on filtre reference SEUL
     defaultFilters: { "reference.costum": { $in: [costumSlug] } },
-  }), [type, costumSlug]);
+  }, selection), [type, costumSlug, selection]);
 
   const referenced = useSearchQuery({
     queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_LISTED_PREFIX(type),
     searchText,
-    searchTags: {},
+    searchTags: referencedQuery.searchTags,
     searchType: { type: [type] },
     mapUsed: false,
-    baseParams: referencedParams,
+    baseParams: referencedQuery.baseParams,
     variant: "admin",
   });
+
+  // ── Sourcés (source.keys ∋ slug), opt-in `showSourced` ─────────────────────────────────────────
+  // Même construction que « Référencés » (périmètre explicite, filtres du panneau) ; requête
+  // désactivée sans l'option.
+  const sourcedQuery = useMemo(() => applyReferenceFacets({
+    defaultTypes: [type] as SearchType[],
+    notSourceKey: true, // désactive le scope auto ($or source/reference) → on filtre source SEUL
+    defaultFilters: { "source.keys": { $in: [costumSlug] } },
+  }, selection), [type, costumSlug, selection]);
+
+  const sourced = useSearchQuery({
+    queryKeyPrefix: ADMIN_QUERY_KEYS.REFERENCE_SOURCED_PREFIX(type),
+    searchText,
+    searchTags: sourcedQuery.searchTags,
+    searchType: { type: [type] },
+    mapUsed: false,
+    baseParams: sourcedQuery.baseParams,
+    variant: "admin",
+    enabled: !!cfg.showSourced,
+  });
+  const [toDetach, setToDetach] = useState<{ id: string; type: string; label: string } | null>(null);
 
   const mutation = useReferenceElement(() => {
     void global.refetch();
     void referenced.refetch();
+    if (cfg.showSourced) void sourced.refetch();
   });
 
   const runMutation = (
@@ -192,7 +254,7 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
   const renderRows = (
     rows: unknown[],
     lastItemRef: (node: HTMLElement | null) => void,
-    action: { label: string; icon: React.ReactNode; op: "reference" | "unreference" },
+    action: { label: string; icon: React.ReactNode; op: "reference" | "unreference" | "detach" },
   ) =>
     rows.map((item, i) => {
       const data = (item as { serverData?: Record<string, unknown> }).serverData ?? {};
@@ -227,7 +289,17 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
             </TableCell>
           )}
           <TableCell className="text-right">
-            <Button size="sm" variant="outline" disabled={mutation.isPending} onClick={() => runMutation(action.op, itemType, id, item as AnnotableEntity)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={mutation.isPending}
+              onClick={() =>
+                action.op === "detach"
+                  // Retrait de source : irréversible pour le site (add/source refusé) → confirmation.
+                  ? setToDetach({ id, type: itemType, label: String((data as { name?: unknown }).name ?? id) })
+                  : runMutation(action.op, itemType, id, item as AnnotableEntity)
+              }
+            >
               {action.icon}
               {action.label}
             </Button>
@@ -303,6 +375,12 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
           )}
         </div>
 
+        <div className={cfg.filters ? "grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]" : undefined}>
+        {filtersPanelProps && (
+          <Suspense fallback={null}>
+            <FiltersSection props={filtersPanelProps} />
+          </Suspense>
+        )}
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <ScrollableTabsList>
             <TabsTrigger value="search">
@@ -313,6 +391,12 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
               <Link2 className="mr-1.5 h-3.5 w-3.5" />
               {tAdmin("AdminReferenceSection.tabReferenced")}{referenced.totalCount != null ? ` (${referenced.totalCount})` : ""}
             </TabsTrigger>
+            {cfg.showSourced && (
+              <TabsTrigger value="sourced">
+                <Database className="mr-1.5 h-3.5 w-3.5" />
+                {tAdmin("AdminReferenceSection.tabSourced")}{sourced.totalCount != null ? ` (${sourced.totalCount})` : ""}
+              </TabsTrigger>
+            )}
           </ScrollableTabsList>
           <TabsContent value="search" className="pt-3">
             <p className="mb-2 text-xs text-muted-foreground">
@@ -336,8 +420,37 @@ export default function AdminReferenceSection({ section }: { section: AdminSecti
               candidats.length > 0,
             )}
           </TabsContent>
+          {cfg.showSourced && (
+            <TabsContent value="sourced" className="pt-3">
+              {tableShell(
+                renderRows(sourced.transformedResults ?? [], sourced.lastItemRef, { label: tAdmin("AdminReferenceSection.removeSource"), icon: <Unlink className="mr-1.5 h-3.5 w-3.5" />, op: "detach" }),
+                sourced.isLoading,
+                (sourced.transformedResults ?? []).length === 0,
+                tAdmin("AdminReferenceSection.emptySourced"),
+              )}
+            </TabsContent>
+          )}
         </Tabs>
+        </div>
       </CardContent>
+      {cfg.showSourced && (
+        <ConfirmDialog
+          open={!!toDetach}
+          onOpenChange={(o) => { if (!o) setToDetach(null); }}
+          onConfirm={() => {
+            if (toDetach) {
+              ensureCostumScope(carrier, { contextId, contextType });
+              mutation.mutate({ carrier: carrier as unknown as ReferencingCarrier, op: "detach", type: toDetach.type, id: toDetach.id });
+              setToDetach(null);
+            }
+          }}
+          title={tAdmin("AdminReferenceSection.removeSourceTitle", undefined, { label: toDetach?.label ?? "" })}
+          description={tAdmin("AdminReferenceSection.removeSourceDescription")}
+          confirmLabel={tAdmin("AdminReferenceSection.removeSource")}
+          isDestructive
+          isPending={mutation.isPending}
+        />
+      )}
     </Card>
   );
 }

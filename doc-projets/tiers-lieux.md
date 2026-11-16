@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-13** (onglet « Événements » des fiches organisation et projet : même agenda que `/actualites`, cf. §9 13/11). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -57,6 +57,7 @@ lieux**, pas un plan de rattrapage.
 | 21/10 | Anatole + Claude | Bouton « Mes promesses » (promesses à régler et paiements) dans le header : `header.utilities.pledge`, désormais rendu par `HeaderMegaMenu` (barre desktop et mobile) ; `cagnotteModuleConfig.defaultType: "aac"` pour les communs de `/aac/communs`. Commité sur `aac-dev` le 22/10 |
 | 23/10 | Claude | Suites de la revue de la MR `aac-dev` : en type `aac`, « Mes promesses » ne charge plus les projets de l'organisation et lit l'enveloppe du formulaire de l'annuaire (`aac.formId`) — commitées et poussées (§9) |
 | 23/10 | Simon (MR 111) + Thomas | Menu « Communs » (icône `puzzle`, chemin `/communs`) sorti de « Coopérer », avec « Annuaire de nos communs », « Appel à communs », « Usages » et « Comm'un Lundi » ; la page `aac-directory` passe de `/aac/communs` à **`/communs`** (le module aac garde ses routes propres `/aac` et `/aac/commun/:answerId`, rien dans le code ne dépendait de l'ancien chemin ; la page n'était pas encore en ligne, pas de redirection à poser). Le header de tiers-lieux étant un archétype du skill config-assistant, deux gardes suivent ce changement : snapshot `examples/header-mega-menu.json` régénéré (`config:example -- header-mega-menu --write`) et constat assumé « Décider ensemble » réindexé `header.nav.4.children.2.path` dans `archetypes.json`. Repris depuis le fork de Simon sur `fix/menu-communs` |
+| 13/11 | Mirana | Onglet « Événements » des fiches organisation et projet : section `agenda` de `/actualites`, bornée à la fiche par l'option moteur `scopeToProfile` (cf. §9 13/11) |
 
 ---
 
@@ -216,6 +217,27 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 13/11 — fiches organisation et projet : l'onglet « Événements » reprend l'agenda de `/actualites`
+
+- **Besoin** : l'onglet « Événements » d'une fiche affichait une liste générique de cartes
+  (`profile-related`), différente du composant de l'onglet « Événements » de `/actualites`.
+- **Fait** : dans `profiles.organizations.tabs` et `profiles.projects.tabs`, l'onglet `events` porte
+  désormais une section `agenda` aux réglages de `/actualites` : cartes, détail en tiroir, filtres type et
+  tags, onglets « À venir / En cours / Passés », bascule Liste / Calendrier ; 3 colonnes au plus.
+- **Contenu inchangé** : l'agenda est borné à la fiche par la nouvelle option moteur
+  `scopeToProfile: true` (opt-in, défaut `false`, aucun autre site touché) — les événements que l'entité
+  organise ou auxquels elle participe, même filtre que l'ancienne liste. Périmètre `notSourceKey: true`,
+  comme l'ancienne liste qui ne se limitait pas aux sources tiers-lieux.
+- **Retirés de l'onglet** : la colonne d'informations à droite et la recherche par nom de
+  `profile-related`.
+- **Moteur** : `scopeAgendaToProfile` (`src/modules/profil/lib/`), appliqué par `ProfileSectionRenderer` ;
+  tant que la fiche n'est pas chargée, l'agenda n'est pas rendu (il montrerait tout le réseau). Option
+  documentée dans [Module Agenda](../doc/29-module-agenda.md).
+- **Vérifié** : test unitaire (4 cas), vérifié en échec sans le filtre ; `config:validate` et
+  `audit:config` sans constat ; au navigateur, `/profil/franceTierslieux` onglet « Événements » : la
+  requête porte le filtre de la fiche, « Passés » affiche 4 événements dans les cartes de `/actualites`.
+  Non vérifiés : mode sombre, mobile, fiche projet.
 
 ### 04/11 — `/services` et hero : suites de la revue de la MR 119
 
@@ -1443,7 +1465,7 @@ d'autres projets, tous vérifiés non régressifs à son égard :
 | 3 | Recherche des lieux | ✅ | `/lieux` — panneau à 5 groupes sur 4 303 entités |
 | 4 | Observatoire | 🟡 | 10 dimensions, 7 filtres, 6 graphes, table, export CSV, drill-down — **split view le 30/09** (liste \| graphes, table dessous), gates verts ; reste le **rendu navigateur** (desktop, tablette, mobile) à valider |
 | 5 | Réseaux régionaux / thématiques | ✅ | Deux angles sur 19 réseaux |
-| 6 | Agenda | ✅ | Teaser sur `/` + onglet « Événements » de `/actualites` (ex-page `/evenements`, cf. §9 07/09) — 359 événements |
+| 6 | Agenda | ✅ | Teaser sur `/` + onglet « Événements » de `/actualites` (ex-page `/evenements`, cf. §9 07/09) — 359 événements ; onglet « Événements » des fiches organisation et projet depuis le 13/11 (cf. §9 13/11) |
 | 7 | Ajout d'un tiers-lieu | ✅ | Formulaire costum (27 champs) + bouton flottant |
 | 8 | Campagne `ampli` | ✅ | « amplifions » — **seul emploi du module dans le parc** |
 | 9 | Palette ⌘K | ✅ | `entitySearch` |

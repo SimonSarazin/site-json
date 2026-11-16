@@ -173,6 +173,11 @@ export const HeroSearchSchema = z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
+    // Opt-in : `backgroundImage` est affichée ENTIÈRE (hauteur naturelle, sans recadrage) sous la
+    // recherche, et la section suivante remonte dessus (titre sur l'image, cartes sur son bas).
+    overlapNextSection: z.boolean().optional(),
+    // Remontée (px) de la section suivante sur l'illustration, avec `overlapNextSection`. Défaut 192.
+    overlapNextSectionDepth: z.number().int().nonnegative().optional(),
     // Boutons de catégorie AUTO-PORTEURS : chaque bouton déclare son effet —
     // `filters` pose des query params (?param=v1,v2 — format pluriel de
     // `computeFiltersFromUrl`, identique à la sidebar /lieux), `href` navigue,

@@ -106,13 +106,6 @@
         ],
         "indexStepList": 5,
         "defaultFilters": {
-          "$or": {
-            "tags": {
-              "$in": [
-                "TiersLieux"
-              ]
-            }
-          },
           "tags": {
             "$nin": [
               "RéseauTiersLieux"
@@ -144,8 +137,7 @@
           "address.level2Name",
           "address.level1Name",
           "address.postalCode"
-        ],
-        "notSourceKey": true
+        ]
       }
     },
     "//searchProStatic": {
@@ -155,13 +147,6 @@
         ],
         "indexStepList": 5,
         "defaultFilters": {
-          "$or": {
-            "tags": {
-              "$in": [
-                "TiersLieux"
-              ]
-            }
-          },
           "tags": {
             "$nin": [
               "RéseauTiersLieux"
@@ -193,8 +178,7 @@
           "address.level2Name",
           "address.level1Name",
           "address.postalCode"
-        ],
-        "notSourceKey": true
+        ]
       }
     },
     "//agenda": {
@@ -214,13 +198,6 @@
         ],
         "indexStepList": 5,
         "defaultFilters": {
-          "$or": {
-            "tags": {
-              "$in": [
-                "TiersLieux"
-              ]
-            }
-          },
           "tags": {
             "$nin": [
               "RéseauTiersLieux"
@@ -252,8 +229,7 @@
           "address.level2Name",
           "address.level1Name",
           "address.postalCode"
-        ],
-        "notSourceKey": true
+        ]
       }
     },
     "/lieux/searchProStatic": {
@@ -262,13 +238,6 @@
           "organizations"
         ],
         "defaultFilters": {
-          "$or": {
-            "tags": {
-              "$in": [
-                "TiersLieux"
-              ]
-            }
-          },
           "tags": {
             "$nin": [
               "RéseauTiersLieux"
@@ -301,8 +270,7 @@
           "address.level1Name",
           "address.postalCode"
         ],
-        "indexStepList": 20,
-        "notSourceKey": true
+        "indexStepList": 20
       }
     },
     "/observatoire/data-observatory": {
@@ -311,9 +279,11 @@
           "organizations"
         ],
         "defaultFilters": {
-          "tags": [
-            "TiersLieux"
-          ],
+          "tags": {
+            "$nin": [
+              "RéseauTiersLieux"
+            ]
+          },
           "address.addressCountry": {
             "$in": [
               "BE",
@@ -329,7 +299,6 @@
             ]
           }
         },
-        "notSourceKey": true,
         "maxResults": 6000,
         "variant": "navigator-tl"
       }

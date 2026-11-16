@@ -467,6 +467,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.limit": "Plafond d'AFFICHAGE par bucket (teaser) ; absent = tous + « charger plus ». ⚠ PAS la taille du fetch : appliqué APRÈS le partitionnement d'un flux DESC — garder `baseParams.indexStepList` bien au-dessus.",
     "props.showViewToggle": "Toggle Liste/Calendrier (false = teaser figé sur defaultMode). Défaut code : true.",
     "props.showPdfExport": "Bouton Export PDF (AGENDA_GET_PDF, SDK ≥ 1.0.196) — scope le costum PORTEUR entier, pas les filtres affichés. Masqué tant que le costum n'est pas résolu. Défaut code : false.",
+    "props.scopeToProfile": "Onglet de fiche profil : borne l'agenda aux événements que l'entité affichée organise ou auxquels elle participe (baseParams.filters.$or posé par ProfileSectionRenderer). Sans effet hors fiche. Défaut code : false.",
     "props.showTabs": "Onglets temporels (false = teaser : un seul bucket = defaultTab). Défaut code : true.",
     "props.defaultMode": "Vue par défaut : list (onglets temporels) ou calendar (grille mois maison).",
     "props.enableMap": "Active la vue Carte (réutilise SearchMap du module search).",

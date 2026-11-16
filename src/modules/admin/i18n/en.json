@@ -147,7 +147,12 @@
     "colAction": "Action",
     "attachAs": "Attach as",
     "colSubType": "Sub-type",
-    "unclassified": "Unclassified"
+    "unclassified": "Unclassified",
+    "tabSourced": "Sourced",
+    "emptySourced": "No element sourced by this site.",
+    "removeSource": "Remove source",
+    "removeSourceTitle": "Remove the source of “{{label}}”?",
+    "removeSourceDescription": "The element will no longer be attached to this site and will disappear from its pages. This site cannot set the source again: the element can only come back through referencing."
   },
   "AdminModerationSection": {
     "title": "Moderation",

@@ -45,6 +45,12 @@ export const AgendaSectionSchema = z.object({
      * parmi les prochains (en tête) — « les 3 prochaines réunions » inclut celle qui a lieu maintenant.
      */
     limit: z.number().int().positive().optional(),
+    /**
+     * Dans un onglet de fiche profil : borne l'agenda aux événements que l'entité affichée organise ou
+     * auxquels elle participe (même filtre que `profile-related` events). Posé par `ProfileSectionRenderer`
+     * dans `baseParams.filters.$or` ; sans effet hors fiche. Opt-in, défaut `false`.
+     */
+    scopeToProfile: z.boolean().optional(),
     /** Afficher le toggle Liste/Calendrier (false = teaser : vue figée à `defaultMode`). */
     showViewToggle: z.boolean().default(true),
     /** Bouton « Export PDF » (édition imprimable de l'agenda, `AGENDA_GET_PDF`, SDK ≥ 1.0.196) —

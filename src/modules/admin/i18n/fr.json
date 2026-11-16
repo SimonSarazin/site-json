@@ -147,7 +147,12 @@
     "colAction": "Action",
     "attachAs": "Rattacher comme",
     "colSubType": "Sous-type",
-    "unclassified": "Non classé"
+    "unclassified": "Non classé",
+    "tabSourced": "Sourcés",
+    "emptySourced": "Aucun élément sourcé par ce site.",
+    "removeSource": "Retirer la source",
+    "removeSourceTitle": "Retirer la source de « {{label}} » ?",
+    "removeSourceDescription": "L'élément ne sera plus rattaché à ce site et disparaîtra de ses pages. Ce site ne peut pas reposer la source : l'élément ne pourra revenir que par référencement."
   },
   "AdminModerationSection": {
     "title": "Modération",

@@ -445,6 +445,25 @@ d'élément : le Node durci refuserait). Échec visible (toast `referencedUnmode
 (`src/modules/admin/sections/AdminReferenceSection.tsx`, `hooks/useReferenceElement.ts`,
 `src/modules/search/lib/costumSubType.ts`)
 
+**Panneau de filtres** (`filters`, opt-in) : mêmes props que la section `filters` d'une page
+(`filterGroups`, `filtersByAnswers`, `filtersByPath`, `defaultOpenGroups`…) — typiquement recopiées
+de la page annuaire du site. Le panneau s'affiche à gauche des deux sous-onglets (son champ texte est
+masqué : celui de la section sert) et ses choix s'ajoutent aux DEUX recherches, avec la même
+traduction que `searchProStatic` (`searchByFieldsToQuery`, `lib/referenceFacets.ts`) : tags cochés →
+`searchTags`, facettes → `defaultFilters` composés sous ceux de la section (un `$nin` de garde reste,
+composé avec le `$in` de la facette), zones → `locality`. Les groupes **réseaux**
+(`filterType: "sourceKey"`) ne s'affichent et ne s'appliquent que sur « Référencés » : la recherche de
+candidates porte sur ce qui n'a pas la source du site, un filtre par source y contredirait le vivier.
+L'état est propre à la section (provider local) et se reflète dans l'URL de `/admin`, comme sur une page.
+Consommateur : `config.prod.tiers-lieux.json` (filtres de `/lieux`).
+
+**Sous-onglet « Sourcés »** (`showSourced: true`, opt-in) : les éléments dont `source.keys` contient le
+slug du site (créés ou rattachés par lui), filtrés par le panneau comme « Référencés », avec l'action
+**Retirer la source** (`op: "detach"` de `useReferenceElement` → `removeFromSource`, SET_SOURCE
+remove/source), derrière une confirmation : le site ne peut pas reposer une source retirée (add/source
+est refusé), l'élément ne revient que par référencement. Port de l'onglet du même nom du
+referenceTable legacy. Consommateur : `config.prod.tiers-lieux.json`.
+
 ### `moderation`
 
 `{ "type": "moderation" }` — file des news + commentaires signalés (`getModerationQueue`),

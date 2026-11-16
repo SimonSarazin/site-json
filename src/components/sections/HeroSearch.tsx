@@ -192,6 +192,10 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
   const isAutocompleteOpen = !dismissed && suggestionCount > 0 && search.length >= 2;
 
+  const overlapNext = !!(props.overlapNextSection && props.backgroundImage);
+  // Remontée de la section suivante sur l'illustration (px). Style inline : une classe Tailwind
+  // construite à partir d'une valeur de config ne serait pas générée.
+  const overlapStyle = overlapNext ? { marginBottom: -(props.overlapNextSectionDepth ?? 192) } : undefined;
   const isFullStyle = props.ctaButtons && props.ctaButtons.length > 0 && props.subhead;
 
   useEffect(() => {
@@ -313,7 +317,12 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
   if (!isFullStyle) {
     return (
-      <section id={id} className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
+      <section
+        id={id}
+        data-overlap-next={overlapNext || undefined}
+        style={overlapStyle}
+        className={cn("relative min-h-112.5 md:min-h-125 flex flex-col -mt-10", overlapNext && "pt-28")}
+      >
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-6xl mx-auto">
@@ -434,13 +443,22 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
         </div>
 
         {props.backgroundImage && (
-          <div className="absolute bottom-0 left-0 right-0 h-64 overflow-hidden">
-            <HeroBackgroundImage
-              src={props.backgroundImage}
-              position="top"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          overlapNext ? (
+            // Image ENTIÈRE, dans le flux, à sa hauteur naturelle (`h-auto`) : ni recadrée par une
+            // hauteur fixe. `-mt-14` la glisse SOUS le bloc de recherche (positionné `z-10`), et les cartes
+          // de la section suivante en recouvrent le bas (`overlapNextSectionDepth`) : l'image est entre les deux.
+            <div className="pointer-events-none w-full -mt-14">
+              <HeroBackgroundImage src={props.backgroundImage} className="block w-full h-auto" />
+            </div>
+          ) : (
+            <div className="absolute bottom-0 left-0 right-0 h-64 overflow-hidden">
+              <HeroBackgroundImage
+                src={props.backgroundImage}
+                position="top"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )
         )}
       </section>
     );
@@ -449,7 +467,18 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   return (
     // `mb-10` : l'illustration déborde de 40 px sous la section (`-bottom-10`) ; sans cette
     // réserve, elle recouvre le haut de la section suivante (titre de liste de la home).
-    <section id={id} className={cn("relative min-h-112.5 md:min-h-125 flex flex-col -mt-10", props.backgroundImage && "mb-10")}>
+    // `overlapNextSection` : l'illustration est rendue entière dans le flux (voir plus bas), `pt-28`
+    // rend la marge haute que `min-h` ne donne plus, et la section suivante remonte sur
+    // l'illustration (`overlapNextSectionDepth`, passe au-dessus : règle `data-overlap-next` dans index.css).
+    <section
+      id={id}
+      data-overlap-next={overlapNext || undefined}
+      style={overlapStyle}
+      className={cn(
+        "relative min-h-112.5 md:min-h-125 flex flex-col -mt-10",
+        props.backgroundImage && (overlapNext ? "pt-28" : "mb-10"),
+      )}
+    >
       <div className="relative z-10 flex-1 flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">
@@ -565,13 +594,22 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
       </div>
 
       {props.backgroundImage && (
-        <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden">
-          <HeroBackgroundImage
-            src={props.backgroundImage}
-            position="top"
-            className="w-full h-full object-cover"
-          />
-        </div>
+        overlapNext ? (
+          // Image ENTIÈRE, dans le flux, à sa hauteur naturelle (`h-auto`) : ni recadrée par une
+          // hauteur fixe. `-mt-14` la glisse SOUS le bloc de recherche (positionné `z-10`), et les cartes
+          // de la section suivante en recouvrent le bas (`overlapNextSectionDepth`) : l'image est entre les deux.
+          <div className="pointer-events-none w-full -mt-14">
+            <HeroBackgroundImage src={props.backgroundImage} className="block w-full h-auto" />
+          </div>
+        ) : (
+          <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden">
+            <HeroBackgroundImage
+              src={props.backgroundImage}
+              position="top"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )
       )}
     </section>
   );
