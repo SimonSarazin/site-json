@@ -836,6 +836,7 @@ const GallerySectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     images: z.array(z.object({ src: z.string(), alt: LocalizedString.optional(), caption: LocalizedString.optional() })),
+    layout: z.enum(["grid", "carousel"]).optional(),
     columns: Columns.default(3),
     lightbox: z.boolean().default(true),
   }),

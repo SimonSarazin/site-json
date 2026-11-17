@@ -156,6 +156,7 @@
         "label": {
           "fr": "Quoi ?"
         },
+        "icon": "info",
         "children": [
           {
             "label": {
@@ -193,12 +194,14 @@
         "label": {
           "fr": "Nouvelles"
         },
+        "icon": "newspaper",
         "path": "/actualites"
       },
       {
         "label": {
           "fr": "Annuaires"
         },
+        "icon": "book-open",
         "children": [
           {
             "label": {
@@ -230,18 +233,21 @@
         "label": {
           "fr": "Cartographie"
         },
+        "icon": "map",
         "path": "https://www.tierslieux.xyz/#cartographie"
       },
       {
         "label": {
           "fr": "Tiers-lieux ruraux"
         },
+        "icon": "trees",
         "path": "https://www.tierslieux.xyz/#23tierslieuxruraux"
       },
       {
         "label": {
           "fr": "Réseau social"
         },
+        "icon": "users",
         "children": [
           {
             "label": {
@@ -273,6 +279,7 @@
         "label": {
           "fr": "Centre de Savoirs"
         },
+        "icon": "library",
         "children": [
           {
             "label": {
@@ -334,12 +341,14 @@
         "label": {
           "fr": "Événements"
         },
+        "icon": "calendar-days",
         "path": "/evenements"
       },
       {
         "label": {
           "fr": "Contact"
         },
+        "icon": "mail",
         "path": "https://www.tierslieux.xyz/#contact"
       }
     ],
@@ -355,10 +364,15 @@
       "pledge": false,
       "cart": false
     },
-    "logoIcon": "house",
     "logoTitle": {
       "fr": "Tiers-lieux Belgique"
-    }
+    },
+    "logo": "/images/tierslieuxbelgique/logo-header-light.png",
+    "logoDark": "/images/tierslieuxbelgique/logo-header-dark.png",
+    "logoAlt": {
+      "fr": "Logo Tiers-lieux Belgique"
+    },
+    "logoSize": "lg"
   },
   "footer": {
     "type": "minimal-centered",
@@ -385,6 +399,53 @@
       },
       "layout": "fullwidth",
       "sections": [
+        {
+          "type": "gallery",
+          "id": "accueil-galerie",
+          "props": {
+            "layout": "carousel",
+            "columns": 3,
+            "lightbox": true,
+            "images": [
+              {
+                "src": "/images/tierslieuxbelgique/galerie/lieu-01.webp",
+                "alt": {
+                  "fr": "Vue aérienne d'un lieu en milieu rural avec de petites structures et un bâtiment."
+                }
+              },
+              {
+                "src": "/images/tierslieuxbelgique/galerie/lieu-02.webp",
+                "alt": {
+                  "fr": "Rassemblement devant un ancien bâtiment industriel en briques."
+                }
+              },
+              {
+                "src": "/images/tierslieuxbelgique/galerie/lieu-03.webp",
+                "alt": {
+                  "fr": "Paysage rural avec prairies et collines boisées."
+                }
+              },
+              {
+                "src": "/images/tierslieuxbelgique/galerie/lieu-04.webp",
+                "alt": {
+                  "fr": "Groupe réuni en extérieur pour une activité collective."
+                }
+              },
+              {
+                "src": "/images/tierslieuxbelgique/galerie/lieu-05.webp",
+                "alt": {
+                  "fr": "Concert ou événement musical dans une salle."
+                }
+              },
+              {
+                "src": "/images/tierslieuxbelgique/galerie/lieu-06.webp",
+                "alt": {
+                  "fr": "Visite collective d'un jardin partagé."
+                }
+              }
+            ]
+          }
+        },
         {
           "type": "hero",
           "id": "accueil-bienvenue",
