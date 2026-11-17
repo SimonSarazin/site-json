@@ -571,6 +571,8 @@
               "en": "Search"
             },
             "backgroundImage": "images/tiersLieux/BG_Illus.png",
+            "overlapNextSection": true,
+            "overlapNextSectionDepth": 144,
             "searchVariant": "navigator-tl",
             "baseParams": {
               "defaultTypes": [
@@ -578,13 +580,6 @@
               ],
               "indexStepList": 5,
               "defaultFilters": {
-                "$or": {
-                  "tags": {
-                    "$in": [
-                      "TiersLieux"
-                    ]
-                  }
-                },
                 "tags": {
                   "$nin": [
                     "RéseauTiersLieux"
@@ -616,8 +611,7 @@
                 "address.level2Name",
                 "address.level1Name",
                 "address.postalCode"
-              ],
-              "notSourceKey": true
+              ]
             },
             "filterGroups": [
               {
@@ -747,13 +741,6 @@
               ],
               "indexStepList": 5,
               "defaultFilters": {
-                "$or": {
-                  "tags": {
-                    "$in": [
-                      "TiersLieux"
-                    ]
-                  }
-                },
                 "tags": {
                   "$nin": [
                     "RéseauTiersLieux"
@@ -785,8 +772,7 @@
                 "address.level2Name",
                 "address.level1Name",
                 "address.postalCode"
-              ],
-              "notSourceKey": true
+              ]
             },
             "list": {
               "columns": {
@@ -1349,6 +1335,7 @@
               "en": "Search"
             },
             "backgroundImage": "images/tiersLieux/BG_Illus.png",
+            "overlapNextSection": true,
             "searchVariant": "navigator-tl",
             "baseParams": {
               "defaultTypes": [
@@ -1356,13 +1343,6 @@
               ],
               "indexStepList": 5,
               "defaultFilters": {
-                "$or": {
-                  "tags": {
-                    "$in": [
-                      "TiersLieux"
-                    ]
-                  }
-                },
                 "tags": {
                   "$nin": [
                     "RéseauTiersLieux"
@@ -1394,8 +1374,7 @@
                 "address.level2Name",
                 "address.level1Name",
                 "address.postalCode"
-              ],
-              "notSourceKey": true
+              ]
             },
             "filterGroups": [
               {
@@ -2052,13 +2031,6 @@
                     "organizations"
                   ],
                   "defaultFilters": {
-                    "$or": {
-                      "tags": {
-                        "$in": [
-                          "TiersLieux"
-                        ]
-                      }
-                    },
                     "tags": {
                       "$nin": [
                         "RéseauTiersLieux"
@@ -2091,8 +2063,7 @@
                     "address.level1Name",
                     "address.postalCode"
                   ],
-                  "indexStepList": 20,
-                  "notSourceKey": true
+                  "indexStepList": 20
                 },
                 "list": {
                   "columns": {
@@ -2145,9 +2116,11 @@
                 "organizations"
               ],
               "defaultFilters": {
-                "tags": [
-                  "TiersLieux"
-                ],
+                "tags": {
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
+                },
                 "address.addressCountry": {
                   "$in": [
                     "BE",
@@ -2163,7 +2136,6 @@
                   ]
                 }
               },
-              "notSourceKey": true,
               "maxResults": 6000,
               "variant": "navigator-tl"
             },
@@ -2838,30 +2810,9 @@
           "type": "tabs",
           "id": "actualites-tabs",
           "props": {
-            "defaultTab": "actus",
+            "defaultTab": "evenements",
             "orientation": "horizontal",
             "tabs": [
-              {
-                "id": "actus",
-                "label": {
-                  "fr": "Actus",
-                  "en": "News"
-                },
-                "icon": "newspaper",
-                "content": [
-                  {
-                    "type": "articleFeed",
-                    "id": "actualites-articles-feed",
-                    "props": {
-                      "costumSlug": "navigatorDesTierslieux",
-                      "pageSize": 12,
-                      "cardVariant": "default",
-                      "feedLayout": "grid",
-                      "fullWidth": true
-                    }
-                  }
-                ]
-              },
               {
                 "id": "evenements",
                 "label": {
@@ -2904,6 +2855,27 @@
                         "indexStepList": 20,
                         "fediverse": false
                       }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "actus",
+                "label": {
+                  "fr": "Actus",
+                  "en": "News"
+                },
+                "icon": "newspaper",
+                "content": [
+                  {
+                    "type": "articleFeed",
+                    "id": "actualites-articles-feed",
+                    "props": {
+                      "costumSlug": "navigatorDesTierslieux",
+                      "pageSize": 12,
+                      "cardVariant": "default",
+                      "feedLayout": "grid",
+                      "fullWidth": true
                     }
                   }
                 ]
@@ -6185,26 +6157,27 @@
           },
           "sections": [
             {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "profile-related",
-                  "relationType": "events",
-                  "title": {
-                    "fr": "Événements",
-                    "en": "Events"
-                  }
+              "type": "agenda",
+              "props": {
+                "scopeToProfile": true,
+                "filters": {
+                  "type": true,
+                  "text": false,
+                  "tags": true
+                },
+                "detailsMode": "drawer",
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3,
+                  "xl": 3
+                },
+                "baseParams": {
+                  "notSourceKey": true,
+                  "indexStepList": 20,
+                  "fediverse": false
                 }
-              ],
-              "rightSections": [
-                {
-                  "type": "profile-info",
-                  "variant": "sidebar",
-                  "sticky": true,
-                  "showCounts": true,
-                  "showAddress": true
-                }
-              ]
+              }
             }
           ]
         }
@@ -6337,26 +6310,27 @@
           },
           "sections": [
             {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "profile-related",
-                  "relationType": "events",
-                  "title": {
-                    "fr": "Événements",
-                    "en": "Events"
-                  }
+              "type": "agenda",
+              "props": {
+                "scopeToProfile": true,
+                "filters": {
+                  "type": true,
+                  "text": false,
+                  "tags": true
+                },
+                "detailsMode": "drawer",
+                "columns": {
+                  "sm": 1,
+                  "md": 2,
+                  "lg": 3,
+                  "xl": 3
+                },
+                "baseParams": {
+                  "notSourceKey": true,
+                  "indexStepList": 20,
+                  "fediverse": false
                 }
-              ],
-              "rightSections": [
-                {
-                  "type": "profile-info",
-                  "variant": "sidebar",
-                  "sticky": true,
-                  "showCounts": true,
-                  "showAddress": true
-                }
-              ]
+              }
             }
           ]
         }
@@ -6871,6 +6845,146 @@
         ]
       },
       {
+        "id": "formulaires",
+        "label": {
+          "fr": "Formulaires",
+          "en": "Forms"
+        },
+        "icon": "clipboard-list",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "formCoverage",
+            "mail": true,
+            "title": {
+              "fr": "Réponses des tiers-lieux aux formulaires du Navigateur",
+              "en": "Third places' answers to the Navigator forms"
+            },
+            "source": {
+              "indexStepList": 500,
+              "defaultFilters": {
+                "tags": {
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
+                },
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "forms": [
+              {
+                "formId": "6925e2b05dd63b02ca70d6d9",
+                "label": {
+                  "fr": "Coworking",
+                  "en": "Coworking"
+                },
+                "finderInput": "findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "6925869ad76aaf6c5a2b2f8a",
+                "label": {
+                  "fr": "Salle de réunion",
+                  "en": "Meeting room"
+                },
+                "finderInput": "findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "6925ee8ac537f8056114aec7",
+                "label": {
+                  "fr": "Hébergement",
+                  "en": "Accommodation"
+                },
+                "finderInput": "findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "6876c3e58fa8df3c7f024253",
+                "label": {
+                  "fr": "Auto-diagnostic collectif du lieu",
+                  "en": "Collective self-assessment of the place"
+                },
+                "finderInput": "findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "636cd563e2439b7fc12cd680",
+                "label": {
+                  "fr": "Usages des communs et outils utilisés",
+                  "en": "Commons and tools used"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh"
+              },
+              {
+                "formId": "646498a5f2b3d6423d74b7f6",
+                "label": {
+                  "fr": "Fréquentation",
+                  "en": "Attendance"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r"
+              },
+              {
+                "formId": "645b300b6d70bb35426fc0e3",
+                "label": {
+                  "fr": "Équipements",
+                  "en": "Equipment"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
+              },
+              {
+                "formId": "6486d24e9cad105cbf29a777",
+                "label": {
+                  "fr": "Modèle économique",
+                  "en": "Business model"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
+              },
+              {
+                "formId": "652e32b222c3cf69f018ec40",
+                "label": {
+                  "fr": "Réseaux régionaux & thématiques",
+                  "en": "Regional & thematic networks"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl"
+              },
+              {
+                "formId": "63e0a8abeac0741b506fb4f7",
+                "label": {
+                  "fr": "Grand recensement 2023",
+                  "en": "2023 census"
+                },
+                "finderInput": "finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "referencement",
         "label": {
           "fr": "Référencement",
@@ -6881,6 +6995,7 @@
         "sections": [
           {
             "type": "reference",
+            "showSourced": true,
             "title": {
               "fr": "Référencer une structure ou une personne existante",
               "en": "Reference an existing organization or person"
@@ -6911,7 +7026,329 @@
                   "en": "Source"
                 }
               }
-            ]
+            ],
+            "filters": {
+              "title": {
+                "fr": "Filtres",
+                "en": "Filters"
+              },
+              "defaultOpenGroups": [
+                "typologies",
+                "reseauxThematiques"
+              ],
+              "filterGroups": [
+                {
+                  "id": "reseauxRegionaux",
+                  "type": "entityList",
+                  "label": {
+                    "fr": "Réseaux régionaux",
+                    "en": "Regional networks"
+                  },
+                  "filterType": "sourceKey",
+                  "filterBy": "slug",
+                  "baseParams": {
+                    "defaultTypes": [
+                      "organizations"
+                    ],
+                    "defaultFilters": {
+                      "tags": [
+                        "RéseauTiersLieux"
+                      ]
+                    },
+                    "defaultFields": [
+                      "name",
+                      "slug"
+                    ],
+                    "notSourceKey": true,
+                    "indexStepList": 100
+                  },
+                  "optionStyle": "check",
+                  "order": 0
+                },
+                {
+                  "id": "typologies",
+                  "label": {
+                    "fr": "Typologies",
+                    "en": "Types"
+                  },
+                  "options": [
+                    {
+                      "id": "ateliers-artisanaux",
+                      "label": {
+                        "fr": "Ateliers artisanaux partagés",
+                        "en": "Shared craft workshops"
+                      },
+                      "name": "Ateliers artisanaux partagés"
+                    },
+                    {
+                      "id": "coworking",
+                      "label": {
+                        "fr": "Bureaux partagés / Coworking",
+                        "en": "Shared offices / Coworking"
+                      },
+                      "name": "Bureaux partagés / Coworking"
+                    },
+                    {
+                      "id": "foodlab",
+                      "label": {
+                        "fr": "Cuisine partagée / Foodlab",
+                        "en": "Shared kitchen / Foodlab"
+                      },
+                      "name": "Cuisine partagée / Foodlab"
+                    },
+                    {
+                      "id": "fablab",
+                      "label": {
+                        "fr": "Fablab / Makerspace / Hackerspace",
+                        "en": "Fablab / Makerspace / Hackerspace"
+                      },
+                      "name": "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
+                    },
+                    {
+                      "id": "livinglab",
+                      "label": {
+                        "fr": "LivingLab / Innovation sociale",
+                        "en": "LivingLab / Social innovation"
+                      },
+                      "name": "LivingLab / Laboratoire d'innovation sociale"
+                    },
+                    {
+                      "id": "nourricier",
+                      "label": {
+                        "fr": "Tiers-lieu nourricier",
+                        "en": "Food-producing third place"
+                      },
+                      "name": "Tiers-lieu nourricier"
+                    },
+                    {
+                      "id": "culturel",
+                      "label": {
+                        "fr": "Tiers-lieu culturel",
+                        "en": "Cultural third place"
+                      },
+                      "name": "Tiers-lieu culturel / Lieux intermédiaires et indépendants"
+                    },
+                    {
+                      "id": "autre",
+                      "label": {
+                        "fr": "Autre famille de tiers-lieux",
+                        "en": "Other third place types"
+                      },
+                      "name": "Autre famille de tiers-lieux"
+                    }
+                  ],
+                  "optionStyle": "check",
+                  "order": 2
+                },
+                {
+                  "id": "pays",
+                  "type": "scopeList",
+                  "label": {
+                    "fr": "Pays",
+                    "en": "Countries"
+                  },
+                  "config": {
+                    "countryCode": [
+                      "FR",
+                      "BE",
+                      "CH",
+                      "GP",
+                      "GF",
+                      "MQ",
+                      "YT",
+                      "RE"
+                    ],
+                    "level": [
+                      "1"
+                    ],
+                    "sortBy": "name"
+                  },
+                  "optionStyle": "check",
+                  "order": 3
+                },
+                {
+                  "id": "regions",
+                  "type": "scopeList",
+                  "label": {
+                    "fr": "Régions",
+                    "en": "Regions"
+                  },
+                  "config": {
+                    "countryCode": [
+                      "FR",
+                      "BE",
+                      "CH",
+                      "GP",
+                      "GF",
+                      "MQ",
+                      "YT",
+                      "RE"
+                    ],
+                    "level": [
+                      "3"
+                    ],
+                    "sortBy": "name"
+                  },
+                  "optionStyle": "check",
+                  "order": 4
+                },
+                {
+                  "id": "portage",
+                  "label": {
+                    "fr": "Portage",
+                    "en": "Governance"
+                  },
+                  "options": [
+                    {
+                      "id": "association",
+                      "label": {
+                        "fr": "Association",
+                        "en": "Association"
+                      },
+                      "name": "Association"
+                    },
+                    {
+                      "id": "collectif-citoyen",
+                      "label": {
+                        "fr": "Collectif citoyen",
+                        "en": "Citizen collective"
+                      },
+                      "name": "Collectif citoyen"
+                    },
+                    {
+                      "id": "universites",
+                      "label": {
+                        "fr": "Universités / Écoles",
+                        "en": "Universities / Schools"
+                      },
+                      "name": "Universités / Écoles d'ingénieurs ou de commerce / EPST"
+                    },
+                    {
+                      "id": "etablissements-scolaires",
+                      "label": {
+                        "fr": "Établissements scolaires",
+                        "en": "Schools"
+                      },
+                      "name": "Établissements scolaires (Lycée, Collège, Ecole)"
+                    },
+                    {
+                      "id": "collectivites",
+                      "label": {
+                        "fr": "Collectivités",
+                        "en": "Local authorities"
+                      },
+                      "name": "Collectivités (Département, Intercommunalité, Région, etc)"
+                    },
+                    {
+                      "id": "sarl-sa-sas",
+                      "label": {
+                        "fr": "SARL-SA-SAS",
+                        "en": "SARL-SA-SAS"
+                      },
+                      "name": "SARL-SA-SAS"
+                    },
+                    {
+                      "id": "scic",
+                      "label": {
+                        "fr": "SCIC",
+                        "en": "SCIC"
+                      },
+                      "name": "SCIC"
+                    },
+                    {
+                      "id": "scop",
+                      "label": {
+                        "fr": "SCOP",
+                        "en": "SCOP"
+                      },
+                      "name": "SCOP"
+                    },
+                    {
+                      "id": "autre-gestion",
+                      "label": {
+                        "fr": "Autre mode de gestion",
+                        "en": "Other governance"
+                      },
+                      "name": "Autre mode de gestion"
+                    }
+                  ],
+                  "optionStyle": "check",
+                  "order": 5
+                }
+              ],
+              "filtersByAnswers": {
+                "activités": {
+                  "label": {
+                    "fr": "Activités",
+                    "en": "Activities"
+                  },
+                  "forms": "6486d24e9cad105cbf29a777",
+                  "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
+                  "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
+                  "optionStyle": "check",
+                  "order": 6
+                },
+                "équipement": {
+                  "label": {
+                    "fr": "Équipements",
+                    "en": "Equipment"
+                  },
+                  "forms": "645b300b6d70bb35426fc0e3",
+                  "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
+                  "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                  "optionStyle": "check",
+                  "order": 7
+                },
+                "services": {
+                  "label": {
+                    "fr": "Service",
+                    "en": "Service"
+                  },
+                  "type": "form",
+                  "value": {
+                    "Coworking": {
+                      "id": "6925e2b05dd63b02ca70d6d9",
+                      "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim"
+                    },
+                    "Salle de Réunion": {
+                      "id": "6925869ad76aaf6c5a2b2f8a",
+                      "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim"
+                    },
+                    "Hébérgement": {
+                      "id": "6925ee8ac537f8056114aec7",
+                      "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
+                    }
+                  },
+                  "optionStyle": "check",
+                  "order": 8
+                },
+                "licoop": {
+                  "label": {
+                    "fr": "Licoop",
+                    "en": "Licoop"
+                  },
+                  "forms": "6876c3e58fa8df3c7f024253",
+                  "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                  "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                  "optionStyle": "check",
+                  "order": 9
+                }
+              },
+              "filtersByPath": {
+                "reseauxThematiques": {
+                  "label": {
+                    "fr": "Réseaux thématiques",
+                    "en": "Thematic networks"
+                  },
+                  "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
+                  "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                  "notSourceKey": true,
+                  "optionStyle": "check",
+                  "order": 1
+                }
+              },
+              "className": "sticky top-20"
+            }
           }
         ]
       },

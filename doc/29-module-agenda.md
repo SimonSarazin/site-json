@@ -213,6 +213,7 @@ Le résultat (`effectiveBaseParams`) est appliqué **côté serveur** par `searc
 | `tabs` | `("upcoming"\|"ongoing"\|"past")[]` | `["upcoming","ongoing","past"]` | onglets affichés |
 | `defaultTab` | idem | `"upcoming"` | onglet initial |
 | `upcomingWindowMonths` | number | `12` | borne haute du flux « prochains » — passée au SERVEUR (`to = now + fenêtre`), plus de filtre client |
+| `scopeToProfile` | boolean | `false` | dans un onglet de fiche profil : seulement les événements que l'entité affichée organise ou auxquels elle participe (même filtre que `profile-related` events, posé dans `baseParams.filters.$or`, qui remplace un `$or` de config) ; rien n'est rendu tant que la fiche n'est pas chargée |
 | `showViewToggle` | boolean | `true` | afficher le toggle Liste/Calendrier(/Carte) |
 | `showTabs` | boolean | `true` | afficher les onglets (false = teaser : bucket unique) |
 | `limit` | number | — | plafond d'events/bucket (teaser) |

@@ -1805,6 +1805,8 @@ export const HeroSearchSchema = z.object({
 | `headline` | `LocalizedString` | Titre principal |
 | `subhead` | `LocalizedString?` | Sous-titre |
 | `backgroundImage` | `string?` | Image de fond |
+| `overlapNextSection` | `boolean?` | Opt-in (défaut absent) : `backgroundImage` est affichée entière (hauteur naturelle, sans recadrage ni hauteur fixe), glissée sous le bas du bloc de recherche (`-mt-14`), et la section suivante remonte dessus de `overlapNextSectionDepth` px (passe au-dessus) : titre posé sur l'illustration, cartes qui en recouvrent le bas, sans blanc entre l'illustration et les résultats. Sans effet sans `backgroundImage` |
+| `overlapNextSectionDepth` | `number?` | Avec `overlapNextSection` : remontée de la section suivante, en px à 1280 px de large (défaut 192) ; proportionnelle à la largeur en dessous (l'illustration suit la largeur), plafonnée à cette valeur au-dessus, et nulle sous `lg` (1024 px) : sur tablette et mobile, l'illustration est trop basse et la section suivante passerait sous la carte de recherche. La section suivante passe au-dessus de l'illustration mais sous la recherche et son autocomplétion (règle dans `styles/shared.css`). Plus petit = la section descend, les cartes couvrent moins l'illustration |
 | `ctaButtons` | `array?` | Boutons d'action AUTO-PORTEURS (variant: `"default" \| "secondary" \| "accent" \| "primary" \| "outline"`) |
 | `ctaButtons[].filters` | `{param, values[]}[]?` | Pose des query params `?param=v1,v2` (format pluriel de `computeFiltersFromUrl`, identique a la sidebar `/lieux`) |
 | `ctaButtons[].href` | `string?` | Navigue (ex. « + » → page de recherche complete) |

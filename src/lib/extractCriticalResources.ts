@@ -24,7 +24,9 @@ export interface CriticalImage {
 /**
  * Types de section dont le `backgroundImage` plein cadre above-the-fold est rendu via
  * `<HeroBackgroundImage>` en srcSet responsive (/img `w`) → preload `imagesrcset`.
- * (`hero-search` exclu : image décorative en bas de section, non-LCP ;
+ * (`hero-search` exclu : image décorative en bas de section, non-LCP — SAUF en `overlapNextSection`,
+ *  où l'illustration est rendue entière dans le flux et devient la plus grande image du premier
+ *  écran : cf. `isOverlapHeroSearch` ;
  *  `hero-entity-banner` exclu : URL d'entité externe, rendue en `<img>` brut.)
  */
 const RESPONSIVE_BG_SECTION_TYPES = new Set<string>([
@@ -55,6 +57,15 @@ const RESPONSIVE_BG_SECTION_TYPES = new Set<string>([
 const SLIDES_BG_SECTION_TYPES = new Set<string>([
   'hero-carousel',
 ]);
+
+/**
+ * `hero-search` en `overlapNextSection` (opt-in) : l'illustration, entière et en flux, est le LCP
+ * probable de la page — préchargée comme un héro plein cadre. Hors de ce mode, elle reste décorative.
+ */
+function isOverlapHeroSearch(section: { type: string; props?: unknown }): boolean {
+  const props = section.props as { overlapNextSection?: boolean } | undefined;
+  return section.type === 'hero-search' && props?.overlapNextSection === true;
+}
 
 /**
  * Détecte le type MIME d'une image à partir de son extension
@@ -146,7 +157,7 @@ export function extractCriticalImages(
     // preload `href` BRUT ne matcherait pas leur URL /img (→ double téléchargement, le bug
     // qu'on corrige). cf. <OptimizedImage> / <HeroBackgroundImage>.
     const firstSection = currentPage.sections?.[0];
-    if (firstSection && RESPONSIVE_BG_SECTION_TYPES.has(firstSection.type)) {
+    if (firstSection && (RESPONSIVE_BG_SECTION_TYPES.has(firstSection.type) || isOverlapHeroSearch(firstSection))) {
       const props = firstSection.props as
         | { backgroundImage?: string; slides?: { backgroundImage?: string }[] }
         | undefined;

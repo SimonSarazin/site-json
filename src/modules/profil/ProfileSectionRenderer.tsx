@@ -26,6 +26,7 @@ import type {
 import type { Section } from "@/types/site-schema";
 import { SectionRenderer } from "@/components/sections/SectionRenderer";
 import { useProfileEntity } from "./hooks/useProfileEntity";
+import { scopeAgendaToProfile } from "./lib/scopeAgendaToProfile";
 
 // Lazy load des sections
 const ProfileHeader = lazy(() => import("./components/sections/ProfileHeader"));
@@ -101,6 +102,12 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
           }
         }}
       />;
+    }
+
+    // Agenda d'onglet de fiche (`scopeToProfile`) : sans l'id de l'entité, il afficherait tout le réseau.
+    if (section.type === "agenda" && (section as { props?: { scopeToProfile?: boolean } }).props?.scopeToProfile) {
+      if (!entity?.id) return null;
+      return <SectionRenderer section={scopeAgendaToProfile(section as Section, entity.id)} />;
     }
 
     // It's a site section - use the SectionRenderer

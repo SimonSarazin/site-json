@@ -35,8 +35,13 @@ export const ADMIN_QUERY_KEYS = {
   REFERENCE_SEARCH_PREFIX: (entityType: string) => `admin-ref-search-${entityType}`,
   /** Référencement : liste des référencés. */
   REFERENCE_LISTED_PREFIX: (entityType: string) => `admin-ref-listed-${entityType}`,
+  /** Référencement : éléments SOURCÉS par le site (`source.keys ∋ slug`, sous-onglet opt-in). */
+  REFERENCE_SOURCED_PREFIX: (entityType: string) => `admin-ref-sourced-${entityType}`,
   /** Reprise de réponses : candidates du form SOURCE (infinite scroll). */
   ANSWER_COPY_SOURCE_PREFIX: (sourceForm: string) => `admin-answer-copy-source-${sourceForm}`,
   /** Reprise de réponses : réponses du form CIBLE, chargées EN ENTIER (index `copiedFrom` + empreintes). */
   ANSWER_COPY_TARGET_PREFIX: (targetForm: string) => `admin-answer-copy-target-${targetForm}`,
+  /** « Qui a répondu » : organisations du périmètre, puis réponses des forms suivis (ids joints). */
+  FORM_COVERAGE_ORGS_PREFIX: "admin-form-coverage-orgs",
+  FORM_COVERAGE_ANSWERS_PREFIX: (formIds: readonly string[]) => `admin-form-coverage-answers-${formIds.join("-")}`,
 } as const;

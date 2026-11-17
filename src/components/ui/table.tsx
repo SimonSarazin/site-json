@@ -2,17 +2,26 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+/**
+ * `bare` (opt-in) : rend la table SANS son conteneur `overflow-x-auto`. Ce conteneur devient l'ancêtre
+ * de défilement d'un en-tête `sticky` et le neutralise ; une table dont le parent défile déjà (ex.
+ * `AdminTableShell` en `stickyHeader`) le saute pour garder un seul rendu de `<table>`.
+ */
+function Table({ className, bare = false, ...props }: React.ComponentProps<"table"> & { bare?: boolean }) {
+  const table = (
+    <table
+      data-slot="table"
+      className={cn("w-full caption-bottom text-sm", className)}
+      {...props}
+    />
+  )
+  if (bare) return table
   return (
     <div
       data-slot="table-container"
       className="relative w-full overflow-x-auto"
     >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
+      {table}
     </div>
   )
 }

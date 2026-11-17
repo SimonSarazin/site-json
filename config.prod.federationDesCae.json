@@ -482,6 +482,83 @@
             "showActiveFiltersTypes": false,
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
+            "csvButton": {
+              "show": true,
+              "label": {
+                "fr": "CSV"
+              },
+              "filename": "annuaire-federation-des-cae",
+              "adminOnly": true,
+              "fields": [
+                "openingDate",
+                "holderOrganization",
+                "email",
+                "telephone",
+                "url",
+                "socialNetwork",
+                "openingHours",
+                "description",
+                "video"
+              ],
+              "columns": [
+                {
+                  "header": "Nom de la CAE",
+                  "path": "name"
+                },
+                {
+                  "header": "Date d'ouverture",
+                  "path": "openingDate"
+                },
+                {
+                  "header": "Description courte",
+                  "path": "shortDescription"
+                },
+                {
+                  "header": "Structure porteuse",
+                  "path": "holderOrganization"
+                },
+                {
+                  "header": "Ville",
+                  "path": "address.addressLocality"
+                },
+                {
+                  "header": "Code postal",
+                  "path": "address.postalCode"
+                },
+                {
+                  "header": "Email",
+                  "path": "email"
+                },
+                {
+                  "header": "Téléphone",
+                  "path": "telephone"
+                },
+                {
+                  "header": "Site internet",
+                  "path": "url"
+                },
+                {
+                  "header": "Réseaux sociaux",
+                  "path": "socialNetwork"
+                },
+                {
+                  "header": "Horaires d'ouverture",
+                  "path": "openingHours"
+                },
+                {
+                  "header": "Description longue",
+                  "path": "description"
+                },
+                {
+                  "header": "Vidéo de présentation",
+                  "path": "video"
+                },
+                {
+                  "header": "Mots-clés",
+                  "path": "tags"
+                }
+              ]
+            },
             "baseParams": {
               "sourceKey": [
                 "federationDesCae"
@@ -1956,6 +2033,40 @@
               "validate",
               "export",
               "delete"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "formulaires",
+        "label": {
+          "fr": "Formulaires"
+        },
+        "icon": "clipboard-list",
+        "sections": [
+          {
+            "type": "formCoverage",
+            "mail": true,
+            "title": {
+              "fr": "Réponses des CAE aux formulaires"
+            },
+            "source": {
+              "notSourceKey": true,
+              "defaultTags": [
+                "CAE"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "forms": [
+              {
+                "formId": "677e7e389058e31575550ac8",
+                "label": {
+                  "fr": "Les communs des CAEs"
+                },
+                "finderInput": "finderaapStep1lurzepkc4q8n686r8h"
+              }
             ]
           }
         ]

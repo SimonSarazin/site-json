@@ -1,9 +1,13 @@
 import { z } from "zod";
 
-import { PreviewConfSchema, SearchBaseParamsSchema } from "@/modules/search/schema";
+import { FiltersSectionSchema, PreviewConfSchema, SearchBaseParamsSchema } from "@/modules/search/schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 import { LocalizedString } from "../../types/locale-schema";
+
+/** Périmètre de requête d'une section admin (même forme que les `baseParams` de la recherche). UNE
+ *  instance partagée : le dump JSON Schema l'écrit une fois (`reused: "ref"`) au lieu d'une copie par section. */
+const AdminSourceSchema = SearchBaseParamsSchema.partial();
 
 /**
  * Manifeste de la page d'Administration — `config.admin` (par site, JSON).
@@ -131,7 +135,7 @@ export const AdminDashboardKpiSchema = z.discriminatedUnion("type", [
     ...kpiBase,
     type: z.literal("searchCount"),
     entityType: z.string(), // answers | organizations | poi | …
-    source: SearchBaseParamsSchema.partial().optional(),
+    source: AdminSourceSchema.optional(),
     trend: z.enum(["monthly"]).optional(),
   }),
   z.object({ ...kpiBase, type: z.literal("membersPending") }),
@@ -181,7 +185,7 @@ const AdminResourceSectionSchema = z.object({
    * `validate`/`status`), `defaultFields` est ignoré — la table charge les documents COMPLETS
    * (résolution d'édition costum + forms préremplis, cf. AdminResourceTable).
    */
-  source: SearchBaseParamsSchema.partial().optional(),
+  source: AdminSourceSchema.optional(),
   columns: AdminColumnsSchema.optional(),
   create: AdminCreateRefSchema.default("inherit"),
   /**
@@ -308,6 +312,21 @@ const AdminReferenceSectionSchema = z.object({
    * a priori du site comme un natif, au lieu d'être publié d'office. Échec-tolérant.
    */
   moderateReferenced: z.boolean().optional(),
+  /**
+   * Panneau de filtres (opt-in) à gauche des tables — MÊMES props que la section `filters`
+   * d'une page (ex. recopiées de `/lieux`). Les choix s'ajoutent à chaque recherche (tags, zones,
+   * facettes), derrière les garde-fous : un `$nin` de garde reste, composé avec la facette. Les groupes `filterType: "sourceKey"`
+   * (réseaux) ne s'affichent et ne s'appliquent que sur « Référencés » et « Sourcés » : la recherche de candidates
+   * porte sur ce qui n'a PAS la source du site, un filtre par source y contredirait le vivier.
+   */
+  filters: FiltersSectionSchema.shape.props.optional(),
+  /**
+   * Opt-in : 3e sous-onglet « Sourcés » — les éléments dont `source.keys` contient le slug du site
+   * (créés ou rattachés par lui), avec l'action « Retirer la source » (SET_SOURCE remove/source,
+   * confirmation). Port de l'onglet du referenceTable legacy. ⚠ Le site ne peut pas reposer une source
+   * retirée (add/source est refusé) : l'élément ne revient que par référencement.
+   */
+  showSourced: z.boolean().optional(),
 });
 export type AdminReferenceSection = z.infer<typeof AdminReferenceSectionSchema>;
 const AdminModerationSectionSchema = z.object({ ...sectionAccess, type: z.literal("moderation"), title: LocalizedString.optional() });
@@ -340,7 +359,7 @@ const AdminAnswerCopySectionSchema = z.object({
    * `defaultSortBy`, `indexStepList`…). `notSourceKey: true` est posé d'office : les réponses source
    * appartiennent à un autre site, le scope costum les exclurait.
    */
-  source: SearchBaseParamsSchema.partial().optional(),
+  source: AdminSourceSchema.optional(),
   /** Colonnes de DONNÉES (lignes APLATIES par le hook costum, comme `resource`) : `"path"` ou `{ path, label }`
    *  — sans `type`/`sortable` : la table n'a ni tri ni cellule audio, une clé promise puis ignorée serait un faux
    *  contrat. Statut de copie et Action sont fixes. */
@@ -365,7 +384,36 @@ const AdminAnswerCopySectionSchema = z.object({
 }).refine((s) => s.sourceForm !== s.targetForm, { message: "sourceForm et targetForm doivent différer", path: ["targetForm"] });
 export type AdminAnswerCopySection = z.infer<typeof AdminAnswerCopySectionSchema>;
 
-const BUILTIN_SECTION_TYPES = ["dashboard", "members", "resource", "import", "export", "reference", "moderation", "answerCopy"] as const;
+/**
+ * Section « qui a répondu à quel formulaire » : une ligne par organisation du périmètre `source`,
+ * et pour chacune, l'état de ses réponses aux formulaires déclarés (« Répondu » / « Pas de
+ * réponse »). LECTURE SEULE. Une réponse est attribuée à une organisation par la question
+ * « finder » du formulaire qui la désigne (`finderInput`) — et non par l'auteur de la réponse, qui
+ * est un citoyen. Un formulaire sans question de ce genre ne peut pas figurer ici.
+ */
+const AdminFormCoverageSectionSchema = z.object({
+  ...sectionAccess,
+  type: z.literal("formCoverage"),
+  title: LocalizedString.optional(),
+  /** Périmètre des organisations listées — MÊME forme que `resource.source` (`defaultTags`,
+   *  `notSourceKey`, `defaultFilters`, `defaultSortBy`…). */
+  source: AdminSourceSchema.optional(),
+  forms: z.array(z.object({
+    formId: z.string().regex(MONGO_ID),
+    label: LocalizedString,
+    /** Clé de l'input finder qui désigne l'organisation ayant répondu (cherchée dans toutes les étapes). */
+    finderInput: z.string().min(1),
+    /** Chemins lus en plus du finder (ex. `links.organizations`) — opt-in. */
+    linkPaths: z.array(z.string().min(1)).optional(),
+  })).min(1),
+  /** Cases à cocher + envoi groupé d'un e-mail aux organisations cochées (`AdminMailingDialog`) — opt-in. */
+  mail: z.boolean().optional(),
+  /** Taille de page du chargement des réponses (défaut 100). */
+  answersIndexStepList: z.number().int().positive().optional(),
+});
+export type AdminFormCoverageSection = z.infer<typeof AdminFormCoverageSectionSchema>;
+
+const BUILTIN_SECTION_TYPES = ["dashboard", "members", "resource", "import", "export", "reference", "moderation", "answerCopy", "formCoverage"] as const;
 
 /** Section costum : `type` libre enregistré via `registerAdminSection` (comme une section profil costum).
  *  Permissif (le composant enregistré valide ses props) — mais REFUSE les types builtin : sans ce
@@ -395,6 +443,7 @@ export const AdminSectionSchema = z.union([
     AdminReferenceSectionSchema,
     AdminModerationSectionSchema,
     AdminAnswerCopySectionSchema,
+    AdminFormCoverageSectionSchema,
   ]),
   AdminCustomSectionSchema,
 ]);
