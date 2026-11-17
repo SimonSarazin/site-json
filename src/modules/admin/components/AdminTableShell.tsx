@@ -18,7 +18,7 @@ export interface AdminTableShellProps {
   /**
    * En-tête collé en haut au défilement. Opt-in : `<Table>` enveloppe sa table dans son PROPRE
    * conteneur `overflow-x-auto`, qui devient l'ancêtre de défilement d'un `sticky` et le neutralise —
-   * la table est donc rendue nue, la zone bornée ci-dessous défilant dans les deux axes.
+   * la table est donc rendue `bare` (sans ce conteneur), la zone bornée ci-dessous défilant dans les deux axes.
    */
   stickyHeader?: boolean;
 }
@@ -31,17 +31,10 @@ export interface AdminTableShellProps {
 export function AdminTableShell({ head, body, loading, empty, emptyMessage, maxHeightClass = "max-h-[55vh]", stickyHeader = false }: AdminTableShellProps) {
   return (
     <div className={`${maxHeightClass} overflow-auto`}>
-      {stickyHeader ? (
-        <table data-slot="table" className="w-full caption-bottom text-sm">
-          <TableHeader className="sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_var(--border)]">{head}</TableHeader>
-          <TableBody>{body}</TableBody>
-        </table>
-      ) : (
-        <Table>
-          <TableHeader>{head}</TableHeader>
-          <TableBody>{body}</TableBody>
-        </Table>
-      )}
+      <Table bare={stickyHeader}>
+        <TableHeader className={stickyHeader ? "sticky top-0 z-10 bg-card shadow-[inset_0_-1px_0_var(--border)]" : undefined}>{head}</TableHeader>
+        <TableBody>{body}</TableBody>
+      </Table>
       {loading && (
         <div className="space-y-2 py-2">
           <Skeleton className="h-8 w-full" />

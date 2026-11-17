@@ -1,6 +1,7 @@
 import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useState, useRef, useEffect, useMemo } from "react";
+import type { CSSProperties } from "react";
 import { Loader2 } from "lucide-react";
 import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
@@ -82,7 +83,9 @@ const buttonMatchesParams = (btn: HeroSearchCtaButton, searchParams: URLSearchPa
 function OverlapIllustration({ src }: { src: string }) {
   return (
     <div className="pointer-events-none w-full -mt-14">
-      <HeroBackgroundImage src={src} className="block w-full h-auto" />
+      {/* `priority` : entière et en flux, c'est la plus grande image du premier écran (LCP), préchargée
+          par extractCriticalResources (`isOverlapHeroSearch`). */}
+      <HeroBackgroundImage src={src} priority className="block w-full h-auto" />
     </div>
   );
 }
@@ -206,9 +209,16 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   const isAutocompleteOpen = !dismissed && suggestionCount > 0 && search.length >= 2;
 
   const overlapNext = !!(props.overlapNextSection && props.backgroundImage);
-  // Remontée de la section suivante sur l'illustration (px). Style inline : une classe Tailwind
-  // construite à partir d'une valeur de config ne serait pas générée.
-  const overlapStyle = overlapNext ? { marginBottom: -(props.overlapNextSectionDepth ?? 192) } : undefined;
+  // Remontée de la section suivante sur l'illustration, en variables CSS : une classe Tailwind construite
+  // à partir d'une valeur de config ne serait pas générée. La profondeur de config vaut à 1280 px ;
+  // l'illustration (`w-full h-auto`) suit la largeur, donc la remontée aussi (`--overlap-next-fluid`,
+  // un % de marge se rapporte à la largeur), plafonnée à la valeur de config. Dès `lg` seulement : en
+  // dessous, l'illustration est trop basse et la section suivante passerait sous la carte de recherche.
+  const overlapDepth = props.overlapNextSectionDepth ?? 192;
+  const overlapStyle = overlapNext
+    ? ({ "--overlap-next": `${overlapDepth}px`, "--overlap-next-fluid": `${overlapDepth / 12.8}%` } as CSSProperties)
+    : undefined;
+  const overlapClass = overlapNext && "pt-28 lg:mb-[calc(-1*min(var(--overlap-next),var(--overlap-next-fluid)))]";
   const isFullStyle = props.ctaButtons && props.ctaButtons.length > 0 && props.subhead;
 
   useEffect(() => {
@@ -334,7 +344,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
         id={id}
         data-overlap-next={overlapNext || undefined}
         style={overlapStyle}
-        className={cn("relative min-h-112.5 md:min-h-125 flex flex-col -mt-10", overlapNext && "pt-28")}
+        className={cn("relative min-h-112.5 md:min-h-125 flex flex-col -mt-10", overlapClass)}
       >
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <div className="container mx-auto px-4 sm:px-6">
@@ -477,14 +487,15 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
     // réserve, elle recouvre le haut de la section suivante (titre de liste de la home).
     // `overlapNextSection` : l'illustration est rendue entière dans le flux (voir plus bas), `pt-28`
     // rend la marge haute que `min-h` ne donne plus, et la section suivante remonte sur
-    // l'illustration (`overlapNextSectionDepth`, passe au-dessus : règle `data-overlap-next` dans index.css).
+    // l'illustration dès `lg` (`overlapNextSectionDepth`, passe au-dessus de l'illustration mais sous la
+    // recherche : règle `data-overlap-next` dans styles/shared.css).
     <section
       id={id}
       data-overlap-next={overlapNext || undefined}
       style={overlapStyle}
       className={cn(
         "relative min-h-112.5 md:min-h-125 flex flex-col -mt-10",
-        props.backgroundImage && (overlapNext ? "pt-28" : "mb-10"),
+        props.backgroundImage && (overlapClass || "mb-10"),
       )}
     >
       <div className="relative z-10 flex-1 flex items-center justify-center">

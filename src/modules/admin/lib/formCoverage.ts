@@ -62,11 +62,17 @@ export function answerOrganizationIds(data: Record<string, unknown>, form: Cover
   return ids;
 }
 
-/** Ids d'une map `{ <id>: { id?, type? } }` : organisations ou entrées sans type. */
+/**
+ * Ids d'une map `{ <id>: { id?, type? } }` (organisations ou entrées sans type), ou d'une LISTE d'ids /
+ * d'entrées — sans quoi les index `"0"`, `"1"` d'un tableau passeraient pour des ids d'organisation.
+ */
 function organizationIdsOf(value: unknown): string[] {
   if (!value || typeof value !== "object") return [];
   const ids: string[] = [];
-  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+  const entries: [string, unknown][] = Array.isArray(value)
+    ? value.map((entry): [string, unknown] => [typeof entry === "string" ? entry : "", entry])
+    : Object.entries(value as Record<string, unknown>);
+  for (const [key, entry] of entries) {
     const e = entry && typeof entry === "object" ? (entry as { id?: unknown; type?: unknown }) : {};
     if (e.type !== undefined && e.type !== "organizations") continue;
     const id = typeof e.id === "string" && e.id ? e.id : key;
@@ -133,4 +139,21 @@ export function filterRowsByAnswers<T extends RowLike>(
     const id = rowId(row);
     return entries.every(([formId, want]) => hasAnswered(coverage, formId, id) === (want === "answered"));
   });
+}
+
+/**
+ * Projection des organisations : celle de la config, plus ce que la table LIT — `name`, `slug` (lien
+ * vers la fiche) et `email` (hors ligne publique). Sans `slug` explicite, le backend renvoie une ligne
+ * réduite à `_id`/`name` dès qu'une projection est posée, et aucun lien ne sort.
+ */
+export function coverageOrgFields(defaultFields?: readonly string[]): string[] {
+  return [...new Set([...(defaultFields ?? []), "name", "slug", "email"])];
+}
+
+/**
+ * Projection des réponses : `form` et `answers` (le finder est cherché dans toutes les étapes), plus
+ * chaque `linkPaths` — au lieu du document complet, pour ne lire que ce que `buildFormCoverage` lit.
+ */
+export function coverageAnswerFields(forms: readonly CoverageForm[]): string[] {
+  return [...new Set(["form", "answers", ...forms.flatMap((f) => f.linkPaths ?? [])])];
 }

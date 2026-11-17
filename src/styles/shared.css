@@ -327,3 +327,13 @@
   --tw-prose-invert-th-borders: var(--border);
   --tw-prose-invert-td-borders: var(--border);
 }
+
+/* hero-search `overlapNextSection` : la section qui suit le hero remonte sur le bas de son illustration
+   (marge basse négative du hero, `overlapNextSectionDepth`, dès `lg` seulement, proportionnelle à la largeur). Ici et pas dans index.css :
+   chaque feuille de site importe shared.css, aucune n'importe index.css. `z-index: 1` la pose au-dessus de
+   l'illustration (non positionnée) mais SOUS le bloc de recherche du hero (`z-10`) et son menu
+   d'autocomplétion, qui restent cliquables. */
+[data-section-index]:has([data-overlap-next]) + [data-section-index] {
+  position: relative;
+  z-index: 1;
+}

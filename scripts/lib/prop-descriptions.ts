@@ -521,7 +521,7 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
 
   admin: {
     tabs: "Onglets de l'admin ; ABSENT → dashboard seul, AUCUNE dérivation automatique — générer le squelette par npm run admin:scaffold puis personnaliser.",
-    "tabs[].sections[].type": "Discriminant de la section : 8 builtin (dashboard, members, resource, import, export, reference, moderation, answerCopy) ou type costum enregistré via registerAdminSection — un builtin ne peut pas être redéclaré.",
+    "tabs[].sections[].type": "Discriminant de la section : 9 builtin (dashboard, members, resource, import, export, reference, moderation, answerCopy, formCoverage) ou type costum (registerAdminSection) — un builtin ne peut être redéclaré.",
     "tabs[].sections[].entityType": "Collection gérée par la table resource (organizations, projects, poi, events, citoyens, answers…) — pilote la requête, les forms add/edit et les invalidations.",
     "tabs[].sections[].source": "Périmètre de requête — même forme que les baseParams de searchProStatic ; defaultSortBy = tri initial (surchargé par le tri colonne) ; defaultFields IGNORÉ en mode admin (documents complets).",
     "tabs[].sections[].source.defaultFilters": "Filtres Mongo pass-through restreignant la table (ex. {\"type\":\"recoveryCenter\"} pour un sous-type de POI).",
@@ -537,6 +537,11 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "tabs[].sections[].status": "⚠ CONTRAT FUTUR : seule sa PRÉSENCE (lue en booléen) active le mode admin — sous-champs non câblés, cascade/notifyEmail seront retirés ; ne rien configurer d'ici l'implémentation (SSBE).",
     "tabs[].sections[].filters": "members : onglets/outils rendus, seuls requêtés (défaut code : à-valider + admins + recherche, « tous » toujours là) ; reference : panneau aux props de la section filters, sans sourceKey sur « Rechercher ».",
     "tabs[].sections[].showSourced": "reference : sous-onglet « Sourcés » (source.keys ∋ slug) avec « Retirer la source » après confirmation — irréversible depuis le site. Défaut code : false.",
+    "tabs[].sections[].forms": "formCoverage : formulaires suivis, une colonne chacun (Répondu/Pas de réponse + filtre) ; une réponse compte pour l'organisation de son finder et de ses linkPaths.",
+    "tabs[].sections[].forms[].finderInput": "formCoverage : clé de l'input finder qui désigne l'organisation, cherchée dans TOUTES les étapes de la réponse (pas besoin de nommer l'étape).",
+    "tabs[].sections[].forms[].linkPaths": "formCoverage : chemins lus en plus du finder (ex. links.organizations), forme { <id>: { type } } ; seconde voie de rattachement d'une réponse à son lieu.",
+    "tabs[].sections[].mail": "formCoverage : cases à cocher et envoi groupé AdminMailingDialog aux e-mails de contact des organisations cochées ; opt-in, défaut code false.",
+    "tabs[].sections[].answersIndexStepList": "formCoverage : taille de page du chargement des réponses (toutes lues avant d'afficher un état) ; défaut code 100.",
     "tabs[].sections[].actions": "members : actions proposées ; absent = tout (historique) ; invite gate le bouton « Inviter ».",
     "tabs[].sections[].entityTypes": "Types proposés par la section : import = enum strict des 5 types importables (hors liste → validation KO) ; export/reference = libres, défaut code organizations/projects/events/poi.",
     "tabs[].sections[].access": "Accès minimum de la SECTION — dernier étage du gate page → onglet → section (le plus restrictif gagne).",

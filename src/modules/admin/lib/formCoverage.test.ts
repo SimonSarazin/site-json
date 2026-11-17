@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildFormCoverage, filterRowsByAnswers, filterRowsByName, finderOrganizationIds, type FormCoverage } from "./formCoverage";
+import { buildFormCoverage, coverageAnswerFields, coverageOrgFields, filterRowsByAnswers, filterRowsByName, finderOrganizationIds, type FormCoverage } from "./formCoverage";
 
 const OBS = "6525865cdeaf281bbc7280e9";
 const AUTRE = "677e7e389058e31575550ac8";
@@ -112,5 +112,31 @@ describe("filterRowsByAnswers", () => {
 
   it("formulaire suivi sans aucune réponse : personne n'a répondu", () => {
     expect(ids(filterRowsByAnswers(rows, new Map([["F3", new Map()]]), { F3: "notAnswered" }))).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("finder stocké en liste", () => {
+  it("lit les valeurs d'un tableau comme ids, pas ses index", () => {
+    const data = reponse("a1", OBS, [OBS, AUTRE] as unknown as Record<string, unknown>).serverData;
+    expect(finderOrganizationIds(data, FINDER)).toEqual([OBS, AUTRE]);
+  });
+
+  it("tableau d'entrées : garde l'id et écarte un autre type", () => {
+    const data = reponse("a1", OBS, [{ id: "o1" }, { id: "c1", type: "citoyens" }] as unknown as Record<string, unknown>).serverData;
+    expect(finderOrganizationIds(data, FINDER)).toEqual(["o1"]);
+  });
+});
+
+describe("projections", () => {
+  it("organisations : name, slug et email toujours projetés, sans doublon", () => {
+    expect(coverageOrgFields()).toEqual(["name", "slug", "email"]);
+    expect(coverageOrgFields(["address", "name"])).toEqual(["address", "name", "slug", "email"]);
+  });
+
+  it("réponses : form, answers et chaque linkPaths", () => {
+    expect(coverageAnswerFields([
+      { formId: "f1", finderInput: "x" },
+      { formId: "f2", finderInput: "y", linkPaths: ["links.organizations"] },
+    ])).toEqual(["form", "answers", "links.organizations"]);
   });
 });

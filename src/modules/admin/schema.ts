@@ -408,6 +408,8 @@ const AdminFormCoverageSectionSchema = z.object({
   })).min(1),
   /** Cases à cocher + envoi groupé d'un e-mail aux organisations cochées (`AdminMailingDialog`) — opt-in. */
   mail: z.boolean().optional(),
+  /** Taille de page du chargement des réponses (défaut 100). */
+  answersIndexStepList: z.number().int().positive().optional(),
 });
 export type AdminFormCoverageSection = z.infer<typeof AdminFormCoverageSectionSchema>;
 

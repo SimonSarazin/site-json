@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-11-17** (`/actualites` : « Événements » en premier onglet, cf. §9 17/11). Précédent : **2026-11-16** (onglet admin « Formulaires » : 6 formulaires d'usages, filtres par réponse, périmètre de `/lieux`, cf. §9 16/11bis ; hero en débord, filtres et onglet « Sourcés » au référencement, périmètre source + référencement à la place du tag `TiersLieux`, cf. §9 16/11). Précédent : **2026-11-13** (onglet « Événements » des fiches organisation et projet : même agenda que `/actualites`, cf. §9 13/11). Précédent : **2026-11-12** (onglet admin « Formulaires » : réponses des tiers-lieux aux formulaires du Navigateur et envoi d'e-mail, cf. §9 12/11). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-17** (suites de la revue de la MR 125 : hero en débord, onglet admin « Formulaires », agenda des fiches, cf. §9 17/11bis ; `/actualites` : « Événements » en premier onglet, cf. §9 17/11). Précédent : **2026-11-16** (onglet admin « Formulaires » : 6 formulaires d'usages, filtres par réponse, périmètre de `/lieux`, cf. §9 16/11bis ; hero en débord, filtres et onglet « Sourcés » au référencement, périmètre source + référencement à la place du tag `TiersLieux`, cf. §9 16/11). Précédent : **2026-11-13** (onglet « Événements » des fiches organisation et projet : même agenda que `/actualites`, cf. §9 13/11). Précédent : **2026-11-12** (onglet admin « Formulaires » : réponses des tiers-lieux aux formulaires du Navigateur et envoi d'e-mail, cf. §9 12/11). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -62,6 +62,7 @@ lieux**, pas un plan de rattrapage.
 | 16/11 | Mirana | Hero de l'accueil et de `/reservation` en débord sous la section suivante (`overlapNextSection`) ; filtres de `/lieux` et sous-onglet « Sourcés » dans l'admin Référencement ; `/lieux`, accueil, `/reservation` et observatoire scopés par source + référencement au lieu du tag `TiersLieux` (cf. §9 16/11) |
 | 16/11 | Mirana | Onglet admin « Formulaires » : 6 formulaires d'usages ajoutés, filtre « Répondu / Pas de réponse » par formulaire, périmètre de `/lieux` (cf. §9 16/11bis) |
 | 17/11 | Mirana | `/actualites` : onglet « Événements » en premier, ouvert par défaut (cf. §9 17/11) |
+| 17/11 | Mirana | Suites de la revue de la MR 125 : hero en débord cliquable sur toutes les largeurs, liens des fiches et réponses projetées dans l'onglet « Formulaires », agenda des fiches composé avec un `$or` de config (cf. §9 17/11bis) |
 
 ---
 
@@ -221,6 +222,32 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 ---
 
 ## 9. Impacts des modifications
+
+### 17/11bis — suites de la revue de la MR 125
+
+**Hero en débord (accueil, `/reservation`).** La règle qui pose la section suivante au-dessus de
+l'illustration est dans `src/styles/shared.css` (importée par `index-tiers-lieux.css`), avec `z-index: 1` :
+au-dessus de l'illustration, sous le bloc de recherche (`z-10`) et son autocomplétion. La remontée
+(`overlapNextSectionDepth`, 144 px accueil, 192 px `/reservation`) vaut à 1280 px de large, suit la
+largeur en dessous, et ne s'applique qu'à partir de 1024 px : plus bas, l'illustration est trop basse
+pour l'accueillir. L'illustration est préchargée et chargée sans différé (c'est la plus grande image du
+premier écran). Vérifié au navigateur avec la feuille tiers-lieux, à 360, 640, 768, 1024, 1100, 1280,
+1440 et 1920 px : champ, bouton « Rechercher », titre et « Voir tous les résultats » de la section
+suivante cliquables sur les deux pages ; menu d'autocomplétion au-dessus de la section suivante.
+
+**Onglet admin « Formulaires ».** Les organisations sont projetées sur `name`, `slug` et `email` : le
+nom de chaque lieu mène de nouveau à sa fiche (4 307 liens sur 4 313 lignes en base locale ; les 6
+autres organisations n'ont pas de slug). Les réponses sont projetées sur `form`, `answers` et
+`links.organizations` au lieu du document complet. Un finder stocké en liste d'ids est lu par ses
+valeurs. En-tête de table toujours collé au défilement, sur la table shadcn sans conteneur (option
+`bare` de `Table`) au lieu d'une copie de son balisage.
+
+**Onglet « Événements » des fiches.** Un `$or` déjà présent dans les filtres de l'agenda est composé en
+ET avec celui de la fiche (`mergeMongoFilters`) au lieu d'être remplacé.
+
+**Référencement, « Sourcés » avec un réseau coché.** Le backend fait l'intersection : en base locale,
+25 sourcés sans filtre, 0 avec « Bretagne Tiers-Lieux », 2 avec « La Compagnie des Tiers-Lieux » (tous
+deux sourcés par le site). Aucune modification.
 
 ### 17/11 — `/actualites` : l'onglet « Événements » passe en premier
 

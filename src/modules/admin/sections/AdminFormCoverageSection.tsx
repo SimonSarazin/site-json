@@ -17,7 +17,7 @@ import type { SearchType } from "@/modules/search/schema";
 import { ADMIN_QUERY_KEYS } from "../constants/queryKeys";
 import { rowData, rowId } from "../lib/answerCopy";
 import { recipientFromEntity, uniqueRecipients, type MailingRecipient } from "../lib/mailing";
-import { buildFormCoverage, filterRowsByAnswers, filterRowsByName, hasAnswered, type AnswerFilter, type AnswerState } from "../lib/formCoverage";
+import { buildFormCoverage, coverageAnswerFields, coverageOrgFields, filterRowsByAnswers, filterRowsByName, hasAnswered, type AnswerFilter, type AnswerState } from "../lib/formCoverage";
 import type { AdminFormCoverageSection as AdminFormCoverageSectionConfig, AdminSection } from "../schema";
 import { AdminMailingDialog } from "../components/AdminMailingDialog";
 import { AdminTableShell } from "../components/AdminTableShell";
@@ -50,11 +50,10 @@ export default function AdminFormCoverageSection({ section }: { section: AdminSe
   const formIds = useMemo(() => cfg.forms.map((f) => f.formId), [cfg.forms]);
 
   const orgParams = useMemo(
-    // `email` n'est pas dans la ligne publique d'une organisation : il faut le projeter.
     () => ({
       ...cfg.source,
       defaultTypes: ["organizations"] as SearchType[],
-      defaultFields: [...new Set([...(cfg.source?.defaultFields ?? []), "email"])],
+      defaultFields: coverageOrgFields(cfg.source?.defaultFields),
     }),
     [cfg.source],
   );
@@ -69,15 +68,17 @@ export default function AdminFormCoverageSection({ section }: { section: AdminSe
       defaultTypes: ["answers"] as SearchType[],
       notSourceKey: true,
       defaultFilters: { form: { $in: formIds } },
-      indexStepList: 100,
+      defaultFields: coverageAnswerFields(cfg.forms),
+      indexStepList: cfg.answersIndexStepList ?? 100,
     }),
-    [formIds],
+    [formIds, cfg.forms, cfg.answersIndexStepList],
   );
   const answers = useSearchAllResults({
     queryKeyPrefix: ADMIN_QUERY_KEYS.FORM_COVERAGE_ANSWERS_PREFIX(formIds),
     searchType: ANSWERS_TYPE,
     baseParams: answerParams,
-    // Documents COMPLETS : la ligne publique d'une réponse ne porte pas `answers`, donc pas le finder.
+    // Variante admin : la ligne publique d'une réponse ne porte pas `answers`, donc pas le finder ;
+    // `defaultFields` borne la projection à ce que la couverture lit.
     variant: "admin",
   });
 
