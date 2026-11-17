@@ -1519,6 +1519,8 @@ export const CardConfSchema = z.object({
   servicePricing:  z.object({ /* meeting / coworking / accommodation */ }).optional(),
   installationFilter: InstallationFilterConfSchema.optional(),
   communeFrom: z.object({ filter: z.string() }).optional(), // poi-amenities : commune de rattachement
+  slotsBand: z.object({ color: ColorTokenSchema.optional() }).optional(), // poi-amenities : bande « avec créneaux » + taux
+  bookedHours: z.boolean().optional(),                    // profile : heures / semaine et cumulées de l'organisation
   type:    z.enum([...15 designs...]).default("default"),
   variant: z.enum([...11 designs...]).optional(),
 }).partial();
@@ -1729,6 +1731,7 @@ export const SearchProStaticSectionSchema = z.object({
 - **Defaults differents** : `useFilter: false`, `showActiveFiltersTypes: false`, `showActiveFiltersTags: false`
 - **Placeholder optionnel** : contrairement a `searchPro` ou il est obligatoire
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
+- **`usageSort`** (`{id?, label?}`) : sélecteur « Trier » — par nom (tri du serveur, défaut) ou par taux d'occupation décroissant / croissant (`?tri=desc|asc`) ; exige `list.preview.reservations.usage`, la liste triée lit tout le périmètre. Cf. `doc/07-module-search.md`, « Créneaux sur la liste »
 - **`reservationUsers`** (`ReservationUsersConfSchema`) : périmètre CALCULÉ — organisations usagères d'au moins une réservation sur un équipement du site (`reservations` + `poiFilters` + `sourceKey?`), plus, avec `includeCostumOrganizations?`, les organisations rattachées au costum du site ; préchargé au SSR. Cf. `doc/07-module-search.md`, « Annuaire des organisations usagères »
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
 - **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.

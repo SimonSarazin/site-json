@@ -6,7 +6,7 @@ import type { SearchEntity, News } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 // Primitives du tableau de bord (dimensions/KPI/graphes) : fichier SANS import
 // search — `observatoire/schema.ts`, lui, importe celui-ci (cf. son en-tête).
-import { ObservatoryPanelConfSchema } from "@/modules/observatoire/dashboardSchema";
+import { ColorTokenSchema, ObservatoryPanelConfSchema } from "@/modules/observatoire/dashboardSchema";
 import { z } from "zod";
 import { RESOURCE_NOTE_KEYS, RESOURCE_TAG_KEYS, type ResourceDetailKey } from "./lib/resourceDetails";
 
@@ -883,6 +883,15 @@ export const CardConfSchema = z.object({
      *  désigné qui interroge le code postal de la fiche (ex. `poi-postalCode` d'ESS974, codes regroupés en
      *  communes) — l'adresse ne donne que le lieu-dit. Absent ou code inconnu = pas de ligne. */
     communeFrom: z.object({ filter: z.string() }).optional(),
+    /** Bande de gauche (`poi-amenities`) dans une autre couleur quand l'équipement a des créneaux en cours ou à
+     *  venir, avec son taux d'occupation (`usage`) — d'après les réservations de la fiche
+     *  (`list.preview.reservations`), lues une fois pour la page. Légende au-dessus de la liste. `color` : jeton de
+     *  thème, défaut `accent`. Absent = bande inchangée, aucune réservation lue. */
+    slotsBand: z.object({ color: ColorTokenSchema.optional() }).optional(),
+    /** « Heures / semaine » et « Heures cumulées » de l'organisation (`profile`), en petit : même calcul que sa fiche
+     *  (`list.preview.bookedResources` — périmètre, créneaux en cours ou à venir), d'après les réservations de la
+     *  fiche (`list.preview.reservations`), lues une fois pour la page. Absent = carte inchangée. */
+    bookedHours: z.boolean().optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer", "news", "testimonial", "resource", "resource-directory"]).default("default"),
@@ -1463,6 +1472,18 @@ export const SearchProStaticSectionSchema = z.object({
      * {@link ReservationUsersConfSchema}). Absent = périmètre de `baseParams` seul.
      */
     reservationUsers: ReservationUsersConfSchema.optional(),
+    /**
+     * Tri de la liste par TAUX D'OCCUPATION (opt-in) : un sélecteur « Trier » au-dessus des résultats — nom (tri
+     * du serveur, défaut), taux décroissant ou croissant. Le taux se calcule sur les réservations de la fiche
+     * (`list.preview.reservations`, avec `usage`) : les équipements qui ont un planning viennent d'abord, classés,
+     * puis les autres par nom. Trié, la liste lit tout le périmètre (celui de la carte) et s'affiche par tranches.
+     */
+    usageSort: z.object({
+      /** Param d'URL du tri (défaut `tri`) : `?tri=desc` ou `?tri=asc`. */
+      id: z.string().optional(),
+      /** Libellé du sélecteur. Défaut : libellé i18n du module search. */
+      label: LocalizedString.optional(),
+    }).optional(),
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
@@ -1495,6 +1516,7 @@ export const SearchProStaticSectionSchema = z.object({
 
 export type SearchProStaticSection = z.infer<typeof SearchProStaticSectionSchema>;
 export type SearchProStaticSectionProps = z.infer<typeof SearchProStaticSectionSchema>["props"]
+export type UsageSortConf = NonNullable<SearchProStaticSectionProps["usageSort"]>;
 
 /**
  * Un type de ressource de l'annuaire `coform-resource-directory` : une option de

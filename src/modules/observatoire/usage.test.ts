@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import type { Reservation, ReservationSlot } from "@/modules/search/lib/reservations";
 import {
-  audienceOf, bandLabel, computePoiUsage, usageDimensionIds, usageFields, usagerIdsOf, withUsage,
+  audienceOf, bandLabel, computePoiUsage, plannedRates, plannedResourceIds, usageDimensionIds, usageFields, usagerIdsOf,
+  withUsage,
   type PoiUsage, type UsageConf, type UsageLabels,
 } from "./usage";
 import { uniqSorted } from "./utils";
@@ -90,6 +91,39 @@ describe("computePoiUsage — statut, heures et taux par équipement", () => {
   });
 });
 
+describe("plannedResourceIds / plannedRates — équipements qui ont un planning", () => {
+  const reservations = [
+    resa("a", [slot(8, 10)], { userType: "Etablissement scolaire" }),
+    resa("a", [slot(18, 20)], { userType: "Association sportive" }),
+    resa("b", [slot(8, 12)]),
+    // Saison terminée : l'équipement n'a plus de planning.
+    resa("d", [slot(18, 20)], { periodStart: "2025-08-18", periodEnd: "2026-07-03" }),
+    // Durée nulle (donnée dégradée) : n'occupe rien, ne fait pas un planning.
+    resa("z", [slot(9, 9)]),
+  ];
+
+  it("un créneau en cours ou à venir fait un planning ; une saison terminée ou une durée nulle, non", () => {
+    expect([...plannedResourceIds(reservations, TODAY)].sort()).toEqual(["a", "b"]);
+  });
+
+  it("même règle que le statut « sans planning » de la mesure d'usage", () => {
+    const usage = computePoiUsage(reservations, ["a", "b", "d", "z"], TODAY, NO_TYPES, conf);
+    const planned = plannedResourceIds(reservations, TODAY);
+    for (const id of ["a", "b", "d", "z"]) expect(planned.has(id)).toBe(usage.get(id)?.status !== "noPlanning");
+  });
+
+  it("taux des seuls équipements qui ont un planning, indépendant du public des créneaux", () => {
+    const planned = plannedResourceIds(reservations, TODAY);
+    expect(plannedRates(reservations, planned, TODAY, conf)).toEqual(new Map([["a", 240 / PLAGE], ["b", 240 / PLAGE]]));
+  });
+
+  it("même taux que la mesure d'usage (`computePoiUsage`), créneaux scolaires et clubs mêlés", () => {
+    const planned = plannedResourceIds(reservations, TODAY);
+    const usage = computePoiUsage(reservations, [...planned], TODAY, NO_TYPES, conf);
+    for (const [id, rate] of plannedRates(reservations, planned, TODAY, conf)) expect(rate).toBe(usage.get(id)?.rate);
+  });
+});
+
 describe("bandLabel — tranches des filtres", () => {
   it("≤ premier seuil, puis ]s(i-1), s(i)], puis au-delà du dernier", () => {
     const b = (v: number) => bandLabel(v, [0, 25, 50, 75], "%", labels.band);
@@ -111,8 +145,8 @@ describe("usageFields / withUsage — champs __usage des items", () => {
       status: "open", occupiedMinutes: 90, schoolMinutes: 0, clubMinutes: 90, unknownMinutes: 0, freeMinutes: PLAGE - 90, rate: 90 / PLAGE,
     };
     expect(usageFields(ouvert, conf, labels)).toEqual({
-      status: "Ouvert", open: true, openCount: 1, occupiedHours: 1.5, schoolHours: 0, clubHours: 1.5, unknownHours: 0,
-      freeHours: 96.5, rate: 2, rateBand: "0–25 %", clubHoursBand: "0–5 h",
+      status: "Ouvert", planned: true, open: true, openCount: 1, occupiedHours: 1.5, schoolHours: 0, clubHours: 1.5,
+      unknownHours: 0, freeHours: 96.5, rate: 2, rateBand: "0–25 %", clubHoursBand: "0–5 h",
     });
     const sansTranches = usageFields(ouvert, { ...conf, bands: undefined }, labels);
     expect(sansTranches).not.toHaveProperty("rateBand");
@@ -123,8 +157,8 @@ describe("usageFields / withUsage — champs __usage des items", () => {
     // Ses 98 h « disponibles » et son 0 % gonflaient les heures libres et écrasaient le taux moyen du parc
     // (review de la MR 120).
     expect(usageFields(computePoiUsage([], ["x"], TODAY, NO_TYPES, conf).get("x")!, conf, labels)).toEqual({
-      status: "Sans planning", open: false, openCount: 0, occupiedHours: 0, schoolHours: 0, clubHours: 0, unknownHours: 0,
-      clubHoursBand: "0 h",
+      status: "Sans planning", planned: false, open: false, openCount: 0, occupiedHours: 0, schoolHours: 0, clubHours: 0,
+      unknownHours: 0, clubHoursBand: "0 h",
     });
   });
 

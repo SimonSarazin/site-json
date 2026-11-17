@@ -23,7 +23,9 @@ import {
   colorFor,
   compare,
   computeKpiValue,
+  isKpiFilterActive,
   itemsFor,
+  kpiFilterValue,
   kpiLabel,
 } from "./dashboard";
 import { buildObservatoryBaseParams, toItems } from "./hooks/useObservatoryItemsQuery";
@@ -517,5 +519,70 @@ describe("kpiLabel / buildKpiCsv — export des chiffres clés", () => {
   it("une ligne par KPI, séparateur « ; », champs entre guillemets (csvEscape)", () => {
     expect(buildKpiCsv([{ label: "Équipements", value: "127" }, { label: 'Heures "clubs"', value: "12,5 h" }], ["Indicateur", "Valeur"]))
       .toBe('"Indicateur";"Valeur"\n"Équipements";"127"\n"Heures ""clubs""";"12,5 h"');
+  });
+});
+
+describe("kpiFilterValue / isKpiFilterActive — KPI cliquables", () => {
+  const dims: DimensionsConfig = {
+    ...DIMS,
+    // Catégorie affichée par son libellé, comptée par son code brut (le KPI « structurants » d'ESS974).
+    categorie: { paths: ["cat"], valueMap: { structurant: "Structurant", proximite: "Proximité" } },
+    categorieCode: { paths: ["cat"] },
+    statut: { paths: ["__usage.status"] },
+    planifie: { paths: ["__usage.planned"], kind: "anyTrue" },
+    ouvert: { paths: ["__usage.open"], kind: "anyTrue" },
+    heures: { paths: ["__usage.clubHours"], kind: "number" },
+  };
+  const parc: ObservatoryItem[] = [
+    { ...items[0], cat: "structurant", __usage: { status: "Ouvert", planned: true, open: true, clubHours: 4 } },
+    { ...items[1], cat: "proximite", __usage: { status: "Non ouvert", planned: true, open: false, clubHours: 0 } },
+    { ...items[2], cat: "structurant", __usage: { status: "Sans planning", planned: false, open: false, clubHours: 0 } },
+  ];
+
+  it("valueSplit : la valeur affichée des items comptés, sur la dimension filtrée", () => {
+    const def = { kind: "valueSplit" as const, dimension: "categorieCode", value: "structurant", filter: { dimension: "categorie" } };
+    expect(kpiFilterValue(def, parc, parc, dims)).toBe("Structurant");
+  });
+
+  it("percentTrue : « true » sur une dimension booléenne, sinon ses valeurs", () => {
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "access", filter: { dimension: "access" } }, parc, parc, dims)).toBe("true");
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "ouvert", filter: { dimension: "statut" } }, parc, parc, dims)).toBe("Ouvert");
+  });
+
+  it("top : le premier des items AFFICHÉS, comme la valeur de la carte", () => {
+    const def = { kind: "top" as const, dimension: "type", filter: { dimension: "type" } };
+    expect(kpiFilterValue(def, parc, parc, dims)).toBe("Salle");
+    expect(kpiFilterValue(def, parc, [parc[1]], dims)).toBe("Terrain");
+  });
+
+  it("where : les items désignés par une dimension booléenne — somme et heures, plusieurs valeurs triées", () => {
+    const avecCreneaux = { dimension: "statut", where: "planifie" };
+    expect(kpiFilterValue({ kind: "sum", dimension: "heures", filter: avecCreneaux }, parc, parc, dims)).toBe("Non ouvert,Ouvert");
+    expect(kpiFilterValue({ kind: "reservationHours", filter: avecCreneaux }, parc, parc, dims)).toBe("Non ouvert,Ouvert");
+    // Lus sur le jeu complet : la valeur ne bouge pas quand l'affichage est déjà restreint.
+    expect(kpiFilterValue({ kind: "sum", dimension: "heures", filter: avecCreneaux }, parc, [parc[0]], dims)).toBe("Non ouvert,Ouvert");
+  });
+
+  it("filtre à choix unique : une seule valeur, sinon carte inerte — sa liste déroulante n'afficherait pas la valeur posée", () => {
+    const avecCreneaux = { dimension: "statut", where: "planifie" };
+    expect(kpiFilterValue({ kind: "sum", dimension: "heures", filter: avecCreneaux }, parc, parc, dims, undefined, false)).toBeUndefined();
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "ouvert", filter: { dimension: "statut" } }, parc, parc, dims, undefined, false)).toBe("Ouvert");
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "access", filter: { dimension: "access" } }, parc, parc, dims, undefined, false)).toBe("true");
+  });
+
+  it("rien à filtrer : sans sous-ensemble ni `where`, `where` non booléen, aucun item retenu, dimension inconnue ou liste", () => {
+    expect(kpiFilterValue({ kind: "sum", dimension: "heures", filter: { dimension: "statut" } }, parc, parc, dims)).toBeUndefined();
+    expect(kpiFilterValue({ kind: "sum", dimension: "heures", filter: { dimension: "statut", where: "statut" } }, parc, parc, dims)).toBeUndefined();
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "ouvert", filter: { dimension: "statut" } }, parc, parc, { ...dims, ouvert: { paths: ["absent"], kind: "anyTrue" } })).toBeUndefined();
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "access", filter: { dimension: "absente" } }, parc, parc, dims)).toBeUndefined();
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "access", filter: { dimension: "sports" } }, parc, parc, dims)).toBeUndefined();
+    expect(kpiFilterValue({ kind: "percentTrue", dimension: "access" }, parc, parc, dims)).toBeUndefined();
+  });
+
+  it("actif quand le filtre en place a les mêmes valeurs, dans n'importe quel ordre", () => {
+    expect(isKpiFilterActive("Non ouvert,Ouvert", "Ouvert,Non ouvert")).toBe(true);
+    expect(isKpiFilterActive("Ouvert", "Ouvert,Non ouvert")).toBe(false);
+    expect(isKpiFilterActive("Ouvert", undefined)).toBe(false);
+    expect(isKpiFilterActive(undefined, "Ouvert")).toBe(false);
   });
 });

@@ -114,6 +114,19 @@ export const KpiDefSchema = z.object({
   /** `reservationHours` : heures par semaine (`weekly`, défaut) ou cumulées sur la période des
    *  réservations (`cumulative`). */
   period: z.enum(["weekly", "cumulative"]).optional(),
+  /**
+   * Carte CLIQUABLE : le clic pose un filtre de la barre, qui restreint la liste, les graphes et les autres KPI
+   * aux items que compte la carte ; un second clic le retire. Lu par la section `data-observatory` seule.
+   */
+  filter: z.object({
+    /** Dimension filtrée — un filtre déclaré dans `filters` : visible et retirable, comme le drill-down. Sa valeur
+     *  est celle que prennent, sur cette dimension, les items retenus. */
+    dimension: z.string(),
+    /** Dimension BOOLÉENNE qui désigne les items retenus, pour une carte qui ne compte pas un sous-ensemble (somme,
+     *  moyenne, heures réservées). Défaut : les items comptés — égaux à `value` (`valueSplit`), au premier
+     *  (`top`), vrais (`percentTrue`). */
+    where: z.string().optional(),
+  }).optional(),
 });
 export type KpiDef = z.infer<typeof KpiDefSchema>;
 

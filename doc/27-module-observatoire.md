@@ -124,7 +124,8 @@ salles/tarifs) ne sont pas encore lus.
       { "kind": "distinct", "dimension": "ville", "icon": "map-pin" },
       { "kind": "percentTrue", "dimension": "access", "accent": "chart-2" },
       { "kind": "valueSplit", "dimension": "type", "value": "Salle" },
-      { "kind": "top", "dimension": "type", "icon": "trophy" }
+      { "kind": "top", "dimension": "type", "icon": "trophy",
+        "filter": { "dimension": "type" } }      // opt-in : carte cliquable → filtre de la barre
     ],
     "charts": [
       { "kind": "donut", "dimension": "type", "layout": "full" },
@@ -175,7 +176,8 @@ ouvre le détail du module search (le comportement de la liste
 `/equipements-sportifs` au clic sur une carte — `SwitchDetailsMode` réutilisé).
 
 Formes — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`, `top`,
-`sum`, `avg` (+ `unit`), `reservationHours` (+ `period`, `unit`) ·
+`sum`, `avg` (+ `unit`), `reservationHours` (+ `period`, `unit`) ; toutes acceptent
+`filter` (carte cliquable, ci-dessous) ·
 graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups` ; sur les quatre premiers, `value` (`{kind: "sum"|"avg", dimension}`) fait porter à chaque part ou barre la somme ou la moyenne d'une dimension numérique au lieu d'un nombre d'items (`aggregateBy`) ·
 colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs en
 **jetons de thème** uniquement (`chart-1..5`, `primary`, `accent`, `muted`)
@@ -206,7 +208,23 @@ filtres, recherche et sélection. Calcul dans `search/lib/reservationHours.ts`
 s'ajoutent aux autres cartes : au-delà de 8 cartes, la grille automatique passe à
 la ligne — `kpiColumns` fixe alors le nombre de cartes par ligne.
 
-**Mesure d'usage — champs `__usage.*`** (opt-in : `rowAction.preview.reservations.usage`). La section charge les réservations de sa fiche (même requête que les KPI d'heures) et le type des fiches usagères, calcule l'usage de chaque équipement (`usage.ts` : `computePoiUsage`, règles dans `doc/07-module-search.md`, « Mesure d'usage ») et pose sur chaque item, AVANT libellés, filtres et widgets, les champs `__usage.status` (libellé traduit), `open`, `openCount` (1 ou 0), `occupiedHours`, `schoolHours`, `clubHours`, `unknownHours`, `freeHours`, `rate` (en %) et, avec `usage.bands`, `rateBand` et `clubHoursBand` (« 0 % », « 0–25 % »…, libellés qui commencent par leur borne basse : les options de filtre, triées par ordre alphabétique, suivent l'ordre des valeurs avec des seuils comme 0/25/50/75 ou 0/5/15, pas avec 5 puis 10). Un équipement sans planning n'a ni `freeHours`, ni `rate`, ni `rateBand` — rien à mesurer : un KPI `sum` / `avg`, une barre, un camembert de tranches ou une colonne d'export qui les lit ne porte que sur les équipements qui ont un planning (sa fiche, elle, compte toute la plage libre). Les dimensions de la config les lisent comme n'importe quel chemin : filtres, KPI (`sum` de `openCount` pour un nombre indépendant de la langue, `percentTrue` de `open` pour le ratio, `sum`/`avg` des heures et du taux), graphes et export fonctionnent sans nouveau kind. La mesure n'est posée qu'avec les réservations ET les types des fiches : pendant le calcul, les KPI de ces dimensions montrent le sablier (`KpiCards.loadingDimensions`) ; si l'une des deux lectures échoue, la mesure n'est pas posée et ces KPI disent « — » (`KpiCards.unavailableDimensions`). Un graphe qui lit l'une de ces dimensions — la sienne, celle de sa `value` ou l'une de ses `dimensions` (`chartDimensionIds`) — montre le même sablier pendant le calcul, puis « Mesure indisponible pour le moment. » sur un échec (`ObservatoryCharts.loadingDimensions` / `unavailableDimensions`) : vide, il se lirait « aucune donnée ». Une valeur comparée à la valeur AFFICHÉE — `valueSplit.value`, clés de `colors` — est traduite quand la dimension l'est (`valueMapFrom` à libellés `{fr, en}`, `__usage.status`) : un `valueSplit` vise une dimension brute (sans `valueMapFrom`, valeur de base), et les `colors` déclarent les libellés des deux langues.
+**KPI cliquables — `filter`** (opt-in, section `data-observatory` seule ; le panneau embarqué l'ignore). Le clic
+sur la carte pose un filtre DE LA BARRE — `filter.dimension` doit figurer dans `filters`, sinon la carte reste inerte
+(avertissement en dev) : visible, retirable, dans l'URL, comme le drill-down, jamais un filtre caché. Sa valeur est
+celle que prennent, sur cette dimension, les items que retient la carte (`kpiFilterValue`, `dashboard.ts`) : égaux à
+`value` pour un `valueSplit`, au premier pour un `top`, vrais pour un `percentTrue` — ou, pour une carte qui ne compte
+pas un sous-ensemble (`sum`, `avg`, `reservationHours`), ceux d'une dimension booléenne nommée par `filter.where`.
+Plusieurs valeurs se joignent par virgule (filtre `multiple` requis : sur un filtre à choix unique, la carte reste
+inerte — sa liste déroulante n'afficherait pas la valeur posée), une dimension booléenne vaut `true`. Les items
+retenus se lisent sur le jeu COMPLET, pas sur l'affichage : deux cartes qui visent la même dimension gardent chacune
+leur valeur — seul le premier d'un `top` suit l'affichage, comme la valeur de la carte. Une carte dont le filtre est en
+place est cerclée (`aria-pressed`) ; un second clic retire le filtre. Son nom accessible reste son libellé et son
+chiffre, l'action en description (`title`). Elle n'est pas cliquable pendant le calcul de sa mesure, ni quand aucun
+item n'est retenu. Disposition `cards` seule : `kpiLayout: "inline"` est une ligne de repères, jamais cliquable
+(avertissement en dev si un KPI y déclare `filter`). Exemple : `{"kind": "sum", "dimension": "heuresClubs", "filter":
+{"dimension": "statut", "where": "planifie"}}` restreint la liste et les graphes aux équipements qui ont des créneaux.
+
+**Mesure d'usage — champs `__usage.*`** (opt-in : `rowAction.preview.reservations.usage`). La section charge les réservations de sa fiche (même requête que les KPI d'heures) et le type des fiches usagères, calcule l'usage de chaque équipement (`usage.ts` : `computePoiUsage`, règles dans `doc/07-module-search.md`, « Mesure d'usage ») et pose sur chaque item, AVANT libellés, filtres et widgets, les champs `__usage.status` (libellé traduit), `planned` (un planning : un créneau en cours ou à venir — booléen indépendant de la langue, le `where` des KPI d'heures), `open`, `openCount` (1 ou 0), `occupiedHours`, `schoolHours`, `clubHours`, `unknownHours`, `freeHours`, `rate` (en %) et, avec `usage.bands`, `rateBand` et `clubHoursBand` (« 0 % », « 0–25 % »…, libellés qui commencent par leur borne basse : les options de filtre, triées par ordre alphabétique, suivent l'ordre des valeurs avec des seuils comme 0/25/50/75 ou 0/5/15, pas avec 5 puis 10). Un équipement sans planning n'a ni `freeHours`, ni `rate`, ni `rateBand` — rien à mesurer : un KPI `sum` / `avg`, une barre, un camembert de tranches ou une colonne d'export qui les lit ne porte que sur les équipements qui ont un planning (sa fiche, elle, compte toute la plage libre). Les dimensions de la config les lisent comme n'importe quel chemin : filtres, KPI (`sum` de `openCount` pour un nombre indépendant de la langue, `percentTrue` de `open` pour le ratio, `sum`/`avg` des heures et du taux), graphes et export fonctionnent sans nouveau kind. La mesure n'est posée qu'avec les réservations ET les types des fiches : pendant le calcul, les KPI de ces dimensions montrent le sablier (`KpiCards.loadingDimensions`) ; si l'une des deux lectures échoue, la mesure n'est pas posée et ces KPI disent « — » (`KpiCards.unavailableDimensions`). Un graphe qui lit l'une de ces dimensions — la sienne, celle de sa `value` ou l'une de ses `dimensions` (`chartDimensionIds`) — montre le même sablier pendant le calcul, puis « Mesure indisponible pour le moment. » sur un échec (`ObservatoryCharts.loadingDimensions` / `unavailableDimensions`) : vide, il se lirait « aucune donnée ». Une valeur comparée à la valeur AFFICHÉE — `valueSplit.value`, clés de `colors` — est traduite quand la dimension l'est (`valueMapFrom` à libellés `{fr, en}`, `__usage.status`) : un `valueSplit` vise une dimension brute (sans `valueMapFrom`, valeur de base), et les `colors` déclarent les libellés des deux langues.
 
 ## Split view : la liste à gauche, les graphes à droite
 

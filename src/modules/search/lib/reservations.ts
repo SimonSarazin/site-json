@@ -338,7 +338,7 @@ export interface ResourceReservations {
  * Une réservation qui pointe PLUSIEURS ressources (finder multiple) compte dans
  * chacune : c'est le même créneau, il occupe bien les deux équipements.
  */
-export function groupReservationsByResource(list: Reservation[]): ResourceReservations[] {
+export function groupReservationsByResource(list: readonly Reservation[]): ResourceReservations[] {
   const byResource = new Map<string, { name: string; reservations: Reservation[] }>();
   for (const r of list) {
     for (const res of r.resources) {

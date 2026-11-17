@@ -12,7 +12,7 @@ import { useUsageMeasure } from "@/modules/search/hooks/useUsageMeasure";
 import { sumReservationHours } from "@/modules/search/lib/reservationHours";
 import { localIsoDay } from "@/modules/search/lib/slotFilter";
 import type { DataObservatorySectionProps, FilterDef } from "./schema";
-import { buildKpiCsv, computeKpiValue, kpiLabel } from "./dashboard";
+import { buildKpiCsv, computeKpiValue, isKpiFilterActive, kpiFilterValue, kpiLabel } from "./dashboard";
 import { computePoiUsage, usageDimensionIds, usageLabelsFrom, withUsage } from "./usage";
 import { downloadCsv } from "./utils";
 import { KpiCards } from "./components/KpiCards";
@@ -83,7 +83,7 @@ export default function DataObservatorySection({
     [props.filters],
   );
   const filterIds = useMemo(() => filterDefs.map((f) => f.dimension), [filterDefs]);
-  const kpis = props.kpis ?? [];
+  const kpis = useMemo(() => props.kpis ?? [], [props.kpis]);
   const charts = props.charts ?? [];
 
   // Ouverture de la fiche : déclarée au niveau de la section (`props.rowAction`)
@@ -228,6 +228,35 @@ export default function DataObservatorySection({
   // mesure en échec — lues « sans planning » ou « 0 h » par qui ouvre le fichier.
   const listExport = usageLoading || usageFailed ? null : exportConf;
 
+  // KPI cliquables (`kpi.filter`) : le clic pose un filtre de la BARRE — visible, retirable, dans l'URL —, comme le
+  // drill-down, jamais un filtre caché que l'utilisateur ne saurait pas retirer. Valeur lue sur le jeu complet
+  // (`kpiFilterValue`) ; second clic sur une carte dont le filtre est en place = filtre retiré.
+  const kpiFilters = useMemo(
+    () =>
+      kpis.map((def) => {
+        if (!def.filter) return null;
+        const dimension = def.filter.dimension;
+        const target = filterDefs.find((f) => f.dimension === dimension);
+        if (!target) {
+          if (import.meta.env.DEV) {
+            console.warn(`[observatoire] KPI à filtre sur "${dimension}", absent de props.filters — carte inerte`);
+          }
+          return null;
+        }
+        const value = kpiFilterValue(def, items, filtered, dimensions, labels, Boolean(target.multiple));
+        return value ? { dimension, value, active: isKpiFilterActive(value, filters[dimension]) } : null;
+      }),
+    [kpis, filterDefs, items, filtered, dimensions, labels, filters],
+  );
+  // `inline` est une ligne de repères, pas un tableau de bord : ses chiffres ne sont jamais cliquables.
+  if (import.meta.env.DEV && props.kpiLayout === "inline" && kpis.some((k) => k.filter)) {
+    console.warn("[observatoire] kpis[].filter ignoré en kpiLayout « inline » — chiffres non cliquables (disposition cards)");
+  }
+  const onKpiFilter = (index: number) => {
+    const f = kpiFilters[index];
+    if (f) setFilters({ ...filters, [f.dimension]: f.active ? "" : f.value });
+  };
+
   // Drill-down (opt-in) : clic sur une part/barre → applique le filtre —
   // seulement pour les dimensions réellement filtrables (retirables par
   // l'utilisateur). Valeur unique : un clic = un focus.
@@ -277,6 +306,8 @@ export default function DataObservatorySection({
       unavailableDimensions={usageFailed ? usageDimensions : undefined}
       columns={props.kpiColumns}
       layout={props.kpiLayout}
+      filterStates={kpiFilters}
+      onFilter={onKpiFilter}
     />
   );
 

@@ -90,7 +90,9 @@
     "filterByInstallation": "Filter by facility {{name}}",
     "expand": "Expand card",
     "collapse": "Collapse card",
-    "sheet": "Details"
+    "sheet": "Details",
+    "slots": "With slots",
+    "slotsRate": "{{rate}}% occupancy"
   },
   "PreviewPoiAmenities": {
     "edit": "Edit",
@@ -465,5 +467,20 @@
   "Aperçu détaillé indisponible pour cette actualité.": "Detailed preview unavailable for this news.",
   "Lire": "Read",
   "Privé": "Private",
-  "Réservé aux membres": "Members only"
+  "Réservé aux membres": "Members only",
+  "SlotsBand": {
+    "legend": "Card stripe colour",
+    "planned": "With current or upcoming slots",
+    "none": "No slot",
+    "loading": "Finding slots…",
+    "failed": "Slots unavailable for now."
+  },
+  "UsageSort": {
+    "label": "Sort",
+    "name": "By name",
+    "desc": "Occupancy rate, highest first",
+    "asc": "Occupancy rate, lowest first",
+    "pending": "Computing rates…",
+    "retry": "Retry"
+  }
 }

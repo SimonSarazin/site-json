@@ -14,6 +14,11 @@ vi.mock("@/modules/profil/actions/mutations/relationship", () => ({
   useUnfollowEntity: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
+// Les heures d'un usager ont leur composant et leur test (`CardBookedHours`) : simulées ici.
+vi.mock("./CardBookedHours", () => ({
+  default: ({ orgaId }: { orgaId?: string }) => <p>heures de {orgaId}</p>,
+}));
+
 import CardProfile from "./CardProfile";
 
 const item = (tags: string[]) =>
@@ -85,5 +90,17 @@ describe("CardProfile — chips de tags", () => {
     expect(getByText("Nord")).toBeInTheDocument();
     const chip = getByTitle("territoire:nord");
     expect(chip.querySelector("span[aria-hidden]")).not.toBeNull();
+  });
+});
+
+describe("CardProfile — heures de l'usager (`card.bookedHours`)", () => {
+  it("absentes par défaut : les autres annuaires ne changent pas", () => {
+    const { queryByText } = mount(<CardProfile item={item([])} />);
+    expect(queryByText(/heures de/)).toBeNull();
+  });
+
+  it("avec l'option : le bloc des heures de l'organisation", async () => {
+    const { findByText } = mount(<CardProfile item={item([])} card={{ bookedHours: true }} />);
+    expect(await findByText("heures de 1")).toBeInTheDocument();
   });
 });

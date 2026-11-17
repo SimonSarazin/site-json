@@ -26,7 +26,7 @@ import {
 import { keepInPerimeter } from "../../lib/reservationUsers";
 import { buildReservationPrefill } from "../../lib/reservationPrefill";
 import { formatReservationPeriod, slotHoursContext } from "../../lib/reservationPeriod";
-import { formatReservationHours, sumReservationHours, weeklyReferenceDay } from "../../lib/reservationHours";
+import { bookedHours, formatReservationHours } from "../../lib/reservationHours";
 import { localIsoDay } from "../../lib/slotFilter";
 import {
   DEFAULT_PREVIEW_PARAM,
@@ -94,17 +94,11 @@ export default function PreviewBookedResources({
 
   // Volume horaire (opt-in `booked.hours`) : celui de chaque équipement LISTÉ, dans l'ordre de
   // `groups`, et le total de l'organisation sur ces seuls équipements — la somme des lignes, l'hebdomadaire
-  // lu au même jour de référence pour toutes.
-  const hours = useMemo(() => {
-    if (!booked.hours) return null;
-    const since = range?.periodStart ?? today;
-    const affichees = groups.flatMap((g) => g.reservations);
-    const reference = weeklyReferenceDay(affichees, since);
-    return {
-      total: sumReservationHours(affichees, since, undefined, reference),
-      byGroup: groups.map((g) => sumReservationHours(g.reservations, since, undefined, reference)),
-    };
-  }, [booked.hours, groups, range, today]);
+  // lu au même jour de référence pour toutes. Même calcul que la carte de l'annuaire (`orgaBookedHours`).
+  const hours = useMemo(
+    () => (booked.hours ? bookedHours(groups, range?.periodStart ?? today) : null),
+    [booked.hours, groups, range, today],
+  );
   const link = booked.link;
   const previewParam = link?.previewParam ?? DEFAULT_PREVIEW_PARAM;
 
