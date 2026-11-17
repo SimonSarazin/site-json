@@ -1,4 +1,5 @@
 import { Calendar } from "lucide-react";
+import { matchPath, useLocation } from "react-router";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useLazyTab } from "@/hooks/useLazyTab";
@@ -27,8 +28,10 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
   });
 
   const { shouldLoad } = useLazyTab("news");
+  const { pathname } = useLocation();
+  const isProfile = matchPath("/profil/:slug/*", pathname) !== null;
 
-  if (!shouldLoad) {
+  if (isProfile && !shouldLoad) {
     return null;
   }
 

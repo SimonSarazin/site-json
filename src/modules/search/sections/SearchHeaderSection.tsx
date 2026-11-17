@@ -134,6 +134,12 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const [localSearchQuery, setLocalSearchQuery] = useState(
         searchParams.get("q") ?? pageFilters?.searchQuery ?? "",
     );
+    const previousSearchQuery = useRef(pageFilters?.searchQuery ?? "");
+    useEffect(() => {
+        const current = pageFilters?.searchQuery ?? "";
+        if (previousSearchQuery.current && !current) setLocalSearchQuery("");
+        previousSearchQuery.current = current;
+    }, [pageFilters?.searchQuery]);
     const debouncedSearchQuery = useDebounce(localSearchQuery, 400);
     // Sheet "Filtres" mobile (les dropdowns sont regroupés derrière un bouton)
     const [filtersOpen, setFiltersOpen] = useState(false);

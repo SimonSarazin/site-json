@@ -1,0 +1,2966 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-11-12T11:06:53.372Z",
+  "meta": {
+    "title": {
+      "fr": "Tiers-lieux Belgique"
+    },
+    "description": {
+      "fr": "Découvrez les tiers-lieux et les initiatives de leur réseau en Belgique."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr"
+    ],
+    "favicon": "",
+    "themeColor": "#9c482d",
+    "keywords": [
+      "communauté",
+      "POI",
+      "collaboration",
+      "territoire"
+    ]
+  },
+  "theme": {
+    "defaultMode": "light",
+    "colors": {
+      "light": {
+        "primary": "hsl(15, 55%, 39%)",
+        "primaryForeground": "hsl(0, 0%, 100%)",
+        "secondary": "hsl(30, 45%, 91%)",
+        "secondaryForeground": "hsl(20, 35%, 18%)",
+        "accent": "hsl(20, 50%, 90%)",
+        "accentForeground": "hsl(15, 55%, 25%)",
+        "background": "hsl(35, 40%, 98%)",
+        "foreground": "hsl(20, 20%, 14%)",
+        "muted": "hsl(25, 30%, 94%)",
+        "mutedForeground": "hsl(20, 15%, 36%)",
+        "border": "hsl(25, 25%, 84%)",
+        "input": "hsl(25, 25%, 84%)",
+        "ring": "hsl(15, 55%, 39%)",
+        "card": "hsl(0, 0%, 100%)",
+        "cardForeground": "hsl(20, 20%, 14%)",
+        "popover": "hsl(0, 0%, 100%)",
+        "popoverForeground": "hsl(20, 20%, 14%)",
+        "destructive": "hsl(0, 72%, 51%)",
+        "destructiveForeground": "hsl(0, 0%, 100%)",
+        "success": "hsl(142, 60%, 40%)",
+        "successForeground": "hsl(142, 30%, 12%)",
+        "warning": "hsl(43, 91%, 52%)",
+        "warningForeground": "hsl(25, 20%, 12%)",
+        "info": "hsl(200, 70%, 48%)",
+        "infoForeground": "hsl(200, 30%, 12%)",
+        "chart1": "hsl(182, 56%, 40%)",
+        "chart2": "hsl(43, 91%, 52%)",
+        "chart3": "hsl(182, 40%, 60%)",
+        "chart4": "hsl(43, 70%, 70%)",
+        "chart5": "hsl(200, 60%, 50%)",
+        "sidebar": "hsl(182, 18%, 96%)",
+        "sidebarForeground": "hsl(210, 20%, 14%)",
+        "sidebarPrimary": "hsl(15, 55%, 39%)",
+        "sidebarPrimaryForeground": "hsl(0, 0%, 100%)",
+        "sidebarAccent": "hsl(182, 40%, 88%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 22%)",
+        "sidebarBorder": "hsl(182, 18%, 88%)",
+        "sidebarRing": "hsl(15, 55%, 39%)"
+      },
+      "dark": {
+        "primary": "hsl(18, 65%, 70%)",
+        "primaryForeground": "hsl(20, 35%, 12%)",
+        "secondary": "hsl(20, 20%, 22%)",
+        "secondaryForeground": "hsl(30, 35%, 90%)",
+        "accent": "hsl(18, 30%, 24%)",
+        "accentForeground": "hsl(20, 50%, 85%)",
+        "background": "hsl(20, 16%, 9%)",
+        "foreground": "hsl(30, 20%, 93%)",
+        "muted": "hsl(20, 15%, 17%)",
+        "mutedForeground": "hsl(30, 15%, 72%)",
+        "border": "hsl(20, 15%, 27%)",
+        "input": "hsl(20, 15%, 27%)",
+        "ring": "hsl(18, 65%, 70%)",
+        "card": "hsl(20, 16%, 13%)",
+        "cardForeground": "hsl(30, 20%, 93%)",
+        "popover": "hsl(20, 16%, 13%)",
+        "popoverForeground": "hsl(30, 20%, 93%)",
+        "destructive": "hsl(0, 65%, 55%)",
+        "destructiveForeground": "hsl(0, 0%, 100%)",
+        "success": "hsl(142, 55%, 45%)",
+        "successForeground": "hsl(142, 30%, 12%)",
+        "warning": "hsl(43, 85%, 48%)",
+        "warningForeground": "hsl(25, 20%, 10%)",
+        "info": "hsl(200, 65%, 52%)",
+        "infoForeground": "hsl(200, 30%, 12%)",
+        "chart1": "hsl(182, 56%, 50%)",
+        "chart2": "hsl(43, 85%, 48%)",
+        "chart3": "hsl(182, 40%, 65%)",
+        "chart4": "hsl(43, 70%, 65%)",
+        "chart5": "hsl(200, 60%, 55%)",
+        "sidebar": "hsl(210, 20%, 10%)",
+        "sidebarForeground": "hsl(182, 10%, 93%)",
+        "sidebarPrimary": "hsl(18, 65%, 70%)",
+        "sidebarPrimaryForeground": "hsl(20, 35%, 12%)",
+        "sidebarAccent": "hsl(182, 30%, 22%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 80%)",
+        "sidebarBorder": "hsl(182, 15%, 22%)",
+        "sidebarRing": "hsl(18, 65%, 70%)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(182 56% 40% / 0.08)",
+        "shadowXs": "0px 1px 4px 0px hsl(182 56% 40% / 0.10)",
+        "shadowSm": "0px 1px 4px 0px hsl(182 56% 40% / 0.12), 0px 1px 2px -1px hsl(182 56% 40% / 0.10)",
+        "shadow": "0px 2px 6px 0px hsl(182 56% 40% / 0.12), 0px 1px 3px -1px hsl(182 56% 40% / 0.10)",
+        "shadowMd": "0px 4px 10px 0px hsl(182 56% 40% / 0.12), 0px 2px 4px -1px hsl(182 56% 40% / 0.10)",
+        "shadowLg": "0px 8px 20px 0px hsl(182 56% 40% / 0.12), 0px 4px 8px -2px hsl(182 56% 40% / 0.10)",
+        "shadowXl": "0px 12px 28px 0px hsl(182 56% 40% / 0.14), 0px 6px 12px -2px hsl(182 56% 40% / 0.10)",
+        "shadow2xl": "0px 20px 48px 0px hsl(182 56% 40% / 0.18)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0 0% 0% / 0.20)",
+        "shadowXs": "0px 1px 4px 0px hsl(0 0% 0% / 0.22)",
+        "shadowSm": "0px 1px 4px 0px hsl(0 0% 0% / 0.30), 0px 1px 2px -1px hsl(0 0% 0% / 0.25)",
+        "shadow": "0px 2px 6px 0px hsl(0 0% 0% / 0.32), 0px 1px 3px -1px hsl(0 0% 0% / 0.25)",
+        "shadowMd": "0px 4px 10px 0px hsl(0 0% 0% / 0.32), 0px 2px 4px -1px hsl(0 0% 0% / 0.25)",
+        "shadowLg": "0px 8px 20px 0px hsl(0 0% 0% / 0.35), 0px 4px 8px -2px hsl(0 0% 0% / 0.25)",
+        "shadowXl": "0px 12px 28px 0px hsl(0 0% 0% / 0.38), 0px 6px 12px -2px hsl(0 0% 0% / 0.25)",
+        "shadow2xl": "0px 20px 48px 0px hsl(0 0% 0% / 0.50)"
+      }
+    },
+    "customCSS": ""
+  },
+  "header": {
+    "type": "mega-menu",
+    "nav": [
+      {
+        "label": {
+          "fr": "Quoi ?"
+        },
+        "children": [
+          {
+            "label": {
+              "fr": "Tiers-lieux, kezako ?"
+            },
+            "path": "https://www.tierslieux.xyz/#tiers-lieux-kezako"
+          },
+          {
+            "label": {
+              "fr": "Types de tiers-lieux"
+            },
+            "path": "https://www.tierslieux.xyz/#types-de-tiers-lieux"
+          },
+          {
+            "label": {
+              "fr": "Impact des tiers-lieux"
+            },
+            "path": "https://www.tierslieux.xyz/#impact-des-tiers-lieux"
+          },
+          {
+            "label": {
+              "fr": "Une plateforme"
+            },
+            "path": "https://www.tierslieux.xyz/#cette-plateforme"
+          },
+          {
+            "label": {
+              "fr": "À propos"
+            },
+            "path": "/a-propos"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Nouvelles"
+        },
+        "path": "/actualites"
+      },
+      {
+        "label": {
+          "fr": "Annuaires"
+        },
+        "children": [
+          {
+            "label": {
+              "fr": "Annuaire global"
+            },
+            "path": "/annuaire"
+          },
+          {
+            "label": {
+              "fr": "Tiers-lieux"
+            },
+            "path": "/lieux"
+          },
+          {
+            "label": {
+              "fr": "Accompagnants"
+            },
+            "path": "/accompagnants"
+          },
+          {
+            "label": {
+              "fr": "Acteurs"
+            },
+            "path": "/communaute"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Cartographie"
+        },
+        "path": "https://www.tierslieux.xyz/#cartographie"
+      },
+      {
+        "label": {
+          "fr": "Tiers-lieux ruraux"
+        },
+        "path": "https://www.tierslieux.xyz/#23tierslieuxruraux"
+      },
+      {
+        "label": {
+          "fr": "Réseau social"
+        },
+        "children": [
+          {
+            "label": {
+              "fr": "Tout venant"
+            },
+            "path": "https://www.tierslieux.xyz/#feed"
+          },
+          {
+            "label": {
+              "fr": "Forum"
+            },
+            "path": "https://forum.tiers-lieux.org/c/reseaux-locaux/tiers-lieu-belgique/344"
+          },
+          {
+            "label": {
+              "fr": "Salons de discussion"
+            },
+            "path": "https://matrix.to/#/#tiers-lieux-belgique:tiers-lieux.org"
+          },
+          {
+            "label": {
+              "fr": "Besoins et annonces"
+            },
+            "path": "https://www.tierslieux.xyz/#petitesannonces"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Centre de Savoirs"
+        },
+        "children": [
+          {
+            "label": {
+              "fr": "Rejoindre la plateforme"
+            },
+            "path": "https://www.tierslieux.xyz/#plateformeinfos"
+          },
+          {
+            "label": {
+              "fr": "Ressources Trois-Tiers"
+            },
+            "path": "https://www.tierslieux.xyz/#trois-tiers"
+          },
+          {
+            "label": {
+              "fr": "Accompagnement"
+            },
+            "path": "https://www.tierslieux.xyz/#l-accompagnement"
+          },
+          {
+            "label": {
+              "fr": "Publications Trois-Tiers"
+            },
+            "path": "https://www.tierslieux.xyz/#publications33"
+          },
+          {
+            "label": {
+              "fr": "Wiki"
+            },
+            "path": "https://www.tierslieux.xyz/#wiki"
+          },
+          {
+            "label": {
+              "fr": "Bibliothèque Trois-Tiers"
+            },
+            "path": "https://www.tierslieux.xyz/#bibliothequetroistiers"
+          },
+          {
+            "label": {
+              "fr": "Enquêtes"
+            },
+            "path": "https://www.tierslieux.xyz/#enquetes"
+          },
+          {
+            "label": {
+              "fr": "Accompagnements Wallonie"
+            },
+            "path": "https://www.tierslieux.xyz/#wallonie"
+          },
+          {
+            "label": {
+              "fr": "Ressources CPDT"
+            },
+            "path": "https://www.tierslieux.xyz/#cpdt"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Événements"
+        },
+        "path": "/evenements"
+      },
+      {
+        "label": {
+          "fr": "Contact"
+        },
+        "path": "https://www.tierslieux.xyz/#contact"
+      }
+    ],
+    "sticky": true,
+    "transparent": false,
+    "height": "lg",
+    "utilities": {
+      "themeSwitch": true,
+      "langSwitch": false,
+      "search": false,
+      "auth": false,
+      "notifications": false,
+      "pledge": false,
+      "cart": false
+    },
+    "logoIcon": "house",
+    "logoTitle": {
+      "fr": "Tiers-lieux Belgique"
+    }
+  },
+  "footer": {
+    "type": "minimal-centered",
+    "logoAlt": {
+      "fr": "Tiers-lieux Belgique"
+    },
+    "bottomLinks": [
+      {
+        "label": {
+          "fr": "Site existant"
+        },
+        "href": "https://www.tierslieux.xyz/"
+      }
+    ],
+    "copyright": {
+      "fr": "Tiers-lieux Belgique"
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Tiers-lieux Belgique"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero",
+          "id": "accueil-bienvenue",
+          "props": {
+            "headline": {
+              "fr": "Des lieux pour imaginer et agir ensemble"
+            },
+            "subhead": {
+              "fr": "En Belgique, les tiers-lieux rassemblent des personnes, des idées et des ressources pour faire vivre les territoires."
+            },
+            "align": "center",
+            "overlay": false,
+            "cta": [
+              {
+                "label": {
+                  "fr": "Découvrir les lieux"
+                },
+                "href": "/lieux"
+              },
+              {
+                "label": {
+                  "fr": "En savoir plus"
+                },
+                "href": "/a-propos",
+                "variant": "secondary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "accueil-definition",
+          "props": {
+            "title": {
+              "fr": "Qu'est-ce qu'un tiers-lieu ?"
+            },
+            "description": {
+              "fr": "Un tiers-lieu est un espace vivant où un collectif partage des ressources, des savoirs et des envies. Chaque lieu invente ses propres façons de coopérer et de répondre aux besoins de son territoire."
+            },
+            "align": "center",
+            "imagePosition": "right"
+          }
+        },
+        {
+          "type": "cards",
+          "id": "accueil-acces",
+          "props": {
+            "variant": "icon-card",
+            "columns": 3,
+            "layout": "grid",
+            "className": "pb-5 pt-5",
+            "items": [
+              {
+                "title": {
+                  "fr": "Explorer les lieux"
+                },
+                "text": {
+                  "fr": "Découvrez les lieux du réseau."
+                },
+                "href": "/lieux"
+              },
+              {
+                "title": {
+                  "fr": "Rencontrer les accompagnants"
+                },
+                "text": {
+                  "fr": "Découvrez les personnes qui soutiennent les projets de tiers-lieux."
+                },
+                "href": "/accompagnants"
+              },
+              {
+                "title": {
+                  "fr": "Suivre les actualités"
+                },
+                "text": {
+                  "fr": "Retrouvez les nouvelles du réseau."
+                },
+                "href": "/actualites"
+              },
+              {
+                "title": {
+                  "fr": "Se rencontrer"
+                },
+                "text": {
+                  "fr": "Découvrez les événements à venir."
+                },
+                "href": "/evenements"
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "accueil-reseau",
+          "props": {
+            "title": {
+              "fr": "Un espace pour partager et coopérer"
+            },
+            "description": {
+              "fr": "La plateforme relie les lieux et les personnes qui les font vivre. Retrouvez les initiatives du réseau, échangez autour de vos expériences et découvrez les rendez-vous à venir."
+            },
+            "imagePosition": "right",
+            "links": [
+              {
+                "label": {
+                  "fr": "Découvrir le réseau"
+                },
+                "href": "/a-propos"
+              },
+              {
+                "label": {
+                  "fr": "Explorer la carte"
+                },
+                "href": "/lieux"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/annuaire",
+      "title": {
+        "fr": "Annuaire global"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "annuaire-global-recherche",
+          "props": {
+            "headline": {
+              "fr": "Annuaire global"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un lieu ou un membre…"
+            }
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "annuaire-global-grille",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "annuaire-global-filtres",
+              "props": {
+                "title": { "fr": "Filtres" },
+                "hideSearch": true,
+                "defaultOpenGroups": ["typePlace", "enjeux"],
+                "filterGroups": [
+                  {
+                    "id": "typePlace",
+                    "label": { "fr": "Typologies" },
+                    "optionStyle": "check",
+                    "options": [
+                      { "id": "accueil", "label": { "fr": "Accueil / Evénementiel / Auberge / Bar-Café / Tourisme (partage et découverte)" }, "name": "Accueil / Evénementiel / Auberge / Bar-Café / Tourisme (partage et découverte)" },
+                      { "id": "habitat-partage", "label": { "fr": "Habitat partagé / Co-living résidentiel / Hébergement (logement)" }, "name": "Habitat partagé / Co-living résidentiel / Hébergement (logement)" },
+                      { "id": "fablab", "label": { "fr": "Fablab / Makerspace/ Hackerspace/Ateliers numériques (fabrication)" }, "name": "Fablab / Makerspace/ Hackerspace/Ateliers numériques (fabrication)" },
+                      { "id": "ateliers", "label": { "fr": "Ateliers artisanaux partagés (artisanat)" }, "name": "Ateliers artisanaux partagés (artisanat)" },
+                      { "id": "repair", "label": { "fr": "Repair- vélo / repair café (réparation)" }, "name": "Repair- vélo / repair café (réparation)" },
+                      { "id": "eduhub", "label": { "fr": "EduHub / Transmission & École / Campus (éducation)" }, "name": "EduHub / Transmission & École / Campus (éducation)" },
+                      { "id": "livinglab", "label": { "fr": "LivingLab / Recherche-Action / Laboratoire d’innovation sociale (innovation)" }, "name": "LivingLab / Recherche-Action / Laboratoire d’innovation sociale (innovation)" },
+                      { "id": "autonomie", "label": { "fr": "Lieu d’autonomie et “symbiotique”, en lien au vivant / Eco-construction (permaculture)" }, "name": "Lieu d’autonomie et “symbiotique”, en lien au vivant / Eco-construction (permaculture)" },
+                      { "id": "culture", "label": { "fr": "Culture lab / Centre culturel (arts et culture)" }, "name": "Culture lab / Centre culturel (arts et culture)" },
+                      { "id": "bibliotheque", "label": { "fr": "Bibliothèque / librairie coopératives (littérature)" }, "name": "Bibliothèque / librairie coopératives (littérature)" },
+                      { "id": "concerts", "label": { "fr": "Concerts, festival et fêtes (célébration)" }, "name": "Concerts, festival et fêtes (célébration)" },
+                      { "id": "sante", "label": { "fr": "Espace santé / Maison médicale (soins et médical)" }, "name": "Espace santé / Maison médicale (soins et médical)" },
+                      { "id": "intergenerationnel", "label": { "fr": "Espaces pour personnes agées / Lieux pour petite enfance  /  ONE / Interactions intergénérationnelles (intergénérationnel)" }, "name": "Espaces pour personnes agées / Lieux pour petite enfance  /  ONE / Interactions intergénérationnelles (intergénérationnel)" },
+                      { "id": "bien-etre", "label": { "fr": "Pratique de médecines douces, yoga, sport collectif (Santé et bien-être)" }, "name": "Pratique de médecines douces, yoga, sport collectif (Santé et bien-être)" },
+                      { "id": "ressourcerie", "label": { "fr": "Ressourcerie / Donnerie (circularité)" }, "name": "Ressourcerie / Donnerie (circularité)" },
+                      { "id": "economie-circulaire", "label": { "fr": "Espace test d’économie circulaire pour producteurs/transformateurs (entrepreneuriat soutenable)" }, "name": "Espace test d’économie circulaire pour producteurs/transformateurs (entrepreneuriat soutenable)" },
+                      { "id": "nourricier", "label": { "fr": "Tiers-lieu nourricier / Ferme productive / Maraîchage (production alimentaire)" }, "name": "Tiers-lieu nourricier / Ferme productive / Maraîchage (production alimentaire)" },
+                      { "id": "cuisine", "label": { "fr": "Cuisine partagée / Foodlab / Restauration / Horeca (transformation alimentaire)" }, "name": "Cuisine partagée / Foodlab / Restauration / Horeca (transformation alimentaire)" },
+                      { "id": "vente", "label": { "fr": "Point de vente / épicerie / magasin coopératif (distribution)" }, "name": "Point de vente / épicerie / magasin coopératif (distribution)" },
+                      { "id": "agora", "label": { "fr": "Agora / Services publics de proximité (poste, écrivain public,…) (faire cité)" }, "name": "Agora / Services publics de proximité (poste, écrivain public,…) (faire cité)" },
+                      { "id": "coworking", "label": { "fr": "Bureaux partagés/Coworking (travail)" }, "name": "Bureaux partagés/Coworking (travail)" },
+                      { "id": "inclusion", "label": { "fr": "Inclusion sociale et numérique, mixité  et accueil (inclusion)" }, "name": "Inclusion sociale et numérique, mixité  et accueil (inclusion)" },
+                      { "id": "infrastructures", "label": { "fr": "- Infrastructures (mobilité partagée, outillothèque, etc.) / Logistique collective (mutualisation)" }, "name": "- Infrastructures (mobilité partagée, outillothèque, etc.) / Logistique collective (mutualisation)" }
+                    ]
+                  },
+                  {
+                    "id": "networks",
+                    "label": { "fr": "Réseaux" },
+                    "optionStyle": "check",
+                    "options": [
+                      { "id": "trois-tiers", "label": { "fr": "Trois-Tiers" }, "name": "Trois-Tiers" },
+                      { "id": "wallonie", "label": { "fr": "23 tiers-lieux ruraux soutenus par Plan de Relance de la Wallonie" }, "name": "23 tiers-lieux ruraux soutenus par Plan de Relance de la Wallonie" },
+                      { "id": "gen", "label": { "fr": "Global Ecovillage Network (BelgEco en Belgique)" }, "name": "Global Ecovillage Network (BelgEco en Belgique)" },
+                      { "id": "crc", "label": { "fr": "Comptoir des Ressources Créatives (CRC)" }, "name": "Comptoir des Ressources Créatives (CRC)" },
+                      { "id": "wallonie-entreprendre", "label": { "fr": "Wallonie Entreprendre" }, "name": "Wallonie Entreprendre" },
+                      { "id": "communa", "label": { "fr": "Communa" }, "name": "Communa" },
+                      { "id": "transition", "label": { "fr": "Réseau Transition" }, "name": "Réseau Transition" },
+                      { "id": "hubs", "label": { "fr": "Réseau des hubs créatifs" }, "name": "Réseau des hubs créatifs" },
+                      { "id": "creatifs", "label": { "fr": "Créatifs culturels" }, "name": "Créatifs culturels" }
+                    ]
+                  },
+                  {
+                    "id": "enjeux",
+                    "label": { "fr": "Enjeux" },
+                    "optionStyle": "check",
+                    "options": [
+                      { "id": "sante", "label": { "fr": "Santé" }, "name": "Santé" },
+                      { "id": "alimentation", "label": { "fr": "Alimentation" }, "name": "Alimentation" },
+                      { "id": "social", "label": { "fr": "Social" }, "name": "Social" },
+                      { "id": "politique", "label": { "fr": "Politique" }, "name": "Politique" },
+                      { "id": "agriculture", "label": { "fr": "Agriculture" }, "name": "Agriculture" },
+                      { "id": "ecologique", "label": { "fr": "Écologique" }, "name": "Écologique" },
+                      { "id": "economique", "label": { "fr": "Économique" }, "name": "Économique" },
+                      { "id": "educatifs", "label": { "fr": "Éducatifs" }, "name": "Éducatifs" },
+                      { "id": "culturels", "label": { "fr": "Culturels" }, "name": "Culturels" },
+                      { "id": "habitat", "label": { "fr": "Habitat" }, "name": "Habitat" }
+                    ]
+                  },
+                  {
+                    "id": "siteEnvironment",
+                    "label": { "fr": "Milieu" },
+                    "optionStyle": "check",
+                    "options": [
+                      { "id": "village", "label": { "fr": "Au sein d'un village" }, "name": "Au sein d'un village" },
+                      { "id": "urbain", "label": { "fr": "En centre urbain" }, "name": "En centre urbain" },
+                      { "id": "peripherie", "label": { "fr": "En périphérie, décentré" }, "name": "En périphérie, décentré" },
+                      { "id": "autre", "label": { "fr": "Autre" }, "name": "Autre" }
+                    ]
+                  },
+                  {
+                    "id": "manageModel",
+                    "label": { "fr": "Mode de gestion" },
+                    "optionStyle": "check",
+                    "options": [
+                      { "id": "asbl", "label": { "fr": "Association sans but lucratif (associatif formel)" }, "name": "Association sans but lucratif (associatif formel)" },
+                      { "id": "collectif", "label": { "fr": "Association de fait / Collectif citoyen (associatif)" }, "name": "Association de fait / Collectif citoyen (associatif)" },
+                      { "id": "universite", "label": { "fr": "Université / Haute-École / Écoles" }, "name": "Université / Haute-École / Écoles" },
+                      { "id": "institutionnel", "label": { "fr": "Institutionnel (communes, Intercommunales, province, CPAS, ONE, autres)" }, "name": "Institutionnel (communes, Intercommunales, province, CPAS, ONE, autres)" },
+                      { "id": "prive", "label": { "fr": "Privé (entreprise)" }, "name": "Privé (entreprise)" },
+                      { "id": "cooperative", "label": { "fr": "Coopérative" }, "name": "Coopérative" },
+                      { "id": "fondation", "label": { "fr": "Fondation" }, "name": "Fondation" },
+                      { "id": "copropriete", "label": { "fr": "Co-propriété (individus)" }, "name": "Co-propriété (individus)" },
+                      { "id": "puzzle", "label": { "fr": "Puzzle entrepreneurial" }, "name": "Puzzle entrepreneurial" }
+                    ]
+                  },
+                  {
+                    "id": "commonTransportsAccess",
+                    "label": { "fr": "Transport" },
+                    "optionStyle": "check",
+                    "options": [
+                      { "id": "bus", "label": { "fr": "Bus" }, "name": "Bus" },
+                      { "id": "train", "label": { "fr": "Train" }, "name": "Train" },
+                      { "id": "covoiturage", "label": { "fr": "Covoiturage" }, "name": "Covoiturage" },
+                      { "id": "mobilite-douce", "label": { "fr": "Mobilité douce" }, "name": "Mobilité douce" }
+                    ]
+                  },
+                  {
+                    "id": "vehiculesAccess",
+                    "label": { "fr": "Accessibilité" },
+                    "optionStyle": "check",
+                    "options": [
+                      { "id": "parking-velo", "label": { "fr": "Emplacement des parking vélo" }, "name": "Emplacement des parking vélo" },
+                      { "id": "abri-velo", "label": { "fr": "Abri pour vélos" }, "name": "Abri pour vélos" },
+                      { "id": "parking-voitures", "label": { "fr": "Parking voitures" }, "name": "Parking voitures" }
+                    ]
+                  }
+                ]
+              }
+            },
+            "rightSection": {
+          "type": "searchProStatic",
+          "id": "annuaire-global-resultats",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": ["citoyens", "organizations"],
+              "indexStepList": 30,
+              "notSourceKey": true,
+              "sourceKey": ["tierslieuxbelgique"],
+              "fediverse": false,
+              "contextId": "66fa6c01f8b5267b59215dc9",
+              "contextType": "organizations",
+              "costumSlug": "tierslieuxbelgique",
+              "costumEditMode": false,
+              "defaultFilters": {
+                "$or": {
+                  "parent.66fa6c01f8b5267b59215dc9": { "$exists": true },
+                  "parentId": "66fa6c01f8b5267b59215dc9",
+                  "source.keys": "tierslieuxbelgique",
+                  "reference.costum": "tierslieuxbelgique",
+                  "links.contributors.66fa6c01f8b5267b59215dc9": { "$exists": true },
+                  "links.memberOf.66fa6c01f8b5267b59215dc9": { "$exists": true }
+                },
+                "links.memberOf.66fa6c01f8b5267b59215dc9.roles": { "$nin": ["codev"] },
+                "toBeValidated": { "$exists": false }
+              },
+              "defaultSortBy": { "name": 1 },
+              "defaultFields": [
+                "name", "collection", "type", "source", "profilImageUrl",
+                "profilMediumImageUrl", "profilThumbImageUrl", "slug", "address",
+                "shortDescription", "tags", "links", "badges", "skills"
+              ]
+            },
+            "list": {
+              "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 4 },
+              "card": { "type": "profile", "detailsMode": "drawer" },
+              "itemRules": [
+                {
+                  "id": "tiers-lieux",
+                  "when": {
+                    "and": [
+                      { "field": "collection", "op": "eq", "value": "organizations" },
+                      { "field": "tags", "op": "contains", "value": "TiersLieux" }
+                    ]
+                  },
+                  "card": {
+                    "type": "image-cover",
+                    "detailsMode": "drawer",
+                    "detailedMode": "service-pricing",
+                    "overlayStats": "service-pricing",
+                    "imageFit": "contain"
+                  }
+                }
+              ]
+            }
+          }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/lieux",
+      "title": {
+        "fr": "Lieux"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "lieux-recherche",
+          "props": {
+            "headline": {
+              "fr": "Explorer les tiers-lieux"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un lieu…"
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "annuaire-belgique",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Les tiers-lieux du réseau belge"
+              }
+            },
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": true,
+            "showDetailedViewToggle": true,
+            "searchVariant": "navigator-tl",
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "indexStepList": 20,
+              "defaultFilters": {
+                "$or": {
+                  "tags": {
+                    "$in": [
+                      "TiersLieux"
+                    ]
+                  }
+                },
+                "tags": {
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "searchBy": [
+                "name",
+                "address.addressLocality",
+                "address.level4Name",
+                "address.level3Name",
+                "address.level2Name",
+                "address.level1Name",
+                "address.postalCode"
+              ],
+              "sourceKey": [
+                "tierslieuxbelgique"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 4,
+                "xl": 4
+              },
+              "card": {
+                "type": "image-cover",
+                "variant": "image-cover",
+                "detailsMode": "drawer",
+                "detailedMode": "service-pricing",
+                "overlayStats": "service-pricing",
+                "imageFit": "contain"
+              }
+            },
+            "map": {
+              "layout": "split",
+              "marker": {
+                "useItemImage": true,
+                "style": "circle",
+                "color": "secondary",
+                "borderColor": "background"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/accompagnants",
+      "title": {
+        "fr": "Accompagnants"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "accompagnants-recherche",
+          "props": {
+            "headline": {
+              "fr": "Les accompagnants"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un accompagnant…"
+            },
+            "dropdownFilters": [
+              {
+                "id": "skills",
+                "label": {
+                  "fr": "Compétences"
+                },
+                "field": "skills",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "Leadership",
+                    "label": {
+                      "fr": "Leadership"
+                    }
+                  },
+                  {
+                    "id": "Principes Source",
+                    "label": {
+                      "fr": "Principes Source"
+                    }
+                  },
+                  {
+                    "id": "Raison d'être - vision-mission / conception de charte",
+                    "label": {
+                      "fr": "Raison d'être et conception de charte"
+                    }
+                  },
+                  {
+                    "id": "Gouvernance et modèle organisationnel",
+                    "label": {
+                      "fr": "Gouvernance et modèle organisationnel"
+                    }
+                  },
+                  {
+                    "id": "Communication non-violente",
+                    "label": {
+                      "fr": "Communication non-violente"
+                    }
+                  },
+                  {
+                    "id": "Gestion et médiation de conflits",
+                    "label": {
+                      "fr": "Gestion et médiation de conflits"
+                    }
+                  },
+                  {
+                    "id": "Communication et campagne pour les usagers",
+                    "label": {
+                      "fr": "Communication et campagne pour les usagers"
+                    }
+                  },
+                  {
+                    "id": "Coordination et pilotage de tiers-lieux",
+                    "label": {
+                      "fr": "Coordination et pilotage de tiers-lieux"
+                    }
+                  },
+                  {
+                    "id": "Partenariats et relations internes/externes",
+                    "label": {
+                      "fr": "Partenariats et relations internes/externes"
+                    }
+                  },
+                  {
+                    "id": "Ancrage territorial",
+                    "label": {
+                      "fr": "Ancrage territorial"
+                    }
+                  },
+                  {
+                    "id": "Activation territoriale",
+                    "label": {
+                      "fr": "Activation territoriale"
+                    }
+                  },
+                  {
+                    "id": "Transformation de la culture d’organisation",
+                    "label": {
+                      "fr": "Transformation de la culture d’organisation"
+                    }
+                  },
+                  {
+                    "id": "Programmation socio-culturelle",
+                    "label": {
+                      "fr": "Programmation socio-culturelle"
+                    }
+                  },
+                  {
+                    "id": "Animation et facilitatione",
+                    "label": {
+                      "fr": "Animation et facilitation"
+                    }
+                  },
+                  {
+                    "id": "Relation à l’argent",
+                    "label": {
+                      "fr": "Relation à l’argent"
+                    }
+                  },
+                  {
+                    "id": "Modèle économique / plan financier",
+                    "label": {
+                      "fr": "Modèle économique / plan financier"
+                    }
+                  },
+                  {
+                    "id": "Recherche de soutiens publics/privés",
+                    "label": {
+                      "fr": "Recherche de soutiens publics/privés"
+                    }
+                  },
+                  {
+                    "id": "Phasage développement projet",
+                    "label": {
+                      "fr": "Phasage développement projet"
+                    }
+                  },
+                  {
+                    "id": "Design de projet",
+                    "label": {
+                      "fr": "Design de projet"
+                    }
+                  },
+                  {
+                    "id": "Urbanisme",
+                    "label": {
+                      "fr": "Urbanisme"
+                    }
+                  },
+                  {
+                    "id": "Structuration juridique",
+                    "label": {
+                      "fr": "Structuration juridique"
+                    }
+                  },
+                  {
+                    "id": "Permis d’urbanisme",
+                    "label": {
+                      "fr": "Permis d’urbanisme"
+                    }
+                  },
+                  {
+                    "id": "Architecture",
+                    "label": {
+                      "fr": "Architecture"
+                    }
+                  },
+                  {
+                    "id": "Circuits hydriques",
+                    "label": {
+                      "fr": "Circuits hydriques"
+                    }
+                  },
+                  {
+                    "id": "Système de chauffe",
+                    "label": {
+                      "fr": "Système de chauffe"
+                    }
+                  },
+                  {
+                    "id": "Energie renouvelables",
+                    "label": {
+                      "fr": "Énergies renouvelables"
+                    }
+                  },
+                  {
+                    "id": "Nouvelle économie et coopérative numériques",
+                    "label": {
+                      "fr": "Nouvelle économie et coopérative numériques"
+                    }
+                  },
+                  {
+                    "id": "Lancement d’activité économique de proximité",
+                    "label": {
+                      "fr": "Lancement d’activité économique de proximité"
+                    }
+                  },
+                  {
+                    "id": "Habitat léger",
+                    "label": {
+                      "fr": "Habitat léger"
+                    }
+                  },
+                  {
+                    "id": "Artisanat",
+                    "label": {
+                      "fr": "Artisanat"
+                    }
+                  },
+                  {
+                    "id": "Administratif",
+                    "label": {
+                      "fr": "Administratif"
+                    }
+                  },
+                  {
+                    "id": "Agro-écologie et modèle agricole",
+                    "label": {
+                      "fr": "Agro-écologie et modèle agricole"
+                    }
+                  },
+                  {
+                    "id": "Design des terres et plantations",
+                    "label": {
+                      "fr": "Design des terres et plantations"
+                    }
+                  },
+                  {
+                    "id": "Régénération des écosystèmes",
+                    "label": {
+                      "fr": "Régénération des écosystèmes"
+                    }
+                  },
+                  {
+                    "id": "Permaculture",
+                    "label": {
+                      "fr": "Permaculture"
+                    }
+                  },
+                  {
+                    "id": "Élevage",
+                    "label": {
+                      "fr": "Élevage"
+                    }
+                  },
+                  {
+                    "id": "Maraîchage et petite production",
+                    "label": {
+                      "fr": "Maraîchage et petite production"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "annuaire-accompagnants",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultViewMode": "list",
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "citoyens"
+              ],
+              "indexStepList": 30,
+              "notSourceKey": true,
+              "sourceKey": [
+                "tierslieuxbelgique"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "parent.66fa6c01f8b5267b59215dc9": {
+                    "$exists": true
+                  },
+                  "parentId": "66fa6c01f8b5267b59215dc9",
+                  "source.keys": "tierslieuxbelgique",
+                  "reference.costum": "tierslieuxbelgique",
+                  "links.contributors.66fa6c01f8b5267b59215dc9": {
+                    "$exists": true
+                  },
+                  "links.memberOf.66fa6c01f8b5267b59215dc9": {
+                    "$exists": true
+                  }
+                },
+                "links.memberOf.66fa6c01f8b5267b59215dc9.roles": "Accompagnant.e.s",
+                "toBeValidated": {
+                  "$exists": false
+                }
+              },
+              "defaultSortBy": {
+                "name": 1
+              },
+              "defaultFields": [
+                "name",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "address",
+                "shortDescription",
+                "skills"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "profile",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communaute",
+      "title": {
+        "fr": "Communauté"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "communaute-recherche",
+          "props": {
+            "headline": {
+              "fr": "Les membres de la communauté"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un membre…"
+            },
+            "dropdownFilters": [
+              {
+                "id": "skills",
+                "label": {
+                  "fr": "Compétences"
+                },
+                "field": "skills",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "Leadership",
+                    "label": {
+                      "fr": "Leadership"
+                    }
+                  },
+                  {
+                    "id": "Principes Source",
+                    "label": {
+                      "fr": "Principes Source"
+                    }
+                  },
+                  {
+                    "id": "Raison d'être - vision-mission / conception de charte",
+                    "label": {
+                      "fr": "Raison d'être et conception de charte"
+                    }
+                  },
+                  {
+                    "id": "Gouvernance et modèle organisationnel",
+                    "label": {
+                      "fr": "Gouvernance et modèle organisationnel"
+                    }
+                  },
+                  {
+                    "id": "Communication non-violente",
+                    "label": {
+                      "fr": "Communication non-violente"
+                    }
+                  },
+                  {
+                    "id": "Gestion et médiation de conflits",
+                    "label": {
+                      "fr": "Gestion et médiation de conflits"
+                    }
+                  },
+                  {
+                    "id": "Communication et campagne pour les usagers",
+                    "label": {
+                      "fr": "Communication et campagne pour les usagers"
+                    }
+                  },
+                  {
+                    "id": "Coordination et pilotage de tiers-lieux",
+                    "label": {
+                      "fr": "Coordination et pilotage de tiers-lieux"
+                    }
+                  },
+                  {
+                    "id": "Partenariats et relations internes/externes",
+                    "label": {
+                      "fr": "Partenariats et relations internes/externes"
+                    }
+                  },
+                  {
+                    "id": "Ancrage territorial",
+                    "label": {
+                      "fr": "Ancrage territorial"
+                    }
+                  },
+                  {
+                    "id": "Activation territoriale",
+                    "label": {
+                      "fr": "Activation territoriale"
+                    }
+                  },
+                  {
+                    "id": "Transformation de la culture d’organisation",
+                    "label": {
+                      "fr": "Transformation de la culture d’organisation"
+                    }
+                  },
+                  {
+                    "id": "Programmation socio-culturelle",
+                    "label": {
+                      "fr": "Programmation socio-culturelle"
+                    }
+                  },
+                  {
+                    "id": "Animation et facilitatione",
+                    "label": {
+                      "fr": "Animation et facilitation"
+                    }
+                  },
+                  {
+                    "id": "Relation à l’argent",
+                    "label": {
+                      "fr": "Relation à l’argent"
+                    }
+                  },
+                  {
+                    "id": "Modèle économique / plan financier",
+                    "label": {
+                      "fr": "Modèle économique / plan financier"
+                    }
+                  },
+                  {
+                    "id": "Recherche de soutiens publics/privés",
+                    "label": {
+                      "fr": "Recherche de soutiens publics/privés"
+                    }
+                  },
+                  {
+                    "id": "Phasage développement projet",
+                    "label": {
+                      "fr": "Phasage développement projet"
+                    }
+                  },
+                  {
+                    "id": "Design de projet",
+                    "label": {
+                      "fr": "Design de projet"
+                    }
+                  },
+                  {
+                    "id": "Urbanisme",
+                    "label": {
+                      "fr": "Urbanisme"
+                    }
+                  },
+                  {
+                    "id": "Structuration juridique",
+                    "label": {
+                      "fr": "Structuration juridique"
+                    }
+                  },
+                  {
+                    "id": "Permis d’urbanisme",
+                    "label": {
+                      "fr": "Permis d’urbanisme"
+                    }
+                  },
+                  {
+                    "id": "Architecture",
+                    "label": {
+                      "fr": "Architecture"
+                    }
+                  },
+                  {
+                    "id": "Circuits hydriques",
+                    "label": {
+                      "fr": "Circuits hydriques"
+                    }
+                  },
+                  {
+                    "id": "Système de chauffe",
+                    "label": {
+                      "fr": "Système de chauffe"
+                    }
+                  },
+                  {
+                    "id": "Energie renouvelables",
+                    "label": {
+                      "fr": "Énergies renouvelables"
+                    }
+                  },
+                  {
+                    "id": "Nouvelle économie et coopérative numériques",
+                    "label": {
+                      "fr": "Nouvelle économie et coopérative numériques"
+                    }
+                  },
+                  {
+                    "id": "Lancement d’activité économique de proximité",
+                    "label": {
+                      "fr": "Lancement d’activité économique de proximité"
+                    }
+                  },
+                  {
+                    "id": "Habitat léger",
+                    "label": {
+                      "fr": "Habitat léger"
+                    }
+                  },
+                  {
+                    "id": "Artisanat",
+                    "label": {
+                      "fr": "Artisanat"
+                    }
+                  },
+                  {
+                    "id": "Administratif",
+                    "label": {
+                      "fr": "Administratif"
+                    }
+                  },
+                  {
+                    "id": "Agro-écologie et modèle agricole",
+                    "label": {
+                      "fr": "Agro-écologie et modèle agricole"
+                    }
+                  },
+                  {
+                    "id": "Design des terres et plantations",
+                    "label": {
+                      "fr": "Design des terres et plantations"
+                    }
+                  },
+                  {
+                    "id": "Régénération des écosystèmes",
+                    "label": {
+                      "fr": "Régénération des écosystèmes"
+                    }
+                  },
+                  {
+                    "id": "Permaculture",
+                    "label": {
+                      "fr": "Permaculture"
+                    }
+                  },
+                  {
+                    "id": "Élevage",
+                    "label": {
+                      "fr": "Élevage"
+                    }
+                  },
+                  {
+                    "id": "Maraîchage et petite production",
+                    "label": {
+                      "fr": "Maraîchage et petite production"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "communaute-annuaire",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "citoyens",
+                "organizations"
+              ],
+              "indexStepList": 30,
+              "notSourceKey": true,
+              "sourceKey": [
+                "tierslieuxbelgique"
+              ],
+              "fediverse": false,
+              "contextId": "66fa6c01f8b5267b59215dc9",
+              "contextType": "organizations",
+              "costumSlug": "tierslieuxbelgique",
+              "costumEditMode": false,
+              "defaultFilters": {
+                "links.memberOf.66fa6c01f8b5267b59215dc9": {
+                  "$exists": true
+                },
+                "links.memberOf.66fa6c01f8b5267b59215dc9.isInviting": {
+                  "$exists": false
+                }
+              },
+              "defaultFields": [
+                "name",
+                "profilImageUrl",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "address",
+                "shortDescription",
+                "tags",
+                "type",
+                "links",
+                "badges",
+                "skills"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "profile",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/actualites",
+      "title": {
+        "fr": "Actualités"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "actualites-titre",
+          "props": {
+            "title": {
+              "fr": "Actualités"
+            },
+            "subtitle": {
+              "fr": "Les nouvelles de Tiers-lieux Belgique."
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "news",
+          "id": "actualites-reseau",
+          "props": {
+            "entitySlug": "tierslieuxbelgique",
+            "maxItems": 12,
+            "showAddButton": false,
+            "showFilters": false,
+            "showComments": true,
+            "showReactions": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/evenements",
+      "title": {
+        "fr": "Événements"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "evenements-titre",
+          "props": {
+            "title": {
+              "fr": "Événements"
+            },
+            "subtitle": {
+              "fr": "Les rendez-vous du réseau."
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "agenda",
+          "id": "agenda-belgique",
+          "props": {
+            "showViewToggle": true,
+            "showTabs": true,
+            "defaultTab": "upcoming",
+            "filters": {
+              "text": false,
+              "type": false
+            },
+            "columns": {
+              "sm": 1,
+              "md": 2,
+              "lg": 4,
+              "xl": 4
+            },
+            "baseParams": {
+              "sourceKey": [
+                "tierslieuxbelgique"
+              ],
+              "indexStepList": 12
+            },
+            "title": {
+              "fr": "Événements du réseau"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/a-propos",
+      "title": {
+        "fr": "À propos"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "a-propos-titre",
+          "props": {
+            "title": {
+              "fr": "À propos"
+            },
+            "subtitle": {
+              "fr": "Un espace pour les tiers-lieux en Belgique."
+            },
+            "align": "center",
+            "size": "lg"
+          }
+        },
+        {
+          "type": "content",
+          "id": "a-propos-reseau",
+          "props": {
+            "title": {
+              "fr": "Faire réseau"
+            },
+            "description": {
+              "fr": "Tiers-lieux Belgique met en relation les lieux et les personnes qui partagent des espaces, des expériences et des initiatives. Découvrez le réseau et ses ressources sur [le site existant](https://www.tierslieux.xyz/)."
+            },
+            "imagePosition": "right"
+          }
+        }
+      ]
+    }
+  ],
+  "profiles": {
+    "citoyens": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        { "type": "profile-header", "variant": "hero" },
+        { "type": "profile-info" },
+        { "type": "profile-about" },
+        {
+          "type": "profile-fields",
+          "variant": "card",
+          "columns": 1,
+          "fields": [
+            { "field": "skills", "label": { "fr": "Compétences" } }
+          ]
+        },
+        { "type": "profile-organizer" }
+      ]
+    },
+    "organizations": {
+      "layout": "full-width",
+      "hideHeader": false,
+      "hideFooter": false,
+      "editModal": "edit-tiers-lieux",
+      "editModalMatch": {
+        "tags": "TiersLieux"
+      },
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": false
+          },
+          "showDeleteButton": true,
+          "deleteRedirectPath": "/lieux"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about-tl",
+                  "activity": {
+                    "id": "63e0a8abeac0741b506fb4f7",
+                    "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                    "step": "franceTierslieux1822023_1721_4",
+                    "input": "franceTierslieux1822023_1721_4lea64x9qwknlysdiuab",
+                    "answerPath": "franceTierslieux1822023_1721_4.multiCheckboxPlusfranceTierslieux1822023_1721_4lea64x9qwknlysdiuab"
+                  },
+                  "equipement": {
+                    "id": "63e0a8abeac0741b506fb4f7",
+                    "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                    "step": "franceTierslieux1822023_1721_4",
+                    "input": "franceTierslieux1822023_1721_4lea64x9zyzijgmpwk4",
+                    "answerPath": "franceTierslieux1822023_1721_4.multiCheckboxPlusfranceTierslieux1822023_1721_4lea64x9zyzijgmpwk4"
+                  },
+                  "bedRoomPath": {
+                    "id": "6925ee8ac537f8056114aec7",
+                    "place": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7z9gv729cs53",
+                    "type": "answer",
+                    "name": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7yxrito5j9e6",
+                    "bedPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0minaceqtibwcyy3khtm",
+                    "roomPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq84do7c678u3c8xuq",
+                    "linkPath": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq83c8getjt3lcz64f",
+                    "area": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7zslc8awrql2",
+                    "equipments": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg8j24m89gm99t5mi",
+                    "services": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq86g5vaw1kavrapkb",
+                    "roomType": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mix3hskq78wglr6m61x",
+                    "moreInfo": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq88plgleoln5tmc7b"
+                  },
+                  "coworkingPath": {
+                    "id": "6925e2b05dd63b02ca70d6d9",
+                    "place": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7z9gv729cs53",
+                    "name": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7yxrito5j9e6",
+                    "area": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7zslc8awrql2",
+                    "extra": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg8j24m89gm99t5mi",
+                    "linkPath": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0miq8118cmkh16zjwmt",
+                    "hourly": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minag948nw1ltatx78o",
+                    "halfday": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minagtkflgfepmrq32l",
+                    "fullday": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minah6jdpwjpzymuxm",
+                    "equipments": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg8j24m89gm99t5mi",
+                    "moreInfo": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0miq8auz2wess00qdkpe"
+                  },
+                  "roomPath": {
+                    "id": "6925869ad76aaf6c5a2b2f8a",
+                    "place": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
+                    "type": "array",
+                    "step": "navigatorDesTierslieux25112025_1436_0",
+                    "input": "navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
+                    "linkPath": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq81uh4gat3vgbtgkj",
+                    "name": 0,
+                    "area": 1,
+                    "minPers": 2,
+                    "maxPers": 3,
+                    "hourly": 4,
+                    "halfday": 5,
+                    "fullday": 6,
+                    "solidarity": 7,
+                    "images": 8,
+                    "equipments": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miok91fh1gta2sneeu5",
+                    "catering": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0mieg8j24m89gm99t5mi",
+                    "moreInfo": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq8a6oceswkv6i75jp",
+                    "about": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miolbscdcrucb5a8uuq",
+                    "tip": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miol2ccdl9a86x4f3yc"
+                  },
+                  "forms": {
+                    "646498a5f2b3d6423d74b7f6": {
+                      "name": "Fréquentation",
+                      "finder": "answers.lesCommunsDesTierslieux1752023_1312_0.finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r",
+                      "linked": true
+                    },
+                    "645b300b6d70bb35426fc0e3": {
+                      "name": "Équipements proposés",
+                      "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                      "linked": true
+                    },
+                    "6486d24e9cad105cbf29a777": {
+                      "name": "Modèle économique du lieu",
+                      "finder": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
+                      "linked": true
+                    },
+                    "64a3fbd77c66a6036a282e8a": {
+                      "name": "Satisfaction du lieu",
+                      "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
+                      "linked": true
+                    },
+                    "636cd563e2439b7fc12cd680": {
+                      "name": "Usages des outils numériques",
+                      "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+                      "linked": true
+                    },
+                    "63e0a8abeac0741b506fb4f7": {
+                      "name": "Grand recensement 2023",
+                      "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                      "linked": true
+                    },
+                    "652e32b222c3cf69f018ec40": {
+                      "name": "Réseaux régionaux & thématiques d'appartenance",
+                      "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                      "linked": true
+                    },
+                    "666c245dd4968131956aa91e": {
+                      "name": "Tiers Lieux de France mobilisons nous !",
+                      "finder": "answers.lesCommunsDesTierslieux1462024_1313_0.finderlesCommunsDesTierslieux1462024_1313_0lxeldfuzo8xtrxheuwo",
+                      "linked": true
+                    },
+                    "6925e2b05dd63b02ca70d6d9": {
+                      "name": "Coworking",
+                      "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "coworking"
+                    },
+                    "6925ee8ac537f8056114aec7": {
+                      "name": "Hebergement",
+                      "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "hebergement"
+                    },
+                    "6925869ad76aaf6c5a2b2f8a": {
+                      "name": "Salle de réunion",
+                      "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "salle-reunion"
+                    }
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info-tl",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "bedRoomPath": {
+                    "id": "6925ee8ac537f8056114aec7",
+                    "place": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7z9gv729cs53",
+                    "type": "single"
+                  },
+                  "coworkingPath": {
+                    "id": "6925e2b05dd63b02ca70d6d9",
+                    "place": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7z9gv729cs53"
+                  },
+                  "roomPath": {
+                    "id": "6925869ad76aaf6c5a2b2f8a",
+                    "place": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
+                    "type": "array"
+                  },
+                  "forms": {
+                    "636cd563e2439b7fc12cd680": {
+                      "name": "Usages des communs et outils utilisés",
+                      "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+                      "openMode": "modal",
+                      "linked": true
+                    },
+                    "646498a5f2b3d6423d74b7f6": {
+                      "name": "Fréquentation",
+                      "finder": "answers.lesCommunsDesTierslieux1752023_1312_0.finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r",
+                      "linked": true,
+                      "openMode": "modal"
+                    },
+                    "645b300b6d70bb35426fc0e3": {
+                      "name": "Équipements",
+                      "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                      "openMode": "modal",
+                      "linked": true
+                    },
+                    "6486d24e9cad105cbf29a777": {
+                      "name": "Modèle économique",
+                      "finder": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
+                      "linked": true,
+                      "openMode": "modal"
+                    },
+                    "64a3fbd77c66a6036a282e8a": {
+                      "name": "Satisfaction du tiers-lieu",
+                      "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
+                      "openMode": "modal",
+                      "linked": true,
+                      "hide": true
+                    },
+                    "652e32b222c3cf69f018ec40": {
+                      "name": "Réseaux régionaux & thématiques",
+                      "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                      "linked": true,
+                      "openMode": "modal"
+                    },
+                    "63e0a8abeac0741b506fb4f7": {
+                      "name": "Grand recensement 2023",
+                      "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                      "linked": true,
+                      "openMode": "modal"
+                    },
+                    "666c245dd4968131956aa91e": {
+                      "name": "Tiers Lieux de France mobilisons nous !",
+                      "finder": "answers.lesCommunsDesTierslieux1462024_1313_0.finderlesCommunsDesTierslieux1462024_1313_0lxeldfuzo8xtrxheuwo",
+                      "linked": true,
+                      "hide": true
+                    },
+                    "6925e2b05dd63b02ca70d6d9": {
+                      "name": "Coworking",
+                      "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "coworking",
+                      "hide": true
+                    },
+                    "6925ee8ac537f8056114aec7": {
+                      "name": "Hebergement",
+                      "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "hebergement",
+                      "hide": true
+                    },
+                    "6925869ad76aaf6c5a2b2f8a": {
+                      "name": "Salle de réunion",
+                      "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "salle-reunion",
+                      "hide": true
+                    },
+                    "6876c3e58fa8df3c7f024253": {
+                      "name": "Auto-diagnostic collectif du lieu",
+                      "finder": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                      "linked": true,
+                      "category": "evaluation",
+                      "openMode": "modal",
+                      "hide": true
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres",
+            "en": "Members"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "organizations",
+                  "title": {
+                    "fr": "Organisations partenaires",
+                    "en": "Partner Organizations"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects",
+          "label": {
+            "fr": "Projets",
+            "en": "Projects"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Projets",
+                    "en": "Projects"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "costumForms": {
+    "tiers-lieux": {
+      "id": "tiers-lieux",
+      "entityType": "organizations",
+      "collection": "organizations",
+      "costumSlug": "navigatorDesTierslieux",
+      "icon": "building-2",
+      "deriveDefaults": false,
+      "layout": {
+        "kind": "wizard",
+        "validatePerStep": true,
+        "stepper": "tabs",
+        "progress": "bar",
+        "header": "gradient"
+      },
+      "validateFn": "validate:addressComplete",
+      "serializeGroups": {
+        "openingDate": {
+          "serverKey": "openingDate",
+          "read": "monthYear:read",
+          "write": "monthYear:write",
+          "params": {
+            "monthField": "openingMonth",
+            "yearField": "openingYear",
+            "day": "01"
+          }
+        },
+        "manageModel": {
+          "serverKey": "manageModel",
+          "read": "enumOrOther:read",
+          "write": "enumOrOther:write",
+          "params": {
+            "valueField": "managementType",
+            "otherField": "managementTypeOther",
+            "known": [
+              "association",
+              "collectif-citoyen",
+              "universites",
+              "etablissements-scolaires",
+              "collectivites",
+              "sarl-sa-sas",
+              "sarl-sa-sas-esus",
+              "scic",
+              "scop",
+              "autre"
+            ],
+            "other": "autre"
+          }
+        },
+        "typePlace": {
+          "serverKey": "typePlace",
+          "read": "multiCsv:read",
+          "write": "multiCsv:write",
+          "params": {
+            "arrayField": "family",
+            "otherField": "familyOther",
+            "other": "autre",
+            "separator": ", ",
+            "readOtherFrom": "typePlaceOther"
+          }
+        },
+        "address": {
+          "serverKey": "address",
+          "read": "address:read",
+          "write": "address:write"
+        }
+      },
+      "fields": {
+        "name": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom du tiers-lieu",
+            "en": "Name of the third-place"
+          },
+          "required": true,
+          "placeholder": {
+            "fr": "Nom du tiers-lieu",
+            "en": "Name of the third-place"
+          },
+          "read": "coerce:stringStrict"
+        },
+        "openingMonth": {
+          "widget": "select",
+          "label": "",
+          "enum": [
+            {
+              "value": "01",
+              "label": {
+                "fr": "Janvier",
+                "en": "January"
+              }
+            },
+            {
+              "value": "02",
+              "label": {
+                "fr": "Février",
+                "en": "February"
+              }
+            },
+            {
+              "value": "03",
+              "label": {
+                "fr": "Mars",
+                "en": "March"
+              }
+            },
+            {
+              "value": "04",
+              "label": {
+                "fr": "Avril",
+                "en": "April"
+              }
+            },
+            {
+              "value": "05",
+              "label": {
+                "fr": "Mai",
+                "en": "May"
+              }
+            },
+            {
+              "value": "06",
+              "label": {
+                "fr": "Juin",
+                "en": "June"
+              }
+            },
+            {
+              "value": "07",
+              "label": {
+                "fr": "Juillet",
+                "en": "July"
+              }
+            },
+            {
+              "value": "08",
+              "label": {
+                "fr": "Août",
+                "en": "August"
+              }
+            },
+            {
+              "value": "09",
+              "label": {
+                "fr": "Septembre",
+                "en": "September"
+              }
+            },
+            {
+              "value": "10",
+              "label": {
+                "fr": "Octobre",
+                "en": "October"
+              }
+            },
+            {
+              "value": "11",
+              "label": {
+                "fr": "Novembre",
+                "en": "November"
+              }
+            },
+            {
+              "value": "12",
+              "label": {
+                "fr": "Décembre",
+                "en": "December"
+              }
+            }
+          ],
+          "placeholder": {
+            "fr": "Mois",
+            "en": "Month"
+          },
+          "group": "openingDate"
+        },
+        "openingYear": {
+          "widget": "select",
+          "label": "",
+          "enumFrom": "tl:years",
+          "placeholder": {
+            "fr": "Année",
+            "en": "Year"
+          },
+          "group": "openingDate"
+        },
+        "shortDescription": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description courte",
+            "en": "Short description"
+          },
+          "required": true,
+          "widgetProps": {
+            "rows": 2
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "structureName": {
+          "widget": "text",
+          "label": {
+            "fr": "Nom de la structure porteuse (si différent)",
+            "en": "Operating organization (if different)"
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef",
+          "path": "holderOrganization"
+        },
+        "managementType": {
+          "widget": "select",
+          "label": {
+            "fr": "Mode de gestion",
+            "en": "Management type"
+          },
+          "enum": [
+            {
+              "value": "association",
+              "label": {
+                "fr": "Association",
+                "en": "Association"
+              }
+            },
+            {
+              "value": "collectif-citoyen",
+              "label": {
+                "fr": "Collectif citoyen",
+                "en": "Citizen collective"
+              }
+            },
+            {
+              "value": "universites",
+              "label": {
+                "fr": "Universités / Écoles",
+                "en": "Universities / Schools"
+              }
+            },
+            {
+              "value": "etablissements-scolaires",
+              "label": {
+                "fr": "Établissements scolaires",
+                "en": "Schools"
+              }
+            },
+            {
+              "value": "collectivites",
+              "label": {
+                "fr": "Collectivités",
+                "en": "Local authorities"
+              }
+            },
+            {
+              "value": "sarl-sa-sas",
+              "label": {
+                "fr": "SARL / SA / SAS",
+                "en": "SARL / SA / SAS"
+              }
+            },
+            {
+              "value": "sarl-sa-sas-esus",
+              "label": {
+                "fr": "SARL / SA / SAS avec agrément ESUS",
+                "en": "SARL / SA / SAS with ESUS approval"
+              }
+            },
+            {
+              "value": "scic",
+              "label": {
+                "fr": "SCIC",
+                "en": "SCIC"
+              }
+            },
+            {
+              "value": "scop",
+              "label": {
+                "fr": "SCOP",
+                "en": "SCOP"
+              }
+            },
+            {
+              "value": "autre",
+              "label": {
+                "fr": "Autre mode de gestion",
+                "en": "Other management type"
+              }
+            }
+          ],
+          "required": true,
+          "placeholder": {
+            "fr": "Sélectionner...",
+            "en": "Select..."
+          },
+          "group": "manageModel"
+        },
+        "managementTypeOther": {
+          "widget": "text",
+          "label": {
+            "fr": "Si autre mode de gestion, précisez",
+            "en": "If other management type, please specify"
+          },
+          "visibleIf": {
+            "field": "managementType",
+            "op": "eq",
+            "value": "autre"
+          },
+          "group": "manageModel"
+        },
+        "family": {
+          "widget": "checkboxGroup",
+          "label": {
+            "fr": "Famille(s) de tiers-lieux",
+            "en": "Third-place family/families"
+          },
+          "enum": [
+            {
+              "value": "ateliers-artisanaux",
+              "label": {
+                "fr": "Ateliers artisanaux partagés",
+                "en": "Shared craft workshops"
+              }
+            },
+            {
+              "value": "coworking",
+              "label": {
+                "fr": "Bureaux partagés / Coworking",
+                "en": "Shared offices / Coworking"
+              }
+            },
+            {
+              "value": "foodlab",
+              "label": {
+                "fr": "Cuisine partagée / Foodlab",
+                "en": "Shared kitchen / Foodlab"
+              }
+            },
+            {
+              "value": "fablab",
+              "label": {
+                "fr": "Fablab / Makerspace / Hackerspace",
+                "en": "Fablab / Makerspace / Hackerspace"
+              }
+            },
+            {
+              "value": "livinglab",
+              "label": {
+                "fr": "LivingLab / Innovation sociale",
+                "en": "LivingLab / Social innovation"
+              }
+            },
+            {
+              "value": "nourricier",
+              "label": {
+                "fr": "Tiers-lieu nourricier",
+                "en": "Food third-place"
+              }
+            },
+            {
+              "value": "culturel",
+              "label": {
+                "fr": "Tiers-lieu culturel",
+                "en": "Cultural third-place"
+              }
+            },
+            {
+              "value": "autre",
+              "label": {
+                "fr": "Autre famille de tiers-lieux",
+                "en": "Other third-place family"
+              }
+            }
+          ],
+          "widgetProps": {
+            "variant": "card"
+          },
+          "group": "typePlace"
+        },
+        "surfaceBuilt": {
+          "widget": "number",
+          "label": {
+            "fr": "Surface bâtie (m²)",
+            "en": "Built surface (m²)"
+          },
+          "placeholder": {
+            "fr": "En m²",
+            "en": "In m²"
+          },
+          "read": "coerce:string",
+          "write": "coerce:numOrUndef",
+          "path": "buildingSurfaceArea"
+        },
+        "surfaceOutdoor": {
+          "widget": "number",
+          "label": {
+            "fr": "Surface extérieure (m²)",
+            "en": "Outdoor surface (m²)"
+          },
+          "placeholder": {
+            "fr": "En m²",
+            "en": "In m²"
+          },
+          "read": "coerce:string",
+          "write": "coerce:numOrUndef",
+          "path": "siteSurfaceArea"
+        },
+        "address": {
+          "widget": "location",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          },
+          "widgetProps": {
+            "required": true
+          }
+        },
+        "email": {
+          "widget": "text",
+          "label": {
+            "fr": "Email",
+            "en": "Email"
+          },
+          "required": true,
+          "placeholder": {
+            "fr": "contact@exemple.org",
+            "en": "contact@example.org"
+          },
+          "widgetProps": {
+            "inputType": "email"
+          },
+          "rules": {
+            "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+          },
+          "read": "coerce:stringStrict"
+        },
+        "phone": {
+          "widget": "text",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "placeholder": {
+            "fr": "+33 ...",
+            "en": "+1 ..."
+          },
+          "widgetProps": {
+            "inputType": "tel"
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef",
+          "path": "telephone"
+        },
+        "_logoFile": {
+          "widget": "image",
+          "label": {
+            "fr": "Logo du tiers-lieu",
+            "en": "Third-place logo"
+          },
+          "info": {
+            "fr": "Format carré recommandé · PNG ou JPG",
+            "en": "Square format recommended · PNG or JPG"
+          },
+          "widgetProps": {
+            "shape": "square",
+            "aspect": 1
+          }
+        },
+        "videoUrl": {
+          "widget": "text",
+          "label": "",
+          "placeholder": {
+            "fr": "https://youtube.com/...",
+            "en": "https://youtube.com/..."
+          },
+          "read": "tl:video0",
+          "write": "tl:videoWrite",
+          "path": "video"
+        },
+        "websiteUrl": {
+          "widget": "text",
+          "label": {
+            "fr": "Site internet",
+            "en": "Website"
+          },
+          "placeholder": {
+            "fr": "http://www.exemple.org",
+            "en": "http://www.example.org"
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef",
+          "path": "url"
+        },
+        "socialLinks": {
+          "widget": "fieldArray",
+          "label": {
+            "fr": "Réseaux sociaux",
+            "en": "Social networks"
+          },
+          "read": "social:read",
+          "write": "social:write",
+          "path": "socialNetwork",
+          "clear": "",
+          "widgetProps": {
+            "addLabel": {
+              "fr": "Ajouter un réseau social",
+              "en": "Add a social network"
+            },
+            "itemFields": [
+              {
+                "name": "platform",
+                "kind": "select",
+                "label": {
+                  "fr": "Plateforme",
+                  "en": "Platform"
+                },
+                "options": [
+                  {
+                    "value": "facebook",
+                    "label": "Facebook"
+                  },
+                  {
+                    "value": "twitter",
+                    "label": "Twitter / X"
+                  },
+                  {
+                    "value": "instagram",
+                    "label": "Instagram"
+                  },
+                  {
+                    "value": "linkedin",
+                    "label": "LinkedIn"
+                  },
+                  {
+                    "value": "youtube",
+                    "label": "YouTube"
+                  },
+                  {
+                    "value": "mastodon",
+                    "label": "Mastodon"
+                  },
+                  {
+                    "value": "telegram",
+                    "label": "Telegram"
+                  },
+                  {
+                    "value": "discord",
+                    "label": "Discord"
+                  }
+                ]
+              },
+              {
+                "name": "url",
+                "kind": "text",
+                "placeholder": {
+                  "fr": "https://...",
+                  "en": "https://..."
+                }
+              }
+            ]
+          }
+        },
+        "tags": {
+          "widget": "tags",
+          "read": "tl:tagsRead",
+          "write": "tl:tagsWrite",
+          "label": {
+            "fr": "Mots-clés",
+            "en": "Tags"
+          }
+        },
+        "hours": {
+          "widget": "openingHours",
+          "label": {
+            "fr": "Horaires d'ouverture",
+            "en": "Opening hours"
+          },
+          "widgetProps": {
+            "dayLabelPrefix": "AddTiersLieux.days"
+          },
+          "path": "openingHours"
+        },
+        "description": {
+          "widget": "textarea",
+          "label": {
+            "fr": "Description longue",
+            "en": "Long description"
+          },
+          "placeholder": {
+            "fr": "Décrivez votre tiers-lieu...",
+            "en": "Describe your third-place..."
+          },
+          "widgetProps": {
+            "rows": 10
+          },
+          "read": "coerce:stringStrict",
+          "write": "coerce:orUndef"
+        },
+        "familyOther": {
+          "widget": "hidden",
+          "group": "typePlace"
+        },
+        "addressCountry": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "addressLocality": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "postalCode": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "streetAddress": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "localityId": {
+          "widget": "hidden",
+          "group": "address"
+        },
+        "geo": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geo:write"
+        },
+        "geoPosition": {
+          "widget": "hidden",
+          "type": "object",
+          "writeOnly": true,
+          "write": "geoPosition:write"
+        }
+      },
+      "sections": [
+        {
+          "id": "info",
+          "label": {
+            "fr": "Infos",
+            "en": "Info"
+          },
+          "icon": "building-2",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "name",
+                "$slot:duplicates"
+              ]
+            },
+            {
+              "columns": 2,
+              "label": {
+                "fr": "Date d'ouverture du tiers-lieu",
+                "en": "Opening date"
+              },
+              "fields": [
+                "openingMonth",
+                "openingYear"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "shortDescription"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "structureName"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "managementType",
+                "managementTypeOther"
+              ]
+            },
+            {
+              "columns": 1,
+              "fields": [
+                "family"
+              ]
+            },
+            {
+              "columns": 2,
+              "fields": [
+                "surfaceBuilt",
+                "surfaceOutdoor"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact",
+          "label": {
+            "fr": "Contact",
+            "en": "Contact"
+          },
+          "icon": "map-pin",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "address",
+                "$slot:duplicates"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "label": {
+                "fr": "Contact",
+                "en": "Contact"
+              },
+              "titleClassName": "text-sm font-semibold",
+              "fields": [
+                "email",
+                "phone"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "media",
+          "label": {
+            "fr": "Médias",
+            "en": "Media"
+          },
+          "icon": "image",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "_logoFile"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "label": {
+                "fr": "Lien vers vidéo de présentation",
+                "en": "Presentation video URL"
+              },
+              "titleClassName": "text-base font-semibold",
+              "fields": [
+                "videoUrl"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "online",
+          "label": {
+            "fr": "En ligne",
+            "en": "Online"
+          },
+          "icon": "globe",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "websiteUrl"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "socialLinks"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "details",
+          "label": {
+            "fr": "Détails",
+            "en": "Details"
+          },
+          "icon": "file-text",
+          "groups": [
+            {
+              "columns": 1,
+              "fields": [
+                "hours"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "description"
+              ]
+            },
+            {
+              "columns": 1,
+              "divider": true,
+              "fields": [
+                "tags"
+              ]
+            }
+          ]
+        }
+      ],
+      "chrome": {
+        "title": {
+          "add": {
+            "fr": "Créer votre tiers-lieu",
+            "en": "Create your third-place"
+          },
+          "edit": {
+            "fr": "Modifier votre tiers-lieu",
+            "en": "Edit your third-place"
+          }
+        },
+        "submitLabel": {
+          "add": {
+            "fr": "Créer le tiers-lieu",
+            "en": "Create the third-place"
+          },
+          "edit": {
+            "fr": "Enregistrer les modifications",
+            "en": "Save changes"
+          }
+        },
+        "gradientHeader": true,
+        "dialogClassName": "sm:max-w-[820px] h-[92vh] flex flex-col p-0 gap-0 overflow-hidden",
+        "validationFailedKey": {
+          "fr": "Veuillez corriger les champs en erreur (voir les onglets signalés).",
+          "en": "Please fix the highlighted fields (see the flagged tabs)."
+        },
+        "navText": {
+          "next": {
+            "fr": "Suivant →",
+            "en": "Next →"
+          },
+          "previous": {
+            "fr": "← Précédent",
+            "en": "← Previous"
+          },
+          "cancel": {
+            "fr": "Annuler",
+            "en": "Cancel"
+          },
+          "stepTemplate": {
+            "stepKey": {
+              "fr": "Étape",
+              "en": "Step"
+            },
+            "ofKey": {
+              "fr": "sur",
+              "en": "of"
+            }
+          }
+        }
+      },
+      "image": {
+        "field": "_logoFile",
+        "existingUrlFrom": "image:profilUrl"
+      },
+      "scope": {
+        "derive": "tl:scope",
+        "slugFrom": "derived",
+        "slugKey": "slug"
+      },
+      "defaultsBase": "tl:emptyDefaults",
+      "slots": {
+        "duplicates": "slot:entityDuplicates"
+      },
+      "duplicateCheck": {
+        "nameField": "name",
+        "postalCodeField": "postalCode",
+        "minChars": 3,
+        "limit": 5,
+        "confirmOnSubmit": true,
+        "search": {
+          "types": [
+            "organizations"
+          ],
+          "from": {
+            "page": "/lieux",
+            "sectionId": "section-events"
+          }
+        }
+      },
+      "mutation": {
+        "entityType": "organizations",
+        "payloadEmitEmptyOnEdit": true,
+        "inject": {
+          "extraFields": {
+            "type": "NGO",
+            "preferences": {
+              "isOpenData": true,
+              "isOpenEdition": true
+            }
+          }
+        },
+        "stamps": [
+          {
+            "field": "tags",
+            "value": {
+              "$costum": "mainTag"
+            },
+            "op": "append",
+            "on": "both"
+          },
+          {
+            "field": "tags",
+            "value": {
+              "$costum": "compagnon"
+            },
+            "op": "append"
+          }
+        ],
+        "successKey": {
+          "add": "AddTiersLieux.toast.success",
+          "edit": "EditTiersLieux.toast.success"
+        },
+        "errorKey": {
+          "add": "AddTiersLieux.toast.error",
+          "edit": "EditTiersLieux.toast.error"
+        },
+        "errorContext": {
+          "add": "EntityFormModal · ADD_TIERSLIEU",
+          "edit": "EntityFormModal · EDIT_TIERSLIEU"
+        },
+        "invalidateFn": {
+          "fn": "invalidate:standard",
+          "params": {
+            "userList": "organizations",
+            "searchKeys": [
+              "entityDuplicates"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

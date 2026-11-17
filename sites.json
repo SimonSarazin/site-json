@@ -232,5 +232,10 @@
     "env": {
       "VITE_COSTUM_FORCE_LIVE": "true"
     }
+  },
+  {
+    "slug": "tierslieuxbelgique",
+    "config": "config.prod.tierslieuxbelgique.json",
+    "css": "index-tiers-lieux"
   }
 ]

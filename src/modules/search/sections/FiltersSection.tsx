@@ -263,11 +263,12 @@ export function FiltersSection({
   const debouncedSearchInput = useDebounce(searchInput, 400);
 
   useEffect(() => {
+    if (hideSearch) return;
     if (debouncedSearchInput !== searchQuery) {
       setSearchQuery(debouncedSearchInput);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchInput]);
+  }, [debouncedSearchInput, hideSearch]);
 
   // Synchro inverse : si le context est vidé de l'extérieur (clearFilters,
   // navigation, etc.), l'input local doit suivre pour ne pas afficher du texte
@@ -378,13 +379,14 @@ export function FiltersSection({
   // Recherche texte reportée depuis l'URL (`?search=`) — ex. lien « voir sur /lieux »
   // de la home, qui transporte la saisie texte en plus des filtres catégorie.
   useEffect(() => {
+    if (hideSearch) return;
     const urlSearch = searchParams.get("search");
     if (urlSearch && urlSearch !== searchQuery) {
       setSearchInput(urlSearch);
       setSearchQuery(urlSearch);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, hideSearch]);
 
   // URL → état. Continu (deep-link, liens d'accueil, back/forward) mais on saute
   // nos propres écritures (écho) repérées via `lastSyncedSearch`.
@@ -429,13 +431,13 @@ export function FiltersSection({
   // boucle avec l'effet de lecture.
   useEffect(() => {
     if (!urlHydrated) return;
-    const next = computeUrlFromFilters(searchParams, selectedFilters, searchByFields, filterGroups, searchQuery, filterAnswerData);
+    const next = computeUrlFromFilters(searchParams, selectedFilters, searchByFields, filterGroups, hideSearch ? "" : searchQuery, filterAnswerData);
     const nextStr = next.toString();
     if (nextStr === searchParams.toString()) return;
     lastSyncedSearch.current = nextStr;
     setSearchParams(next, { replace: true, preventScrollReset: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFilters, searchByFields, filterGroups, searchQuery, filterAnswerData, searchParams, urlHydrated]);
+  }, [selectedFilters, searchByFields, filterGroups, searchQuery, filterAnswerData, searchParams, urlHydrated, hideSearch]);
 
   const clearFilters = () => {
     clearFiltersContext();

@@ -1,0 +1,245 @@
+{
+  "site": "tierslieuxbelgique",
+  "slug": "tierslieuxbelgique",
+  "addMenus": {
+    "organizations": {
+      "builtins": {
+        "project": "add-project",
+        "event": "add-event"
+      }
+    }
+  },
+  "finderAddNew": {
+    "organizations": "add-organization"
+  },
+  "editModals": {
+    "organizations": {
+      "vierge": "edit-profile",
+      "routes": [
+        {
+          "declare": "edit-tiers-lieux",
+          "native": "edit-tiers-lieux",
+          "horsPerimetre": "edit-tiers-lieux"
+        }
+      ]
+    }
+  },
+  "adminResources": {},
+  "pages": {
+    "/annuaire/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens",
+          "organizations"
+        ],
+        "indexStepList": 30,
+        "notSourceKey": true,
+        "sourceKey": [
+          "tierslieuxbelgique"
+        ],
+        "fediverse": false,
+        "contextId": "66fa6c01f8b5267b59215dc9",
+        "contextType": "organizations",
+        "costumSlug": "tierslieuxbelgique",
+        "costumEditMode": false,
+        "defaultFilters": {
+          "$or": {
+            "parent.66fa6c01f8b5267b59215dc9": {
+              "$exists": true
+            },
+            "parentId": "66fa6c01f8b5267b59215dc9",
+            "source.keys": "tierslieuxbelgique",
+            "reference.costum": "tierslieuxbelgique",
+            "links.contributors.66fa6c01f8b5267b59215dc9": {
+              "$exists": true
+            },
+            "links.memberOf.66fa6c01f8b5267b59215dc9": {
+              "$exists": true
+            }
+          },
+          "links.memberOf.66fa6c01f8b5267b59215dc9.roles": {
+            "$nin": [
+              "codev"
+            ]
+          },
+          "toBeValidated": {
+            "$exists": false
+          }
+        },
+        "defaultSortBy": {
+          "name": 1
+        },
+        "defaultFields": [
+          "name",
+          "collection",
+          "type",
+          "source",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "address",
+          "shortDescription",
+          "tags",
+          "links",
+          "badges",
+          "skills"
+        ]
+      }
+    },
+    "/lieux/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "organizations"
+        ],
+        "indexStepList": 20,
+        "defaultFilters": {
+          "$or": {
+            "tags": {
+              "$in": [
+                "TiersLieux"
+              ]
+            }
+          },
+          "tags": {
+            "$nin": [
+              "RéseauTiersLieux"
+            ]
+          }
+        },
+        "defaultSortBy": {
+          "updated": -1
+        },
+        "searchBy": [
+          "name",
+          "address.addressLocality",
+          "address.level4Name",
+          "address.level3Name",
+          "address.level2Name",
+          "address.level1Name",
+          "address.postalCode"
+        ],
+        "sourceKey": [
+          "tierslieuxbelgique"
+        ]
+      }
+    },
+    "/accompagnants/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens"
+        ],
+        "indexStepList": 30,
+        "notSourceKey": true,
+        "sourceKey": [
+          "tierslieuxbelgique"
+        ],
+        "defaultFilters": {
+          "$or": {
+            "parent.66fa6c01f8b5267b59215dc9": {
+              "$exists": true
+            },
+            "parentId": "66fa6c01f8b5267b59215dc9",
+            "source.keys": "tierslieuxbelgique",
+            "reference.costum": "tierslieuxbelgique",
+            "links.contributors.66fa6c01f8b5267b59215dc9": {
+              "$exists": true
+            },
+            "links.memberOf.66fa6c01f8b5267b59215dc9": {
+              "$exists": true
+            }
+          },
+          "links.memberOf.66fa6c01f8b5267b59215dc9.roles": "Accompagnant.e.s",
+          "toBeValidated": {
+            "$exists": false
+          }
+        },
+        "defaultSortBy": {
+          "name": 1
+        },
+        "defaultFields": [
+          "name",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "address",
+          "shortDescription",
+          "skills"
+        ]
+      }
+    },
+    "/communaute/searchProStatic": {
+      "baseParams": {
+        "defaultTypes": [
+          "citoyens",
+          "organizations"
+        ],
+        "indexStepList": 30,
+        "notSourceKey": true,
+        "sourceKey": [
+          "tierslieuxbelgique"
+        ],
+        "fediverse": false,
+        "contextId": "66fa6c01f8b5267b59215dc9",
+        "contextType": "organizations",
+        "costumSlug": "tierslieuxbelgique",
+        "costumEditMode": false,
+        "defaultFilters": {
+          "links.memberOf.66fa6c01f8b5267b59215dc9": {
+            "$exists": true
+          },
+          "links.memberOf.66fa6c01f8b5267b59215dc9.isInviting": {
+            "$exists": false
+          }
+        },
+        "defaultFields": [
+          "name",
+          "profilImageUrl",
+          "profilMediumImageUrl",
+          "profilThumbImageUrl",
+          "slug",
+          "address",
+          "shortDescription",
+          "tags",
+          "type",
+          "links",
+          "badges",
+          "skills"
+        ]
+      }
+    },
+    "/evenements/agenda": {
+      "baseParams": {
+        "sourceKey": [
+          "tierslieuxbelgique"
+        ],
+        "indexStepList": 12
+      }
+    }
+  },
+  "stamps": {
+    "tiers-lieux": [
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "mainTag"
+        },
+        "op": "append",
+        "on": "both",
+        "channel": "payload"
+      },
+      {
+        "field": "tags",
+        "value": {
+          "$costum": "compagnon"
+        },
+        "op": "append",
+        "on": "add",
+        "channel": "payload"
+      }
+    ]
+  },
+  "referencement": {},
+  "membership": {},
+  "profileRelated": {}
+}
