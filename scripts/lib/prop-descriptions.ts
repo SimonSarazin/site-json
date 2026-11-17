@@ -41,6 +41,7 @@ const LIST: Record<string, string> = {
   "card.compact": "Carte DENSE (mêmes infos, moins de hauteur : vignette, interlignes et puces réduits) — pour une colonne étroite ; honoré par poi-amenities, ignoré par les autres variantes.",
   "card.collapsible": "Carte PLIABLE, repliée par défaut : une ligne titre + sous-titre, dépliée par un chevron (le clic sur la ligne ouvre la fiche) ; honoré par poi-amenities.",
   "card.slotsBand": "poi-amenities : bande de gauche couleur `color` (jeton, défaut code accent) et taux d'occupation pour un équipement à créneau en cours ou à venir ; lit list.preview.reservations, légende sur la liste.",
+  "card.showTags": "Carte profile : false retire les chips de tags, « Aucun tag » compris (défaut code : affichées) — pour un annuaire dont les tags n'informent pas.",
   "card.bookedHours": "Carte profile d'un annuaire d'usagers : heures / semaine et cumulées de l'organisation, en petit — calcul de sa fiche (preview.bookedResources) sur list.preview.reservations.",
   "card.tagLimit": "Nombre max de tags affichés sur la carte.",
   "card.showDescription": "Affiche l'extrait de description sur la carte.",

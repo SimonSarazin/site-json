@@ -1521,6 +1521,7 @@ export const CardConfSchema = z.object({
   communeFrom: z.object({ filter: z.string() }).optional(), // poi-amenities : commune de rattachement
   slotsBand: z.object({ color: ColorTokenSchema.optional() }).optional(), // poi-amenities : bande « avec créneaux » + taux
   bookedHours: z.boolean().optional(),                    // profile : heures / semaine et cumulées de l'organisation
+  showTags: z.boolean().optional(),                       // profile : false retire les chips de tags, « Aucun tag » compris
   type:    z.enum([...15 designs...]).default("default"),
   variant: z.enum([...11 designs...]).optional(),
 }).partial();

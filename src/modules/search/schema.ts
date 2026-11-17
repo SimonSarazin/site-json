@@ -803,6 +803,10 @@ export const CardConfSchema = z.object({
     // parc inchangés). `false` sur un annuaire de LIEUX : on ne « suit » pas un cabinet, et
     // « Contacter » n'ouvre aujourd'hui qu'un toast « à venir ».
     showActions:     z.boolean().optional(),
+    // Chips de tags de la carte `profile`, « Aucun tag » compris. Absent = affichées (usages du parc
+    // inchangés). `false` sur un annuaire dont les tags n'informent pas : une fiche sans tag y
+    // afficherait « Aucun tag » sur chaque carte.
+    showTags:        z.boolean().optional(),
     // Affiche la barre de progression de financement (cagnotte) sur la carte +
     // déclenche la query useFundingEnvelope. Découple la feature funding du style
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).

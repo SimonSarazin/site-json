@@ -1479,6 +1479,11 @@ RéseauSanté, annuaire filtré au tag `lieux-sante` — que ni les cartes ni le
 comme `showStats`). Pensé pour un annuaire de LIEUX : on ne « suit » pas un cabinet, et « Contacter »
 n'ouvre aujourd'hui qu'un toast « à venir ».
 
+**Chips de tags** : `card.showTags: false` retire le bloc des tags de la carte `profile`, « Aucun tag » compris
+(absent = affichées, comme `showStats`). Pour un annuaire dont les tags n'informent pas, où une fiche sans tag
+afficherait « Aucun tag » sur chaque carte. Premier usage : l'annuaire des usagers d'ESS974, dont les cartes portent
+leurs heures.
+
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
 Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 8cd4070) :

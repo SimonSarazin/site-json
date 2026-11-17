@@ -3479,6 +3479,7 @@
                 "showDescription": true,
                 "showAddress": true,
                 "showStats": false,
+                "showTags": false,
                 "detailsMode": "dialog",
                 "bookedHours": true
               },

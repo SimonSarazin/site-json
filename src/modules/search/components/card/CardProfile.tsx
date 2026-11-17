@@ -29,6 +29,8 @@ export interface CardProfileCardConfig {
   showStats?: boolean;
   /** Boutons « Contacter » / « Suivre ». Absent = affichés — cf. `CardConfSchema.showActions`. */
   showActions?: boolean;
+  /** Chips de tags, « Aucun tag » compris. Absentes = affichées — cf. `CardConfSchema.showTags`. */
+  showTags?: boolean;
   /** Chips affichées avant « +N » — défaut 3 (carte compacte), cf. `CardConfSchema.tagLimit`. */
   tagLimit?: number;
   detailsMode?: "drawer" | "dialog" | "link";
@@ -128,6 +130,7 @@ export default function CardProfile({
   const showAddress = card?.showAddress !== false;
   const showStats = card?.showStats !== false;
   const showActions = card?.showActions !== false;
+  const showTags = card?.showTags !== false;
   const detailsMode = card?.detailsMode || "drawer";
 
   const [isFollowingState, setIsFollowingState] = useState(isFollowing);
@@ -246,7 +249,7 @@ export default function CardProfile({
           )}
 
           {/* Tags tous MASQUÉS par la conf ≠ fiche sans tag : dans le premier cas on ne dit rien. */}
-          {(displayTags.length > 0 || tags.length === 0) && (
+          {showTags && (displayTags.length > 0 || tags.length === 0) && (
           <div className="flex flex-wrap gap-1 justify-center">
             {displayTags.length > 0 ? (
               <>

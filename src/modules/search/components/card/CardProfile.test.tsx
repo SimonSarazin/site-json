@@ -73,6 +73,15 @@ describe("CardProfile — chips de tags", () => {
     expect(sans.queryByText("Suivre")).toBeNull();
   });
 
+  it("showTags: false : ni chips ni « Aucun tag », que la fiche soit taguée ou non", () => {
+    const taguee = mount(<CardProfile item={item(["a", "b"])} card={{ showTags: false }} />);
+    expect(taguee.queryByText("a")).toBeNull();
+    expect(taguee.queryByText("b")).toBeNull();
+    taguee.unmount();
+    const sansTag = mount(<CardProfile item={item([])} card={{ showTags: false }} />);
+    expect(sansTag.queryByText("Aucun tag")).toBeNull();
+  });
+
   it("tags en objet (tableau PHP à trous) : la carte rend les valeurs au lieu de planter", () => {
     const raw = { id: "1", slug: "x", serverData: { id: "1", name: "X", tags: { "1": "Pedagogie", "3": "Santé" } } } as unknown as Organization;
     const { getByText } = mount(<CardProfile item={raw} />);
