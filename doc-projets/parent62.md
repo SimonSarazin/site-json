@@ -14,7 +14,10 @@
 > [Composants média](../doc/33-media-components.md) · [Module Admin](../doc/30-module-admin.md).
 > Slug : `parents62` avec **s** est abandonné (cf. §1).
 
-Dernière mise à jour : **2026-11-10** — reprise éditoriale `/reseau`/`/equipe`/`/charte` sur PDF de
+Dernière mise à jour : **2026-11-17** — libellé du menu « Du REAAP au Réseau Parentalité » aligné sur
+« Le Réseau parentalité » — détail §9novodecies.
+
+**2026-11-10** — reprise éditoriale `/reseau`/`/equipe`/`/charte` sur PDF de
 relecture client, page « Nos champs d'actions » retirée, retrait du bloc CAF sur `/equipe` — détail
 §9novodecies.
 
@@ -5553,6 +5556,10 @@ en totalité** — les nouvelles adhésions à la Charte sont temporairement sus
 **Page « Nos champs d'actions » (10/11)** : **page retirée en totalité** (`/champs-actions`, présentait
 REAAP/CLAS/LAEP) ainsi que son entrée de nav (sous « Le Réseau parentalité »). Aucun autre lien interne
 ne pointait vers `/champs-actions` (vérifié par recherche texte et par l'audit `lien-mort`).
+
+**Libellé du menu (17/11)** : l'entrée de nav du dropdown « Le Réseau parentalité » pointant vers
+`/reseau` portait encore l'ancien intitulé « Du REAAP au Réseau Parentalité » (`header.nav[0].children[0].label`),
+resté en décalage avec le renommage de page du 10/11 ci-dessus. Alignée sur **« Le Réseau parentalité »**.
 
 | Gate | Résultat |
 |---|---|
