@@ -12,7 +12,7 @@
 > Mémoire : `[[project-ess974]]` · Plan : `.claude/plans/plan-ess974-equipements-sportifs-scolaires.md`
 > · Demande backend : [`demande-backend-ess974.md`](../../demande-backend-ess974.md).
 
-Dernière mise à jour : **2026-11-09** (note de Thomas sur la MR 120 : plafond du dump relevé à sa demande, mesure d'usage protégée — identifiants des usagers, type des fiches, graphes et export pendant le calcul ou en échec —, règle des types tenue une fois, heures disponibles et taux sur les seuls équipements qui ont un planning — §9 ; 30/10 : seconde note de Thomas sur la MR 114 : avec `adminOnly: false`, le bouton d'ajout de la fiche association s'affiche aussi hors connexion et ouvre la connexion, comme sur la fiche équipement — §9 ; production : mise à jour Data ES appliquée — 703 équipements, 128 structurants —, plannings de Petite-Île importés, questionnaire copié avec son identifiant, réglages du formulaire des créneaux posés ; lots CDC-1 à CDC-5 committés et poussés, à proposer dans une nouvelle MR, la MR 114 étant fusionnée depuis le 29/10 — §9 ; revue avant commit des lots CDC-1 à CDC-5, 11 corrections : KPI des structurants juste en anglais, couleurs du statut dans les deux langues, exports après le calcul, mesure d'usage « — » en cas d'échec, filtre de statut indépendant de l'ordre des filtres, doublons retirés, docs et Méthodologie précisées — §9 ; 28/10 : CDC de la DRAJES : lots CDC-1 à CDC-5 livrés et vérifiés au navigateur après l'import de Petite-Île, committés le 30/10 — §9 ; CDC de la DRAJES v1.0 reporté : chantier et synthèse au §1, lots CDC-1 à CDC-5 en checklist §10, questions au §13, plan en attente du go ; review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion — remplacé le 30/10) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, appliquée en production le 30/10 (§9).
+Dernière mise à jour : **2026-11-17** (tags retirés des cartes de l'annuaire, `card.showTags` — §9 ; relecture avant commit du lot du 12/11 au regard des règles de Thomas, gates rejouées avec un build : liste triée qui se figeait sur un grand écran, échec du chargement complet affiché « aucun résultat », description de l'assistant rétablie, chiffre des KPI cliquables annoncé aux lecteurs d'écran, calculs refaits pour rien supprimés, historique des créneaux sans `lazy()` inopérant ; lot commité, non poussé — §9) ; 12/11 : ajustements Équipements, Observatoire et Annuaire, gestion des créneaux reprise sur Saint-Paul : bande des équipements avec créneaux et tri par taux d'occupation, KPI cliquables, bouton « Fiche » de l'usager depuis l'Observatoire, heures sur les cartes de l'annuaire, non commités — §9) ; 09/11 : note de Thomas sur la MR 120 : plafond du dump relevé à sa demande, mesure d'usage protégée — identifiants des usagers, type des fiches, graphes et export pendant le calcul ou en échec —, règle des types tenue une fois, heures disponibles et taux sur les seuls équipements qui ont un planning — §9 ; 30/10 : seconde note de Thomas sur la MR 114 : avec `adminOnly: false`, le bouton d'ajout de la fiche association s'affiche aussi hors connexion et ouvre la connexion, comme sur la fiche équipement — §9 ; production : mise à jour Data ES appliquée — 703 équipements, 128 structurants —, plannings de Petite-Île importés, questionnaire copié avec son identifiant, réglages du formulaire des créneaux posés ; lots CDC-1 à CDC-5 committés et poussés, à proposer dans une nouvelle MR, la MR 114 étant fusionnée depuis le 29/10 — §9 ; revue avant commit des lots CDC-1 à CDC-5, 11 corrections : KPI des structurants juste en anglais, couleurs du statut dans les deux langues, exports après le calcul, mesure d'usage « — » en cas d'échec, filtre de statut indépendant de l'ordre des filtres, doublons retirés, docs et Méthodologie précisées — §9 ; 28/10 : CDC de la DRAJES : lots CDC-1 à CDC-5 livrés et vérifiés au navigateur après l'import de Petite-Île, committés le 30/10 — §9 ; CDC de la DRAJES v1.0 reporté : chantier et synthèse au §1, lots CDC-1 à CDC-5 en checklist §10, questions au §13, plan en attente du go ; review de la MR 114, lot D : nettoyage — une seule notion de date, heures affichées en « h », sablier et garde d'erreur alignés, mentions « non committé » remplacées par les commits ; 27/10, lot C : l'annuaire des associations ne relit plus toutes les réservations à chaque page servie, et les contrôles de créneaux ne se recalculent plus à chaque rendu ; lot B : la fiche équipement des sites d'équipements devient une option, `equipmentDetails`, et sport-santé retrouve la sienne ; un club créé depuis le formulaire de réservation porterait l'étiquette ; semaine type et `periods` annoncés sur les deux sites en ligne ; lot A : la garde de « Modifier l'horaire » compare aussi la période, les contrôles lisent toutes les réservations d'un équipement, le bouton d'ajout de la fiche association est masqué hors connexion — remplacé le 30/10) ; 26/10 : filtre Commune de l'observatoire corrigé : les 5 communes à deux codes postaux se sélectionnent de nouveau, libellés sans virgule ; fusion de `main` dans `ess974`, conflits réglés des deux côtés, lots 8 à 11 revérifiés sur le code fusionné ; lot 11 — ajout d'associations par les admins depuis l'annuaire, avec la clé ESS974, et modification de celles qu'ils ont ajoutées, relu pour la conformité aux règles de Thomas ; ajustements du lot 8 — contrôle en direct des créneaux occupés, à l'ajout et à la modification d'horaire ; bouton d'ajout par association sur la fiche équipement ; fiche association avec les réservations à gauche ; indicateurs agrandis, survol lisible) ; lots 8 et 9 du 23/10 ; mise à jour des données depuis dataES préparée, appliquée en production le 30/10 (§9).
 
 ---
 
@@ -58,6 +58,8 @@ scoping automatique — là où Saint-Paul devait filtrer explicitement (cf. §7
 | 30/10 | Claude | Seconde note de Thomas sur la MR 114 : bouton « Ajouter un créneau » de la fiche association aligné sur la fiche équipement (§9) |
 | 04/11 | Peterson | MR 120 (lots CDC-1 à CDC-5) ouverte vers `main` |
 | 09/11 | Claude | Note de Thomas sur la MR 120 : plafond du dump, mesure d'usage, heures disponibles et taux sur les équipements qui ont un planning (`b85266ae`, `7c4b22af`, `3779db5a`, §9) |
+| 11-12/11 | Claude | Ajustements demandés par Peterson : bande et tri des équipements, KPI cliquables, bouton « Fiche » depuis l'Observatoire, heures sur les cartes de l'annuaire ; mêmes fonctions sur Saint-Paul. Non commités (§9) |
+| 17/11 | Claude | Relecture avant commit du lot du 12/11, à la demande de Peterson (règles de Thomas, fonctionnement, optimalité) : correctifs intégrés, dont un hors lot (historique des créneaux, CDC-3) ; lot commité sur `ess974` en 4 commits, non poussé (§9) |
 
 ### Cahier des charges de la DRAJES (v1.0, octobre 2026)
 
@@ -268,6 +270,137 @@ Aucun fichier de `src/` n'a été touché : le lot 1 est **100 % config**.
 ---
 
 ## 9. Impacts des modifications
+
+### Tags retirés des cartes de l'annuaire (2026-11-17)
+
+**Contexte** : demande de Peterson du 17/11, limitée à ce point. Les cartes des usagers de `/annuaire` affichaient
+leurs tags, ou « Aucun tag », sous leurs heures.
+
+**Ce qui change** : nouvelle option `card.showTags` de la carte `profile` — absente, les tags restent affichés, comme
+pour `showStats` ; `false` retire le bloc, « Aucun tag » compris. Posée sur la carte de `/annuaire`. Saint-Paul, qui
+a la même carte, n'est pas touché.
+
+**Validation** (17/11) :
+- tests ✅ 116 dans 3 fichiers (`CardProfile`, `prop-descriptions` et `config-integrity` du préflight) ; typecheck ✅ ;
+  eslint ✅ sur les fichiers touchés ; `config:validate` ✅ ;
+- navigateur (base locale, visiteur) : 24 cartes, ni tag ni « Aucun tag », heures sur les 24, aucune erreur de page.
+
+**Commité** le 17/11 sur `ess974`, avec l'accord de Peterson, après les 4 commits du lot du 12/11. Non poussé.
+
+### Créneaux visibles, tri par taux, KPI cliquables, annuaire (2026-11-12)
+
+**Contexte** : demande de Peterson du 11/11, réalisée en autonomie (analyse, choix, implémentation), sans commit. Plan :
+`.claude/plans/plan-ess974-saint-paul-creneaux-kpi-annuaire.md`. Saint-Paul reçoit les mêmes fonctions (§9 de
+[saint-paul-sport.md](saint-paul-sport.md)).
+
+**Ce qui change**, par page :
+- **Équipements** :
+  - bande de gauche jaune (`accent` du thème) sur les cartes des équipements qui ont des créneaux en cours ou à venir,
+    avec leur taux sous le type (« 30 % d'occupation »). Une légende est posée au-dessus de la liste, avec un sablier
+    pendant la lecture des réservations (`card.slotsBand`) ;
+  - sélecteur « Trier » au-dessus de la liste : par nom (défaut), ou taux d'occupation décroissant ou croissant
+    (`usageSort`, `?tri=desc|asc`). Les équipements avec créneaux viennent d'abord, classés, puis les autres par nom.
+- **Observatoire** :
+  - 12 des 15 KPI deviennent cliquables (`kpi.filter`). Le clic pose un filtre de la barre, qui restreint la liste, les
+    graphes et les autres KPI ; un second clic le retire. Les correspondances :
+    - structurants → Catégorie ;
+    - ouverts aux clubs et part des ouverts → Statut « Ouvert » ;
+    - PMR → PMR ;
+    - PSHS → PSHS (filtre ajouté à la barre) ;
+    - Intérieur → Nature ;
+    - type principal → Type ;
+    - 4 KPI d'heures et taux moyen → les équipements avec créneaux (Statut « Ouvert » + « Non ouvert », dimension
+      `planifie` sur le nouveau champ `__usage.planned`).
+  - Restent inertes : Équipements, Communes, Surface totale ;
+  - **correction** : la fiche d'un équipement ouverte depuis l'Observatoire montre le bouton « Fiche » de chaque usager.
+    Il manquait `orgaLink` sur les fiches de `/observatoire`, de `/data` et de la palette.
+- **Annuaire** :
+  - « Toutes les associations » devient « Tous les usagers » (« All users ») ;
+  - chaque carte porte « Heures / semaine » et « Heures cumulées » en petit (`card.bookedHours`). Ce sont les chiffres
+    de la fiche à l'ouverture : mêmes équipements scolaires, période par défaut, même calcul (`orgaBookedHours`, mis en
+    commun avec la fiche) ;
+  - une association sans créneau affiche 0.
+
+**Choix tranchés en l'absence de consigne** (à revoir par Peterson) :
+- « a des créneaux » = un créneau en cours ou à venir, la règle du « sans planning » ;
+- couleur = `accent` du thème ;
+- « Filtre par taux d'utilisation » lu comme un TRI ;
+- taux affiché sur la carte, pour que l'ordre se comprenne et que la couleur ne soit pas le seul signe ;
+- vocabulaire « taux d'occupation », celui des KPI et de la fiche ;
+- « Part des équipements ouverts » et « Taux d'occupation moyen » cliquables, comme leurs voisines ;
+- PSHS ajouté à la barre de filtres ;
+- tri placé au-dessus de la liste, et non dans le bandeau de filtres.
+
+**À savoir** :
+- **Affichage de la page Équipements** : il lit désormais les réservations (une requête, celle du filtre « Créneau
+  disponible »), parce que la bande en dépend. En local, la lecture prend de 25 à 45 s : les cartes gardent leur bande
+  d'origine jusque-là, et la légende l'annonce.
+- **Tri par taux** : la liste lit tout le périmètre (le chargement de la carte), puis s'affiche par tranches de 24.
+- **Données locales** : les 9 équipements qui ont un planning sont tous « ouverts ». « Ouverts aux clubs » et les KPI
+  d'heures posent donc le même filtre et s'affichent actifs ensemble.
+- **Tranche de taux** : le filtre existe déjà dans l'Observatoire (« Taux d'occupation »), si c'est un filtre et non
+  un tri qui était attendu.
+
+**Relecture avant commit (17/11)** — demande de Peterson : vérifier le lot au regard des règles de Thomas, son
+fonctionnement et l'optimalité des solutions, corriger ce qui ne va pas sans régression. Revue du diff (niveau `high`,
+comme `mr-review` au-delà de 30 fichiers), chaque point relu dans le code, gates rejouées avec un build frais.
+Corrigé :
+- **liste triée figée** sur un grand écran ou avec des cartes denses : la sentinelle restait visible et l'observateur
+  ne rappelait plus. Il est recréé à chaque tranche (motif de `useInfiniteQueryScroll`) ; le test ajouté échoue sur
+  l'ancien code ;
+- **échec du chargement complet affiché « Aucun résultat trouvé »** : `isComplete` vaut aussi pour une requête
+  désactivée ou en échec (contrat `isPending` de `useSearchAllResults`). La liste par nom reste affichée et le
+  sélecteur propose « Réessayer », qui relance ce qui a échoué ;
+- **retour en haut de la liste triée** à chaque rafraîchissement en arrière-plan (retour sur l'onglet après
+  5 min) : la remise à la première tranche suit l'ordre et la recherche, plus le tableau ;
+- **description `card.collapsible` de l'assistant**, écrasée le 12/11 par celle de `card.slotsBand` : rétablie ;
+- **KPI cliquables** : un `aria-label` taisait le chiffre aux lecteurs d'écran (nom = libellé et chiffre, action en
+  description) ; un KPI qui poserait plusieurs valeurs sur un filtre à choix unique reste inerte (aucun cas dans les
+  deux configs) ; `kpiLayout: "inline"` avertit en dev qu'il ignore `filter` ;
+- **calculs refaits pour rien** : le taux des cartes ne passe plus par la mesure complète (parts école et clubs
+  calculées puis jetées) ni par un second relevé des équipements planifiés ; les cartes de l'annuaire partagent un
+  index des réservations par organisation au lieu de parcourir chacune tout le formulaire ;
+- **hors lot, CDC-3 (30/10)** : l'historique d'une réservation (`AnswerActivityDialog`) était chargé en `lazy()`
+  alors qu'il est déjà dans le chunk d'entrée : rien n'était découpé et le préflight `lazy-entry-facades` (build
+  requis) échouait, sur `main` aussi. Import statique, poids inchangé.
+
+Gardé, et dit dans le code : une réservation compte pour la première organisation de son finder `userOrga`, comme
+le périmètre de l'annuaire (base locale du 17/11 : 202 réponses sur 204 n'en citent qu'une, 2 aucune).
+
+**Validation de la relecture** (17/11) :
+- tests ✅ 249 dans 16 fichiers (ceux du lot et des fichiers modifiés, dont `reservationUsers` et `reservations`) ;
+  contre-épreuve : le cas « sentinelle toujours à l'écran » échoue sur l'ancien hook ;
+- lint 0 erreur (23 avertissements préexistants, aucun dans le lot) ; typecheck ✅ ; build ✅ ;
+- préflight avec un build frais 925/927 : `lazy-entry-facades` repasse ; restent `environment` (`.env` du poste) et
+  `bundle-size`, préexistant (§12) ;
+- `config:validate` ✅, `audit:config` ✅ 0 constat, `config:render` ✅ 11/11 pages, 17/17 sections ; dump
+  `section:searchProStatic` 72 114 caractères pour un plafond de 80 000 ;
+- navigateur (base locale, visiteur, aucune écriture, aucune erreur de page) :
+  - tri décroissant sur un écran de 9 000 px : 72 cartes sans défilement (48 au plus avant le correctif), 9 taux de
+    30 % à 3 % puis les autres ;
+  - 12 KPI cliquables, nommés par leur libellé et leur chiffre ; PSHS 206 puis 708 au second clic, heures 9 puis 708 ;
+  - annuaire : AD2S à 5,5 h/semaine et 288 h cumulées, sur sa carte comme sur sa fiche.
+
+**Validation** (11-12/11) :
+- tests ✅ 151 dans 14 fichiers : 7 nouveaux (`usageSort`, `slotUsage`, `useSlotUsage`, `useUsageSort`,
+  `useProgressiveCount`, `useOrgaBookedHours`, `CardBookedHours`) et ceux des fichiers modifiés, dont `CardProfile`
+  (cael) et `dashboard` (aboire), complétés ;
+- typecheck ✅ ; lint 0 erreur (23 avertissements préexistants) ;
+- préflight 923/927 : les 4 échecs d'environnement local (§12). L'exemple `data-observatory` de l'assistant a été
+  resynchronisé après vérification de chaque écart ;
+- `config:validate` ✅ 11 pages, 17 sections ; `audit:config` ✅ 0 constat ; `config:render` ✅ 11/11 pages, 17/17
+  sections ; dump `section:searchProStatic` 72 114 caractères pour un plafond de 80 000 ;
+- navigateur (base locale, visiteur, aucune écriture, aucune erreur de page) :
+  - tri décroissant : 9 équipements avec créneaux, de 30 % à 3 %, puis les autres ; croissant : de 3 % à 30 %. Le
+    défilement ajoute 24 cartes ; la bande et la légende sont vérifiées sur capture, bureau et mobile ;
+  - Observatoire : 12 KPI cliquables, filtre posé puis retiré (PSHS 206, Intérieur 174, type principal 214,
+    structurants 129, ouverts 9, avec créneaux 9) ;
+  - fiche ouverte depuis la liste : 5 boutons « Fiche » d'usagers (`/annuaire?preview=…`) ;
+  - annuaire : « Tous les usagers », heures sur les 24 cartes, celles d'AD2S identiques à sa fiche (5,5 h/semaine,
+    288 h cumulées).
+
+**Commité** le 17/11 sur `ess974`, avec l'accord de Peterson, en 4 commits : historique des créneaux (hors lot),
+moteur, config d'ESS974, config de Saint-Paul. Non poussé ; MR vers `main` à ouvrir par Peterson.
 
 ### Note de Thomas sur la MR 120 (2026-11-09)
 
@@ -1394,8 +1527,8 @@ repassent au vert.
 | 3 | Rendu SSR | ✅ | 9/9 pages en 200 (16/10) |
 | 4 | Périmètres de données | ✅ | **3/3 à 708 résultats** (annuaire, observatoire, data) sur la base locale ; en production, 703 équipements depuis la mise à jour Data ES du 30/10 (§9) |
 | 5 | Filtres alignés sur la donnée | ✅ | 0 valeur orpheline, 0 type réel sans option, 0 virgule |
-| 6 | Préflight | 🟡 | 899/903 (09/11, après les corrections de la MR 120) : ne restent que les 4 échecs d'environnement local (§12) ; plafond de `prop-descriptions` relevé à 80 000 à la demande de Thomas. Avant : 898/903 (28/10, après les lots CDC) : les 4 échecs d'environnement et le plafond de `prop-descriptions`, laissé à Thomas (§12). Avant : 898/903 (28/10, après le lot D de la review de la MR 114) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
-| 7 | Aperçu navigateur | 🟡 | 09/11 : observatoire (graphes en sablier pendant le calcul, export après, heures disponibles et taux sur les équipements qui ont un planning), Équipements (commune, statut « Ouvert »), fiche, Saint-Paul en témoin (§9, note sur la MR 120). Avant : 28/10 : observatoire, Équipements, fiche, questionnaire, méthodologie et pages légales après l'import de Petite-Île, Saint-Paul en témoin (§9 CDC). Avant : Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
+| 6 | Préflight | 🟡 | 925/927 (17/11, build frais, après la relecture du lot) : restent `environment` (`.env` du poste) et `bundle-size` (bundle principal 3,61 Mo pour 2 Mo, préexistant, signalé à Thomas) ; `lazy-entry-facades` corrigé (§9, §12). Avant : 923/927 (12/11, après les ajustements Équipements / Observatoire / Annuaire) : ne restent que les 4 échecs d'environnement local (§12). Avant : 899/903 (09/11, après les corrections de la MR 120) : ne restent que les 4 échecs d'environnement local (§12) ; plafond de `prop-descriptions` relevé à 80 000 à la demande de Thomas. Avant : 898/903 (28/10, après les lots CDC) : les 4 échecs d'environnement et le plafond de `prop-descriptions`, laissé à Thomas (§12). Avant : 898/903 (28/10, après le lot D de la review de la MR 114) : ne restent que les 4 échecs d'environnement (§12) ; référence `effective-config` d'ESS974 et exemple `data-observatory` de l'assistant resynchronisés avec l'accord de Peterson (§9 lot B) ; inventaire des stamps complété (§9 lot 11) |
+| 7 | Aperçu navigateur | 🟡 | 17/11 : liste triée sur un grand écran, KPI cliquables (nom accessible, filtre posé puis retiré), heures de l'annuaire, après la relecture (§9). 12/11 : bande et tri des équipements, KPI cliquables et fiche depuis l'Observatoire, heures de l'annuaire, Saint-Paul (§9). 09/11 : observatoire (graphes en sablier pendant le calcul, export après, heures disponibles et taux sur les équipements qui ont un planning), Équipements (commune, statut « Ouvert »), fiche, Saint-Paul en témoin (§9, note sur la MR 120). Avant : 28/10 : observatoire, Équipements, fiche, questionnaire, méthodologie et pages légales après l'import de Petite-Île, Saint-Paul en témoin (§9 CDC). Avant : Équipements vérifiée les 15/10 (filtres, communes, fiche) et 16/10 (carte, observatoire, lien association) ; Annuaire le 16/10 (§9) ; le reste du site à faire |
 | 8 | Déploiement | ❌ | à faire. Données de production prêtes le 30/10 (§9) ; restent la fusion de la MR 120 (lots CDC, corrigée le 09/11 après la note de Thomas), le déploiement Coolify et le DNS |
 | 9 | Saisie / back-office | ❌ | **bloqué backend** (§12) |
 | 10 | Fiche équipement, filtres multi-valeurs, communes | ✅ | Lot 2, vérifié au navigateur le 15/10 (§9) |
@@ -1415,6 +1548,7 @@ repassent au vert.
 | 24 | CDC DRAJES, lot CDC-4 : questionnaire des communes (CoForm) | ✅ | Page et CoForm vérifiés en local le 28/10 : réponse d'essai enregistrée, dépôt de fichier à revérifier avec le module `survey` à jour (§9). CoForm copié en production le 30/10 avec le même identifiant (2 documents, 10 champs, contrôlés) : la config ne change pas ; dépôt de fichier à essayer en production |
 | 25 | CDC DRAJES, lot CDC-5 : page Méthodologie et documentation | ✅ | Page vérifiée au navigateur le 28/10, docs moteur 05, 07 et 27 (§9) |
 | 26 | Corrections de la note de Thomas sur la MR 120 | ✅ | Lot A (`b85266ae`) : plafond du dump relevé à sa demande, identifiants des usagers contrôlés, type des fiches lu dans le document, graphes et export pendant le calcul ou en échec. Lot B (`7c4b22af`) : règle des types tenue une fois (`useUsageMeasure`), commune de la carte lue une fois. Lot C (`3779db5a`) : heures disponibles et taux sur les seuls équipements qui ont un planning. Vérifié au navigateur le 09/11 (§9) |
+| 27 | Ajustements du 11/11 : bande des équipements avec créneaux, tri par taux d'occupation, KPI cliquables, bouton « Fiche » de l'usager depuis l'Observatoire, heures sur les cartes de l'annuaire | 🟡 | Implémentés et vérifiés au navigateur le 12/11, relus et corrigés le 17/11, commités le 17/11 sur `ess974` (§9) ; MR vers `main` à ouvrir par Peterson |
 
 ---
 
@@ -1477,6 +1611,14 @@ Au 23/10 :
 `site-assets` (dossier désormais déclaré dans `sites.json`) et `skill-integrity`, rouges au 16/10,
 passent.
 
+Au 17/11, avec un build frais (`npm run build`, environ 5 min ; la gate de `mr:review` ne builde pas et saute ces
+tests) :
+- `environment` : inchangé ;
+- `lazy-entry-facades` : un vrai défaut, pas l'environnement — l'historique des créneaux (CDC-3) était chargé en
+  `lazy()` alors qu'il est dans le chunk d'entrée. Corrigé (§9, relecture du 17/11) ;
+- `bundle-size` : le bundle principal pèse 3,61 Mo pour un plafond de 2 Mo, autant sur la branche sans le lot
+  (+1,1 Ko avec). Plafond non relevé, signalé à Thomas dans la description de la MR.
+
 ### Plafond du dump `prop-descriptions` dépassé (28/10, CDC)
 
 Le garde-fou `tests/preflight/prop-descriptions.test.ts` d'aboire plafonne chaque dump à 70 000 caractères :
@@ -1491,6 +1633,13 @@ Les filtres de l'observatoire gardent dans l'URL la valeur AFFICHÉE, traduite p
 ouvert dans l'autre langue ne retient rien. Limite du moteur, déjà vraie avant les lots CDC, non traitée. Les
 comparaisons écrites en config suivent la règle de la doc 27 : KPI « Équipements structurants » sur la dimension
 brute `categorieCode`, couleurs du statut déclarées dans les deux langues.
+
+### La page Équipements lit les réservations dès l'affichage (12/11)
+
+La bande des cartes avec créneaux (`card.slotsBand`) a besoin des réservations : la page les lit désormais à chaque
+visite, en une requête (celle du filtre « Créneau disponible », en cache 5 min). En base locale, sans index sur
+`answers`, il faut 25 à 45 s ; la légende montre un sablier et les bandes gardent leur couleur d'origine jusque-là.
+Le tri par taux lit en plus tout le périmètre (le chargement de la carte). La durée en production n'est pas mesurée.
 
 ### Données sondées sur l'instance de **dev**
 
@@ -1523,6 +1672,8 @@ revanche pertinent pour un site scolaire.
 | Créer un club depuis le formulaire de réservation : le bouton « Ajouter » du finder « club usager » est désactivé en base (`addNew: false`). La config d'ESS974 est prête depuis le 27/10 (`coform.finderAddNew` : le club créé porterait l'étiquette). Mais ce formulaire est partagé avec Équipements sportifs et Saint-Paul, qui n'ont pas de formulaire d'association : l'activer y créerait des clubs sans l'étiquette, à traiter d'abord | Peterson |
 | Compléter les marqueurs légaux (directeur de publication, hébergeur, contact RGPD) — commun aux 3 sites équipements | Peterson |
 | Poser le DNS `equipements-sportifs-scolaires.00.re` et déployer | Peterson |
+| « Filtre par taux d'utilisation » (11/11) : implémenté comme un TRI (« Trier » au-dessus de la liste). Faut-il aussi un FILTRE par tranche de taux sur la page Équipements ? Il existe déjà dans l'Observatoire | Peterson |
+| Annuaire : le titre du bandeau (« Les associations usagères… ») est sombre sur le fond bleu, peu lisible — la page Équipements pose `headlineClassName: "text-white"`. Préexistant, non touché le 12/11 | Peterson |
 | Si besoin, rendre Peterson admin du projet `ESS974` en production : l'ajout de créneaux teste `entity.isAdmin()`, qui lit les `links` (le rôle de super-admin ne suffit pas) | Peterson |
 | Questionnaire : essayer en production le dépôt d'un fichier, jamais testé (route absente du module `survey` local), puis supprimer la réponse d'essai | Peterson |
 | Associations ajoutées depuis l'annuaire (lot 11) : garder l'édition ouverte, défaut du SDK, ou la fermer en déclarant `preferences.isOpenEdition: false` dans le formulaire (configuration seule) ? Ouverte, tout utilisateur connecté peut les modifier par l'API ; le site ne montre « Éditer » qu'aux admins | Peterson |

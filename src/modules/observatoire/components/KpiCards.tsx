@@ -37,6 +37,11 @@ interface KpiCardsProps {
   unavailableDimensions?: ReadonlySet<string>;
   /** Cartes par ligne dès 1024 px (`kpiColumns`) ; absent = remplissage automatique. */
   columns?: KpiColumns;
+  /** KPI cliquables (`kpi.filter`), alignés sur `kpis` : le filtre que pose chaque carte et s'il est en place
+   *  (`null` = carte inerte). Calculés par la section, seule à connaître la barre de filtres. */
+  filterStates?: ReadonlyArray<{ active: boolean } | null>;
+  /** Clic sur la carte `index` : pose son filtre, ou le retire s'il est en place. */
+  onFilter?: (index: number) => void;
   /**
    * Densité de rendu. `cards` (défaut) = une carte par indicateur, pour une
    * page d'observatoire où le tableau de bord EST le sujet. `inline` = une
@@ -58,22 +63,35 @@ export function KpiCards({
   unavailableDimensions,
   columns,
   layout = "cards",
+  filterStates,
+  onFilter,
 }: KpiCardsProps) {
   const t = useT("modules/observatoire");
 
-  const entries = kpis.map((def, i) => ({
-    key: `${def.kind}-${def.dimension ?? i}`,
-    icon: def.icon ?? "activity",
-    label: kpiLabel(def, dimensions, t),
-    value:
-      def.dimension && unavailableDimensions?.has(def.dimension)
-        ? PLACEHOLDER
-        : computeKpiValue(def, data, dimensions, labels, reservationHours),
-    loading:
+  const entries = kpis.map((def, i) => {
+    const label = kpiLabel(def, dimensions, t);
+    const loading =
       (def.kind === "reservationHours" && Boolean(reservationHoursLoading)) ||
-      Boolean(def.dimension && loadingDimensions?.has(def.dimension)),
-    accentClasses: TOKEN_TINT_CLASSES[def.accent ?? "primary"],
-  }));
+      Boolean(def.dimension && loadingDimensions?.has(def.dimension));
+    const filter = filterStates?.[i] ?? null;
+    return {
+      key: `${def.kind}-${def.dimension ?? i}`,
+      icon: def.icon ?? "activity",
+      label,
+      value:
+        def.dimension && unavailableDimensions?.has(def.dimension)
+          ? PLACEHOLDER
+          : computeKpiValue(def, data, dimensions, labels, reservationHours),
+      loading,
+      accentClasses: TOKEN_TINT_CLASSES[def.accent ?? "primary"],
+      // Pas de clic pendant le calcul : la carte ne dit pas encore ce qu'elle compte.
+      onClick: filter && onFilter && !loading ? () => onFilter(i) : undefined,
+      active: Boolean(filter?.active),
+      actionLabel: filter
+        ? t(filter.active ? "kpiFilter.remove" : "kpiFilter.apply", undefined, { label })
+        : undefined,
+    };
+  });
 
   if (layout === "inline") {
     return (
@@ -104,6 +122,9 @@ export function KpiCards({
           accentClasses={e.accentClasses}
           loading={e.loading}
           loadingLabel={t("kpiComputing")}
+          onClick={e.onClick}
+          active={e.active}
+          actionLabel={e.actionLabel}
         />
       ))}
     </div>

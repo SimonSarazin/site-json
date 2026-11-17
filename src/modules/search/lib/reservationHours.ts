@@ -2,15 +2,26 @@ import type { useT } from "@/hooks/useT";
 import { formatHours, utilizationRate } from "@/modules/observatoire/installation";
 import type { PoiUsage } from "@/modules/observatoire/usage";
 import { DAY_KEYS, type DayKey } from "./schedules";
-import { isoBound, JOUR_MS, periodsOverlap, reservationsInPeriod, slotPeriod, type Reservation } from "./reservations";
+import {
+  groupReservationsByResource,
+  isoBound,
+  JOUR_MS,
+  periodsOverlap,
+  reservationsInPeriod,
+  resourceGroupsInPeriod,
+  slotPeriod,
+  type Reservation,
+  type ResourceReservations,
+} from "./reservations";
+import { keepInPerimeter, reservedResourceIds } from "./reservationUsers";
 import { dayKeyOf } from "./slotFilter";
 
 /**
  * Volume horaire des réservations : par SEMAINE (somme des durées des créneaux actifs le JOUR DE RÉFÉRENCE,
  * cf. `weeklyReferenceDay`) et CUMULÉ (chaque créneau multiplié par le nombre de fois où son jour tombe
  * réellement dans SA période — celle du créneau, sinon celle de la réservation, cf. `slotPeriod`). Consommé
- * par la fiche équipement (`PreviewReservations`), la fiche organisation (`PreviewBookedResources`), le KPI
- * `reservationHours` de l'observatoire et le tableau de bord installation.
+ * par la fiche équipement (`PreviewReservations`), la fiche organisation (`PreviewBookedResources`) et la carte
+ * de l'annuaire (`card.bookedHours`), le KPI `reservationHours` de l'observatoire et le tableau de bord installation.
  *
  * Seuls comptent les créneaux EN COURS OU À VENIR — la règle du filtre « Créneau disponible »
  * (`slotFilter.ts`), tranchée par Peterson : une saison terminée n'occupe plus l'équipement, et la
@@ -112,6 +123,73 @@ export function sumReservationHours(
     total.cumulativeMinutes += cumulativeMinutes * times;
   }
   return total;
+}
+
+/**
+ * Volume horaire des équipements listés par la fiche d'une ORGANISATION (`bookedResources.hours`) : le total —
+ * la somme des lignes — et celui de chaque équipement, l'hebdomadaire lu au MÊME jour de référence pour toutes
+ * (calculé une fois sur tout ce qui est affiché). `since` : début de la période choisie, sinon aujourd'hui.
+ */
+export function bookedHours(
+  groups: readonly ResourceReservations[],
+  since: string,
+): { total: ReservationHours; byGroup: ReservationHours[] } {
+  const affichees = groups.flatMap((g) => g.reservations);
+  const reference = weeklyReferenceDay(affichees, since);
+  return {
+    total: sumReservationHours(affichees, since, undefined, reference),
+    byGroup: groups.map((g) => sumReservationHours(g.reservations, since, undefined, reference)),
+  };
+}
+
+/** Index des réservations pour les cartes d'un annuaire (`orgaReservationsIndex`). */
+export interface OrgaReservationsIndex {
+  /** Équipements réservés (`reservedResourceIds`) : la clé du contrôle de périmètre, commune à toutes les cartes. */
+  reservedIds: string[];
+  /** Réservations de chaque organisation usagère (`userId`). */
+  byUser: ReadonlyMap<string, readonly Reservation[]>;
+}
+
+const orgaIndexes = new WeakMap<readonly Reservation[], OrgaReservationsIndex>();
+
+/**
+ * Index calculé UNE fois par tableau de réservations : les cartes d'un annuaire (`card.bookedHours`) lisent toutes
+ * le même (cache de React Query) — chacune le parcourait sinon en entier, deux fois.
+ */
+export function orgaReservationsIndex(reservations: readonly Reservation[]): OrgaReservationsIndex {
+  const hit = orgaIndexes.get(reservations);
+  if (hit) return hit;
+  const byUser = new Map<string, Reservation[]>();
+  for (const r of reservations) {
+    if (!r.userId) continue;
+    const list = byUser.get(r.userId);
+    if (list) list.push(r);
+    else byUser.set(r.userId, [r]);
+  }
+  const index: OrgaReservationsIndex = { reservedIds: reservedResourceIds(reservations), byUser };
+  orgaIndexes.set(reservations, index);
+  return index;
+}
+
+/**
+ * Le total d'une organisation tel que sa fiche l'affiche à l'ouverture (`PreviewBookedResources`), pour la CARTE de
+ * l'annuaire (`card.bookedHours`) : ses réservations, regroupées par équipement, réduites au périmètre du site
+ * (`allowed`, `null` = sans périmètre), puis — avec `periods` — à la période par défaut, en cours ou à venir.
+ * « Ses » réservations : celles que son finder `userOrga` désigne (`userId` — la première organisation s'il en
+ * citait plusieurs, la règle du périmètre de l'annuaire, `reservationUserIds` ; le formulaire n'en saisit qu'une).
+ * Lues sur tout le formulaire, sans le plafond `maxAnswers` de la requête de la fiche.
+ */
+export function orgaBookedHours(
+  reservations: readonly Reservation[],
+  orgaId: string,
+  allowed: readonly string[] | null,
+  today: string,
+  periods: boolean,
+): ReservationHours {
+  const own = orgaReservationsIndex(reservations).byUser.get(orgaId) ?? [];
+  const inPerimeter = keepInPerimeter(groupReservationsByResource(own), allowed);
+  const groups = periods ? resourceGroupsInPeriod(inPerimeter, { periodStart: today }) : inPerimeter;
+  return bookedHours(groups, today).total;
 }
 
 /**

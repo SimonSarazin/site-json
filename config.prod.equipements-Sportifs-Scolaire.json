@@ -2504,6 +2504,9 @@
                 "categorie"
               ]
             },
+            "usageSort": {
+              "id": "tri"
+            },
             "list": {
               "columns": {
                 "sm": 2,
@@ -2519,6 +2522,9 @@
                 },
                 "communeFrom": {
                   "filter": "poi-postalCode"
+                },
+                "slotsBand": {
+                  "color": "accent"
                 }
               },
               "preview": {
@@ -3374,8 +3380,8 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Toutes les associations",
-                "en": "All associations"
+                "fr": "Tous les usagers",
+                "en": "All users"
               }
             },
             "showSearch": false,
@@ -3473,7 +3479,9 @@
                 "showDescription": true,
                 "showAddress": true,
                 "showStats": false,
-                "detailsMode": "dialog"
+                "showTags": false,
+                "detailsMode": "dialog",
+                "bookedHours": true
               },
               "preview": {
                 "type": "structure",
@@ -3860,6 +3868,16 @@
                   "en": "Opening status"
                 }
               },
+              "planifie": {
+                "paths": [
+                  "__usage.planned"
+                ],
+                "kind": "anyTrue",
+                "label": {
+                  "fr": "Avec créneaux",
+                  "en": "With slots"
+                }
+              },
               "ouvert": {
                 "paths": [
                   "__usage.open"
@@ -3982,6 +4000,7 @@
                 "multiple": true
               },
               "pmr",
+              "pshs",
               {
                 "dimension": "prop",
                 "multiple": true
@@ -4564,7 +4583,10 @@
                   "en": "Major facilities"
                 },
                 "icon": "landmark",
-                "accent": "chart-1"
+                "accent": "chart-1",
+                "filter": {
+                  "dimension": "categorie"
+                }
               },
               {
                 "kind": "sum",
@@ -4574,7 +4596,11 @@
                   "en": "Open to clubs"
                 },
                 "icon": "door-open",
-                "accent": "chart-2"
+                "accent": "chart-2",
+                "filter": {
+                  "dimension": "statut",
+                  "where": "ouvert"
+                }
               },
               {
                 "kind": "percentTrue",
@@ -4584,7 +4610,10 @@
                   "en": "Share of open facilities"
                 },
                 "icon": "percent",
-                "accent": "chart-3"
+                "accent": "chart-3",
+                "filter": {
+                  "dimension": "statut"
+                }
               },
               {
                 "kind": "distinct",
@@ -4604,7 +4633,10 @@
                   "en": "PMR Accessible"
                 },
                 "icon": "accessibility",
-                "accent": "chart-2"
+                "accent": "chart-2",
+                "filter": {
+                  "dimension": "pmr"
+                }
               },
               {
                 "kind": "percentTrue",
@@ -4614,7 +4646,10 @@
                   "en": "PSHS Accessible"
                 },
                 "icon": "eye",
-                "accent": "chart-4"
+                "accent": "chart-4",
+                "filter": {
+                  "dimension": "pshs"
+                }
               },
               {
                 "kind": "valueSplit",
@@ -4625,7 +4660,10 @@
                   "en": "Indoor"
                 },
                 "icon": "home",
-                "accent": "chart-3"
+                "accent": "chart-3",
+                "filter": {
+                  "dimension": "nature"
+                }
               },
               {
                 "kind": "top",
@@ -4635,7 +4673,10 @@
                   "en": "Top type"
                 },
                 "icon": "trophy",
-                "accent": "chart-5"
+                "accent": "chart-5",
+                "filter": {
+                  "dimension": "type"
+                }
               },
               {
                 "kind": "sum",
@@ -4657,7 +4698,11 @@
                   "en": "Booked hours / week"
                 },
                 "icon": "clock",
-                "accent": "chart-2"
+                "accent": "chart-2",
+                "filter": {
+                  "dimension": "statut",
+                  "where": "planifie"
+                }
               },
               {
                 "kind": "reservationHours",
@@ -4668,7 +4713,11 @@
                   "en": "Cumulative booked hours"
                 },
                 "icon": "calendar-clock",
-                "accent": "chart-4"
+                "accent": "chart-4",
+                "filter": {
+                  "dimension": "statut",
+                  "where": "planifie"
+                }
               },
               {
                 "kind": "sum",
@@ -4679,7 +4728,11 @@
                   "en": "Club hours / week"
                 },
                 "icon": "users",
-                "accent": "chart-1"
+                "accent": "chart-1",
+                "filter": {
+                  "dimension": "statut",
+                  "where": "planifie"
+                }
               },
               {
                 "kind": "sum",
@@ -4690,7 +4743,11 @@
                   "en": "Available hours / week"
                 },
                 "icon": "calendar-check",
-                "accent": "chart-5"
+                "accent": "chart-5",
+                "filter": {
+                  "dimension": "statut",
+                  "where": "planifie"
+                }
               },
               {
                 "kind": "avg",
@@ -4701,7 +4758,11 @@
                   "en": "Average occupancy rate"
                 },
                 "icon": "gauge",
-                "accent": "primary"
+                "accent": "primary",
+                "filter": {
+                  "dimension": "statut",
+                  "where": "planifie"
+                }
               }
             ],
             "charts": [
@@ -4872,6 +4933,9 @@
                   },
                   "periods": true,
                   "hours": true,
+                  "orgaLink": {
+                    "path": "/annuaire"
+                  },
                   "usage": {
                     "referenceAmplitude": {
                       "startHour": 8,
@@ -5330,6 +5394,9 @@
                     },
                     "periods": true,
                     "hours": true,
+                    "orgaLink": {
+                      "path": "/annuaire"
+                    },
                     "usage": {
                       "referenceAmplitude": {
                         "startHour": 8,
@@ -6080,6 +6147,9 @@
             },
             "periods": true,
             "hours": true,
+            "orgaLink": {
+              "path": "/annuaire"
+            },
             "usage": {
               "referenceAmplitude": {
                 "startHour": 8,

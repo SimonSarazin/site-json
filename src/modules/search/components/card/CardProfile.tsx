@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { MapPin, MessageCircle, Heart, Shield, User as UserIcon, Loader2 } from "lucide-react";
 import type { User, Organization } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { lazy } from "vite-preload";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useAuthModal } from "@/modules/auth";
 import { toast } from "sonner";
@@ -15,6 +16,11 @@ import { useT } from "@/hooks/useT";
 import type { SearchCardProps, TagColorsConf } from "../../schema";
 import { decorateItemTags } from "../../lib/colorBy";
 import { toStringArray } from "@/helpers/toStringArray";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Heures d'un usager (`card.bookedHours`) en lazy : seul l'annuaire qui pose l'option en télécharge le code — les
+// indicateurs, leurs icônes et le calcul des heures n'ont rien à faire dans la carte des 24 autres annuaires du parc.
+const CardBookedHours = lazy(() => import("./CardBookedHours"));
 
 export interface CardProfileCardConfig {
   showDescription?: boolean;
@@ -23,11 +29,15 @@ export interface CardProfileCardConfig {
   showStats?: boolean;
   /** Boutons « Contacter » / « Suivre ». Absent = affichés — cf. `CardConfSchema.showActions`. */
   showActions?: boolean;
+  /** Chips de tags, « Aucun tag » compris. Absentes = affichées — cf. `CardConfSchema.showTags`. */
+  showTags?: boolean;
   /** Chips affichées avant « +N » — défaut 3 (carte compacte), cf. `CardConfSchema.tagLimit`. */
   tagLimit?: number;
   detailsMode?: "drawer" | "dialog" | "link";
   /** Chips de tags : masquage des tags techniques, couleurs — cf. `TagColorsConfSchema`. */
   tagColors?: TagColorsConf;
+  /** Heures de l'organisation (annuaire d'usagers) — cf. `CardConfSchema.bookedHours`. */
+  bookedHours?: boolean;
 }
 
 export interface CardProfileProps {
@@ -37,7 +47,8 @@ export interface CardProfileProps {
   isPending?: boolean;
   card?: CardProfileCardConfig | SearchCardProps["card"];
   onClick?: () => void;
-  /** Conf de liste complète, transmise à tous les variants par `SearchCard` — non lue ici. */
+  /** Conf de liste complète, transmise à tous les variants par `SearchCard` — lue pour les heures
+   *  (`card.bookedHours` : réservations et périmètre de la fiche, `list.preview`). */
   list?: SearchCardProps["list"];
 }
 
@@ -66,6 +77,7 @@ export default function CardProfile({
   isPending = false,
   card,
   onClick,
+  list,
 }: CardProfileProps) {
   const t = useT("modules/search");
   const { me } = useCocolight();
@@ -118,6 +130,7 @@ export default function CardProfile({
   const showAddress = card?.showAddress !== false;
   const showStats = card?.showStats !== false;
   const showActions = card?.showActions !== false;
+  const showTags = card?.showTags !== false;
   const detailsMode = card?.detailsMode || "drawer";
 
   const [isFollowingState, setIsFollowingState] = useState(isFollowing);
@@ -198,6 +211,21 @@ export default function CardProfile({
             )}
           </div>
 
+          {/* Heures de l'usager (opt-in) : composant à part, monté seulement avec l'option — aucune lecture de
+              réservations pour les autres annuaires. */}
+          {card?.bookedHours && (
+            <Suspense
+              fallback={
+                <div className="grid w-full grid-cols-2 gap-2">
+                  <Skeleton className="h-16 rounded-2xl" />
+                  <Skeleton className="h-16 rounded-2xl" />
+                </div>
+              }
+            >
+              <CardBookedHours orgaId={item?.id ?? undefined} list={list} />
+            </Suspense>
+          )}
+
           {showBadges && (isAdmin || isContributor || isPending) && (
             <div className="flex flex-wrap gap-1 justify-center">
               {isAdmin && (
@@ -221,7 +249,7 @@ export default function CardProfile({
           )}
 
           {/* Tags tous MASQUÉS par la conf ≠ fiche sans tag : dans le premier cas on ne dit rien. */}
-          {(displayTags.length > 0 || tags.length === 0) && (
+          {showTags && (displayTags.length > 0 || tags.length === 0) && (
           <div className="flex flex-wrap gap-1 justify-center">
             {displayTags.length > 0 ? (
               <>

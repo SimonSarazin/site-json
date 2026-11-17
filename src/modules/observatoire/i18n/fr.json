@@ -7,6 +7,10 @@
   "cappedNotice": "Plafond de chargement atteint ({{loaded}} / {{total}}) — les données affichées sont incomplètes.",
   "emptyFiltered": "Aucun résultat ne correspond aux filtres ou à la recherche.",
   "kpiComputing": "Calcul en cours…",
+  "kpiFilter": {
+    "apply": "Filtrer la liste et les graphiques : {{label}}",
+    "remove": "Retirer le filtre : {{label}}"
+  },
   "filters": {
     "title": "Filtres",
     "reset": "Réinitialiser",

@@ -205,8 +205,7 @@ export function computeKpiValue(
     }
     case "top": {
       if (!dim) return PLACEHOLDER;
-      const counts = countBy(data, (d) => dimensionValue(d, dim, dimLabels));
-      return counts.sort((a, b) => b.value - a.value)[0]?.name ?? PLACEHOLDER;
+      return topValue(data, dim, dimLabels) ?? PLACEHOLDER;
     }
     case "sum":
     case "avg": {
@@ -230,6 +229,82 @@ export function computeKpiValue(
       return def.unit ? `${text} ${def.unit}` : text;
     }
   }
+}
+
+/** Valeur la plus fréquente d'une dimension (KPI `top`). */
+function topValue(data: ObservatoryItem[], dim: DimensionDef, dimLabels?: LabelMaps[string]): string | undefined {
+  const counts = countBy(data, (d) => dimensionValue(d, dim, dimLabels));
+  return counts.sort((a, b) => b.value - a.value)[0]?.name;
+}
+
+/** Items RETENUS par un KPI cliquable : ceux de `filter.where`, sinon ceux que la carte compte. Une carte sans
+ *  sous-ensemble (somme, moyenne, compte, heures) et sans `where` n'en retient aucun. */
+function kpiRetains(
+  def: KpiDef,
+  shown: ObservatoryItem[],
+  dims: DimensionsConfig,
+  labels?: LabelMaps,
+): ((d: ObservatoryItem) => boolean) | undefined {
+  if (def.filter?.where) {
+    const where = dims[def.filter.where];
+    return where && isBoolKind(where.kind) ? (d) => dimensionBool(d, where) : undefined;
+  }
+  const dim = def.dimension ? dims[def.dimension] : undefined;
+  if (!dim) return undefined;
+  const dimLabels = def.dimension ? labels?.[def.dimension] : undefined;
+  switch (def.kind) {
+    case "valueSplit":
+      return def.value ? (d) => dimensionValue(d, dim, dimLabels) === def.value : undefined;
+    case "percentTrue":
+      return (d) => dimensionBool(d, dim);
+    case "top": {
+      const top = topValue(shown, dim, dimLabels);
+      return top === undefined ? undefined : (d) => dimensionValue(d, dim, dimLabels) === top;
+    }
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Valeur du filtre que pose le clic sur un KPI (`def.filter`) : les valeurs que prennent, sur la dimension filtrée,
+ * les items retenus — triées, jointes par virgule comme un filtre multiple —, `"true"` pour une dimension
+ * booléenne. Les items retenus se lisent sur le jeu COMPLET (`items`) : la valeur ne dépend pas des filtres en
+ * place, et deux cartes qui visent la même dimension (ouverts, avec créneaux) gardent chacune la sienne. Seul le
+ * premier d'un `top` se lit sur les items AFFICHÉS (`shown`), comme la valeur de la carte. `undefined` : rien à
+ * filtrer (aucun item retenu, dimension inconnue ou de type liste) — ou plusieurs valeurs pour un filtre à choix
+ * unique (`multiple` faux) : sa liste déroulante n'afficherait pas la valeur posée, ni ne saurait la retirer.
+ */
+export function kpiFilterValue(
+  def: KpiDef,
+  items: readonly ObservatoryItem[],
+  shown: ObservatoryItem[],
+  dims: DimensionsConfig,
+  labels?: LabelMaps,
+  multiple = true,
+): string | undefined {
+  const target = def.filter ? dims[def.filter.dimension] : undefined;
+  if (!def.filter || !target || target.kind === "list") return undefined;
+  const retains = kpiRetains(def, shown, dims, labels);
+  if (!retains) return undefined;
+  const retained = items.filter(retains);
+  if (retained.length === 0) return undefined;
+  if (isBoolKind(target.kind)) return BOOL_FILTER_VALUES.TRUE;
+  const targetLabels = labels?.[def.filter.dimension];
+  const values = new Set(
+    retained.map((d) => dimensionValue(d, target, targetLabels)).filter((v): v is string => v !== undefined),
+  );
+  if (values.size === 0 || (values.size > 1 && !multiple)) return undefined;
+  return [...values].sort().join(",");
+}
+
+/** Le filtre d'un KPI est-il celui en place sur sa dimension ? Mêmes valeurs, dans n'importe quel ordre. */
+export function isKpiFilterActive(value: string | undefined, current: string | undefined): boolean {
+  if (!value || !current) return false;
+  const split = (s: string) => new Set(s.split(",").map((v) => v.trim()).filter(Boolean));
+  const mine = split(value);
+  const inPlace = split(current);
+  return mine.size === inPlace.size && [...mine].every((v) => inPlace.has(v));
 }
 
 /*───────────────────────────────────────────────────────────────*/

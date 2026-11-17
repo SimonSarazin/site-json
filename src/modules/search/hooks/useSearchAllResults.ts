@@ -71,6 +71,7 @@ export function useSearchAllResults({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useSearchQuery({
     queryKeyPrefix,
     searchText,
@@ -135,5 +136,7 @@ export function useSearchAllResults({
     isLoading,
     isFetchingNextPage,
     error,
+    /** Relance le chargement — « Réessayer » d'une vue qui en dépend (liste triée par taux). */
+    refetch,
   };
 }

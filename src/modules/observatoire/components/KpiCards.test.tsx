@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
-import { screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
 import { renderWithProviders } from "../../../../tests/test-utils-ui";
 import "../i18n";
 import { KpiCards } from "./KpiCards";
@@ -71,5 +71,56 @@ describe("KpiCards — mesure d'usage en cours de calcul", () => {
     expect(screen.queryByRole("status")).toBeNull();
     expect(screen.getByText(PLACEHOLDER)).toBeInTheDocument();
     expect(screen.queryByText("0%")).toBeNull();
+  });
+});
+
+describe("KpiCards — KPI cliquables (`kpi.filter`)", () => {
+  const kpis: KpiDef[] = [
+    { kind: "percentTrue", dimension: "pmr", label: { fr: "Accessible PMR", en: "PMR" }, filter: { dimension: "pmr" } },
+    { kind: "count", label: { fr: "Équipements", en: "Facilities" } },
+    { kind: "sum", dimension: "heures", unit: "h", label: { fr: "Heures clubs", en: "Club hours" }, filter: { dimension: "statut", where: "planifie" } },
+  ];
+  const dimensions = {
+    pmr: { paths: ["pmr"], kind: "anyTrue" as const },
+    heures: { paths: ["__usage.clubHours"], kind: "number" as const },
+  };
+
+  it("une carte à filtre est un bouton nommé par son libellé ET son chiffre, l'action en description ; clic → onFilter(index), état en place annoncé ; les autres restent inertes", () => {
+    const onFilter = vi.fn();
+    renderWithProviders(
+      <KpiCards
+        data={[{ pmr: true }, {}]}
+        dimensions={dimensions}
+        kpis={kpis}
+        filterStates={[{ active: true }, null, { active: false }]}
+        onFilter={onFilter}
+      />,
+    );
+    // Un lecteur d'écran annonce le chiffre de la carte, pas seulement l'action.
+    const pmr = screen.getByRole("button", { name: /^Accessible PMR\s*50\s*%$/ });
+    expect(pmr).toHaveAccessibleDescription("Retirer le filtre : Accessible PMR");
+    expect(pmr).toHaveAttribute("aria-pressed", "true");
+    const heures = screen.getByRole("button", { name: /^Heures clubs/ });
+    expect(heures).toHaveAccessibleDescription("Filtrer la liste et les graphiques : Heures clubs");
+    expect(heures).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+
+    fireEvent.click(heures);
+    fireEvent.keyDown(pmr, { key: "Enter" });
+    expect(onFilter.mock.calls).toEqual([[2], [0]]);
+  });
+
+  it("pendant le calcul de sa mesure, la carte n'est pas cliquable", () => {
+    renderWithProviders(
+      <KpiCards
+        data={[{}]}
+        dimensions={dimensions}
+        kpis={kpis}
+        filterStates={[null, null, { active: false }]}
+        onFilter={vi.fn()}
+        loadingDimensions={new Set(["heures"])}
+      />,
+    );
+    expect(screen.queryByRole("button")).toBeNull();
   });
 });

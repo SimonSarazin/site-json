@@ -39,7 +39,14 @@ import { useAnswerCreated } from "./hooks/useAnswerCreated";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
-import { getEntryCoords } from "./lib/searchMapSelection";
+import { getEntryCoords, getEntryId } from "./lib/searchMapSelection";
+import { sortByUsageRate } from "./lib/usageSort";
+import { useSlotUsage } from "./hooks/useSlotUsage";
+import { useUsageSort } from "./hooks/useUsageSort";
+import { useProgressiveCount } from "./hooks/useProgressiveCount";
+import { SlotsBandLegend } from "./components/SlotsBandLegend";
+import { UsageSortControl } from "./components/UsageSortControl";
+import { TOKEN_CSS_VARS } from "@/modules/observatoire/dimensions";
 
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { headerStickyOffsetPx } from "@/components/layout/header/headerOffset";
@@ -107,6 +114,8 @@ const SPLIT_COLUMN_HEIGHT =
   "h-[calc(100vh-var(--map-top)-2rem)] supports-[height:100dvh]:h-[calc(100dvh-var(--map-top)-2rem)]";
 /** Carte (et son squelette) dans une vue carte : remplit la boîte ci-dessus. */
 const MAP_FILL = "absolute inset-0 z-10 rounded shadow overflow-hidden";
+/** Liste triée par taux (`usageSort`) : cartes ajoutées par tranche au défilement — multiple de 2, 3 et 4 colonnes. */
+const SORTED_STEP = 24;
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -217,6 +226,13 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // à côté de la liste et de la carte. Il n'a pas de données propres — il lit
   // celles de la section (cf. `needsAllResults`).
   const observatory = props.observatory;
+  // Créneaux des équipements (opt-in) : légende de la bande des cartes (`list.card.slotsBand`, la bande elle-même vit
+  // dans la carte) et tri par taux d'occupation (`usageSort`) — les réservations de la fiche, lues une fois pour la
+  // page et partagées avec les cartes (`useSlotUsage`).
+  const previewReservations = list?.preview?.reservations;
+  const slotsBand = list?.card?.slotsBand;
+  const slotsLegend = useSlotUsage(slotsBand ? previewReservations : undefined);
+  const usageSort = useUsageSort(props.usageSort, previewReservations);
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -555,7 +571,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // et les deux montrent exactement le même jeu de résultats.
   const needsAllResults =
     ((viewMode === "map" || (viewMode === "split" && !isMobile)) && enableMap) ||
-    (viewMode === "observatory" && !!observatory);
+    (viewMode === "observatory" && !!observatory) ||
+    // Liste triée par taux : le taux n'existe pas en base, le serveur ne sait pas trier dessus — la liste se trie
+    // donc sur le périmètre complet, celui de la carte (même chargement, même cache).
+    (viewMode === "list" && usageSort.order !== null);
 
   // Périmètre COMPLET chargé PROGRESSIVEMENT — pages de 500 enchaînées par le
   // paginator SDK (indexMin manuel ignoré par le backend), plafond 5000, cache
@@ -597,6 +616,40 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     [mapAll.results],
   );
 
+  // Tri par taux (`usageSort`) — équipements qui ont un planning d'abord, classés, puis les autres par nom. Sur le
+  // périmètre COMPLET une fois chargé : trier une partie puis la suite ferait bouger les cartes sous les yeux. Jusque-
+  // là — ou en échec —, la liste par nom du serveur. `isComplete` seul ne suffit pas : il vaut aussi pour une requête
+  // désactivée ou en échec, dont la liste vide se lirait « Aucun résultat » (cf. `isPending`, useSearchAllResults).
+  // Affichage par tranches au défilement (`useProgressiveCount`).
+  const allLoaded = mapAll.isComplete && !mapAll.isPending && !mapAll.error;
+  const sortedAll = useMemo(
+    () =>
+      usageSort.order && usageSort.rates && allLoaded
+        ? sortByUsageRate(mapAll.results, getEntryId, usageSort.rates, usageSort.order)
+        : null,
+    [usageSort.order, usageSort.rates, allLoaded, mapAll.results],
+  );
+  // Retour à la première tranche quand l'ordre ou la recherche changent — pas à chaque nouveau tableau : un
+  // rafraîchissement en arrière-plan (retour sur l'onglet) ramènerait sinon en haut d'une liste déjà parcourue.
+  const sortedResetKey = useMemo(
+    () => JSON.stringify([usageSort.order, searchType, searchText, searchTags, mergedBaseParams, searchVariant]),
+    [usageSort.order, searchType, searchText, searchTags, mergedBaseParams, searchVariant],
+  );
+  const {
+    count: sortedCount,
+    hasMore: sortedHasMore,
+    sentinelRef: sortedSentinelRef,
+  } = useProgressiveCount(sortedAll?.length ?? 0, SORTED_STEP, sortedResetKey);
+  const sortedSlice = useMemo(() => sortedAll?.slice(0, sortedCount), [sortedAll, sortedCount]);
+  // Colonne du split : déjà tout le périmètre, seul l'ordre change (la carte garde le sien, sans importance).
+  const splitListResults = useMemo(
+    () =>
+      usageSort.order && usageSort.rates
+        ? sortByUsageRate(splitGeoResults, getEntryId, usageSort.rates, usageSort.order)
+        : splitGeoResults,
+    [usageSort.order, usageSort.rates, splitGeoResults],
+  );
+
   if (!loaded) {
     return (
       <div className="flex-1 flex items-center justify-center py-10 text-muted-foreground">
@@ -605,6 +658,44 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       </div>
     );
   }
+
+  // Barre de la liste (opt-in) : légende de la bande des cartes (`slotsBand`) à gauche, tri par taux (`usageSort`) à
+  // droite — au-dessus des cartes de la vue liste et de la colonne du split. Le sablier du tri court jusqu'à la
+  // liste triée : en vue liste, il attend aussi le périmètre complet (`sortedAll`).
+  // En échec : les réservations, ou — liste triée — le périmètre complet ; « Réessayer » relance ce qui a échoué.
+  const sortAllFailed = viewMode === "list" && usageSort.order !== null && Boolean(mapAll.error);
+  const sortFailed = usageSort.failed || sortAllFailed;
+  const sortPending =
+    usageSort.order !== null && !sortFailed && (viewMode === "list" ? !sortedAll : !usageSort.rates);
+  const listToolbar =
+    slotsBand || usageSort.enabled ? (
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        {slotsBand ? (
+          <SlotsBandLegend
+            color={TOKEN_CSS_VARS[slotsBand.color ?? "accent"]}
+            loading={slotsLegend.loading}
+            failed={slotsLegend.failed}
+            t={t}
+          />
+        ) : (
+          <span />
+        )}
+        {usageSort.enabled && (
+          <UsageSortControl
+            label={props.usageSort?.label ? t(props.usageSort.label) : t("UsageSort.label")}
+            order={usageSort.order}
+            loading={sortPending}
+            failed={sortFailed}
+            onChange={usageSort.setOrder}
+            onRetry={() => {
+              if (usageSort.failed) void usageSort.retry();
+              if (sortAllFailed) void mapAll.refetch();
+            }}
+            t={t}
+          />
+        )}
+      </div>
+    ) : null;
 
   // En-tête `customHeader` (titre + compteur + boutons de bascule) — SOURCE UNIQUE, réutilisée dans
   // la vue liste ET la vue carte. Avant cette extraction, ce bloc ne vivait que dans la branche
@@ -968,13 +1059,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             {/* Liste (gauche) — défile dans sa hauteur ; 2 colonnes max (panneau
                 étroit), pas les colonnes pleines de la vue liste. */}
             <div className={`${SPLIT_COLUMN_HEIGHT} ${splitLayout.list} overflow-y-auto pr-2`}>
+              {listToolbar}
               {!isPending && mapAll.isComplete && splitGeoResults.length === 0 && (
                 <div className="py-8 text-center text-secondary-foreground">
                   {t("Aucun résultat trouvé.")}
                 </div>
               )}
               <SearchListView
-                results={splitGeoResults}
+                results={splitListResults}
                 columns={splitLayout.columns}
                 list={splitList}
                 focusedItemId={focusedItemId}
@@ -1190,21 +1282,38 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
             {viewMode !== "regions" && viewMode !== "thematics" && (
               <>
-                {isPending && <SearchListSkeleton />}
+                {listToolbar}
 
-                {!isPending && !loadingMap && transformedResults.length === 0 && (
-                  <div className="text-center text-secondary-foreground py-8">
-                    {t("Aucun résultat trouvé.")}
-                  </div>
+                {sortedSlice ? (
+                  /* Triée par taux : tout le périmètre, classé côté navigateur, affiché par tranches. */
+                  <>
+                    {sortedSlice.length === 0 && (
+                      <div className="text-center text-secondary-foreground py-8">
+                        {t("Aucun résultat trouvé.")}
+                      </div>
+                    )}
+                    <SearchListView results={sortedSlice} list={list} isDetailedView={isDetailedView} />
+                    {sortedHasMore && <div ref={sortedSentinelRef} className="h-12" />}
+                  </>
+                ) : (
+                  <>
+                    {isPending && <SearchListSkeleton />}
+
+                    {!isPending && !loadingMap && transformedResults.length === 0 && (
+                      <div className="text-center text-secondary-foreground py-8">
+                        {t("Aucun résultat trouvé.")}
+                      </div>
+                    )}
+
+                    <SearchListView
+                      results={transformedResults}
+                      list={list}
+                      isDetailedView={isDetailedView}
+                    />
+
+                    {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
+                  </>
                 )}
-
-                <SearchListView
-                  results={transformedResults}
-                  list={list}
-                  isDetailedView={isDetailedView}
-                />
-
-                {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
               </>
             )}
 

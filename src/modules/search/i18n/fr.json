@@ -90,7 +90,9 @@
         "filterByInstallation": "Filtrer par l'installation {{name}}",
         "expand": "Déplier la fiche",
         "collapse": "Replier la fiche",
-        "sheet": "Fiche"
+        "sheet": "Fiche",
+        "slots": "Avec créneaux",
+        "slotsRate": "{{rate}} % d'occupation"
     },
     "PreviewPoiAmenities": {
         "edit": "Éditer",
@@ -465,5 +467,20 @@
     "Aperçu détaillé indisponible pour cette actualité.": "Aperçu détaillé indisponible pour cette actualité.",
     "Lire": "Lire",
     "Privé": "Privé",
-    "Réservé aux membres": "Réservé aux membres"
+    "Réservé aux membres": "Réservé aux membres",
+    "SlotsBand": {
+        "legend": "Couleur de la bande des cartes",
+        "planned": "Avec créneaux en cours ou à venir",
+        "none": "Sans créneau",
+        "loading": "Repérage des créneaux…",
+        "failed": "Créneaux indisponibles pour le moment."
+    },
+    "UsageSort": {
+        "label": "Trier",
+        "name": "Par nom",
+        "desc": "Taux d'occupation décroissant",
+        "asc": "Taux d'occupation croissant",
+        "pending": "Calcul des taux…",
+        "retry": "Réessayer"
+    }
 }

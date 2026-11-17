@@ -9,7 +9,8 @@ import type { DimensionsConfig } from "./schema";
 /**
  * Mesure d'USAGE des créneaux d'un équipement (`reservations.usage`, OPT-IN) — CDC ESS974 de la DRAJES :
  * statut d'ouverture, heures scolaires / clubs, heures libres et taux d'occupation. Une seule mesure, lue
- * par la fiche équipement, l'observatoire (champs `__usage.*` des items) et le filtre de statut du bandeau.
+ * par la fiche équipement, l'observatoire (champs `__usage.*` des items), le filtre de statut du bandeau et la
+ * liste des équipements (bande des cartes qui ont un planning, tri par taux : `plannedResourceIds`, `plannedRates`).
  *
  * Règles (arbitrage du 28/10, provisoires tant que la DRAJES n'a pas défini « ouvert ») :
  *  - école ou club : le type d'usager de la réponse (import des plannings) d'abord — scolaire si TOUTES ses
@@ -46,6 +47,9 @@ export interface PoiUsage {
 /** Champs posés sur un item de l'observatoire (`__usage.<champ>`), lus par les dimensions de la config. */
 export interface UsageFields {
   status: string;
+  /** L'équipement a un planning (statut autre que « sans planning ») : ses créneaux sont mesurés. Booléen
+   *  indépendant de la langue, lu par une dimension `anyTrue` — le filtre « avec créneaux » des KPI d'heures. */
+  planned: boolean;
   open: boolean;
   /** 1 si ouvert, sinon 0 — compté par un KPI `sum`, indépendant de la langue (le statut est traduit). */
   openCount: number;
@@ -87,6 +91,19 @@ function occupiedOf(reservations: readonly Reservation[], poiId: string): number
   return computeEquipmentUsage(reservations, [poiId]).get(poiId)?.occupiedMinutes ?? 0;
 }
 
+/** Réservations de chaque équipement pointé. */
+function reservationsByPoi(reservations: readonly Reservation[]): Map<string, Reservation[]> {
+  const byPoi = new Map<string, Reservation[]>();
+  for (const r of reservations) {
+    for (const id of r.resourceIds) {
+      const list = byPoi.get(id);
+      if (list) list.push(r);
+      else byPoi.set(id, [r]);
+    }
+  }
+  return byPoi;
+}
+
 /** Usage de CHAQUE équipement de `poiIds` (zéros sans créneau), d'après les réservations qui le pointent. */
 export function computePoiUsage(
   reservations: readonly Reservation[],
@@ -96,14 +113,7 @@ export function computePoiUsage(
   conf: UsageConf,
 ): Map<string, PoiUsage> {
   const amplitude = weeklyAmplitudeMinutes(conf.referenceAmplitude);
-  const byPoi = new Map<string, Reservation[]>();
-  for (const r of reservations) {
-    for (const id of r.resourceIds) {
-      const list = byPoi.get(id);
-      if (list) list.push(r);
-      else byPoi.set(id, [r]);
-    }
-  }
+  const byPoi = reservationsByPoi(reservations);
 
   const out = new Map<string, PoiUsage>();
   for (const id of poiIds) {
@@ -132,6 +142,43 @@ export function computePoiUsage(
     });
   }
   return out;
+}
+
+/**
+ * Équipements qui ont un PLANNING : au moins un créneau en cours ou à venir à `today` — le contraire de « sans
+ * planning » (`computePoiUsage`). La bande des cartes de la liste, le tri par taux et le filtre « avec créneaux »
+ * des KPI de l'observatoire suivent cette seule règle.
+ */
+export function plannedResourceIds(reservations: readonly Reservation[], today: string): Set<string> {
+  const ids = new Set<string>();
+  for (const r of reservations) {
+    if (activeSlots(r, today).length === 0) continue;
+    for (const id of r.resourceIds) ids.add(id);
+  }
+  return ids;
+}
+
+/**
+ * Taux d'occupation (part de la plage de référence, non bornée) des équipements `planned`, ceux qui ont un planning
+ * (`plannedResourceIds`, déjà calculé par l'appelant) — le tri de la liste par taux et le taux affiché sur la carte.
+ * Un équipement sans planning n'en a pas, comme dans l'observatoire (`usageFields`). Même semaine type, même fusion
+ * des chevauchements et même plage que la mesure d'usage (`computePoiUsage`), sans ses parts par public : le taux
+ * n'en dépend pas.
+ */
+export function plannedRates(
+  reservations: readonly Reservation[],
+  planned: Iterable<string>,
+  today: string,
+  conf: UsageConf,
+): Map<string, number> {
+  const amplitude = weeklyAmplitudeMinutes(conf.referenceAmplitude);
+  const byPoi = reservationsByPoi(reservations);
+  const rates = new Map<string, number>();
+  for (const id of planned) {
+    const week = weeklyReservations(byPoi.get(id) ?? [], today);
+    rates.set(id, utilizationRate(occupiedOf(week, id), amplitude));
+  }
+  return rates;
 }
 
 /** Heures arrondies au dixième — l'arrondi de `formatHours`, en nombre pour les KPI `sum` / `avg`. */
@@ -164,6 +211,7 @@ export function usageFields(u: PoiUsage, conf: UsageConf, labels: UsageLabels): 
   const clubHours = toHours(u.clubMinutes);
   return {
     status: labels.status[u.status],
+    planned: measured,
     open: u.status === "open",
     openCount: u.status === "open" ? 1 : 0,
     occupiedHours: toHours(u.occupiedMinutes),

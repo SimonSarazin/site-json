@@ -22,6 +22,18 @@ vi.mock("../../lib/dropdownFilters", async (importOriginal) => {
   return { ...actual, optionLabelOf: vi.fn(actual.optionLabelOf) };
 });
 
+// Créneaux de la page (`card.slotsBand`) : la mesure partagée a son test (`useSlotUsage`), simulée ici.
+const creneaux = vi.hoisted(() => ({
+  appels: [] as unknown[],
+  usage: undefined as { planned: Set<string>; rates: Map<string, number> } | undefined,
+}));
+vi.mock("../../hooks/useSlotUsage", () => ({
+  useSlotUsage: (conf: unknown) => {
+    creneaux.appels.push(conf);
+    return { usage: conf ? creneaux.usage : undefined, loading: false, failed: false, refetch: vi.fn() };
+  },
+}));
+
 import type React from "react";
 import { SiteContext } from "@/contexts/SiteContext";
 import { optionLabelOf } from "../../lib/dropdownFilters";
@@ -143,5 +155,55 @@ describe("CardPoiAmenities (card.communeFrom)", () => {
     rerender(carte());
     expect(screen.getByText("CardPoiAmenities.commune")).toBeInTheDocument();
     expect(optionLabelOf).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("CardPoiAmenities (card.slotsBand)", () => {
+  const POI = "6a0b3078f16441794857e2f0";
+  const equipement = { id: POI, serverData: { ...item.serverData, id: POI } } as unknown as SearchEntity;
+  const reservations = { form: "f", step: "s", fields: { finder: "fi", slots: "sl" } };
+  const list = { preview: { reservations } } as unknown as React.ComponentProps<typeof CardPoiAmenities>["list"];
+  const bande = (container: HTMLElement) => (container.firstElementChild as HTMLElement).style.borderLeftColor;
+
+  it("sans la clé : bande d'origine, aucune réservation demandée", () => {
+    creneaux.appels = [];
+    const { container } = render(<CardPoiAmenities item={equipement} card={{}} list={list} />);
+    expect(bande(container)).toBe("var(--card-border-left)");
+    expect(creneaux.appels.every((c) => c === undefined)).toBe(true);
+  });
+
+  it("équipement qui a un planning : bande de la couleur choisie (défaut accent) et taux sous le type", () => {
+    creneaux.usage = { planned: new Set([POI]), rates: new Map([[POI, 0.184]]) };
+    const { container, unmount } = render(<CardPoiAmenities item={equipement} card={{ slotsBand: {} }} list={list} />);
+    expect(creneaux.appels[creneaux.appels.length - 1]).toBe(reservations);
+    expect(bande(container)).toBe("var(--accent)");
+    expect(screen.getByText("CardPoiAmenities.slotsRate")).toBeInTheDocument();
+    unmount();
+    const autre = render(<CardPoiAmenities item={equipement} card={{ slotsBand: { color: "chart-2" } }} list={list} />);
+    expect(bande(autre.container)).toBe("var(--chart-2)");
+  });
+
+  it("sans planning, ou réservations pas encore lues : bande d'origine, pas de ligne de créneaux", () => {
+    creneaux.usage = { planned: new Set(["autre"]), rates: new Map() };
+    const { container, unmount } = render(<CardPoiAmenities item={equipement} card={{ slotsBand: {} }} list={list} />);
+    expect(bande(container)).toBe("var(--card-border-left)");
+    expect(screen.queryByText("CardPoiAmenities.slotsRate")).toBeNull();
+    unmount();
+    creneaux.usage = undefined;
+    const avant = render(<CardPoiAmenities item={equipement} card={{ slotsBand: {} }} list={list} />);
+    expect(bande(avant.container)).toBe("var(--card-border-left)");
+  });
+
+  it("planning sans plage de référence (pas de `usage`) : la bande, et « avec créneaux » sans taux", () => {
+    creneaux.usage = { planned: new Set([POI]), rates: new Map() };
+    render(<CardPoiAmenities item={equipement} card={{ slotsBand: {} }} list={list} />);
+    expect(screen.getByText("CardPoiAmenities.slots")).toBeInTheDocument();
+  });
+
+  it("repliée : la couleur, et le texte pour les lecteurs d'écran", () => {
+    creneaux.usage = { planned: new Set([POI]), rates: new Map([[POI, 0.2]]) };
+    const { container } = render(<CardPoiAmenities item={equipement} card={{ slotsBand: {}, collapsible: true }} list={list} />);
+    expect(bande(container)).toBe("var(--accent)");
+    expect(screen.getByText("CardPoiAmenities.slotsRate")).toHaveClass("sr-only");
   });
 });

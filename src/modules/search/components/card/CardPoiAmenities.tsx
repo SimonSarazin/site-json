@@ -9,6 +9,7 @@ import {
 	Droplet,
 	DoorOpen,
 	ChevronDown,
+	CalendarClock,
 } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +27,9 @@ import { cn } from "@/lib/utils";
 import { useInstallationFilter } from "../../hooks/useInstallationFilter";
 import { SiteContext } from "@/contexts/SiteContext";
 import { optionLabelOf } from "../../lib/dropdownFilters";
+import { getEntryId } from "../../lib/searchMapSelection";
+import { useSlotUsage } from "../../hooks/useSlotUsage";
+import { TOKEN_CSS_VARS } from "@/modules/observatoire/dimensions";
 import { toValidDate } from "@/helpers/formatDate";
 import { isTrue } from "../../lib/poiAmenities";
 import { SearchCardProps } from "../../schema";
@@ -67,7 +71,7 @@ function getPoiImage(seed: string) {
 	return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: SearchCardProps) {
+export default function CardPoiAmenities({ item, onClick, onOpenSheet, card, list }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
 	const { i18n } = useTranslation();
@@ -130,6 +134,21 @@ export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: S
 		[siteConfig, communeFilter, postalCode, i18n.language],
 	);
 
+	// Créneaux (`card.slotsBand`) : bande dans une autre couleur quand l'équipement a un planning — un créneau en
+	// cours ou à venir —, et son taux d'occupation sous le type, pour que la couleur ne soit pas le seul signe.
+	// Réservations de la fiche lues UNE fois pour la page (`useSlotUsage`) ; jusque-là, la bande d'origine.
+	const slotsBand = card?.slotsBand;
+	const { usage: slots } = useSlotUsage(slotsBand ? list?.preview?.reservations : undefined);
+	const itemId = getEntryId(item);
+	const planned = Boolean(slotsBand && itemId && slots?.planned.has(itemId));
+	const rate = planned && itemId ? slots?.rates.get(itemId) : undefined;
+	const bandColor = planned ? TOKEN_CSS_VARS[slotsBand?.color ?? "accent"] : "var(--card-border-left)";
+	const slotsLine = planned
+		? rate === undefined
+			? t("CardPoiAmenities.slots")
+			: t("CardPoiAmenities.slotsRate", undefined, { rate: Math.round(rate * 100) })
+		: null;
+
 	// Sous-titre de la ligne REPLIÉE : même composition que les
 	// `subtitleDimensions` de la liste observatoire (valeurs vides ignorées,
 	// jointes par « · »).
@@ -188,11 +207,13 @@ export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: S
 			<Card
 				onClick={onClick}
 				className="cursor-pointer gap-0 overflow-hidden border-l-4 py-0 transition-shadow hover:shadow-md"
-				style={{ borderLeftColor: "var(--card-border-left)" }}
+				style={{ borderLeftColor: bandColor }}
 			>
 				<div className="flex items-center gap-2 px-3 py-2.5">
 					<div className="min-w-0 flex-1">
 						<p className="truncate text-sm font-medium text-foreground">{name}</p>
+						{/* Repliée, la couleur de la bande reste le seul signe à l'écran : le dire aux lecteurs d'écran. */}
+						{slotsLine && <span className="sr-only">{slotsLine}</span>}
 						{collapsedSubtitle && (
 							<p className="truncate text-xs text-muted-foreground">{collapsedSubtitle}</p>
 						)}
@@ -210,7 +231,7 @@ export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: S
 		<Card
 			onClick={onClick}
 			className="flex h-full cursor-pointer flex-col overflow-hidden border-l-4 transition-shadow hover:shadow-md"
-			style={{ borderLeftColor: "var(--card-border-left)" }}
+			style={{ borderLeftColor: bandColor }}
 		>
 			<CardHeader className={cn(compact ? "space-y-1.5 pb-2" : "space-y-2 pb-3")}>
 				<div className={cn("flex items-start", compact ? "gap-2" : "gap-3")}>
@@ -239,6 +260,12 @@ export default function CardPoiAmenities({ item, onClick, onOpenSheet, card }: S
 							<Tag className="h-3 w-3" />
 							<span className="truncate">{categorie}</span>
 						</div>
+						{slotsLine && (
+							<div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-foreground">
+								<CalendarClock className="h-3 w-3 shrink-0" style={{ color: bandColor }} aria-hidden />
+								<span className="truncate">{slotsLine}</span>
+							</div>
+						)}
 					</div>
 					<div className="flex shrink-0 items-center gap-1.5">
 						{sheetButton}

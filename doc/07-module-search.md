@@ -1388,9 +1388,9 @@ Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
 | `event-featured` | `CardEventFeatured` | Événement mis en avant |
 | `funding` | `CardFunding` | Financement / cagnotte |
 | `resource-booking` | `CardResourceBooking` | Ressource réservable |
-| `poi-amenities` | `CardPoiAmenities` | POI avec aménagements/équipements (voir ci-dessous) ; `card.communeFrom` (`{filter}`) ajoute sous l'adresse la commune de rattachement — le libellé de l'option du filtre désigné qui interroge le code postal (`optionLabelOf`), l'adresse ne donnant que le lieu-dit |
+| `poi-amenities` | `CardPoiAmenities` | POI avec aménagements/équipements (voir ci-dessous) ; `card.communeFrom` (`{filter}`) ajoute sous l'adresse la commune de rattachement — le libellé de l'option du filtre désigné qui interroge le code postal (`optionLabelOf`), l'adresse ne donnant que le lieu-dit ; `card.slotsBand` colore la bande des équipements qui ont des créneaux (cf. « Créneaux sur la liste ») |
 | `contact-card` | `CardContact` | Fiche contact |
-| `profile` | `CardProfile` | Profil (avatar, nom, bio) — auth requise pour les actions |
+| `profile` | `CardProfile` | Profil (avatar, nom, bio) — auth requise pour les actions ; `card.bookedHours` ajoute les heures de l'organisation (cf. « Créneaux sur la liste ») |
 | `card-answer` | `CardAnswer` | Réponse CoForm (activité avec horaires) |
 | `news` | `CardNews` | Carte éditoriale **text-first** (l'item est une `News`, cast au point de dispatch) — cf. [§Cartes news](#cartes-news-dans-la-recherche-cardnews-et-previewnews) |
 | `testimonial` | `CardTestimonial` | Coque (`export default`) → dispatch sur `list.testimonial.design` (repli `bubble`) → `CardTestimonialBubble` — cf. [§génériques config-driven](#cartes-et-previews-génériques-config-driven-testimonial-resource) |
@@ -1478,6 +1478,11 @@ RéseauSanté, annuaire filtré au tag `lieux-sante` — que ni les cartes ni le
 **Boutons « Contacter » / « Suivre »** (01/10) : `card.showActions: false` les retire (absent = affichés,
 comme `showStats`). Pensé pour un annuaire de LIEUX : on ne « suit » pas un cabinet, et « Contacter »
 n'ouvre aujourd'hui qu'un toast « à venir ».
+
+**Chips de tags** : `card.showTags: false` retire le bloc des tags de la carte `profile`, « Aucun tag » compris
+(absent = affichées, comme `showStats`). Pour un annuaire dont les tags n'informent pas, où une fiche sans tag
+afficherait « Aucun tag » sur chaque carte. Premier usage : l'annuaire des usagers d'ESS974, dont les cartes portent
+leurs heures.
 
 ### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
@@ -1619,6 +1624,39 @@ Sans `periods`, la fiche garde son comportement historique : toute réservation,
 **Modifier l'horaire d'un créneau — `reservations.booking.editHours`** (opt-in, toujours réservé aux admins de l'entité du site). Un crayon sur chaque créneau, dans le détail d'un club (fiche équipement) et dans la liste d'un équipement (fiche organisation), ouvre `SlotHoursDialog` : le jour et la période se lisent, seules les heures se saisissent. Dès que les deux heures sont saisies et diffèrent de l'horaire actuel, le contrôle juge le nouvel horaire en direct, sur les réservations en cache, et son motif s'affiche sous les champs ; « Enregistrer » reste actif et rejoue le contrôle sur des réservations relues, qui refuse l'écriture. Le contrôle relit les réservations de chaque équipement de la réservation (`slotHoursIssue` : fin après début, créneau toujours le même, aucun chevauchement avec un autre créneau de la réservation ni avec un autre club sur une période commune). L'écriture relit la réponse, vérifie que le créneau visé n'a pas changé (`isSameSlot` : même jour, mêmes heures et même période — un cycle jumeau d'une autre période ne diffère que par elle) et réécrit ce seul élément du tableau `timeSlots` par `updateField` (`answers.<étape>.<étape><créneaux>.<index>`, l'index BRUT porté par `ReservationSlot.index`) : `withSlotHours` garde ses autres clés et recalcule la durée importée `duree`. Côté plateforme, `updatepathvalue` applique `Answer::canEdit` (auteur, admins du contexte de la réponse, super-admin) et inscrit la modification d'une réponse dans l'historique `answerChanges` (date, auteur, étape — `UpdatePathValuedAction`, citizenToolKit). Sur la fiche, un bouton « Historique » par réservation, réservé aux admins qui modifient les heures, ouvre la fenêtre `AnswerActivityDialog` du module coform, qui lit cet historique (`GET_COFORM_ANSWER_HISTORY`). Une réservation valant pour une période, la modification ne porte que sur elle : un horaire changé pour l'année se modifie dans chaque période. Hook : `useUpdateSlotHours`, commun aux deux fiches — la fenêtre (`editing`, `open` / `close`), `submit` (contrôle sur les réservations relues, puis écriture) et `checkLive` (même contrôle sur les réservations en cache, pendant la saisie ; stable, comme `submit`, car dépendance de l'effet d'avertissement de la fenêtre) ; il invalide par préfixe `RESERVATIONS_PREFIX`, `ORGA_RESERVATIONS_PREFIX`, `RESERVATION_SLOTS_PREFIX`.
 
 **Mesure d'usage — `reservations.usage`** (opt-in). Statut d'ouverture, heures scolaires et clubs, heures libres et taux d'occupation d'un équipement, calculés par `modules/observatoire/usage.ts` (testé) — une seule mesure pour la fiche, l'observatoire (champs `__usage.*`, cf. `doc/27-module-observatoire.md`) et le filtre `usageFilter`. **École ou club** : le type d'usager de la réponse d'abord (`fields.userType`, posé par l'import des plannings, valeurs accumulées « a | b » — scolaire si TOUTES sont dans `schoolUserTypes`), sinon le type de la fiche de l'organisation usagère (`schoolOrgTypes`, lu par `useUsagerTypesQuery` : recherche hors costum, comme l'annuaire), sinon « non précisé ». **Statut** : ouvert avec au moins un créneau de club en cours ou à venir, non ouvert avec des créneaux seulement scolaires ou non précisés, sans planning sinon. **Heures et taux** : la semaine type de l'équipement (`weeklyReservations`), chevauchements fusionnés (`computeEquipmentUsage`), rapportés à `referenceAmplitude` ; un équipement sans planning compte toute la plage libre sur sa fiche, mais n'a dans l'observatoire ni heures libres ni taux (`usageFields`) : les KPI, graphes, filtres et colonnes d'export qui les lisent ne portent que sur les équipements qui ont un planning. Sur la fiche équipement, visible de tous : une phrase de résumé sous les indicateurs (`formatUsageSummary`), une fois arrivés les types des fiches usagères et jamais sans eux, les cases libres de la grille marquées « Libre » en lecture seule pour qui ne peut pas réserver (le « + » reste aux admins), et la part de la plage occupée par chaque club sur sa ligne d'heures (`formatUsageShare`). Limite : une association sportive d'établissement ajoutée à la main a une fiche d'association, et compte comme club.
+
+**Créneaux sur la liste — `card.slotsBand`, `usageSort`, `card.bookedHours`** (trois opt-in, indépendants). Les
+réservations de la fiche (`list.preview.reservations`) sont lues UNE fois pour la page — la requête et le cache du
+filtre « Créneau disponible » (`useSlotReservationsQuery`) —, jamais une par carte ; une carte sans l'option n'en lit
+aucune. Un équipement « a des créneaux » quand il a un PLANNING : un créneau en cours ou à venir, la règle du « sans
+planning » de la mesure d'usage (`plannedResourceIds`, `observatoire/usage.ts`) — une seule règle pour la bande, le
+tri et le filtre « avec créneaux » des KPI de l'observatoire. La mesure est calculée une fois pour toutes les cartes
+d'une page (`slotUsageOf`, mémo par tableau de réservations, `lib/slotUsage.ts`, lue par `useSlotUsage`).
+- **`card.slotsBand`** (`poi-amenities`, `{color?}` — jeton de thème, défaut `accent`) : la bande de gauche d'un
+  équipement qui a des créneaux prend cette couleur, et son taux d'occupation s'affiche sous le type (« 30 %
+  d'occupation » ; « Avec créneaux » sans `reservations.usage`, faute de plage de référence) — la couleur n'est pas
+  le seul signe, et la carte repliée le dit aux lecteurs d'écran. Une légende (`SlotsBandLegend`) se pose au-dessus
+  de la liste et de la colonne du split, avec un sablier tant que les réservations ne sont pas lues : jusque-là, les
+  bandes gardent leur couleur d'origine (`--card-border-left`).
+- **`searchProStatic.usageSort`** (`{id?, label?}` ; exige `list.preview.reservations.usage`) : un sélecteur
+  « Trier » (`UsageSortControl`) au-dessus des résultats — par nom (le tri du serveur, défaut), ou par taux
+  d'occupation décroissant ou croissant, dans l'URL (`?tri=desc|asc`, `id` configurable). Le taux n'existe pas en base
+  (`plannedRates`) : le serveur ne sait pas trier dessus. Trié, la vue liste lit donc tout le périmètre — celui de la
+  carte (`mapAll`, même chargement, même cache) —, le classe côté navigateur (`sortByUsageRate`, `lib/usageSort.ts` :
+  les équipements qui ont un planning d'abord, classés, puis les autres dans l'ordre du serveur ; tri stable) et
+  l'affiche par tranches de 24 au défilement (`useProgressiveCount`) — une tranche de plus tant que le bas de la liste
+  reste à l'écran ; un autre ordre ou une autre recherche ramènent à la première, pas un rafraîchissement en
+  arrière-plan. Jusqu'à la fin du chargement, la liste par nom reste affichée, avec un sablier sur le sélecteur ; de
+  même en cas d'échec (réservations ou périmètre complet), où « Réessayer » relance ce qui a échoué. La colonne du
+  split, qui a déjà tout le périmètre, suit le même ordre ; la carte et l'observatoire embarqué gardent le leur.
+- **`card.bookedHours`** (`profile`, annuaire d'usagers) : « Heures / semaine » et « Heures cumulées » de
+  l'organisation, en deux petits indicateurs (`KpiCard size="sm"`, mêmes icônes et teintes que la fiche) — le total
+  que sa fiche affiche à l'ouverture : mêmes équipements (`bookedResources.poiFilters`, contrôlé en UN appel sur tous
+  les équipements réservés), même période par défaut, même calcul (`orgaBookedHours` et `bookedHours`,
+  `lib/reservationHours.ts`, partagés avec `PreviewBookedResources`). Une réservation compte pour l'organisation que
+  désigne son finder `userOrga` (`userId`), comme le périmètre de l'annuaire ; les réservations sont indexées une fois
+  pour toutes les cartes (`orgaReservationsIndex`). Une organisation sans créneau affiche 0. Le bloc
+  (`CardBookedHours`) est chargé en lazy : les autres annuaires ne téléchargent ni son code, ni les réservations.
 
 **Fiche organisation : ajout de créneaux, période, placement.** Avec `booking` sur le bloc `reservations` de l'annuaire, chaque équipement listé porte un bouton « Ajouter un créneau » (admins ; avec `adminOnly: false`, tout membre connecté, et le clic d'un visiteur déconnecté ouvre la connexion, comme sur la fiche équipement) : `CoFormModal` pré-rempli et verrouillé sur l'équipement ET l'organisation (`buildReservationPrefill`, option `orga`), mêmes contrôles que la fiche équipement — en direct pendant la saisie, puis à l'enregistrement (`useBookingChecks`). Avec `periods`, même filtre « du … au … » et même défaut que la fiche équipement (`resourceGroupsInPeriod`). `bookedResources.placement: "column"` range la section dans la colonne de GAUCHE, la large, de `PreviewStructure`, la localisation à droite — personnes, informations et documents passant sous la localisation ; sur téléphone, la section vient avant la localisation (ordre de lecture). Une organisation sans réservation y garde la section, avec un message, plutôt qu'une colonne vide. Défaut `full` : pleine largeur sous la fiche, comportement historique.
 

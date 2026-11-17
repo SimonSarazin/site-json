@@ -1,11 +1,14 @@
 import { describe, it, expect } from "vitest";
-import type { Reservation, ReservationSlot } from "./reservations";
+import { groupReservationsByResource, resourceGroupsInPeriod, type Reservation, type ReservationSlot } from "./reservations";
 import {
+  bookedHours,
   countWeekdays,
   formatReservationHours,
   formatUsageShare,
   formatUsageSummary,
   hoursOf,
+  orgaBookedHours,
+  orgaReservationsIndex,
   sumReservationHours,
   weeklyReferenceDay,
   weeklyReservations,
@@ -211,5 +214,61 @@ describe("formatUsageSummary / formatUsageShare — mesure d'usage sur la fiche"
   it("part de la plage occupée par un usager, 0 sans plage", () => {
     expect(formatUsageShare(588, 5880, t)).toBe("ReservationHours.share:10");
     expect(formatUsageShare(60, 0, t)).toBe("ReservationHours.share:0");
+  });
+});
+
+describe("bookedHours / orgaBookedHours — fiche et carte d'une organisation", () => {
+  const CLUB = "6a0b3078f16441794857e2a1";
+  const AUTRE = "6a0b3078f16441794857e2a2";
+  const avec = (r: Reservation, userId: string, id: string): Reservation => ({ ...r, id, userId });
+  // Du lundi 19/10 au lundi 26/10 : 2 lundis de 2 h sur A ; 1 jeudi de 1 h 30 sur B ; une saison passée sur A. Le
+  // cumul compte toute la période du créneau (les 2 lundis), l'hebdomadaire la semaine du jour de référence.
+  const reservations = [
+    avec(reservation([A], [slot("monday", "17:00", "19:00")], "2026-10-19", "2026-10-26"), CLUB, "r1"),
+    avec(reservation([B], [slot("thursday", "18:00", "19:30")], "2026-10-19", "2026-10-26"), CLUB, "r2"),
+    avec(reservation([A], [slot("friday", "08:00", "12:00")], "2025-08-18", "2026-07-03"), CLUB, "r3"),
+    avec(reservation([A], [slot("monday", "08:00", "10:00")], "2026-10-19", "2026-10-26"), AUTRE, "r4"),
+  ];
+
+  it("fiche : total = somme des lignes, chaque équipement au même jour de référence", () => {
+    const groups = [
+      { resourceId: A, resourceName: "A", reservations: [reservations[0]], slotCount: 1 },
+      { resourceId: B, resourceName: "B", reservations: [reservations[1]], slotCount: 1 },
+    ];
+    expect(bookedHours(groups, today)).toEqual({
+      total: { weeklyMinutes: 210, cumulativeMinutes: 240 + 90 },
+      byGroup: [
+        { weeklyMinutes: 120, cumulativeMinutes: 240 },
+        { weeklyMinutes: 90, cumulativeMinutes: 90 },
+      ],
+    });
+  });
+
+  it("carte : les seules réservations de l'organisation, sans la saison passée", () => {
+    expect(orgaBookedHours(reservations, CLUB, null, today, true)).toEqual({ weeklyMinutes: 210, cumulativeMinutes: 330 });
+    expect(orgaBookedHours(reservations, AUTRE, null, today, true)).toEqual({ weeklyMinutes: 120, cumulativeMinutes: 240 });
+    expect(orgaBookedHours(reservations, "inconnue", null, today, true)).toEqual({ weeklyMinutes: 0, cumulativeMinutes: 0 });
+  });
+
+  it("carte : restreinte au périmètre du site, comme la fiche ; périmètre vide → 0", () => {
+    expect(orgaBookedHours(reservations, CLUB, [B], today, true)).toEqual({ weeklyMinutes: 90, cumulativeMinutes: 90 });
+    expect(orgaBookedHours(reservations, CLUB, [], today, false)).toEqual({ weeklyMinutes: 0, cumulativeMinutes: 0 });
+  });
+
+  it("index des cartes : un seul calcul par tableau — réservations par organisation, équipements réservés", () => {
+    const index = orgaReservationsIndex(reservations);
+    expect(orgaReservationsIndex(reservations)).toBe(index);
+    expect(orgaReservationsIndex([...reservations])).not.toBe(index);
+    expect(index.byUser.get(CLUB)?.map((r) => r.id)).toEqual(["r1", "r2", "r3"]);
+    expect(index.byUser.get(AUTRE)?.map((r) => r.id)).toEqual(["r4"]);
+    expect(index.reservedIds).toEqual([A, B].sort());
+  });
+
+  it("carte = total de la fiche à l'ouverture (même regroupement, même période par défaut)", () => {
+    const groups = resourceGroupsInPeriod(
+      groupReservationsByResource(reservations.filter((r) => r.userId === CLUB)),
+      { periodStart: today },
+    );
+    expect(orgaBookedHours(reservations, CLUB, null, today, true)).toEqual(bookedHours(groups, today).total);
   });
 });
