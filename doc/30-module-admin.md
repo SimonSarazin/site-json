@@ -550,6 +550,51 @@ Ekilib.re l'utilise pour attraper le CP dans l'adresse principale **ou** dans le
 site) ; la garde « non-admin → Validé » du hook exclut les réponses étrangères du public.
 (`src/modules/admin/sections/AdminAnswerCopySection.tsx`, `lib/answerCopy.ts`, `hooks/useCopyAnswer.ts`)
 
+### `formCoverage` — qui a répondu à quel formulaire
+
+```json
+{ "type": "formCoverage",
+  "title": { "fr": "Réponses des CAE aux formulaires" },
+  "source": { "notSourceKey": true, "defaultTags": ["CAE"], "defaultSortBy": { "name": 1 } },
+  "forms": [
+    { "formId": "677e7e389058e31575550ac8",
+      "label": { "fr": "Les communs des CAEs" },
+      "finderInput": "finderaapStep1lurzepkc4q8n686r8h" }
+  ] }
+```
+
+Table en LECTURE SEULE : une ligne par organisation du périmètre `source` (même forme que
+`resource.source`), son nom lié à sa fiche `/profil/:slug`, puis son email (projeté : `email` est ajouté aux `defaultFields`) ; une colonne par formulaire de `forms`,
+avec « Répondu » ou « Pas de réponse ».
+
+**Attribution d'une réponse** : par la question finder du formulaire (`finderInput`), qui désigne
+l'organisation — pas par l'auteur de la réponse, qui est un citoyen. L'input est cherché dans toutes
+les étapes (`answers.<étape>.<finderInput>`), puis au premier niveau d'une ligne aplatie ; seules les
+entrées de type `organizations` (ou sans type) comptent. Un formulaire sans question de ce genre ne
+peut pas figurer ici. `linkPaths` (optionnel) ajoute d'autres chemins de même forme lus en plus du
+finder — ex. `["links.organizations"]` pour le Navigateur des tiers-lieux, dont une réponse rattache
+son lieu par l'un OU l'autre (cf. `resolveAnswerParent`).
+
+**Deux lectures complètes** (`useSearchAllResults`) : les organisations, puis les réponses de tous les
+formulaires suivis en une requête (`form: { $in }`, `notSourceKey` posé d'office, `variant: "admin"` :
+la ligne publique d'une réponse ne porte pas `answers`). Tant que les réponses ne sont pas toutes
+chargées (ou si elles échouent, ou si le plafond est atteint), les états ne sont pas affichés : une
+lecture partielle ferait passer une organisation qui a répondu pour « Pas de réponse ». Filtre par nom
+côté client, sans casse ni accents.
+
+**Filtres par réponse** (toujours présents) : au-dessus du tableau, un sélecteur par formulaire — « Tous »,
+« Répondu », « Pas de réponse » —, cumulés en ET (ex. « a répondu à Coworking mais pas à Fréquentation »),
+côté client (`filterRowsByAnswers`). Désactivés tant que les réponses ne sont pas toutes lues, pour la
+même raison que les états ; le compteur affiche alors « N / total ». En-tête de table collé au défilement (`AdminTableShell`, option
+`stickyHeader`, opt-in : les autres sections admin gardent leur en-tête défilant).
+
+**Envoi d'e-mail (`mail: true`, opt-in)** : une colonne de cases à cocher (et « tout sélectionner » sur
+les lignes visibles, donc après le filtre par nom et les filtres par réponse), puis « Envoyer un e-mail » ouvre `AdminMailingDialog`
+— le même envoi que l'onglet Membres (`ADMIN_MAILING_SEND`, plafond de 300 destinataires). Le destinataire
+est l'e-mail de contact de la fiche (`recipientFromEntity`) ; une organisation sans e-mail valide n'est pas
+cochable. La sélection survit au filtre par nom et se vide après un envoi réussi.
+(`src/modules/admin/sections/AdminFormCoverageSection.tsx`, `lib/formCoverage.ts`)
+
 ### `invitation` (générique, pré-enregistrée par le module)
 
 `{ "type": "invitation" }` — **aucune prop**. Réunit les deux **liens partageables** membre / admin

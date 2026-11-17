@@ -292,6 +292,28 @@
     "selectionIds": "{{count}} fiche(s) cochée(s)",
     "subTypeSuggestions": "Types constatés dans la sélection :"
   },
+  "AdminFormCoverageSection": {
+    "title": "Réponses aux formulaires",
+    "colName": "Organisation",
+    "colEmail": "Email",
+    "answered": "Répondu",
+    "notAnswered": "Pas de réponse",
+    "searchPlaceholder": "Rechercher une organisation…",
+    "count": "{{count}} organisations",
+    "loadingAnswers": "Lecture des réponses…",
+    "answersError": "Les réponses n'ont pas pu être toutes lues : les états ne sont pas affichés.",
+    "empty": "Aucune organisation.",
+    "selectAll": "Tout sélectionner",
+    "select": "Sélectionner {{name}}",
+    "selectHint": "Cochez les organisations à qui écrire.",
+    "selectedCount": "{{count}} sélectionnée(s)",
+    "mail": "Envoyer un e-mail",
+    "clearSelection": "Vider la sélection",
+    "filtersLabel": "Filtrer par réponse aux formulaires",
+    "filterAll": "Tous",
+    "clearFilters": "Effacer les filtres",
+    "countFiltered": "{{count}} / {{total}} organisations"
+  },
   "AdminAnswerCopySection": {
     "preview": "Aperçu",
     "title": "Reprise de réponses",

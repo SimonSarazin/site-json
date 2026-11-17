@@ -2809,30 +2809,9 @@
           "type": "tabs",
           "id": "actualites-tabs",
           "props": {
-            "defaultTab": "actus",
+            "defaultTab": "evenements",
             "orientation": "horizontal",
             "tabs": [
-              {
-                "id": "actus",
-                "label": {
-                  "fr": "Actus",
-                  "en": "News"
-                },
-                "icon": "newspaper",
-                "content": [
-                  {
-                    "type": "articleFeed",
-                    "id": "actualites-articles-feed",
-                    "props": {
-                      "costumSlug": "navigatorDesTierslieux",
-                      "pageSize": 12,
-                      "cardVariant": "default",
-                      "feedLayout": "grid",
-                      "fullWidth": true
-                    }
-                  }
-                ]
-              },
               {
                 "id": "evenements",
                 "label": {
@@ -2875,6 +2854,27 @@
                         "indexStepList": 20,
                         "fediverse": false
                       }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "actus",
+                "label": {
+                  "fr": "Actus",
+                  "en": "News"
+                },
+                "icon": "newspaper",
+                "content": [
+                  {
+                    "type": "articleFeed",
+                    "id": "actualites-articles-feed",
+                    "props": {
+                      "costumSlug": "navigatorDesTierslieux",
+                      "pageSize": 12,
+                      "cardVariant": "default",
+                      "feedLayout": "grid",
+                      "fullWidth": true
                     }
                   }
                 ]
@@ -6742,6 +6742,146 @@
             ],
             "actions": [
               "invite"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "formulaires",
+        "label": {
+          "fr": "Formulaires",
+          "en": "Forms"
+        },
+        "icon": "clipboard-list",
+        "access": "siteAdmin",
+        "sections": [
+          {
+            "type": "formCoverage",
+            "mail": true,
+            "title": {
+              "fr": "Réponses des tiers-lieux aux formulaires du Navigateur",
+              "en": "Third places' answers to the Navigator forms"
+            },
+            "source": {
+              "indexStepList": 500,
+              "defaultFilters": {
+                "tags": {
+                  "$nin": [
+                    "RéseauTiersLieux"
+                  ]
+                },
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "forms": [
+              {
+                "formId": "6925e2b05dd63b02ca70d6d9",
+                "label": {
+                  "fr": "Coworking",
+                  "en": "Coworking"
+                },
+                "finderInput": "findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "6925869ad76aaf6c5a2b2f8a",
+                "label": {
+                  "fr": "Salle de réunion",
+                  "en": "Meeting room"
+                },
+                "finderInput": "findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "6925ee8ac537f8056114aec7",
+                "label": {
+                  "fr": "Hébergement",
+                  "en": "Accommodation"
+                },
+                "finderInput": "findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "6876c3e58fa8df3c7f024253",
+                "label": {
+                  "fr": "Auto-diagnostic collectif du lieu",
+                  "en": "Collective self-assessment of the place"
+                },
+                "finderInput": "findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                "linkPaths": [
+                  "links.organizations"
+                ]
+              },
+              {
+                "formId": "636cd563e2439b7fc12cd680",
+                "label": {
+                  "fr": "Usages des communs et outils utilisés",
+                  "en": "Commons and tools used"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh"
+              },
+              {
+                "formId": "646498a5f2b3d6423d74b7f6",
+                "label": {
+                  "fr": "Fréquentation",
+                  "en": "Attendance"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r"
+              },
+              {
+                "formId": "645b300b6d70bb35426fc0e3",
+                "label": {
+                  "fr": "Équipements",
+                  "en": "Equipment"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
+              },
+              {
+                "formId": "6486d24e9cad105cbf29a777",
+                "label": {
+                  "fr": "Modèle économique",
+                  "en": "Business model"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
+              },
+              {
+                "formId": "652e32b222c3cf69f018ec40",
+                "label": {
+                  "fr": "Réseaux régionaux & thématiques",
+                  "en": "Regional & thematic networks"
+                },
+                "finderInput": "finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl"
+              },
+              {
+                "formId": "63e0a8abeac0741b506fb4f7",
+                "label": {
+                  "fr": "Grand recensement 2023",
+                  "en": "2023 census"
+                },
+                "finderInput": "finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4"
+              }
             ]
           }
         ]

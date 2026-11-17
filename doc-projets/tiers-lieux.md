@@ -13,7 +13,7 @@
 > [Module Ampli](../doc/22-module-ampli.md) · [Module formEngine](../doc/28-module-formengine.md) ·
 > [Module CoForm](../doc/21-module-coform.md). Mémoire : `[[project-tiers-lieux]]`.
 
-Dernière mise à jour : **2026-11-16** (hero en débord, filtres et onglet « Sourcés » au référencement, périmètre source + référencement à la place du tag `TiersLieux`, cf. §9 16/11). Précédent : **2026-11-13** (onglet « Événements » des fiches organisation et projet : même agenda que `/actualites`, cf. §9 13/11). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
+Dernière mise à jour : **2026-11-17** (`/actualites` : « Événements » en premier onglet, cf. §9 17/11). Précédent : **2026-11-16** (onglet admin « Formulaires » : 6 formulaires d'usages, filtres par réponse, périmètre de `/lieux`, cf. §9 16/11bis ; hero en débord, filtres et onglet « Sourcés » au référencement, périmètre source + référencement à la place du tag `TiersLieux`, cf. §9 16/11). Précédent : **2026-11-13** (onglet « Événements » des fiches organisation et projet : même agenda que `/actualites`, cf. §9 13/11). Précédent : **2026-11-12** (onglet admin « Formulaires » : réponses des tiers-lieux aux formulaires du Navigateur et envoi d'e-mail, cf. §9 12/11). Précédent : **2026-11-04** (`/services` et hero : suites de la revue de la MR 119, cf. §9 04/11). Précédent : **2026-10-23** (bouton « Mes promesses » du header : suites de la revue de la MR `aac-dev`, commitées et poussées, cf. §9). Précédent : **2026-10-07**, `/reservation` : aperçu des ressources après le hero, 5 cartes sur une ligne desktop, lien vers l’annuaire complet ; `section-lieux` retirée de cette page.
 
 ---
 
@@ -57,8 +57,11 @@ lieux**, pas un plan de rattrapage.
 | 21/10 | Anatole + Claude | Bouton « Mes promesses » (promesses à régler et paiements) dans le header : `header.utilities.pledge`, désormais rendu par `HeaderMegaMenu` (barre desktop et mobile) ; `cagnotteModuleConfig.defaultType: "aac"` pour les communs de `/aac/communs`. Commité sur `aac-dev` le 22/10 |
 | 23/10 | Claude | Suites de la revue de la MR `aac-dev` : en type `aac`, « Mes promesses » ne charge plus les projets de l'organisation et lit l'enveloppe du formulaire de l'annuaire (`aac.formId`) — commitées et poussées (§9) |
 | 23/10 | Simon (MR 111) + Thomas | Menu « Communs » (icône `puzzle`, chemin `/communs`) sorti de « Coopérer », avec « Annuaire de nos communs », « Appel à communs », « Usages » et « Comm'un Lundi » ; la page `aac-directory` passe de `/aac/communs` à **`/communs`** (le module aac garde ses routes propres `/aac` et `/aac/commun/:answerId`, rien dans le code ne dépendait de l'ancien chemin ; la page n'était pas encore en ligne, pas de redirection à poser). Le header de tiers-lieux étant un archétype du skill config-assistant, deux gardes suivent ce changement : snapshot `examples/header-mega-menu.json` régénéré (`config:example -- header-mega-menu --write`) et constat assumé « Décider ensemble » réindexé `header.nav.4.children.2.path` dans `archetypes.json`. Repris depuis le fork de Simon sur `fix/menu-communs` |
+| 12/11 | Mirana | Onglet admin « Formulaires » : chaque tiers-lieu, son état de réponse aux 4 formulaires du Navigateur, envoi d'e-mail aux lieux cochés (cf. §9 12/11) |
 | 13/11 | Mirana | Onglet « Événements » des fiches organisation et projet : section `agenda` de `/actualites`, bornée à la fiche par l'option moteur `scopeToProfile` (cf. §9 13/11) |
 | 16/11 | Mirana | Hero de l'accueil et de `/reservation` en débord sous la section suivante (`overlapNextSection`) ; filtres de `/lieux` et sous-onglet « Sourcés » dans l'admin Référencement ; `/lieux`, accueil, `/reservation` et observatoire scopés par source + référencement au lieu du tag `TiersLieux` (cf. §9 16/11) |
+| 16/11 | Mirana | Onglet admin « Formulaires » : 6 formulaires d'usages ajoutés, filtre « Répondu / Pas de réponse » par formulaire, périmètre de `/lieux` (cf. §9 16/11bis) |
+| 17/11 | Mirana | `/actualites` : onglet « Événements » en premier, ouvert par défaut (cf. §9 17/11) |
 
 ---
 
@@ -219,6 +222,29 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
 
 ## 9. Impacts des modifications
 
+### 17/11 — `/actualites` : l'onglet « Événements » passe en premier
+
+Config seule : dans la section `tabs` de `/actualites`, l'onglet « Événements » précède « Actus » et
+s'ouvre par défaut (`defaultTab: "evenements"`). Les liens vers `/actualites` (« Voir toutes les actus et
+événements » de l'accueil, menu) arrivent donc sur l'agenda. `config:validate` ✅, préflight ✅.
+
+### 16/11bis — onglet admin « Formulaires » : formulaires d'usages, filtres par réponse, périmètre de `/lieux`
+
+- **Formulaires suivis** : aux 4 formulaires du Navigateur s'ajoutent 6 formulaires d'usages de la fiche
+  d'un lieu (panneau latéral) : Usages des communs et outils utilisés, Fréquentation, Équipements, Modèle
+  économique, Réseaux régionaux & thématiques, Grand recensement 2023 — 10 colonnes, attribution par la
+  question finder de chacun.
+- **Filtres** : au-dessus du tableau, un sélecteur par formulaire (« Tous », « Répondu », « Pas de
+  réponse »), cumulés ; « Effacer les filtres » ; compteur « N / total ». Toujours présents (section
+  `formCoverage`, donc aussi sur la fédération des CAE), actifs une fois toutes les réponses lues.
+  « Tout sélectionner » pour l'e-mail porte sur les lignes filtrées.
+- **Périmètre** : le même que la liste de `/lieux` (sources et référencés du site, hors
+  `RéseauTiersLieux`, mêmes pays) au lieu du tag `TiersLieux` sur tout le réseau.
+- **Vérifié** : tests de `lib/formCoverage.ts` (dont 4 pour le filtre, vérifiés en échec), au navigateur
+  connecté : 4 313 organisations comme `/lieux` ; « Usages des communs » = Répondu → 36 ; en plus
+  « Fréquentation » = Pas de réponse → 5 ; effacer → 4 313. Non vérifiés : mode sombre, mobile, envoi
+  d'e-mail.
+
 ### 16/11 — hero en débord, filtres et « Sourcés » au référencement, fin du filtre par tag `TiersLieux`
 
 - **Hero (accueil, `/reservation`)** : l'illustration s'affiche entière sous la barre de recherche ET
@@ -271,6 +297,46 @@ npx tsx scripts/config-probe.ts config.prod.tiers-lieux.json
   `audit:config` sans constat ; au navigateur, `/profil/franceTierslieux` onglet « Événements » : la
   requête porte le filtre de la fiche, « Passés » affiche 4 événements dans les cartes de `/actualites`.
   Non vérifiés : mode sombre, mobile, fiche projet.
+
+### 12/11 — admin : onglet « Formulaires », réponses des tiers-lieux aux formulaires du Navigateur
+
+**Le besoin.** Voir, dans l'admin, tous les tiers-lieux et pour chacun s'il a déjà répondu aux
+formulaires du Navigateur des tiers-lieux, et pouvoir leur écrire.
+
+**Ce qui change.** Nouvel onglet admin « Formulaires » (`access: siteAdmin`), entre « Membres du réseau »
+et « Référencement » : une ligne par organisation taguée `TiersLieux` hors `RéseauTiersLieux` sur tout le
+réseau (même périmètre que `/reservation`, 4 298 lieux en local), et une colonne par formulaire du
+Navigateur avec « Répondu » ou « Pas de réponse » :
+
+| Formulaire | id |
+|---|---|
+| Coworking | `6925e2b05dd63b02ca70d6d9` |
+| Salle de réunion | `6925869ad76aaf6c5a2b2f8a` |
+| Hébergement | `6925ee8ac537f8056114aec7` |
+| Auto-diagnostic collectif du lieu | `6876c3e58fa8df3c7f024253` |
+
+Une réponse du Navigateur rattache son lieu soit par son finder, soit par `links.organizations` (les deux
+voies lues par l'annuaire des ressources) : la section lit les deux (`linkPaths:
+["links.organizations"]`).
+
+Le nom de chaque organisation mène à sa fiche (`/profil/:slug`), la 2e colonne donne son e-mail de
+contact. L'en-tête du tableau reste visible au défilement. L'état d'un formulaire n'est affiché qu'une
+fois toutes les réponses lues : une lecture partielle ferait passer pour « Pas de réponse » une
+organisation qui a répondu.
+
+**Envoi d'e-mail.** Une colonne de cases à cocher (« tout sélectionner » porte sur les lignes affichées,
+après le filtre par nom) et une barre « N sélectionnée(s) · Envoyer un e-mail ». Le bouton ouvre la
+modale d'envoi groupé de l'onglet Membres, **réutilisée telle quelle** (`AdminMailingDialog`,
+`useAdminMailing` → `ADMIN_MAILING_SEND`, plafond de 300 destinataires ; consentement et lien de
+désinscription posés par le serveur). Le mail part à l'e-mail de contact de la fiche ; une organisation
+sans e-mail valide n'est pas cochable.
+
+Section moteur `formCoverage` (module admin), options `linkPaths` et `mail` absentes par défaut —
+cf. `doc/30-module-admin.md`.
+
+**Vérifié.** `config:validate` ✅ · `audit:config` ✅ RAS · `test:preflight` ✅ · tests du module admin ✅
+(dont `lib/formCoverage.test.ts`, la lecture `linkPaths` vérifiée en échec sans elle) · `eslint` ✅.
+**Rendu de l'onglet et envoi non vérifiés au navigateur.**
 
 ### 04/11 — `/services` et hero : suites de la revue de la MR 119
 

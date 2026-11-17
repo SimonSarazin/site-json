@@ -16,7 +16,7 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
+Dernière mise à jour : **2026-11-12** (onglet admin « Formulaires » : réponses des CAE au formulaire de l'appel et envoi d'e-mail, cf. §10 12/11). Précédent : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
 cf. §10 29/10). Précédent : **2026-10-28** (module `admin` activé : onglets Membres, Annuaire et
 Référencement des CAE, cf. §10 28/10). Précédent : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et
 poussées : la tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans
@@ -75,6 +75,7 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 23/10 | Claude, sur la revue de la MR `aac-dev` | Tirelire et « Mes promesses » : enveloppe lue sur le formulaire de l'AAC (`aac.formId`), une seule lecture pour les deux boutons, plus de recherche des projets de l'organisation en type `aac` ; « terminée » lu sans tenir compte de la casse du statut (« n/m tâches », « Clôturer ») — commitées et poussées (§10) |
 | 28/10 | Mirana + Claude | Module `admin` activé : onglets Membres, Annuaire et Référencement des CAE (cf. §10 28/10) |
 | 29/10 | Mirana + Claude | Bouton « Ajouter une organisation » retiré de `/annuaire`, seul « Créer votre CAE » reste (cf. §10 29/10) |
+| 12/11 | Mirana | Onglet admin « Formulaires » : chaque CAE du réseau, son état de réponse au formulaire de l'appel, envoi d'e-mail aux CAE cochées (cf. §10 12/11) |
 
 ---
 
@@ -279,7 +280,7 @@ taguées dépasse largement le périmètre costum. L'annuaire lit ce dernier ens
 | 18 | « Rejoindre une autre CAE » — demande d'adhésion / de droits admin | ✅ | 30/09 — réparée (`d99f1997`) ; vérifiée au navigateur avec un serveur **simulé** (requête et contenu exacts, rien écrit) — la vraie écriture n'a pas été jouée (cf. §10 30/09) |
 | 19 | Ajouter une CAE depuis le finder « Partenaires du commun » (dépôt) | ✅ | 06/10 — revérifié au navigateur sur `jdev` fusionné (SDK 1.0.196), **création réelle avec horaires** puis base restaurée : mots-clés, téléphone et horaires stockés dans la forme du legacy (cf. §10 06/10). Commité le 01/10 (`259164b5`) |
 | 20 | Modale de recherche des finders sans saut pendant la frappe | ✅ | 01/10 — mesuré : 3 sauts de 84 px avant, 0 après. Commité le 01/10 (`259164b5`) |
-| 21 | Admin — onglets Membres, Annuaire et Référencement | ✅ | 28/10 — module `admin` activé pour la première fois sur ce site ; rendu vérifié anonyme (accès bloqué). **Actions d'un admin connecté non vérifiées** (valider un membre, éditer/supprimer une CAE, rechercher et référencer depuis le réseau), aucun compte de test disponible, cf. §10 28/10. **05/11 — rendu des trois onglets et actions vérifiés par un admin connecté** (backend local) : valider un membre, éditer/supprimer une CAE, référencer, cf. §10 05/11 |
+| 21 | Admin — onglets Membres, Annuaire, Formulaires et Référencement | ✅ | 28/10 — module `admin` activé pour la première fois sur ce site ; rendu vérifié anonyme (accès bloqué). **Actions d'un admin connecté non vérifiées** (valider un membre, éditer/supprimer une CAE, rechercher et référencer depuis le réseau), aucun compte de test disponible, cf. §10 28/10. **05/11 — rendu des trois onglets et actions vérifiés par un admin connecté** (backend local) : valider un membre, éditer/supprimer une CAE, référencer, cf. §10 05/11. Onglet Formulaires ajouté le 12/11, rendu non vérifié au navigateur (cf. §10 12/11) |
 
 **Gates au merge `287bb35a` (09/09)** : `typecheck` ✅ · `eslint` ✅ **0 erreur** (24 avertissements
 préexistants) · `test:unit` **4 230** ✅ dont préflight **635** ✅ · `build` ✅ · `config:validate` ✅
@@ -294,6 +295,37 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 12/11 — admin : onglet « Formulaires », réponses des CAE au formulaire de l'appel
+
+**Le besoin.** Voir, dans l'admin, toutes les CAE et pour chacune si elle a déjà répondu au formulaire
+de l'appel, et pouvoir leur écrire.
+
+**Ce qui change.** Nouvel onglet admin « Formulaires », entre « Annuaire » et « Référencement » : une
+ligne par CAE taguée `CAE` sur tout le réseau (`notSourceKey` + `defaultTags: ["CAE"]`), triées par nom,
+et une colonne pour le formulaire de l'appel « Les communs des CAEs » (`677e7e38…`) avec « Répondu » ou
+« Pas de réponse ». Une réponse est attribuée aux CAE que désigne sa question « Partenaires du commun »
+(finder `finderaapStep1lurzepkc4q8n686r8h`, étape `aapStep1`) ; les CAE « J'utilise » (`links.cae`) ne
+comptent pas comme ayant répondu.
+
+Le nom de chaque organisation mène à sa fiche (`/profil/:slug`), la 2e colonne donne son e-mail de
+contact. L'en-tête du tableau reste visible au défilement. L'état d'un formulaire n'est affiché qu'une
+fois toutes les réponses lues : une lecture partielle ferait passer pour « Pas de réponse » une
+organisation qui a répondu.
+
+**Envoi d'e-mail.** Une colonne de cases à cocher (« tout sélectionner » porte sur les lignes affichées,
+après le filtre par nom) et une barre « N sélectionnée(s) · Envoyer un e-mail ». Le bouton ouvre la
+modale d'envoi groupé de l'onglet Membres, **réutilisée telle quelle** (`AdminMailingDialog`,
+`useAdminMailing` → `ADMIN_MAILING_SEND`, plafond de 300 destinataires ; consentement et lien de
+désinscription posés par le serveur). Le mail part à l'e-mail de contact de la fiche ; une organisation
+sans e-mail valide n'est pas cochable.
+
+Section moteur `formCoverage` (module admin), options `linkPaths` et `mail` absentes par défaut —
+cf. `doc/30-module-admin.md`.
+
+**Vérifié.** `config:validate` ✅ · `audit:config` ✅ RAS · `test:preflight` ✅ · tests du module admin ✅
+(dont `lib/formCoverage.test.ts`, la lecture `linkPaths` vérifiée en échec sans elle) · `eslint` ✅.
+**Rendu de l'onglet et envoi non vérifiés au navigateur.**
 
 ### 05/11bis — entrée « Kanban » dans le menu du compte
 

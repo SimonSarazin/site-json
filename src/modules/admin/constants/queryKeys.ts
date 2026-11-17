@@ -41,4 +41,7 @@ export const ADMIN_QUERY_KEYS = {
   ANSWER_COPY_SOURCE_PREFIX: (sourceForm: string) => `admin-answer-copy-source-${sourceForm}`,
   /** Reprise de réponses : réponses du form CIBLE, chargées EN ENTIER (index `copiedFrom` + empreintes). */
   ANSWER_COPY_TARGET_PREFIX: (targetForm: string) => `admin-answer-copy-target-${targetForm}`,
+  /** « Qui a répondu » : organisations du périmètre, puis réponses des forms suivis (ids joints). */
+  FORM_COVERAGE_ORGS_PREFIX: "admin-form-coverage-orgs",
+  FORM_COVERAGE_ANSWERS_PREFIX: (formIds: readonly string[]) => `admin-form-coverage-answers-${formIds.join("-")}`,
 } as const;

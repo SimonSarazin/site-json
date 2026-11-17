@@ -292,6 +292,28 @@
     "selectionIds": "{{count}} selected record(s)",
     "subTypeSuggestions": "Types found in the selection:"
   },
+  "AdminFormCoverageSection": {
+    "title": "Form responses",
+    "colName": "Organization",
+    "colEmail": "Email",
+    "answered": "Answered",
+    "notAnswered": "No response",
+    "searchPlaceholder": "Search an organization…",
+    "count": "{{count}} organizations",
+    "loadingAnswers": "Reading responses…",
+    "answersError": "Responses could not all be read: statuses are not shown.",
+    "empty": "No organization.",
+    "selectAll": "Select all",
+    "select": "Select {{name}}",
+    "selectHint": "Tick the organizations to write to.",
+    "selectedCount": "{{count}} selected",
+    "mail": "Send an email",
+    "clearSelection": "Clear selection",
+    "filtersLabel": "Filter by form answers",
+    "filterAll": "All",
+    "clearFilters": "Clear filters",
+    "countFiltered": "{{count}} / {{total}} organizations"
+  },
   "AdminAnswerCopySection": {
     "preview": "Preview",
     "title": "Answer copy",

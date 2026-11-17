@@ -1961,6 +1961,40 @@
         ]
       },
       {
+        "id": "formulaires",
+        "label": {
+          "fr": "Formulaires"
+        },
+        "icon": "clipboard-list",
+        "sections": [
+          {
+            "type": "formCoverage",
+            "mail": true,
+            "title": {
+              "fr": "Réponses des CAE aux formulaires"
+            },
+            "source": {
+              "notSourceKey": true,
+              "defaultTags": [
+                "CAE"
+              ],
+              "defaultSortBy": {
+                "name": 1
+              }
+            },
+            "forms": [
+              {
+                "formId": "677e7e389058e31575550ac8",
+                "label": {
+                  "fr": "Les communs des CAEs"
+                },
+                "finderInput": "finderaapStep1lurzepkc4q8n686r8h"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "referencement",
         "label": {
           "fr": "Référencement"
