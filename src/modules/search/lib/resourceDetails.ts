@@ -7,7 +7,7 @@
 /** Listes à pastilles, dans l'ordre d'affichage. */
 export const RESOURCE_TAG_KEYS = ["equipments", "catering", "services", "roomType"] as const;
 /** Textes libres, dans l'ordre d'affichage. */
-export const RESOURCE_NOTE_KEYS = ["moreInfo", "about", "tip"] as const;
+export const RESOURCE_NOTE_KEYS = ["tip", "about", "moreInfo"] as const;
 
 export type ResourceDetailKey = (typeof RESOURCE_TAG_KEYS)[number] | (typeof RESOURCE_NOTE_KEYS)[number];
 

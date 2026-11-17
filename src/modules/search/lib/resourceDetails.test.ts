@@ -18,8 +18,8 @@ describe("buildResourceDetails", () => {
         { label: "L:catering", values: ["Micro-ondes"] },
       ],
       notes: [
-        { label: "L:moreInfo", value: "Accès PMR" },
         { label: "L:tip", value: "Un jardin" },
+        { label: "L:moreInfo", value: "Accès PMR" },
       ],
     });
   });

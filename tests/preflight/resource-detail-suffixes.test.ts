@@ -88,8 +88,8 @@ describe("Préflight — détail des ressources : annuaire = fiche du lieu", () 
     };
     expect(ecartsDetail(cfg)).toEqual([
       "s1/F.equipments : fiche=AAA annuaire=BBB",
-      "s1/F.about : fiche=∅ annuaire=X",
       "s1/F.tip : fiche=TIP annuaire=∅",
+      "s1/F.about : fiche=∅ annuaire=X",
     ]);
   });
 });

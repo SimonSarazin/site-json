@@ -129,8 +129,8 @@ function isChecked(value: unknown): boolean {
 
 /**
  * Construit les blocs « listes » et « textes » d'un item à partir des chemins déclarés
- * dans la config (`equipments`, `catering`, `services`, `roomType`, puis `moreInfo`,
- * `about`, `tip`).
+ * dans la config (`equipments`, `catering`, `services`, `roomType`, puis `tip`,
+ * `about`, `moreInfo` — les textes sont affichés avant les listes).
  *
  * Ces champs sont saisis au niveau du LIEU et non de chaque salle : ils sont donc repris
  * à l'identique dans le détail de chacune, là où l'information sert à choisir.
