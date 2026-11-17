@@ -482,6 +482,83 @@
             "showActiveFiltersTypes": false,
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
+            "csvButton": {
+              "show": true,
+              "label": {
+                "fr": "CSV"
+              },
+              "filename": "annuaire-federation-des-cae",
+              "adminOnly": true,
+              "fields": [
+                "openingDate",
+                "holderOrganization",
+                "email",
+                "telephone",
+                "url",
+                "socialNetwork",
+                "openingHours",
+                "description",
+                "video"
+              ],
+              "columns": [
+                {
+                  "header": "Nom de la CAE",
+                  "path": "name"
+                },
+                {
+                  "header": "Date d'ouverture",
+                  "path": "openingDate"
+                },
+                {
+                  "header": "Description courte",
+                  "path": "shortDescription"
+                },
+                {
+                  "header": "Structure porteuse",
+                  "path": "holderOrganization"
+                },
+                {
+                  "header": "Ville",
+                  "path": "address.addressLocality"
+                },
+                {
+                  "header": "Code postal",
+                  "path": "address.postalCode"
+                },
+                {
+                  "header": "Email",
+                  "path": "email"
+                },
+                {
+                  "header": "Téléphone",
+                  "path": "telephone"
+                },
+                {
+                  "header": "Site internet",
+                  "path": "url"
+                },
+                {
+                  "header": "Réseaux sociaux",
+                  "path": "socialNetwork"
+                },
+                {
+                  "header": "Horaires d'ouverture",
+                  "path": "openingHours"
+                },
+                {
+                  "header": "Description longue",
+                  "path": "description"
+                },
+                {
+                  "header": "Vidéo de présentation",
+                  "path": "video"
+                },
+                {
+                  "header": "Mots-clés",
+                  "path": "tags"
+                }
+              ]
+            },
             "baseParams": {
               "sourceKey": [
                 "federationDesCae"

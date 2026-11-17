@@ -347,6 +347,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // à côté du bouton Carte dans le header STANDARD **et** dans le header
   // custom (`customHeader`), qui sont exclusifs — deux JSX divergeraient.
   const showAddButton = Boolean(addButton?.show && (addButton.adminOnly === false || permissions.isAdmin));
+  // Export CSV : `adminOnly` (opt-in) le réserve aux admins du site — même règle que le bouton « Ajouter ».
+  const showCsvButton = Boolean(csvButton?.show && (!csvButton.adminOnly || permissions.isAdmin));
   const addButtonElement = showAddButton ? (
     <SectionAddButton label={addButton?.label ? t(addButton.label) : t("Ajouter")} onClick={handleAddClick} />
   ) : null;
@@ -773,7 +775,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     <span className="hidden sm:inline">{t("Graphe")}</span>
                   </Button>
                 )}
-                {csvButton?.show && (
+                {showCsvButton && csvButton && (
                   <Button
                     variant="outline"
                     size="sm"

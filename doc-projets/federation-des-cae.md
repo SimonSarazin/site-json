@@ -16,7 +16,7 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-11-12** (onglet admin « Formulaires » : réponses des CAE au formulaire de l'appel et envoi d'e-mail, cf. §10 12/11). Précédent : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
+Dernière mise à jour : **2026-11-17** (`/annuaire` : bouton d'export CSV réservé aux admins, cf. §10 17/11). Précédent : **2026-11-12** (onglet admin « Formulaires » : réponses des CAE au formulaire de l'appel et envoi d'e-mail, cf. §10 12/11). Précédent : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
 cf. §10 29/10). Précédent : **2026-10-28** (module `admin` activé : onglets Membres, Annuaire et
 Référencement des CAE, cf. §10 28/10). Précédent : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et
 poussées : la tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans
@@ -76,6 +76,7 @@ n'est donc pas ancré sur l'entité du site — ne pas déduire l'un de l'autre.
 | 28/10 | Mirana + Claude | Module `admin` activé : onglets Membres, Annuaire et Référencement des CAE (cf. §10 28/10) |
 | 29/10 | Mirana + Claude | Bouton « Ajouter une organisation » retiré de `/annuaire`, seul « Créer votre CAE » reste (cf. §10 29/10) |
 | 12/11 | Mirana | Onglet admin « Formulaires » : chaque CAE du réseau, son état de réponse au formulaire de l'appel, envoi d'e-mail aux CAE cochées (cf. §10 12/11) |
+| 17/11 | Mirana | `/annuaire` : bouton d'export CSV réservé aux admins, 14 colonnes reprises du formulaire de la CAE (cf. §10 17/11) |
 
 ---
 
@@ -295,6 +296,27 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 17/11 — `/annuaire` : bouton d'export CSV, réservé aux admins
+
+`csvButton` sur la liste de `/annuaire` (`annuaire-list`). Le fichier `annuaire-federation-des-cae.csv`
+reprend le périmètre de la liste et 14 colonnes, lues aux chemins du formulaire `cae` : nom de la CAE, date
+d'ouverture, description courte, structure porteuse, ville, code postal, e-mail, téléphone, site internet,
+réseaux sociaux, horaires d'ouverture, description longue, vidéo de présentation, mots-clés (les `tags`,
+qui portent aussi le mode de gestion SCOP / SCIC).
+
+- **Admins seulement** : `csvButton.adminOnly: true`, même règle que le bouton « Ajouter » (admins du
+  site). C'est une règle d'affichage : la recherche du site reste publique.
+- **Contacts non envoyés aux visiteurs** : les champs de l'export (`csvButton.fields`) ne sont chargés
+  qu'au clic sur « CSV » ; la liste publique garde ses champs d'avant, sans e-mail ni téléphone.
+- **Moteur** (options opt-in, défaut `false` / absent, aucun autre site touché) : `csvButton.adminOnly`
+  et `csvButton.fields` (`lib/csvExportFields.ts`, testé), documentés dans
+  [Module Search](../doc/07-module-search.md).
+- **Vérifié** : test unitaire (vérifié en échec), typecheck, lint, préflight ✅ ; au navigateur : visiteur
+  sans bouton, aucun e-mail dans les réponses de la liste ; connecté, bouton présent, 29 organisations
+  exportées (remplis : nom 29, date d'ouverture 10, description courte 25, structure porteuse 3, ville et
+  code postal 19, e-mail 21, téléphone 5, site 23, réseaux sociaux 6, horaires 8, description longue 3,
+  vidéo 0, mots-clés 19).
 
 ### 12/11 — admin : onglet « Formulaires », réponses des CAE au formulaire de l'appel
 

@@ -310,6 +310,8 @@ export const PROP_DESCRIPTIONS: Record<string, Record<string, string>> = {
     "props.zoneSelector": "Sélecteur de zone géographique (countryCode/level) au-dessus de la liste.",
     "props.tagSelector": "Sélecteur de tags horizontal (options = map valeur→libellé).",
     "props.csvButton": "Export CSV des résultats (columns = header + path serverData) — réservé aux listes administratives.",
+    "props.csvButton.adminOnly": "Bouton réservé aux admins du site (même règle que addButton). Défaut code : false — visible de tous.",
+    "props.csvButton.fields": "Champs chargés en plus des defaultFields au seul clic sur CSV (ex. contacts non envoyés aux visiteurs de la liste).",
     "props.customHeader": "En-tête teaser avec lien « voir tous » (pattern home → page complète).",
     "props.baseParams": "Périmètre backend searchCostum — TOUJOURS le renseigner avec un sourceKey réel (audit module-prereq sinon).",
     "props.baseParams.sourceKey": "Sources costum interrogées (multi-sources possible, ex. [franceTierslieux, tierslieuxbelgique]) — LE périmètre réseau.",

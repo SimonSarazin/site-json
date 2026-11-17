@@ -295,7 +295,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `addButton` | `AddButtonConfig` | — | Bouton « Ajouter » (show, label, types) ; `coform` (id de form, prioritaire) crée une réponse CoForm, `adminOnly: false` l'ouvre à tous, `successMessage` dit la suite après l'ajout (cf. [AddEntityModal](#addentitymodal)) |
 | `zoneSelector` | `ZoneSelectorConfig` | — | Sélecteur de zones géographiques |
 | `tagSelector` | `TagSelectorConfig` | — | Sélecteur de tags prédéfinis |
-| `csvButton` | `CsvButtonConfig` | — | Export CSV (colonnes configurables) |
+| `csvButton` | `CsvButtonConfig` | — | Export CSV (colonnes configurables). `adminOnly: true` (opt-in) réserve le bouton aux admins du site, comme `addButton` ; `fields` ajoute aux `baseParams.defaultFields` des champs chargés au seul clic (ex. e-mail, téléphone : ils ne partent pas vers chaque visiteur de la liste) |
 | `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon`. Titre et boutons sont alignés sur les bords de la grille de résultats (sans `container` ni marge latérale, `mb-3`) |
 | `bg` | string | — | Fond de section |
 | `width` | `"container"` | — | Contrainte de largeur |

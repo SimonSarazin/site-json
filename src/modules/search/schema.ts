@@ -1372,6 +1372,11 @@ const CsvButtonConfigSchema = z.object({
   separator: z.string().default(";"),
   filename: z.string().optional(),
   columns: z.array(CsvColumnSchema).optional(),
+  /** Bouton réservé aux admins du site (même règle que `addButton`). Opt-in, défaut `false`. */
+  adminOnly: z.boolean().optional(),
+  /** Champs chargés EN PLUS des `baseParams.defaultFields`, au seul moment de l'export (ex. contacts :
+   *  pas envoyés à chaque visiteur de la liste). Sans effet si la liste n'a pas de `defaultFields`. */
+  fields: z.array(z.string()).optional(),
 }).optional();
 
 export type CsvButtonConfig = z.infer<typeof CsvButtonConfigSchema>;

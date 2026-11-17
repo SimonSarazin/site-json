@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import Papa from "papaparse";
 import { csvValue } from "../lib/csvValue";
+import { csvExportFields } from "../lib/csvExportFields";
 import type { CsvButtonConfig } from "../schema";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
@@ -128,6 +129,7 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
           locality,
         } = baseParams;
 
+        const fields = csvExportFields(defaultFields, csvButton.fields);
         const param: Partial<GlobalAutocompleteCostumData> & Record<string, unknown> = ({
           name: searchText,
           fediverse,
@@ -140,9 +142,7 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
           ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
             filters: defaultFilters,
           }),
-          ...(defaultFields && defaultFields.length > 0 && {
-            fields: defaultFields,
-          }),
+          ...(fields && { fields }),
           ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
             sortBy: defaultSortBy,
           }),
