@@ -41,6 +41,7 @@ import {
   CAPACITY_FILTER_RANGES,
   defaultOpenFilterGroups,
   matchesCapacity,
+  matchesParentCountry,
   judgesOnParentPlace,
   matchesTypologies,
   matchesZones,
@@ -66,7 +67,7 @@ const RESOURCE_PLACE_MAP: MapConf = { popup: { type: "resource-place" } };
  * Section `coform-resource-directory` — annuaire à plat des ressources d'un
  * tiers-lieu (coworking / salle de réunion / hébergement). Variant SDK
  * `navigator-tl-ressource` (`/costum/navigator/getsressourcetl`) : tiers-lieu
- * porteur résolu + adresse/geo/image + garde région + `documents` + **éclatement
+ * porteur résolu + adresse/geo/image + garde géographique + `documents` + **éclatement
  * 1 salle = 1 réponse**, CÔTÉ SERVEUR. Facette **« type »** CÔTÉ CLIENT ;
  * **3 facettes prix** CÔTÉ SERVEUR (heure / demi-journée / journée, calquées sur
  * Communecter — `priceFilters`, défaut true). En option : **réseaux thématiques**
@@ -379,7 +380,12 @@ function ResourceDirectoryList({
   const zones = useMemo(() => selectedZones(pf.searchByFields), [pf.searchByFields]);
   const typologySel = useMemo(() => selectedFilters?.typologies ?? [], [selectedFilters]);
   // Zone, typologie ou texte : facettes jugées sur le lieu porteur → chargement/erreur des lieux affichés.
-  const surLieuPorteur = judgesOnParentPlace({ zones, typologies: typologySel, query: searchQuery });
+  const surLieuPorteur = judgesOnParentPlace({
+    zones,
+    typologies: typologySel,
+    query: searchQuery,
+    countryCode: source.scope?.addressCountry,
+  });
   const visible = useMemo(() => {
     if (aucunLieu) return [];
     // Type venu de l'URL (`?resourceType=`, sans colonne de filtres) : déjà appliqué à la REQUÊTE
@@ -392,6 +398,7 @@ function ResourceDirectoryList({
       if (!matchesCapacity(resourceCapacity(it.model.stats[0]), capacitySel)) return false;
       const parentId = it.model.parent?.id;
       const parent = parentId ? parents.get(parentId) : undefined;
+      if (!matchesParentCountry(parent?.addressCountry, source.scope?.addressCountry)) return false;
       if (!matchesZones(parent?.zones, zones)) return false;
       if (!matchesTypologies(parent?.tags, typologySel)) return false;
       if (!searchQuery.trim()) return true;
@@ -402,7 +409,7 @@ function ResourceDirectoryList({
       );
     });
     return limit === undefined ? filtered : filtered.slice(0, limit);
-  }, [aucunLieu, items, selectedFilters, zones, typologySel, searchQuery, parents, limit, t]);
+  }, [aucunLieu, items, selectedFilters, zones, typologySel, searchQuery, parents, limit, t, source.scope?.addressCountry]);
 
   // Vue carte : un repère par LIEU (cf. `groupServicesByPlace`), sa popup liste ses services
   // (`map.popup.type: "resource-place"`) ; chacun ouvre sa fiche (même détail que la liste : `listConf`).

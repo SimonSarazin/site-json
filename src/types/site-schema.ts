@@ -113,6 +113,8 @@ const HeroSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
+    headlineSize: z.enum(["sm", "md", "lg"]).optional(),
+    height: z.enum(["default", "compact"]).optional(),
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     videoBg: z.string().optional(),
@@ -2082,6 +2084,7 @@ export const Header = z.object({
   navFontSize: z.enum(["sm", "md", "lg"]).optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
+  navSpacing: z.enum(["default", "comfortable"]).optional(),
   navVisibleOnlyForListedPages: z.boolean().optional(),
   secondaryNav: z.array(EnhancedNavItem).optional(),
   secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),

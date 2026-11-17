@@ -9,6 +9,7 @@ export interface ResourceParentInfo {
   streetAddress?: string;
   postalCode?: string;
   addressLocality?: string;
+  addressCountry?: string;
   /** Ids des zones de l'adresse (`level1`…`level5` et `localityId`, tous niveaux confondus) — filtre de zone de l'annuaire. */
   zones?: string[];
   /** Tags du lieu (dont sa typologie, ex. « Ateliers artisanaux partagés ») — facette typologies. */

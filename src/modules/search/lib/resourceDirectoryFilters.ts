@@ -93,6 +93,12 @@ export function matchesZones(zonesOfParent: readonly string[] | undefined, zoneI
   return zoneIds.some((id) => zonesOfParent.includes(id));
 }
 
+/** Garde un code pays ISO exact ; lieu inconnu ou pays différent = exclu quand le périmètre est imposé. */
+export function matchesParentCountry(countryOfParent: string | undefined, requiredCountry: string | undefined): boolean {
+  if (!requiredCountry) return true;
+  return countryOfParent?.trim().toUpperCase() === requiredCountry.trim().toUpperCase();
+}
+
 /**
  * Lieux membres des réseaux thématiques cochés, lus dans `searchByFields` (entrées `parentId` du groupe
  * `filtersByPath` en `filterTarget: "parentId"`). ⚠ TOUTE entrée `parentId` sans `type` est prise pour un
@@ -134,13 +140,18 @@ export function matchesTypologies(parentTags: readonly string[] | undefined, sel
 }
 
 /**
- * Une facette active se juge-t-elle sur le LIEU PORTEUR (zone, typologie, recherche texte — ville, code
+ * Une facette active se juge-t-elle sur le LIEU PORTEUR (pays, zone, typologie, recherche texte — ville, code
  * postal, nom du lieu) ? Tant que les lieux porteurs ne sont pas lus, ou s'ils n'ont pas pu l'être, ces
  * facettes écartent tout : la liste vide dirait un « Aucun résultat » faux — l'appelant montre alors le
  * chargement ou l'erreur.
  */
-export function judgesOnParentPlace(active: { zones: readonly string[]; typologies: readonly string[]; query: string }): boolean {
-  return active.zones.length > 0 || active.typologies.length > 0 || active.query.trim() !== "";
+export function judgesOnParentPlace(active: {
+  zones: readonly string[];
+  typologies: readonly string[];
+  query: string;
+  countryCode?: string;
+}): boolean {
+  return active.zones.length > 0 || active.typologies.length > 0 || active.query.trim() !== "" || !!active.countryCode;
 }
 
 /**

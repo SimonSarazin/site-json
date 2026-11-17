@@ -3,6 +3,7 @@ import {
   addressZoneIds,
   defaultOpenFilterGroups,
   matchesCapacity,
+  matchesParentCountry,
   matchesTypologies,
   judgesOnParentPlace,
   matchesZones,
@@ -85,6 +86,18 @@ describe("selectedZones / matchesZones", () => {
   });
 });
 
+describe("matchesParentCountry", () => {
+  it("n'impose aucun pays sans périmètre", () => {
+    expect(matchesParentCountry(undefined, undefined)).toBe(true);
+  });
+  it("compare le code ISO sans tenir compte de la casse et exclut les lieux inconnus", () => {
+    expect(matchesParentCountry("BE", "BE")).toBe(true);
+    expect(matchesParentCountry("be", "BE")).toBe(true);
+    expect(matchesParentCountry("FR", "BE")).toBe(false);
+    expect(matchesParentCountry(undefined, "BE")).toBe(false);
+  });
+});
+
 describe("matchesTypologies", () => {
   it("rien de coché : tout passe, même lieu inconnu", () => {
     expect(matchesTypologies(undefined, [])).toBe(true);
@@ -107,6 +120,7 @@ describe("judgesOnParentPlace", () => {
     expect(judgesOnParentPlace({ ...rien, zones: ["Z"] })).toBe(true);
     expect(judgesOnParentPlace({ ...rien, typologies: ["Tiers-lieu culturel"] })).toBe(true);
     expect(judgesOnParentPlace({ ...rien, query: "lille" })).toBe(true);
+    expect(judgesOnParentPlace({ ...rien, countryCode: "BE" })).toBe(true);
   });
 });
 

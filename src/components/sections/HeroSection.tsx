@@ -7,7 +7,12 @@ import { HeroBackgroundImage } from "./HeroBackgroundImage";
 
 export function HeroSection({ id, props }: { id?: string; props: HeroSectionProps }) {
   const navigate = useNavigate();
-  const { headline, subhead, backgroundImage, videoBg, align = 'center', overlay = false, cta, scrollTo } = props;
+  const { headline, headlineSize = "lg", height = "default", subhead, backgroundImage, videoBg, align = 'center', overlay = false, cta, scrollTo } = props;
+  const headlineSizeClass = {
+    sm: "text-xl md:text-2xl lg:text-3xl",
+    md: "text-3xl md:text-4xl lg:text-5xl",
+    lg: "text-4xl md:text-6xl lg:text-7xl",
+  }[headlineSize];
 
   const handleScrollTo = (target: string) => {
     const element = document.querySelector(target);
@@ -30,7 +35,8 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
     <section
       id={id}
       className={cn(
-        "relative min-h-[70vh] flex items-center justify-center overflow-hidden"
+        "relative flex items-center justify-center overflow-hidden",
+        height === "compact" ? "min-h-0 py-8" : "min-h-[70vh]"
       )}
     >
       {/* Background */}
@@ -70,7 +76,7 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
           align === 'center' && "text-center",
           align === 'right' && "text-right"
         )}>
-          <T k={headline} as="h1" className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000" />
+          <T k={headline} as="h1" className={cn(headlineSizeClass, "font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000")} />
 
           {subhead && (
             <T k={subhead} as="p" className="text-xl md:text-2xl mb-8 opacity-90 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200" />

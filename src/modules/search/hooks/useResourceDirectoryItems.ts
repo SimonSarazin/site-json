@@ -23,7 +23,7 @@ export type ResourceDirectorySource = Pick<
 
 /**
  * Paramètres de recherche de l'annuaire (variant `navigator-tl-ressource`) : filtre fixe des
- * formulaires + garde de zone, champs nécessaires à l'éclatement serveur des salles.
+ * formulaires + garde géographique, champs nécessaires à l'éclatement serveur des salles.
  */
 export function buildResourceDirectoryBaseParams(src: ResourceDirectorySource): Record<string, unknown> {
   const addressLevel1 = src.scope?.addressLevel1;
@@ -36,7 +36,7 @@ export function buildResourceDirectoryBaseParams(src: ResourceDirectorySource): 
     // `form` : indispensable à l'éclatement serveur des salles et au filtre
     // prix par formulaire (`Navigator::getRessourceTL`).
     defaultFields: ["name", "description", "answers", "collection", "form"],
-    indexStepList: Math.min(src.limit ?? RD_PAGE_SIZE, RD_PAGE_SIZE),
+    indexStepList: Math.min(src.scope?.addressCountry ? RD_PAGE_SIZE : (src.limit ?? RD_PAGE_SIZE), RD_PAGE_SIZE),
     notSourceKey: true,
     ...(src.costumSlug ? { costumSlug: src.costumSlug } : {}),
     ...(src.contextId ? { contextId: src.contextId } : {}),

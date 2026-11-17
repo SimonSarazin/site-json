@@ -57,7 +57,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                     </div>
 
                     {/* Menu desktop */}
-                    <div className="hidden xl:flex items-center space-x-1.5 text-sm font-medium ml-8 min-w-0">
+                    <div className={`hidden xl:flex items-center ${header.navSpacing === "comfortable" ? "space-x-3" : "space-x-1.5"} text-sm font-medium ml-8 min-w-0`}>
                         {nav.map((item, idx) => {
                             const hasChildren = !!item.children?.length;
 

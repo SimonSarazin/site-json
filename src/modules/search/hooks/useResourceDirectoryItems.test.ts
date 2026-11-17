@@ -27,6 +27,16 @@ describe("buildResourceDirectoryBaseParams", () => {
     expect(buildResourceDirectoryBaseParams({ resourceTypes, finderSuffix: "FIND", limit: 900 }).indexStepList).toBe(500);
   });
 
+  it("charge les ressources avant la limite d'affichage pour appliquer le périmètre pays sur le lieu porteur", () => {
+    const p = buildResourceDirectoryBaseParams({
+      resourceTypes,
+      finderSuffix: "FIND",
+      scope: { addressCountry: "BE" },
+      limit: 5,
+    });
+    expect(p.indexStepList).toBe(500);
+  });
+
   it("sans costum ni contexte : aucune clé vide envoyée", () => {
     const p = buildResourceDirectoryBaseParams({ resourceTypes, finderSuffix: "FIND" });
     expect(p).not.toHaveProperty("costumSlug");

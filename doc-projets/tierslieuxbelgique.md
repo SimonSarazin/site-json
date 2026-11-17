@@ -4,14 +4,14 @@
 
 > Document de travail partagé, à tenir à jour. Mémoire : `[[project-tierslieuxbelgique]]`.
 
-Dernière mise à jour : **12/11/2026**.
+Dernière mise à jour : **17/11/2026**.
 
 ## 1. Contexte
 
 Créer un site SiteForge pour le réseau belge, inspiré de tiers-lieux.org et de
 [tierslieux.xyz](https://www.tierslieux.xyz/). L'utilisateur a confirmé l'entité
-`tierslieuxbelgique`, le français et un premier périmètre adapté.
-Branche : `tiers-lieux-xyz-belgique`. Porteur : organisation « Tiers Lieux Belgique ».
+`tierslieuxbelgique`, le français et un premier périmètre adapté. Branche :
+`tiers-lieux-xyz-belgique`. Porteur : organisation « Tiers Lieux Belgique ».
 
 ## 2. Objectifs
 
@@ -28,7 +28,8 @@ membres reprend le rattachement à l'organisation et exclut les invitations.
 ## 4. Cahier des charges
 
 Première version en français ; identité inspirée du terracotta du site existant.
-Logo et photographies restent à intégrer.
+Le logo, la galerie d'accueil et l'image de définition sont intégrés dans la
+configuration et les assets locaux.
 
 ## 5. Modèle de données
 
@@ -85,6 +86,12 @@ transport et accessibilité. Les valeurs sont envoyées comme tags, combinés en
 comme sur la cartographie source. Aucun filtre ne restreint l'annuaire par défaut.
 Le contrôle « Ouvert maintenant » n'est pas encore implémenté : la source envoie
 `openingHours=true`, paramètre non pris en charge par la recherche SiteForge actuelle.
+Le bas de la page d'accueil reprend les deux listes dynamiques de tiers-lieux.org.
+La liste des lieux est limitée au pays `BE` et au `sourceKey` `tierslieuxbelgique`,
+comme l'annuaire `/lieux`. Les services sont limités aux ressources dont le lieu
+porteur a le code pays `BE` ; la page `/services` garde uniquement la Belgique
+dans son filtre géographique. Au contrôle du 17/11/2026, aucune ressource belge
+n'est retournée ; à revérifier lorsque de nouveaux services seront publiés.
 
 ## 8. Étapes de mise en place
 
@@ -114,14 +121,22 @@ ciblés du profil passent. Les sept groupes de filtres ont été comparés aux
 valeurs de la cartographie ; une combinaison incluant une virgule, son
 rechargement et la réinitialisation ont été vérifiés en navigateur, ainsi que
 le filtre Santé sur mobile. Le rendu SSR de huit pages et les tests ciblés passent.
+Le 17/11/2026, les deux sections dynamiques « Découvrir les lieux » et « Trouver
+un service » de tiers-lieux.org ont été ajoutées en bas de l'accueil, avant le
+footer. Le 17/11/2026, leur périmètre a été restreint aux lieux et services
+belges : les lieux utilisent `address.addressCountry=BE` et le `sourceKey`
+`tierslieuxbelgique` ; les services vérifient `addressCountry=BE` sur leur lieu
+porteur après chargement des adresses. La configuration valide 24 sections.
+Le rendu SSR confirme les neuf pages ; ces annuaires restent chargés côté client.
+Le fil « Nouvelles » reste également sans contenu SSR.
 
 ## 10. Checklist d'avancement
 
 | Élément | État | Détail |
 |---|---|---|
-| Configuration | ✅ | 8 pages, 18 sections |
+| Configuration | ✅ | 9 pages, 24 sections ; `/lieux`, `/services` et les listes de l'accueil sont limitées à la Belgique |
 | Données | 🟡 | Annuaires et agenda sondés ; actualités visibles |
-| Identité | 🟡 | Palette posée ; logo et photos à intégrer |
+| Identité | ✅ | Palette posée ; logo, galerie d'accueil et visuel de définition intégrés |
 | Navigation | 🟡 | Rubriques du site existant ; pages manquantes liées à la source |
 | Préflight | 🟡 | Huit échecs sur des références belges et des contrôles globaux |
 | Déploiement | ❌ | À définir |
@@ -136,9 +151,9 @@ Les données de l'annuaire sont filtrées par le tag `TiersLieux` et la source d
 réseau. Les données de services et de formulaires de la fiche dépendent des
 réponses existantes dans les formulaires de tiers-lieux.org ; les vérifier pour
 les lieux belges. Les compétences des accompagnants sont une liste fixe issue du site
-existant : à synchroniser si celui-ci évolue. Les pages légales propres au site
-et le consentement sont à définir avant déploiement. Aucun dossier d'images
-dédié n'est déclaré pour l'instant.
+existant : à synchroniser si celui-ci évolue. Les pages légales propres au site et le consentement sont à définir avant
+déploiement. Les liens du bandeau vers les services, le wiki, le financement et
+l'observatoire sont externes ; les destinations belges disponibles sont locales.
 
 ## 13. Évolutions et questions
 
