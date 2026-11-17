@@ -13,7 +13,7 @@
 > [Module Agenda](../doc/29-module-agenda.md).
 > Mémoire : `[[project-cocolight-siteforge]]` (le projet y est suivi — pas de fiche dédiée).
 
-Dernière mise à jour : **2026-10-28** (review de la MR 114 : mentions « non committé » et branche remplacées par les commits et la branche `ess974`) ; 27/10 (fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type et réglage `periods` annoncés) ; 26/10 : ajustements des créneaux d'ESS974 repris : créneau occupé signalé en direct à l'ajout et à la modification d'horaire, bouton d'ajout par club sur la fiche équipement, survol lisible) ; le 23/10, créneaux du lot 8 d'ESS974 et gestion des périodes.
+Dernière mise à jour : **2026-11-17** (relecture avant commit du lot du 12/11 : correctifs du code commun avec ESS974, détaillés au §9 de sa doc ; config de Saint-Paul inchangée ; lot commité sur `ess974`, non poussé — §9) ; 2026-11-12 (gestion des créneaux d'ESS974 reprise ici : filtres « Créneau disponible » et « Statut d'ouverture », heures et mesure d'usage sur les fiches, indicateurs d'usage de l'Observatoire, bande et tri des équipements, KPI cliquables, heures sur les cartes de l'annuaire, non commités — §9) ; 2026-10-28 (review de la MR 114 : mentions « non committé » et branche remplacées par les commits et la branche `ess974`) ; 27/10 (fiche équipement en option `equipmentDetails`, tableau de bord d'installation sur la semaine type et réglage `periods` annoncés) ; 26/10 : ajustements des créneaux d'ESS974 repris : créneau occupé signalé en direct à l'ajout et à la modification d'horaire, bouton d'ajout par club sur la fiche équipement, survol lisible) ; le 23/10, créneaux du lot 8 d'ESS974 et gestion des périodes.
 
 ---
 
@@ -60,6 +60,8 @@ commune **ou** de la source `saintpaulSport1` (union `$or`).
 | 2026-09-07 | Peterson (+ Claude) | **Recette complète du lot** : `oneAnswerPerPers` repassé à `false` par Peterson, deux réservations créées et vérifiées de bout en bout, portes rejouées (rendu 12/12, sonde 6/6, `config:validate` ✅), recette en éventail sur 5 dimensions — 3 constats mineurs confirmés (§12) |
 | 2026-09-23 | Peterson (+ Claude) | **Lot « liens croisés équipement ↔ organisation »** : bouton vers la fiche du club dans la section réservations, section « équipements réservés » dans la fiche d'une organisation, ouverture d'une fiche par identifiant (`list.previewFetch`) — cf. section dédiée en fin de page |
 | 2026-09-23 | Peterson (+ Claude) | **Lot « observatoire embarqué »** : le tableau de bord devient une configuration réutilisable (`ObservatoryPanel`), appelable depuis une section search ; page Équipements → 3ᵉ vue « Observatoire » à côté de liste et carte, et liste à gauche en mode carte — cf. section dédiée en fin de page |
+| 2026-11-11/12 | Claude | **Gestion des créneaux d'ESS974 reprise** et ajustements communs aux deux sites (bande et tri des équipements, KPI cliquables, heures sur les cartes de l'annuaire), à la demande de Peterson ; non commités (§9) |
+| 2026-11-17 | Claude | Relecture avant commit du lot du 12/11 (règles de Thomas, fonctionnement, optimalité) : correctifs du code commun ; lot commité sur `ess974`, non poussé (§9) |
 
 ## 2. Objectifs de la configuration
 
@@ -166,6 +168,74 @@ symétrie avec `/agenda` (inoffensif, et prêt si des articles géolocalisés ap
 4. Déploiement : inchangé (`SITE_CONFIG_PATH` en prod, cf. checklist du site parent).
 
 ## 9. Impacts des modifications
+
+### 12/11/2026 — gestion des créneaux d'ESS974 reprise ici, ajustements communs (non commités)
+
+Demande de Peterson du 11/11 : reprendre sur Saint-Paul toute la gestion des créneaux d'ESS974, en l'adaptant au site,
+plus les ajustements demandés pour les deux sites (§9 d'[equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md) ;
+plan `.claude/plans/plan-ess974-saint-paul-creneaux-kpi-annuaire.md`). Saint-Paul avait déjà l'ajout et la
+modification des créneaux, les périodes, le contrôle en direct, le lien vers l'association et l'historique.
+
+**Ce qui change dans la config** (le formulaire des créneaux est le même que sur ESS974, avec les mêmes champs) :
+- **Équipements** :
+  - filtres « Créneau disponible » (`slotFilter`) et « Statut d'ouverture » (`usageFilter`) dans le bandeau ;
+  - fiche équipement : heures (`hours`) et mesure d'usage (`usage`, avec le type d'usager), soit le résumé
+    « Occupé … · libre … · taux d'occupation … » et les cases « Libre » ;
+  - bande jaune → orange (l'`accent` de Saint-Paul) sur les équipements avec créneaux, légende, taux sur la carte, tri
+    par taux.
+- **Observatoire** :
+  - 10 dimensions d'usage, filtres Statut d'ouverture, Taux d'occupation, Heures clubs et PSHS ;
+  - 7 KPI d'ESS974 : ouverts aux clubs, part des ouverts, heures réservées par semaine et cumulées, heures clubs, heures
+    disponibles, taux moyen. Il y a désormais 14 KPI, 5 par ligne (`kpiColumns`) ;
+  - 5 graphes (statut, tranches de taux, heures clubs, heures disponibles et taux moyen par commune — les lieux-dits,
+    comme le graphe « Équipements par commune ») et 6 colonnes d'export ;
+  - KPI cliquables : PMR, PSHS, Intérieur, type principal, ouverts, et les KPI d'heures et de taux (avec créneaux) ;
+  - fiche ouverte depuis la liste : heures et mesure d'usage.
+- **Data et palette** : même fiche (heures, mesure d'usage) ; `orgaLink` ajouté à la palette, qui ne l'avait pas.
+- **Annuaire** : « Tous les usagers » ; heures sur la fiche association (`bookedResources.hours`) et sur chaque carte
+  (`card.bookedHours`).
+
+**Adaptations au site** :
+- la fiche association reste en pleine largeur, comme décidé le 26/10 : la plupart des associations de l'annuaire
+  n'ont aucune réservation, une colonne vide n'aurait rien apporté ;
+- pas de restriction des équipements réservés au site (`poiFilters`) : la fiche montre, comme avant, tous les
+  équipements de l'association. Les heures de la carte portent donc sur les mêmes ;
+- « Sport pratiqué », la page Méthodologie et le questionnaire ne sont pas repris : ils relèvent du CDC de la DRAJES,
+  pas de la gestion des créneaux ;
+- la mesure d'usage reprend les réglages d'ESS974 : plage de référence de 8 h à 22 h, 7 jours sur 7, la même que le
+  tableau de bord d'installation de Saint-Paul ; publics scolaires ; tranches. Le statut « ouvert » y veut dire « au
+  moins un créneau de club en cours ou à venir ».
+
+**À savoir** :
+- **« Heures / semaine » de la fiche** : il additionne les créneaux. Le résumé « Occupé … » fusionne les
+  chevauchements. Les deux chiffres diffèrent donc dès que deux clubs partagent une plage (dojo salle de combat :
+  72,3 h réservées pour 55,3 h occupées) ; c'est la même règle sur ESS974.
+- **Page Équipements** : elle lit désormais les réservations à l'affichage, pour la bande (une requête, en cache).
+
+**Validation** (11-12/11, base locale, visiteur, aucune écriture, aucune erreur de page) :
+- `config:validate` ✅ 12 pages, 21 sections ; `audit:config` ✅ 0 constat ; `config:render` ✅ 12/12 pages, 21/21
+  sections ;
+- Équipements : les 2 filtres sont dans le bandeau ; tri décroissant (56 %, 32 %, 30 %…) ; 24 équipements avec
+  créneaux dans la première tranche ; `?statut=open` → 31 équipements ;
+- fiche du dojo salle de combat : résumé d'usage (56 %), heures, 8 boutons « Fiche » d'usagers ;
+- Observatoire : les 14 KPI calculés (31 ouverts, 626,2 h/semaine, taux moyen 19,4 %), les 10 graphes rendus,
+  11 KPI cliquables ;
+- annuaire : heures sur les cartes, celles d'AD2S identiques à sa fiche ;
+- l'exemple `data-observatory` de l'assistant, tiré de `/observatoire`, est resynchronisé après vérification de
+  chaque écart (préflight 923/927, les 4 échecs d'environnement).
+
+**Relecture avant commit (17/11)** : le code est commun avec ESS974. Les correctifs sont détaillés au §9 de
+[equipements-sportifs-scolaires.md](equipements-sportifs-scolaires.md) :
+- liste triée qui se figeait sur un grand écran ;
+- échec du chargement complet affiché « aucun résultat » ;
+- chiffre des KPI cliquables annoncé aux lecteurs d'écran ;
+- calculs refaits pour rien ;
+- historique des créneaux importé sans `lazy()` inopérant.
+
+La config de Saint-Paul est inchangée. `config:validate` ✅ 12 pages, 21 sections ; `config:render` ✅ 12/12 pages,
+21/21 sections. Le passage au navigateur s'est fait sur ESS974, site témoin du même code.
+
+**Commité** le 17/11 sur `ess974`, non poussé ; MR vers `main` à ouvrir par Peterson.
 
 ### 27/10/2026 — review de la MR 114 : fiche, tableau de bord d'installation, périodes
 
@@ -457,6 +527,7 @@ Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
 | 11 | Réservation d'un créneau depuis la fiche | ✅ | `oneAnswerPerPers` passé à `false` le 07/09 → **deux réservations créées de bout en bout** sur un même équipement (mardi 18 h, jeudi 10 h) par le même compte, stockées à la forme historique (`finder<step>` + tableau de créneaux), grille passée de 98 à 96 cases libres et créneaux pris rendus non réservables |
 | 14 | Gestion des périodes des créneaux | ✅ | Filtre « du … au … », cases libres sur la période choisie, période propre à chaque créneau, chevauchements refusés — vérifié au navigateur le 23/10 (§9). En production : `oneAnswerPerPers` encore à `true` (§13) |
 | 15 | Créneaux du lot 8 d'ESS974 | ✅ | Cartes fusionnées, périodes sous chaque club, modification d'horaire, ajout de créneaux et filtre de période sur la fiche association, formulaire sans « Étape 1 » ni période par créneau — vérifié au navigateur le 23/10 (§9). Le 26/10 : créneau occupé signalé en direct à l'ajout et à la modification, bouton d'ajout par club — vérifié au navigateur (§9). En production : règle d'affichage conditionnel du formulaire partagé (§13) |
+| 16 | Gestion des créneaux d'ESS974 reprise (filtres créneau et statut, heures et mesure d'usage, indicateurs de l'Observatoire, bande et tri, KPI cliquables, heures sur les cartes de l'annuaire) | 🟡 | Implémentée et vérifiée au navigateur le 12/11, relue le 17/11 et commitée sur `ess974` (§9) ; MR vers `main` à ouvrir par Peterson |
 
 ## 11. Dépendances SDK ↔ `cocolight-api-client`
 
@@ -565,6 +636,7 @@ Observatoire sert de snapshot canonique. Les deux diffs se limitent au lot.
 | Compléter les **7 usagers sans organisation taguée** (cf. §12) | Peterson (script) |
 | Rattacher des comptes aux 41 organisations (aucune n'a de `links.members`) — condition pour que les clubs agissent eux-mêmes | Peterson (+ Aboire) |
 | Conserver ou retirer le correctif `select-objet.tsx` (hors périmètre initial du lot, cf. §9) | Peterson |
+| Statut d'ouverture et KPI « ouverts aux clubs » (repris d'ESS974 le 12/11) : la notion vient du CDC scolaire de la DRAJES. Les garder sur Saint-Paul, où la plupart des équipements sont municipaux ? | Peterson |
 
 ## Onglet admin « Migration » (2026-08-15)
 

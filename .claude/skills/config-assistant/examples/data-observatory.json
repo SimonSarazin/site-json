@@ -241,6 +241,103 @@
             "fr": "Handi.",
             "en": "Disability"
           }
+        },
+        "statut": {
+          "paths": [
+            "__usage.status"
+          ],
+          "label": {
+            "fr": "Statut d'ouverture",
+            "en": "Opening status"
+          }
+        },
+        "planifie": {
+          "paths": [
+            "__usage.planned"
+          ],
+          "kind": "anyTrue",
+          "label": {
+            "fr": "Avec créneaux",
+            "en": "With slots"
+          }
+        },
+        "ouvert": {
+          "paths": [
+            "__usage.open"
+          ],
+          "kind": "anyTrue",
+          "label": {
+            "fr": "Ouvert aux clubs",
+            "en": "Open to clubs"
+          }
+        },
+        "ouverts": {
+          "paths": [
+            "__usage.openCount"
+          ],
+          "kind": "number",
+          "label": {
+            "fr": "Ouverts aux clubs",
+            "en": "Open to clubs"
+          }
+        },
+        "heuresClubs": {
+          "paths": [
+            "__usage.clubHours"
+          ],
+          "kind": "number",
+          "label": {
+            "fr": "Heures clubs / semaine",
+            "en": "Club hours / week"
+          }
+        },
+        "heuresScolaires": {
+          "paths": [
+            "__usage.schoolHours"
+          ],
+          "kind": "number",
+          "label": {
+            "fr": "Heures scolaires / semaine",
+            "en": "School hours / week"
+          }
+        },
+        "heuresLibres": {
+          "paths": [
+            "__usage.freeHours"
+          ],
+          "kind": "number",
+          "label": {
+            "fr": "Heures disponibles / semaine",
+            "en": "Available hours / week"
+          }
+        },
+        "taux": {
+          "paths": [
+            "__usage.rate"
+          ],
+          "kind": "number",
+          "label": {
+            "fr": "Taux d'occupation",
+            "en": "Occupancy rate"
+          }
+        },
+        "trancheTaux": {
+          "paths": [
+            "__usage.rateBand"
+          ],
+          "label": {
+            "fr": "Taux d'occupation",
+            "en": "Occupancy rate"
+          }
+        },
+        "trancheClubs": {
+          "paths": [
+            "__usage.clubHoursBand"
+          ],
+          "label": {
+            "fr": "Heures clubs / semaine",
+            "en": "Club hours / week"
+          }
         }
       },
       "filters": [
@@ -254,6 +351,18 @@
           "dependsOn": "epci"
         },
         {
+          "dimension": "statut",
+          "multiple": true
+        },
+        {
+          "dimension": "trancheTaux",
+          "multiple": true
+        },
+        {
+          "dimension": "trancheClubs",
+          "multiple": true
+        },
+        {
           "dimension": "type",
           "multiple": true
         },
@@ -262,6 +371,7 @@
           "multiple": true
         },
         "pmr",
+        "pshs",
         {
           "dimension": "prop",
           "multiple": true
@@ -712,10 +822,70 @@
               "fr": "Dernière mise à jour",
               "en": "Last update"
             }
+          },
+          {
+            "paths": [
+              "__usage.status"
+            ],
+            "label": {
+              "fr": "Statut d'ouverture",
+              "en": "Opening status"
+            }
+          },
+          {
+            "paths": [
+              "__usage.schoolHours"
+            ],
+            "kind": "number",
+            "label": {
+              "fr": "Heures scolaires / semaine",
+              "en": "School hours / week"
+            }
+          },
+          {
+            "paths": [
+              "__usage.clubHours"
+            ],
+            "kind": "number",
+            "label": {
+              "fr": "Heures clubs / semaine",
+              "en": "Club hours / week"
+            }
+          },
+          {
+            "paths": [
+              "__usage.unknownHours"
+            ],
+            "kind": "number",
+            "label": {
+              "fr": "Heures non précisées / semaine",
+              "en": "Unspecified hours / week"
+            }
+          },
+          {
+            "paths": [
+              "__usage.freeHours"
+            ],
+            "kind": "number",
+            "label": {
+              "fr": "Heures disponibles / semaine",
+              "en": "Available hours / week"
+            }
+          },
+          {
+            "paths": [
+              "__usage.rate"
+            ],
+            "kind": "number",
+            "label": {
+              "fr": "Taux d'occupation (%)",
+              "en": "Occupancy rate (%)"
+            }
           }
         ]
       },
       "drilldown": true,
+      "kpiColumns": 5,
       "kpis": [
         {
           "kind": "count",
@@ -744,7 +914,10 @@
             "en": "PMR Accessible"
           },
           "icon": "accessibility",
-          "accent": "chart-2"
+          "accent": "chart-2",
+          "filter": {
+            "dimension": "pmr"
+          }
         },
         {
           "kind": "percentTrue",
@@ -754,7 +927,10 @@
             "en": "PSHS Accessible"
           },
           "icon": "eye",
-          "accent": "chart-4"
+          "accent": "chart-4",
+          "filter": {
+            "dimension": "pshs"
+          }
         },
         {
           "kind": "valueSplit",
@@ -765,7 +941,10 @@
             "en": "Indoor"
           },
           "icon": "home",
-          "accent": "chart-3"
+          "accent": "chart-3",
+          "filter": {
+            "dimension": "nature"
+          }
         },
         {
           "kind": "top",
@@ -775,7 +954,10 @@
             "en": "Top type"
           },
           "icon": "trophy",
-          "accent": "chart-5"
+          "accent": "chart-5",
+          "filter": {
+            "dimension": "type"
+          }
         },
         {
           "kind": "sum",
@@ -787,6 +969,108 @@
           },
           "icon": "ruler",
           "accent": "chart-1"
+        },
+        {
+          "kind": "sum",
+          "dimension": "ouverts",
+          "label": {
+            "fr": "Ouverts aux clubs",
+            "en": "Open to clubs"
+          },
+          "icon": "door-open",
+          "accent": "chart-2",
+          "filter": {
+            "dimension": "statut",
+            "where": "ouvert"
+          }
+        },
+        {
+          "kind": "percentTrue",
+          "dimension": "ouvert",
+          "label": {
+            "fr": "Part des équipements ouverts",
+            "en": "Share of open facilities"
+          },
+          "icon": "percent",
+          "accent": "chart-3",
+          "filter": {
+            "dimension": "statut"
+          }
+        },
+        {
+          "kind": "reservationHours",
+          "period": "weekly",
+          "unit": "h",
+          "label": {
+            "fr": "Heures réservées / semaine",
+            "en": "Booked hours / week"
+          },
+          "icon": "clock",
+          "accent": "chart-2",
+          "filter": {
+            "dimension": "statut",
+            "where": "planifie"
+          }
+        },
+        {
+          "kind": "reservationHours",
+          "period": "cumulative",
+          "unit": "h",
+          "label": {
+            "fr": "Heures réservées cumulées",
+            "en": "Cumulative booked hours"
+          },
+          "icon": "calendar-clock",
+          "accent": "chart-4",
+          "filter": {
+            "dimension": "statut",
+            "where": "planifie"
+          }
+        },
+        {
+          "kind": "sum",
+          "dimension": "heuresClubs",
+          "unit": "h",
+          "label": {
+            "fr": "Heures clubs / semaine",
+            "en": "Club hours / week"
+          },
+          "icon": "users",
+          "accent": "chart-1",
+          "filter": {
+            "dimension": "statut",
+            "where": "planifie"
+          }
+        },
+        {
+          "kind": "sum",
+          "dimension": "heuresLibres",
+          "unit": "h",
+          "label": {
+            "fr": "Heures disponibles / semaine",
+            "en": "Available hours / week"
+          },
+          "icon": "calendar-check",
+          "accent": "chart-5",
+          "filter": {
+            "dimension": "statut",
+            "where": "planifie"
+          }
+        },
+        {
+          "kind": "avg",
+          "dimension": "taux",
+          "unit": "%",
+          "label": {
+            "fr": "Taux d'occupation moyen",
+            "en": "Average occupancy rate"
+          },
+          "icon": "gauge",
+          "accent": "primary",
+          "filter": {
+            "dimension": "statut",
+            "where": "planifie"
+          }
         }
       ],
       "charts": [
@@ -846,6 +1130,68 @@
             "en": "Equipment by commune"
           },
           "layout": "full"
+        },
+        {
+          "kind": "pie",
+          "dimension": "statut",
+          "label": {
+            "fr": "Statut d'ouverture",
+            "en": "Opening status"
+          },
+          "layout": "half",
+          "colors": {
+            "Ouvert": "chart-2",
+            "Non ouvert": "chart-4",
+            "Sans planning": "muted",
+            "Open": "chart-2",
+            "Not open": "chart-4",
+            "No schedule": "muted"
+          }
+        },
+        {
+          "kind": "pie",
+          "dimension": "trancheTaux",
+          "label": {
+            "fr": "Taux d'occupation",
+            "en": "Occupancy rate"
+          },
+          "layout": "half"
+        },
+        {
+          "kind": "bars",
+          "dimension": "commune",
+          "value": {
+            "kind": "sum",
+            "dimension": "heuresClubs"
+          },
+          "label": {
+            "fr": "Heures occupées par les clubs, par commune (h / semaine)",
+            "en": "Hours used by clubs, by municipality (h / week)"
+          }
+        },
+        {
+          "kind": "bars",
+          "dimension": "commune",
+          "value": {
+            "kind": "sum",
+            "dimension": "heuresLibres"
+          },
+          "label": {
+            "fr": "Heures disponibles, par commune (h / semaine)",
+            "en": "Available hours, by municipality (h / week)"
+          }
+        },
+        {
+          "kind": "bars",
+          "dimension": "commune",
+          "value": {
+            "kind": "avg",
+            "dimension": "taux"
+          },
+          "label": {
+            "fr": "Taux d'occupation moyen, par commune (%)",
+            "en": "Average occupancy rate, by municipality (%)"
+          }
         }
       ],
       "rowAction": {
@@ -865,7 +1211,8 @@
               "slots": "mrc40jaxu06fjaa6ngn",
               "periodStart": "mrc41scujf3aq9ppw1l",
               "periodEnd": "mrc4259ir2xnu4vp2fq",
-              "bookingType": "mrc3zgl902y2fpfcby3y"
+              "bookingType": "mrc3zgl902y2fpfcby3y",
+              "userType": "mrc3wx4wnlp9ltnpw6d"
             },
             "periods": true,
             "booking": {
@@ -875,8 +1222,36 @@
               "adminOnly": true,
               "editHours": true
             },
+            "hours": true,
             "orgaLink": {
               "path": "/annuaire"
+            },
+            "usage": {
+              "referenceAmplitude": {
+                "startHour": 8,
+                "endHour": 22,
+                "days": 7
+              },
+              "schoolUserTypes": [
+                "Etablissement scolaire",
+                "Association sportive scolaire"
+              ],
+              "schoolOrgTypes": [
+                "GovernmentOrganization"
+              ],
+              "bands": {
+                "rate": [
+                  0,
+                  25,
+                  50,
+                  75
+                ],
+                "clubHours": [
+                  0,
+                  5,
+                  15
+                ]
+              }
             }
           },
           "installationDashboard": {
