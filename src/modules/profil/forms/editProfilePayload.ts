@@ -145,7 +145,9 @@ export const PROFIL_DESCRIPTORS: Record<string, FormDescriptor> = {
     url: COMMON.url, email: COMMON.email,
     mobile: f("mobile", "coerce:orEmpty", "coerce:orEmpty"), fixe: f("fixe", "coerce:orEmpty", "coerce:orEmpty"),
     birthDate: f("birthDate", "coerce:dateYMDutc", "coerce:orEmpty"),
-    tags: COMMON.tags, ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
+    tags: COMMON.tags,
+    skills: f("skills", "coerce:arrayOrEmpty", "pf:tags", "array"), // compétences : même codec que tags ([] → "" = $unset legacy)
+    ...ADDR_MEMBERS, ...GEO_FIELDS, ...SOCIAL_FIELDS,
   } },
   organizations: { ...base("organizations", { ...ADDR_GROUP, ...SOCIAL_GROUP }), fields: {
     name: COMMON.name, slug: COMMON.slug, shortDescription: COMMON.shortDescription, description: COMMON.description,

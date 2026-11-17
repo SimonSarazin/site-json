@@ -958,6 +958,11 @@
         "noResults": "No tags found",
         "typeToSearch": "Type at least 2 characters"
       },
+      "skills": {
+        "label": "Skills",
+        "placeholder": "Add a skill...",
+        "description": "Your know-how, shown on your profile and used to find members."
+      },
       "type": {
         "label": "Organization type",
         "placeholder": "Select a type",
