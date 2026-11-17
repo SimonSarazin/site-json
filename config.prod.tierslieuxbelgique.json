@@ -231,20 +231,6 @@
       },
       {
         "label": {
-          "fr": "Cartographie"
-        },
-        "icon": "map",
-        "path": "https://www.tierslieux.xyz/#cartographie"
-      },
-      {
-        "label": {
-          "fr": "Tiers-lieux ruraux"
-        },
-        "icon": "trees",
-        "path": "https://www.tierslieux.xyz/#23tierslieuxruraux"
-      },
-      {
-        "label": {
           "fr": "Réseau social"
         },
         "icon": "users",
