@@ -437,26 +437,19 @@
           "id": "accueil-bienvenue",
           "props": {
             "headline": {
-              "fr": "Des lieux pour imaginer et agir ensemble"
+              "fr": "Les tiers-lieux, espaces de rencontres et de création de valeurs."
             },
             "subhead": {
-              "fr": "En Belgique, les tiers-lieux rassemblent des personnes, des idées et des ressources pour faire vivre les territoires."
+              "fr": "Des leviers de robustesse territoriale.\nAllez à la rencontre de ces projets, ils sont arrivés près de chez vous !"
             },
             "align": "center",
             "overlay": false,
             "cta": [
               {
                 "label": {
-                  "fr": "Découvrir les lieux"
+                  "fr": "En savoir plus sur les tiers-lieux"
                 },
-                "href": "/lieux"
-              },
-              {
-                "label": {
-                  "fr": "En savoir plus"
-                },
-                "href": "/a-propos",
-                "variant": "secondary"
+                "href": "/a-propos"
               }
             ]
           }
@@ -466,10 +459,24 @@
           "id": "accueil-definition",
           "props": {
             "title": {
-              "fr": "Qu'est-ce qu'un tiers-lieu ?"
+              "fr": "Qu’entendons-nous par tiers-lieux ?"
             },
             "description": {
-              "fr": "Un tiers-lieu est un espace vivant où un collectif partage des ressources, des savoirs et des envies. Chaque lieu invente ses propres façons de coopérer et de répondre aux besoins de son territoire."
+              "fr": "Il s’agit de lieux qui rassemblent un collectif d'usager.e.s autour d’une identité et des valeurs, afin de permettre à celle-ci de partager ressources, compétences et savoirs, avec une volonté de construire un futur résilient, où des rencontres se créent, ou des idées se matérialisent, des vrais laboratoires du monde de demain.\n\nUn tiers-lieu rayonne au travers sa pluri-fonctionnalité, ses interfaces avec le monde extérieur et sa reliance dans un maillage territorial qui génère l’abondance.\n\nChaque tiers-lieu est “une démarche collective d’intérêt général, qui s’inscrit dans la coopération territoriale dès sa conception. Par nature uniques, ils sont non réplicables. Ils émanent d’un collectif d’acteurs, qui ensemble souhaitent créer de nouvelles dynamiques économiques ou sociales en réponse aux enjeux de leur territoire."
+            },
+            "align": "center",
+            "imagePosition": "right"
+          }
+        },
+        {
+          "type": "content",
+          "id": "accueil-partage",
+          "props": {
+            "title": {
+              "fr": "Un espace de partage entre tiers-lieux"
+            },
+            "description": {
+              "fr": "Les ressources à votre disposition sont le fruit d'une centralisation de pleins d’outils, de documents pratiques et de partages d’expériences utiles par et pour les tiers-lieux. Contribuez à cette dynamique collective en remplissant ces formulaires.\n\n**Partager vos outils et documents**\nVous utilisez des outils ou documents qui pourraient être utiles à d’autres tiers-lieux en développement.\nhttps://docs.google.com/forms/d/e/1FAIpQLSe0I6NtLJKNV3qnKmIq2KlC8VkyenHj5ZXTaJ5RThgqZ-mjnQ/viewform?usp=header\n\n**Partager vos contacts**\nExperts ou des techniciens qui accumulent de l’expérience avec les tiers-lieux que vous recommanderiez à d’autres !\nhttps://docs.google.com/forms/d/e/1FAIpQLScQ4_BEfk0qeYR6HUQ5SQ63_OmucrQH8WvnMGrde_gjK3-trg/viewform?usp=header\n\n**Partage d’expériences ou challenges collectif**\nUn sujet dont vous souhaitez débattre, une situation que vous voulez défier, un piège à éviter, une expérience à partager avec d’autres tiers-lieux.\nhttps://docs.google.com/forms/d/e/1FAIpQLSfLorpjmxtc71GdrjRe9oWjfBCRIREKnL6duK2-Wdg2YUfYuw/viewform?usp=header"
             },
             "align": "center",
             "imagePosition": "right"
@@ -479,73 +486,34 @@
           "type": "cards",
           "id": "accueil-acces",
           "props": {
-            "variant": "icon-card",
+            "variant": "default",
             "columns": 3,
             "layout": "grid",
             "className": "pb-5 pt-5",
             "items": [
               {
                 "title": {
-                  "fr": "Explorer les lieux"
+                  "fr": "Un réseau social ouvert et annuaire de compétences"
                 },
                 "text": {
-                  "fr": "Découvrez les lieux du réseau."
-                },
-                "href": "/lieux"
+                  "fr": "Un forum, de quoi découvrir les autres lieux et membres des collectifs. Partez également à la rencontre d'individus qui ont lancé, mené ou conseillé les tiers-lieux existants ou en devenir."
+                }
               },
               {
                 "title": {
-                  "fr": "Rencontrer les accompagnants"
+                  "fr": "Un centre de savoirs"
                 },
                 "text": {
-                  "fr": "Découvrez les personnes qui soutiennent les projets de tiers-lieux."
-                },
-                "href": "/accompagnants"
+                  "fr": "Un wiki contributif, découvrez de la documentation, des ouvrages ou contenus utiles, accédez aux contenus multimédias (conférences, masterclass, etc.) sur des thématiques variées (sociosphère, biosphère, technosphère)."
+                }
               },
               {
                 "title": {
-                  "fr": "Suivre les actualités"
+                  "fr": "Une cartographie et un observatoire"
                 },
                 "text": {
-                  "fr": "Retrouvez les nouvelles du réseau."
-                },
-                "href": "/actualites"
-              },
-              {
-                "title": {
-                  "fr": "Se rencontrer"
-                },
-                "text": {
-                  "fr": "Découvrez les événements à venir."
-                },
-                "href": "/evenements"
-              }
-            ]
-          }
-        },
-        {
-          "type": "content",
-          "id": "accueil-reseau",
-          "props": {
-            "title": {
-              "fr": "Un espace pour partager et coopérer"
-            },
-            "description": {
-              "fr": "La plateforme relie les lieux et les personnes qui les font vivre. Retrouvez les initiatives du réseau, échangez autour de vos expériences et découvrez les rendez-vous à venir."
-            },
-            "imagePosition": "right",
-            "links": [
-              {
-                "label": {
-                  "fr": "Découvrir le réseau"
-                },
-                "href": "/a-propos"
-              },
-              {
-                "label": {
-                  "fr": "Explorer la carte"
-                },
-                "href": "/lieux"
+                  "fr": "Grâce aux outils de cartographie et de typologie, explorez les tiers-lieux existants, leurs besoins et leurs atouts. La plateforme permettra également de créer des coups de sonde pour recenser et observer l'état de nos tiers-lieux."
+                }
               }
             ]
           }
