@@ -22,6 +22,10 @@ import { formatHours, weeklyAmplitudeMinutes } from "@/modules/observatoire/inst
 import { computePoiUsage } from "@/modules/observatoire/usage";
 import { KpiCard } from "@/modules/observatoire/components/KpiCard";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+// Historique d'une réservation (`answerChanges`), ouvert par un gestionnaire. Import statique : le composant est déjà
+// dans le chunk d'entrée de l'application — un `lazy()` n'y découpait rien et perdait sa façade de manifest
+// (préflight `lazy-entry-facades`, build requis).
+import { AnswerActivityDialog } from "@/modules/coform/components/AnswerActivityDialog";
 import { useBookingChecks } from "../../hooks/useBookingChecks";
 import { usePeriodFilter } from "../../hooks/usePeriodFilter";
 import { resourcesReservations, useReservationsQuery } from "../../hooks/useReservationsQuery";
@@ -59,10 +63,6 @@ import { SlotHoursDialog } from "./SlotHoursDialog";
 // Modale CoForm en lazy : le chunk coform ne doit être tiré qu'à la première
 // demande de réservation, jamais à l'affichage de la fiche.
 const CoFormModal = lazy(() => import("@/modules/coform/components/CoFormModal"));
-// Historique d'une réservation (`answerChanges`), ouvert par un gestionnaire : même règle de chargement.
-const AnswerActivityDialog = lazy(() =>
-  import("@/modules/coform/components/AnswerActivityDialog").then((m) => ({ default: m.AnswerActivityDialog })),
-);
 
 type Translate = ReturnType<typeof useT>;
 
@@ -740,14 +740,12 @@ export default function PreviewReservations({
       )}
 
       {historyFor && (
-        <Suspense fallback={null}>
-          <AnswerActivityDialog
-            open
-            onOpenChange={(next) => { if (!next) setHistoryFor(null); }}
-            answerId={historyFor}
-            stepNames={{ [conf.step]: t("PreviewReservations.historyStep") }}
-          />
-        </Suspense>
+        <AnswerActivityDialog
+          open
+          onOpenChange={(next) => { if (!next) setHistoryFor(null); }}
+          answerId={historyFor}
+          stepNames={{ [conf.step]: t("PreviewReservations.historyStep") }}
+        />
       )}
     </section>
   );
