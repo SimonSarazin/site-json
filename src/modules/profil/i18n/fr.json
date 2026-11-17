@@ -958,6 +958,11 @@
         "noResults": "Aucun tag trouvé",
         "typeToSearch": "Tapez au moins 2 caractères"
       },
+      "skills": {
+        "label": "Compétences",
+        "placeholder": "Ajouter une compétence...",
+        "description": "Vos savoir-faire, visibles sur votre profil et utilisés pour trouver des membres."
+      },
       "type": {
         "label": "Type d'organisation",
         "placeholder": "Sélectionner un type",

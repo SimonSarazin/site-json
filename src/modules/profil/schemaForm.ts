@@ -120,6 +120,7 @@ export const userProfileSchema = z.object({
   email: z.email({ error: "validation.email.invalid" }).optional(), // PAS emailOrEmpty (user n'accepte pas le vide)
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
+  skills: tagsSchema.optional(), // compétences : même forme que tags (contrat UPDATE_BLOCK_INFO citoyens)
   birthDate: dateOrEmptySchema.optional(),
   fixe: z.string().optional(),
   mobile: z.string().optional(),

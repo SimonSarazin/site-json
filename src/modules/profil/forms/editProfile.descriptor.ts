@@ -25,6 +25,9 @@ const citoyenFields: FieldDescriptor[] = [
   text("shortDescription", { widget: "textarea", widgetProps: { rows: 2 } }),
   text("description", { widget: "textarea" }),
   { name: "tags", type: "array", widget: "tags", label: PE("tags.label") },
+  // skills (compétences) : attribut STANDARD du citoyen (Person::$dataBinding, Element::updateBlock bloc info),
+  // même widget que les tags (legacy dynForm inputType:"tags") ; contrat lib UPDATE_BLOCK_INFO ≥ 1.0.208.
+  { name: "skills", type: "array", widget: "tags", label: PE("skills.label"), placeholder: PE("skills.placeholder"), info: PE("skills.description") },
   text("email", { widgetProps: { inputType: "email" } }),
   text("mobile", { widgetProps: { inputType: "tel" } }),
   text("fixe", { widgetProps: { inputType: "tel" } }),
@@ -38,7 +41,7 @@ export const editCitoyenDescriptor: FormDescriptor = {
   collection: "citoyens",
   layout: { kind: "tabs" },
   sections: [
-    { id: "basic", label: TAB("basic"), groups: [{ columns: 1, fields: ["name", "slug", "birthDate", "shortDescription", "description", "tags"] }] },
+    { id: "basic", label: TAB("basic"), groups: [{ columns: 1, fields: ["name", "slug", "birthDate", "shortDescription", "description", "tags", "skills"] }] },
     { id: "contact", label: TAB("contact"), groups: [{ columns: 1, fields: ["email", "mobile", "fixe", "url"] }] },
     { id: "location", label: TAB("location.label"), groups: [{ columns: 1, fields: ["_location"] }] },
     { id: "social", label: TAB("social"), groups: [{ columns: 1, fields: ["_social"] }] },

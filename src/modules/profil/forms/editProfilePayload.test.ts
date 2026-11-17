@@ -17,9 +17,10 @@ describe("buildProfileUpdateData", () => {
     const out = buildProfileUpdateData("citoyens", {
       name: "Jean", slug: "jean", shortDescription: "court", description: "long",
       url: "https://x.fr", email: "a@b.fr", mobile: "06", fixe: "01", birthDate: "1990-01-01",
-      tags: ["t1"], github: "https://gh/x", ...FULL_ADDRESS,
+      tags: ["t1"], skills: ["cms", "codev"], github: "https://gh/x", ...FULL_ADDRESS,
     });
     expect(out.name).toBe("Jean");
+    expect(out.skills).toEqual(["cms", "codev"]); // compétences : même codec que tags
     expect(out.slug).toBe("jean");
     expect(out.mobile).toBe("06");
     expect(out.birthDate).toBe("1990-01-01");
@@ -27,6 +28,14 @@ describe("buildProfileUpdateData", () => {
     expect(out.address).toEqual(EXPECTED_ADDRESS);
     expect(out.github).toBe("https://gh/x");
     expect(out.facebook).toBe(""); // social toujours complet (9 clés)
+  });
+
+  it("citoyens : skills [] → \"\" (sentinel $unset, comme tags) ; absent du form → \"\" comme tags (form complet) ; jamais émis pour une autre entité", () => {
+    expect(buildProfileUpdateData("citoyens", { name: "J", slug: "j", skills: [] }).skills).toBe("");
+    const sans = buildProfileUpdateData("citoyens", { name: "J", slug: "j" });
+    expect(sans.skills).toBe(sans.tags); // même codec coerce:arrayOrEmpty : "" des deux côtés (le SDK diffe ensuite contre initialDraft)
+    for (const t of ["organizations", "projects", "events", "poi"])
+      expect("skills" in buildProfileUpdateData(t, { name: "X", slug: "x", skills: ["cms"] }), t).toBe(false);
   });
 
   it("organizations : openingHours (7 entrées) + type + social", () => {
