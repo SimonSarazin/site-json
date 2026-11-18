@@ -1105,6 +1105,14 @@ verrouillées par des tests d'intégration ajoutés (commit
   **À corriger côté PHP.** Le contrat serveur « radar public » peut aussi ne pas
   être déployé sur le backend de test (répond alors `result:false`).
 
+La section de page `coform-evaluations-directory` regroupe les radars des
+organisations d'une source : `props.sourceKey`, `props.formId` et `props.finder`
+reprennent respectivement le périmètre des lieux et le rattachement CoForm utilisé
+par leur fiche. La liste est paginée ; chaque lieu affiche toutes ses réponses,
+ou un message s'il n'en a pas. Les échecs de lecture sont affichés séparément
+avec une action pour réessayer. Les radars peuvent inclure les noms des
+contributeurs et restent soumis aux droits et au comportement du serveur.
+
 ---
 
 ## Contrôle d'accès (CoFormAccessInfo)

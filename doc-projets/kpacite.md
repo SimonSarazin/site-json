@@ -7,7 +7,7 @@
 > Voir aussi : [Module Search](../doc/07-module-search.md) · [Module formEngine](../doc/28-module-formengine.md)
 > Mémoire : `[[project-kpacite]]`
 
-Dernière mise à jour : **2026-09-21** — première configuration créée.
+Dernière mise à jour : **2026-11-18**.
 
 ## 1. Contexte du projet
 
@@ -19,7 +19,7 @@ Le projet consiste à créer un site SiteForge pour le **Réseau KPA-Cité**, av
 | Entité | organisation Communecter « KPA-Cité », slug `kpacite` |
 | Backend | `https://www.communecter.org` |
 | CSS | `index-tiers-lieux` hérité de l'archétype |
-| Branche | à confirmer |
+| Branche | `kpacite` |
 | Formulaire | `69307ce54d830127904c6ee5` |
 
 ## 2. Objectifs de la configuration
@@ -27,6 +27,7 @@ Le projet consiste à créer un site SiteForge pour le **Réseau KPA-Cité**, av
 - Présenter le Réseau KPA-Cité.
 - Afficher l'annuaire des KPAs sur `/kpas`.
 - Proposer le diagnostic collectif sur `/diagnostic-collectif`.
+- Regrouper les diagnostics des lieux du réseau sur `/diagnostics`.
 - Utiliser l'identité visuelle fournie : jaune, turquoise et rouge.
 
 ## 3. Architecture générale
@@ -42,12 +43,16 @@ Le site s'appuie sur SiteForge côté client, Communecter pour les données et l
 ## 5. Modèle de données réel
 
 Le probe du **2026-09-21** confirme **6 résultats** pour `sourceKey: ["kpacite"]`. Le formulaire est référencé par son identifiant CoForm fourni par le projet.
+Le **2026-11-18**, le probe retourne toujours 6 lieux ; la page des diagnostics
+affiche 4 lieux avec un radar et 2 sans diagnostic lors du contrôle navigateur.
 
 ## 6. Fichiers concernés
 
 | Domaine | Fichier |
 |---|---|
 | Configuration | [`config.prod.kpacite.json`](../config.prod.kpacite.json) |
+| Annuaire des diagnostics | [`CoFormEvaluationsDirectorySection.tsx`](../src/modules/coform/components/CoFormEvaluationsDirectorySection.tsx) |
+| Tests de l'annuaire | [`CoFormEvaluationsDirectorySection.test.tsx`](../src/modules/coform/components/CoFormEvaluationsDirectorySection.test.tsx) |
 | Déclaration du site | [`sites.json`](../sites.json) |
 | Logo | [`public/images/kpacite/logo.svg`](../public/images/kpacite/logo.svg) |
 | Documentation | [`doc-projets/kpacite.md`](kpacite.md) |
@@ -57,6 +62,12 @@ Le probe du **2026-09-21** confirme **6 résultats** pour `sourceKey: ["kpacite"
 - Archétype `navigatorDesTierslieux` pour réutiliser le chrome portail et le moteur d'annuaire.
 - Section `searchProStatic` pour l'annuaire des organisations.
 - Section `coform` avec le formulaire réel `69307ce54d830127904c6ee5`.
+- Section `coform-evaluations-directory` : organisations limitées au `sourceKey`
+  `kpacite`, puis réponses du formulaire associées à chaque lieu par le finder
+  configuré sur la fiche. Chaque réponse affiche le radar multi-évaluations existant ;
+  les autres lieux restent visibles avec une indication d'absence de diagnostic.
+  La page est publique, avec les noms des contributeurs, selon le choix du projet ;
+  le serveur reste responsable des droits d'accès aux données.
 - Logo SVG local pour rendre immédiatement le header, le footer et le favicon.
 
 ## 8. Étapes de mise en place
@@ -70,6 +81,11 @@ Le probe du **2026-09-21** confirme **6 résultats** pour `sourceKey: ["kpacite"
 - Nouvelle entrée `kpacite` ajoutée à `sites.json`.
 - Nouvelle configuration créée avec 3 pages et 6 sections.
 - Nouveau logo local ajouté.
+- Le 2026-11-18, ajout de `/diagnostics` et de son lien de navigation. La
+  configuration comporte 4 pages et 8 sections ; les erreurs de chargement des
+  lieux, réponses et radars sont signalées, avec possibilité de réessayer.
+  Validation de configuration, audit ciblé, typecheck, lint, 9 tests ciblés
+  et rendu SSR des 4 pages réussis.
 
 ## 10. Checklist d'avancement
 
@@ -78,8 +94,9 @@ Le probe du **2026-09-21** confirme **6 résultats** pour `sourceKey: ["kpacite"
 | Configuration de base | ✅ | Validée par `config:validate` |
 | Annuaire KPAs | ✅ | Probe : 6 résultats |
 | Diagnostic collectif | ✅ | Formulaire configuré |
+| Diagnostics des lieux | ✅ | Page publique ; 4 radars et 2 lieux sans diagnostic au contrôle du 2026-11-18 |
 | Identité visuelle | ✅ | Couleurs et logo SVG en place |
-| Rendu SSR | 🟡 | À vérifier |
+| Rendu SSR | ✅ | 4 pages et 8 sections rendues le 2026-11-18 |
 | Déploiement | 🟡 | À planifier |
 
 ## 11. Dépendances SDK ↔ cocolight-api-client

@@ -129,6 +129,7 @@ const SECTION_META: Record<string, SectionMeta> = {
 
   // coform
   coform: { label: "CoForm", desc: "Formulaire dynamique chargé depuis le backend Cocolight via son formId, mono ou multi-étapes (variant wizard/default ou auto), avec redirection post-soumission", image: "https://placehold.co/300x180/00cec9/eee?text=CoForm", family: "coform" },
+  "coform-evaluations-directory": { label: "Diagnostics des lieux", desc: "Diagnostics multi-évaluations des organisations d'une source : réponses liées par finder et radars par lieu.", image: "https://placehold.co/300x180/00cec9/eee?text=Diagnostics", family: "coform" },
 
   // toolsCatalog
   toolsCatalog: { label: "Catalogue d'outils", desc: "Catalogue générique d'outils d'usage synthétisé depuis les réponses coform (formId/step/finderPath), avec recherche, filtres (catégorie/usage/open-source) et pagination CÔTÉ SERVEUR (défilement infini), plus une modale détaillant les lieux utilisateurs et leur satisfaction, le commun porteur, un bouton de réponse au questionnaire et l'édition de l'enrichissement pour les admins du costum", image: "https://placehold.co/300x180/6c5ce7/eee?text=Outils", family: "search" },

@@ -47,6 +47,18 @@ export const CoFormSectionSchema = z.object({
 
 export type CoFormSection = z.infer<typeof CoFormSectionSchema>;
 
+export const CoFormEvaluationsDirectorySectionSchema = z.object({
+  type: z.literal("coform-evaluations-directory"),
+  id: z.string().optional(),
+  props: z.object({
+    sourceKey: z.string().min(1),
+    formId: z.string().min(1),
+    finder: z.string().min(1),
+  }),
+});
+
+export type CoFormEvaluationsDirectorySectionProps = z.infer<typeof CoFormEvaluationsDirectorySectionSchema>["props"];
+
 // Configuration globale du module CoForm
 export const CoFormConfigSchema = z.object({
   enabled: z.boolean().default(true),
@@ -56,4 +68,3 @@ export const CoFormConfigSchema = z.object({
 });
 
 export type CoFormConfig = z.infer<typeof CoFormConfigSchema>;
-

@@ -178,6 +178,14 @@
       },
       {
         "label": {
+          "fr": "Diagnostics des lieux",
+          "en": "Place assessments"
+        },
+        "icon": "activity",
+        "path": "/diagnostics"
+      },
+      {
+        "label": {
           "fr": "Outils et ressources",
           "en": "Tools & Resources"
         },
@@ -380,6 +388,39 @@
                 "borderColor": "background"
               }
             }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/diagnostics",
+      "title": {
+        "fr": "Diagnostics des lieux",
+        "en": "Place assessments"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title",
+          "id": "diagnostics-title",
+          "props": {
+            "title": {
+              "fr": "Auto-diagnostics des lieux",
+              "en": "Place self-assessments"
+            },
+            "subtitle": {
+              "fr": "Découvrez les diagnostics collectifs des lieux du réseau KPA-Cité.",
+              "en": "Explore collective assessments of KPA-Cité network places."
+            }
+          }
+        },
+        {
+          "type": "coform-evaluations-directory",
+          "id": "diagnostics-lieux",
+          "props": {
+            "sourceKey": "kpacite",
+            "formId": "69307ce54d830127904c6ee5",
+            "finder": "answers.kpacite3122025_199_0.finderkpacite3122025_199_0miqbst6k1klz500mpv2"
           }
         }
       ]

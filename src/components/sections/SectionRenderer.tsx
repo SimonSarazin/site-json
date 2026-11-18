@@ -86,6 +86,7 @@ const LazySections: {
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
+  "coform-evaluations-directory": lazy(() => import("@/modules/coform/components/CoFormEvaluationsDirectorySection")),
   toolsCatalog: lazy(() => import("@/modules/toolsCatalog/sections/ToolsCatalogSection")),
   "aac-directory": lazy(() => import("@/modules/aac/sections/AacDirectorySection")),
   "aac-highlight": lazy(() => import("@/modules/aac/sections/AacHighlightSection")),

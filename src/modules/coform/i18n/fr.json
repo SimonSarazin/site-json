@@ -1,6 +1,22 @@
 {
   "coform": {
     "title": "Formulaire",
+    "evaluationsDirectory": {
+      "loadingPlaces": "Chargement des lieux…",
+      "placesError": "Impossible de charger les lieux.",
+      "noPlaces": "Aucun lieu trouvé.",
+      "loadingAnswers": "Chargement des diagnostics…",
+      "answersError": "Impossible de charger les diagnostics de ce lieu.",
+      "noAnswers": "Aucun diagnostic pour ce lieu.",
+      "missingAnswerId": "Impossible d'afficher ce diagnostic : identifiant manquant.",
+      "loadingRadar": "Chargement du graphique…",
+      "radarError": "Impossible de charger le graphique de ce diagnostic.",
+      "noRadar": "Aucune évaluation disponible pour ce diagnostic.",
+      "retry": "Réessayer",
+      "more": "Charger plus de lieux",
+      "loadingMore": "Chargement…",
+      "profile": "Voir la fiche du lieu"
+    },
     "steps": {
       "navLabel": "Étapes du formulaire",
       "counter": "Étape {{current}} sur {{total}}",

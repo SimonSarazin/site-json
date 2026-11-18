@@ -1,6 +1,22 @@
 {
   "coform": {
     "title": "Form",
+    "evaluationsDirectory": {
+      "loadingPlaces": "Loading places…",
+      "placesError": "Unable to load places.",
+      "noPlaces": "No places found.",
+      "loadingAnswers": "Loading assessments…",
+      "answersError": "Unable to load this place's assessments.",
+      "noAnswers": "No assessment for this place.",
+      "missingAnswerId": "Unable to display this assessment: missing identifier.",
+      "loadingRadar": "Loading chart…",
+      "radarError": "Unable to load the chart for this assessment.",
+      "noRadar": "No evaluation is available for this assessment.",
+      "retry": "Retry",
+      "more": "Load more places",
+      "loadingMore": "Loading…",
+      "profile": "View place profile"
+    },
     "steps": {
       "navLabel": "Form steps",
       "counter": "Step {{current}} of {{total}}",
