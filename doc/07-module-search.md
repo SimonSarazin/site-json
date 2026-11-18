@@ -243,6 +243,24 @@ src/modules/search/
 
 ## Sections JSON exposées
 
+### `network-members-directory` — personnes d'un réseau d'organisations
+
+La section publique prend `props.title`, `props.description` facultatif et
+`props.sourceKey` (liste de slugs). Elle recherche toutes les organisations de ces sources,
+puis les citoyens membres confirmés de chacune et de l'entité porteuse du site
+(`links.memberOf`, hors invitations et adhésions en attente). Les personnes sont
+dédupliquées par identifiant. Les compétences proviennent du champ `skills` et les
+options du filtre sont construites à partir des profils chargés ; les personnes sans
+compétence restent visibles quand aucun filtre n'est sélectionné.
+
+La recherche des organisations et celle des membres sont paginées ; les requêtes de
+membres sont limitées à quatre en parallèle. Une erreur ou un dépassement du plafond de
+5 000 organisations ou 5 000 personnes (par organisation ou au total) interrompt la liste avec une possibilité de réessayer,
+sans présenter de résultat partiel comme complet. Le chargement se fait côté client ;
+il faut un backend permettant la lecture publique de ces profils. Le `sourceKey` doit
+rester aligné sur le périmètre de l'annuaire d'organisations concerné : les filtres
+additionnels de celui-ci ne sont pas repris automatiquement.
+
 ### `searchPro` — avec synchronisation URL
 
 Section full-featured avec synchronisation des filtres dans les query params de l'URL. Utilisation principale : pages de recherche publiques partageables.

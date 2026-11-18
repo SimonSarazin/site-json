@@ -79,6 +79,7 @@ const LazySections: {
   filters: lazy(() => import("@/modules/search/sections/FiltersSection")),
   searchHeader: lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
   "coform-resource-directory": lazy(() => import("@/modules/search/sections/CoformResourceDirectorySection")),
+  "network-members-directory": lazy(() => import("@/modules/search/sections/NetworkMembersDirectorySection")),
   "featured-carousel": lazy(() => import("@/modules/search/sections/FeaturedCarouselSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),

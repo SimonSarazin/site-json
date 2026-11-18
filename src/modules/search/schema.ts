@@ -17,6 +17,18 @@ import { RESOURCE_NOTE_KEYS, RESOURCE_TAG_KEYS, type ResourceDetailKey } from ".
  */
 export const IconNameSchema = z.custom<IconName>();
 
+export const NetworkMembersDirectorySectionSchema = z.object({
+  type: z.literal("network-members-directory"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString,
+    description: LocalizedString.optional(),
+    sourceKey: z.array(z.string()).min(1),
+  }),
+});
+
+export type NetworkMembersDirectorySectionProps = z.infer<typeof NetworkMembersDirectorySectionSchema>["props"];
+
 //──────────────── Filters Section
 // Section sidebar qui pilote le state des filtres (selectedFilters,
 // searchByFields, searchQuery) consommé par SearchPro/SearchProStatic via

@@ -1,4 +1,17 @@
 {
+  "networkMembers": {
+    "search": "Search for a person",
+    "skills": "Skills",
+    "allSkills": "All skills",
+    "loading": "Loading people…",
+    "error": "Unable to load the people directory.",
+    "retry": "Try again",
+    "empty": "No people match this search.",
+    "anonymous": "Unnamed person",
+    "noSkills": "No skills provided",
+    "count_one": "{{count}} person",
+    "count_other": "{{count}} people"
+  },
   "days": {
     "monday": "Monday",
     "tuesday": "Tuesday",

@@ -1,4 +1,17 @@
 {
+    "networkMembers": {
+        "search": "Rechercher une personne",
+        "skills": "Compétences",
+        "allSkills": "Toutes les compétences",
+        "loading": "Chargement des personnes…",
+        "error": "Impossible de charger l'annuaire des personnes.",
+        "retry": "Réessayer",
+        "empty": "Aucune personne ne correspond à cette recherche.",
+        "anonymous": "Personne sans nom",
+        "noSkills": "Compétences non renseignées",
+        "count_one": "{{count}} personne",
+        "count_other": "{{count}} personnes"
+    },
     "days": {
         "monday": "Lundi",
         "tuesday": "Mardi",

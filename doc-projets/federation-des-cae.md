@@ -16,7 +16,7 @@
 > vit sur la branche `aac-dev` et n'a rien à voir avec le site des tiers-lieux, qui vit sur `jdev`
 > et `main` : leurs dossiers devaient être séparés. Cf. §10 31/08.
 
-Dernière mise à jour : **2026-11-17** (`/annuaire` : bouton d'export CSV réservé aux admins, cf. §10 17/11). Précédent : **2026-11-12** (onglet admin « Formulaires » : réponses des CAE au formulaire de l'appel et envoi d'e-mail, cf. §10 12/11). Précédent : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
+Dernière mise à jour : **2026-11-18** (annuaire public des personnes, cf. §10 18/11). Précédent : **2026-11-17** (`/annuaire` : bouton d'export CSV réservé aux admins, cf. §10 17/11). Précédent : **2026-11-12** (onglet admin « Formulaires » : réponses des CAE au formulaire de l'appel et envoi d'e-mail, cf. §10 12/11). Précédent : **2026-11-05** (entrée « Kanban » du menu du compte, cf. §10 05/11bis ; onglets admin et leurs actions vérifiés par un admin connecté, en local, cf. §10 05/11). Précédent : **2026-11-04** (`admin.enabled` et `admin.access` écrits en config, cf. §10 04/11). Précédent : **2026-10-29** (bouton « Ajouter une organisation » retiré de `/annuaire`,
 cf. §10 29/10). Précédent : **2026-10-28** (module `admin` activé : onglets Membres, Annuaire et
 Référencement des CAE, cf. §10 28/10). Précédent : **2026-10-23** (suites de la revue de la MR `aac-dev`, commitées et
 poussées : la tirelire et « Mes promesses » lisent le formulaire de l'AAC ; « terminée » lu sans
@@ -131,6 +131,7 @@ RELIEF : tout changement s'y répercute sur trois sites (cf. §10 31/08 et §13)
 | `/aac/communs` | 1 | `aac-directory` — annuaire complet des communs déposés |
 | `/usages` | 1 | `toolsCatalog` — catalogue des besoins et solutions |
 | `/annuaire` | 2 | `searchHeader` (titre, recherche, bouton « Créer votre CAE » seul depuis le 29/10) · `searchProStatic` — annuaire de la communauté (cf. §10 24/09 et §10 29/10) |
+| `/personnes` | 1 | `network-members-directory` — membres confirmés de la Fédération et des organisations de `/annuaire`, avec recherche et filtre de compétences |
 | `/mentions-legales` | 1 | `html` — mentions légales (LCEN) : faits établis seulement, le reste en `[à compléter]` (cf. §10 14/09) |
 | `/confidentialite` | 1 | `html` — politique de confidentialité (RGPD), même règle |
 | `/profil/:slug` | — | servie par le module `profil`, pas déclarée dans `pages[]` — cf. §10 09/09 |
@@ -145,7 +146,7 @@ cf. §10 28/09), `coform`, `costumForms` (formulaire « Créer votre CAE », sou
 **Absents** : `commandPalette` — le site reste public en lecture pour un visiteur anonyme,
 l'enrichissement d'un outil et l'administration de l'annuaire restant soumis au droit admin.
 
-**Largeur** : les 6 pages n'ont pas de `layout` (gabarit `default`, 1280 px) et les deux profils sont
+**Largeur** : les 7 pages n'ont pas de `layout` (gabarit `default`, 1280 px) et les deux profils sont
 en `layout: "default"`. Ce gabarit enveloppe aussi le header et le footer ; les pages de module (fiche
 d'un commun, connexion, coform) ont leur propre enveloppe, pleine largeur. ⚠️ Ne pas passer ce site en
 `fullwidth` sans traiter les deux régressions mesurées le 14/09 (cf. §10 14/09bis).
@@ -154,7 +155,7 @@ Footer (`sidebar-columns`, libellés `fr` seuls comme le reste du site) :
 
 | Colonne | Liens |
 |---|---|
-| L'appel à communs | Accueil `/` · Les communs `/aac/communs` · Besoins et solutions `/usages` · Annuaire `/annuaire` |
+| L'appel à communs | Accueil `/` · Les communs `/aac/communs` · Besoins et solutions `/usages` · Les CAEs `/annuaire` · Les personnes `/personnes` |
 | Participer | Déposer un commun `/aac/communs` · Rejoindre l'annuaire `/annuaire` · Créer un compte `/register` **(anonyme)** · Se connecter `/login` **(anonyme)** · Mon profil `@profile` **(connecté)** |
 | Informations | La Fédération `/profil/federationDesCae` · Mentions légales `/mentions-legales` · Confidentialité `/confidentialite` |
 
@@ -296,6 +297,25 @@ rouge — `public/images/federationDesCae/` vide et non déclaré. Réglé le 09
 ---
 
 ## 10. Impacts des modifications
+
+### 18/11 — Annuaire public des personnes et compétences
+
+- La navigation appelle désormais `/annuaire` « Les CAEs » et ajoute `/personnes` dans
+  le header et le footer. Le périmètre retenu comprend les membres directs confirmés
+  de la Fédération et ceux de toutes les organisations de l'annuaire, à la demande du
+  projet ; les invitations et adhésions en attente sont exclues.
+- La section `network-members-directory` lit les organisations par
+  `sourceKey: ["federationDesCae"]`, puis leurs membres, les déduplique et construit
+  le filtre à partir de `skills`. Elle ne reprend pas automatiquement d'éventuels
+  filtres futurs de `/annuaire` : maintenir les deux périmètres alignés.
+- Sonde anonyme en production le 18/11 : 31 organisations (25 coopératives et 6
+  entreprises), 43 personnes distinctes, dont 5 avec des compétences renseignées,
+  soit 15 valeurs distinctes. Ces chiffres évoluent avec les données.
+- Validation : config 7 pages/11 sections, audit sans constat, SSR 7 pages, sonde
+  backend, typecheck, tests ciblés et préflight réussis. Dans le navigateur, une
+  compétence sélectionnée restreint les 43 cartes à une carte correspondante et la
+  réinitialisation rétablit les 43. L'annuaire est chargé côté client ; une erreur
+  réseau est affichée avec un bouton de nouvelle tentative.
 
 ### 17/11 — `/annuaire` : bouton d'export CSV, réservé aux admins
 
@@ -1593,7 +1613,7 @@ une affirmation fausse. Aucun appelant ne lit `mutation.data` ; seul le verdict 
 | Aligner les pages de module (fiche d'un commun, connexion, coform) sur le gabarit 1280 px ? Leur header et leur footer restent plus larges que ceux des pages de config : trait de bordure plus long au-delà de 1280 px, contenu décalé de 128 px à partir de 1536 px (cf. §10 14/09bis). Le passage inverse, tout en pleine largeur, a été tenté et annulé le 14/09 | à arbitrer |
 | **Qui peut ajouter une organisation depuis `/annuaire` ?** `requiresAdmin: false` posé le 24/09 (tout utilisateur connecté, sans modération — cf. §13). Le passer à `true` réserve le bouton aux admins du site | Fédération |
 | **Vérifier une création réelle depuis `/annuaire`** : `source.keys: ["federationDesCae"]` posé, type « Coopérative » présélectionné, apparition sans rechargement, présence dans « J'utilise ». Demande un compte de test (SSO `lescaecoop`) | à confirmer |
-| Ajouter à l'annuaire un onglet « Personnes » (les 9 membres de l'entité, via `links.memberOf`) ? | à arbitrer |
+| Annuaire public des personnes : vérifier que les membres souhaitent la publication de leurs compétences et maintenir son périmètre cohérent avec `/annuaire` | Fédération |
 | Nom `Coop&amp;Bât` stocké encodé en base — à corriger dans la fiche de l'organisation | Fédération |
 | Le finder « Rechercher votre organisation » de l'Observatoire ouvre depuis le 12/10 le formulaire d'organisation **standard** (plus de formulaire costum sans déclaration, cf. §10 12/10) : doit-il ouvrir « Créer votre CAE » ? Si oui, une ligne dans `coform.finderAddNew` | à arbitrer |
 | Libellé de la question « Partenaires » réglé au **pluriel** côté legacy (« Organisations ») → « Rechercher un Organisations », « Votre Organisations n'existe pas encore ? » : le passer à « organisation » dans l'écran de config du finder | Schumann |

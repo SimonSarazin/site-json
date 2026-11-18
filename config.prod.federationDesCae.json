@@ -239,9 +239,15 @@
       },
       {
         "label": {
-          "fr": "Annuaire"
+          "fr": "Les CAEs"
         },
         "path": "/annuaire"
+      },
+      {
+        "label": {
+          "fr": "Les personnes"
+        },
+        "path": "/personnes"
       }
     ],
     "utilities": {
@@ -631,6 +637,29 @@
       ]
     },
     {
+      "path": "/personnes",
+      "title": {
+        "fr": "Les personnes — Fédération des CAE"
+      },
+      "sections": [
+        {
+          "type": "network-members-directory",
+          "id": "personnes-annuaire",
+          "props": {
+            "title": {
+              "fr": "Les personnes du réseau"
+            },
+            "description": {
+              "fr": "Découvrez les membres de la Fédération et des organisations de son annuaire, et recherchez-les par compétence."
+            },
+            "sourceKey": [
+              "federationDesCae"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "path": "/mentions-legales",
       "title": {
         "fr": "Mentions légales — Fédération des CAE"
@@ -708,7 +737,13 @@
           {
             "href": "/annuaire",
             "label": {
-              "fr": "Annuaire"
+              "fr": "Les CAEs"
+            }
+          },
+          {
+            "href": "/personnes",
+            "label": {
+              "fr": "Les personnes"
             }
           }
         ]
